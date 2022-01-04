@@ -1,0 +1,21 @@
+{% extends 'temp_base/base_log.html' %}
+{% load bootstrap4 %}
+{% block formulario %}
+<form method="post">
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    {% buttons %}
+    <button type="submit" class="btn btn-primary">Entrar</button>
+    {% endbuttons %}
+    <div class="row m-t-25 text-left">
+        <div class="col-12">
+            <div class="checkbox-fade fade-in-primary d-">
+                <a href="#" class="text-inverse">Esqueceu Email?</a>
+            </div>
+            <div class="forgot-phone text-right f-right">
+                <a href="{% url 'password_reset' %}" class="text-right f-w-600"> Esqueceu a Senha?</a>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}

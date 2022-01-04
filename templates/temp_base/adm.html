@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="pt-br">
+<head>
+    <title>{% block titulo %}{% endblock %}</title>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+
+    <!-- Meta -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <!-- Favicon icon -->
+    <link rel="icon" href="{% static 'adm/assets/images/favicon.ico' %}" type="image/x-icon">
+    <!-- Google font-->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,700" rel="stylesheet">
+    <!-- waves.css -->
+    <link rel="stylesheet" href="{% static 'adm/assets/pages/waves/css/waves.min.css' %}" type="text/css" media="all">
+    <!-- Required Fremwork -->
+    <link rel="stylesheet" type="text/css" href="{% static 'adm/assets/css/bootstrap/css/bootstrap.min.css' %}">
+    <!-- waves.css -->
+    <link rel="stylesheet" href="{% static 'adm/assets/pages/waves/css/waves.min.css' %}" type="text/css" media="all">
+    <!-- themify icon -->
+    <link rel="stylesheet" type="text/css" href="{% static 'adm/assets/icon/themify-icons/themify-icons.css' %}">
+    <!-- font-awesome-n -->
+    <link rel="stylesheet" type="text/css" href="{% static 'adm/assets/css/font-awesome-n.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'adm/assets/css/font-awesome.min.css' %}">
+    <!-- scrollbar.css -->
+    <link rel="stylesheet" type="text/css" href="{% static 'adm/assets/css/jquery.mCustomScrollbar.css' %}">
+    <!-- Style.css -->
+    <link rel="stylesheet" type="text/css" href="{% static 'adm/assets/css/style.css' %}">
+    {% block estatico %}
+    {% endblock %}
+</head>
+
+<body>
+    <div id="pcoded" class="pcoded">
+        <div class="pcoded-overlay-box"></div>
+        <div class="pcoded-container navbar-wrapper">
+            <nav class="navbar header-navbar pcoded-header">
+                <div class="navbar-wrapper">
+                    <div class="navbar-logo">
+                        <a class="mobile-menu waves-effect waves-light" id="mobile-collapse" href="#!">
+                            <i class="ti-menu"></i>
+                        </a>
+
+                        <a href="#">
+                            <img class="img-fluid" src="{% static 'adm/assets/images/logo.png' %}" alt="Logo" />
+                        </a>
+                        <a class="mobile-options waves-effect waves-light">
+                            <i class="ti-more"></i>
+                        </a>
+                    </div>
+                    <div class="navbar-container container-fluid">
+                        <ul class="nav-right">
+                            <li class="user-profile header-notification">
+                                <a href="#!" class="waves-effect waves-light">
+                                    {% block imagem1 %}
+                                    <img src="{% static 'adm/assets/images/user.jpg' %}" class="img-radius" alt="Foto_Usuario">
+                                    {% endblock %}
+                                    <span>{{user.nome}}</span>
+                                    <i class="ti-angle-down"></i>
+                                </a>
+                                <ul class="show-notification profile-notification">
+                                    <li class="waves-effect waves-light">
+                                        <a href="#!">
+                                            <i class="ti-settings"></i> Configurações
+                                        </a>
+                                    </li>
+                                    <li class="waves-effect waves-light">
+                                        <a href="#">
+                                            <i class="ti-user"></i> Perfil
+                                        </a>
+                                    </li>
+                                    <li class="waves-effect waves-light">
+                                        <a href="auth-normal-sign-in.html">
+                                            <i class="ti-layout-sidebar-left"></i> Sair
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="pcoded-main-container">
+                <div class="pcoded-wrapper">
+                    <nav class="pcoded-navbar">
+                        <div class="sidebar_toggle"><a href="#"><i class="icon-close icons"></i></a></div>
+                        <div class="pcoded-inner-navbar main-menu">
+                            <div class="">
+                                <div class="main-menu-header">
+                                    {% block imagem2 %}
+                                    <img class="img-80 img-radius" src="{% static 'adm/assets/images/user.jpg' %}" alt="Foto_Perfil">
+                                    {% endblock %}
+                                    <div class="user-details">
+                                        <span id="more-details">{{user.nome}}<i class="fa fa-caret-down"></i></span>
+                                    </div>
+                                </div>
+                                <div class="main-menu-content">
+                                    <ul>
+                                        <li class="more-details">
+                                            <a href="#"><i class="ti-user"></i>Ver perfil</a>
+                                            <a href="#!"><i class="ti-settings"></i>Configurações</a>
+                                            <a href="#"><i class="ti-layout-sidebar-left"></i>Sair</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <ul class="pcoded-item pcoded-left-item">
+                                <li class="active">
+                                    <a href="#" class="waves-effect waves-dark">
+                                        <span class="pcoded-micon"><i class="ti-home"></i><b>D</b></span>
+                                        <span class="pcoded-mtext">Painel de Controle</span>
+                                        <span class="pcoded-mcaret"></span>
+                                    </a>
+                                </li>
+                            </ul>
+                            <div class="pcoded-navigation-label">Administrador</div>
+                            <ul class="pcoded-item pcoded-left-item">
+                                <li class="pcoded-hasmenu">
+                                    <a href="javascript:void(0)" class="waves-effect waves-dark">
+                                        <span class="pcoded-micon"><i class="ti-layout-grid2-alt"></i><b>BC</b></span>
+                                        <span class="pcoded-mtext">Informações</span>
+                                        <span class="pcoded-mcaret"></span>
+                                    </a>
+                                    <ul class="pcoded-submenu">
+                                        <li class=" ">
+                                            <a href="{% url 'adm_escolar:atualizar_administrador' user.pk %}" class="waves-effect waves-dark">
+                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                                                <span class="pcoded-mtext">Usuário</span>
+                                                <span class="pcoded-mcaret"></span>
+                                            </a>
+                                        </li>
+                                        <li class=" ">
+                                            <a href="{% url 'adm_escolar:atualizar_escola' user.pk %}" class="waves-effect waves-dark">
+                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                                                <span class="pcoded-mtext">Escola</span>
+                                                <span class="pcoded-mcaret"></span>
+                                            </a>
+                                        </li>
+                                        <li class=" ">
+                                            <a href="{% url 'adm_escolar:atualizar_perfil' user.pk %}" class="waves-effect waves-dark">
+                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                                                <span class="pcoded-mtext">Perfil </span>
+                                                <span class="pcoded-mcaret"></span>
+                                            </a>
+                                        </li>
+
+                                        <li class=" ">
+                                            <a href="#" class="waves-effect waves-dark">
+                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                                                <span class="pcoded-mtext">Senha </span>
+                                                <span class="pcoded-mcaret"></span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </nav>
+                    <div class="pcoded-content">
+                        <!-- Page-header start -->
+                        <div class="page-header">
+                            <div class="page-block">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <div class="page-header-title">
+                                            {% block tema %}
+                                            <h5 class="m-b-10">Painel Padrão</h5>
+                                            <p class="m-b-0">Bem Vindo ao painel padrão!</p>
+                                            {% endblock %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <ul class="breadcrumb">
+                                            <li class="breadcrumb-item">
+                                                <a href="#"> <i class="fa fa-home"></i> </a>
+                                            </li>
+                                            {% block breadcrumbs %}
+                                            <li class="breadcrumb-item"><a href="#!">Painel</a>
+                                            </li>
+                                            {% endblock %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Page-header end -->
+                        <div class="pcoded-inner-content">
+                            <!-- Main-body start -->
+                            <div class="main-body">
+                                <div class="page-wrapper">
+                                    <!-- Page-body start -->
+                                    <div class="page-body">
+                                        <div class="row">
+                                            {% block conteudo %}
+                                            {% endblock %}
+                                        </div>
+                                    </div>
+                                    <!-- Page-body end -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Required Jquery -->
+    <script type="text/javascript" src="{% static 'adm/assets/js/jquery/jquery.min.js' %} "></script>
+    <script type="text/javascript" src="{% static 'adm/assets/js/jquery-ui/jquery-ui.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'adm/assets/js/popper.js/popper.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'adm/assets/js/bootstrap/js/bootstrap.min.js' %}"></script>
+    <!-- waves js -->
+    <script src="{% static 'adm/assets/pages/waves/js/waves.min.js' %}"></script>
+    <!-- jquery slimscroll js -->
+    <script type="text/javascript" src="{% static 'adm/assets/js/jquery-slimscroll/jquery.slimscroll.js' %}"></script>
+
+    <!-- slimscroll js -->
+    <script src="{% static 'adm/assets/js/jquery.mCustomScrollbar.concat.min.js' %}"></script>
+
+    <!-- menu js -->
+    <script src="{% static 'adm/assets/js/pcoded.min.js' %}"></script>
+    <script src="{% static 'adm/assets/js/vertical/vertical-layout.min.js' %}"></script>
+
+    <script type="text/javascript" src="{% static 'adm/assets/js/script.js' %}"></script>
+    {% block script %}
+    {% endblock %}
+</body>
+
+</html>

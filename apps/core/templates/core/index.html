@@ -1,0 +1,19 @@
+{% extends 'temp_base/site.html' %}
+{% block titulo %}Home{% endblock %}
+{% load static %}
+{% block conteudo %}
+    <div class="hero-wrap" style="background-image: url('{% static 'images/bg_1.jpg' %}'); background-attachment:fixed;">
+      <div class="overlay"></div>
+      <div class="container">
+        <div class="row no-gutters slider-text align-items-center justify-content-center" data-scrollax-parent="true">
+          <div class="col-md-8 ftco-animate text-center">
+            <h1 class="mb-4">Secretaria Municipal de Educação</h1>
+            <p>
+                <a href="#" class="btn btn-primary px-4 py-3">Área Administrativa</a>
+                <a href="#" class="btn btn-secondary px-4 py-3">Área do Estudante</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+{% endblock %}
