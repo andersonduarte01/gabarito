@@ -4,15 +4,15 @@ Content-Transfer-Encoding: 8bit
 Subject: =?utf-8?q?Redefini=C3=A7=C3=A3o_de_senha_em_localhost=3A8000_?=
 From: webmaster@localhost
 To: tina@gmail.com
-Date: Tue, 04 Jan 2022 13:35:40 -0000
-Message-ID: <164130334029.6396.9858704771166112749@DESKTOP-594IV26>
+Date: Thu, 06 Jan 2022 15:23:07 -0000
+Message-ID: <164148258758.10204.5725478237813068045@DESKTOP-594IV26>
 
 
 Você está recebendo este email porque solicitou a redefinição da senha da sua conta em localhost:8000.
 
 Por favor, acesse a seguinte página e escolha uma nova senha:
 
-http://localhost:8000/accounts/reset/Mw/ayq2rg-a07138320559d8c0ca7f4b728f0a3227/
+http://localhost:8000/accounts/reset/Mw/aytx2j-fa91b64bf002d2b4979d76dc1691f2b3/
 
 Seu nome de usuário, caso tenha esquecido: tina@gmail.com
 

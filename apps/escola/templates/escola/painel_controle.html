@@ -1,0 +1,16 @@
+{% extends 'temp_base/adm.html' %}
+{% load static %}
+{% block titulo %}Painel de Controle{% endblock %}
+{% block imagem1 %}
+<img src="{% if escola.imagem %}
+    {{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block imagem2 %}
+<img src="{% if escola.imagem %}{{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block conteudo %}
+{% endblock %}

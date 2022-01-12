@@ -4,12 +4,6 @@ from .models import UnidadeEscolar
 # Register your models here.
 from ..core.admin import UserAdmin
 
-
-# @admin.register(UnidadeEscolar)
-# class EscolaAdmin(UserAdmin):
-#     model = UnidadeEscolar
-#     list_display = ('email', 'nome_escola')
-
 from django.contrib import admin
 from .models import UnidadeEscolar, EnderecoEscolar
 
@@ -22,13 +16,13 @@ class EnderecoInline(admin.StackedInline):
 class EscolaAdmin(UserAdmin):
     list_display = ('nome_escola', 'inep', 'email', 'cadastrado_em')
     fieldsets = (
-        ('Dados Básicos', {'fields': ['nome_escola', 'inep', 'cnpj']}),
-        ('Informações de Contato', {'fields': ['email', 'telefone']}),
+        ('Dados Básicos', {'fields': ['nome_escola', 'logo_escola', 'inep', 'cnpj']}),
+        ('Informações de Contato', {'fields': ['email', 'telefone', 'is_administrator']}),
     )
     add_fieldsets = (
         ('Informações da Escola', {
             'classes': ('wide',),
-            'fields': ('email', 'nome', 'password1', 'password2', 'nome_escola', 'logo_escola', 'inep', 'cnpj', 'telefone'),
+            'fields': ('email', 'nome', 'password1', 'password2', 'is_administrator', 'nome_escola', 'logo_escola', 'inep', 'cnpj', 'telefone'),
         }),
     )
     inlines = [EnderecoInline]

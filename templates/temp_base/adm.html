@@ -73,7 +73,7 @@
                                         </a>
                                     </li>
                                     <li class="waves-effect waves-light">
-                                        <a href="auth-normal-sign-in.html">
+                                        <a href="#">
                                             <i class="ti-layout-sidebar-left"></i> Sair
                                         </a>
                                     </li>
@@ -112,52 +112,54 @@
                                 <li class="active">
                                     <a href="#" class="waves-effect waves-dark">
                                         <span class="pcoded-micon"><i class="ti-home"></i><b>D</b></span>
-                                        <span class="pcoded-mtext">Painel de Controle</span>
+                                        <span class="pcoded-mtext">Painel</span>
                                         <span class="pcoded-mcaret"></span>
                                     </a>
                                 </li>
                             </ul>
+                            {% block painel %}
                             <div class="pcoded-navigation-label">Administrador</div>
                             <ul class="pcoded-item pcoded-left-item">
                                 <li class="pcoded-hasmenu">
                                     <a href="javascript:void(0)" class="waves-effect waves-dark">
                                         <span class="pcoded-micon"><i class="ti-layout-grid2-alt"></i><b>BC</b></span>
-                                        <span class="pcoded-mtext">Informações</span>
+                                        <span class="pcoded-mtext">Escola</span>
                                         <span class="pcoded-mcaret"></span>
                                     </a>
                                     <ul class="pcoded-submenu">
                                         <li class=" ">
-                                            <a href="{% url 'adm_escolar:atualizar_administrador' user.pk %}" class="waves-effect waves-dark">
+                                            <a href="{% url 'escola:editar_usuario' user.pk %}" class="waves-effect waves-dark">
                                                 <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-                                                <span class="pcoded-mtext">Usuário</span>
+                                                <span class="pcoded-mtext">Editar Usuário</span>
                                                 <span class="pcoded-mcaret"></span>
                                             </a>
                                         </li>
                                         <li class=" ">
-                                            <a href="{% url 'adm_escolar:atualizar_escola' user.pk %}" class="waves-effect waves-dark">
+                                            <a href="{% url 'escola:editar_escola' user.pk %}" class="waves-effect waves-dark">
                                                 <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-                                                <span class="pcoded-mtext">Escola</span>
+                                                <span class="pcoded-mtext">Editar Escola</span>
                                                 <span class="pcoded-mcaret"></span>
                                             </a>
                                         </li>
                                         <li class=" ">
-                                            <a href="{% url 'adm_escolar:atualizar_perfil' user.pk %}" class="waves-effect waves-dark">
+                                            <a href="{% url 'escola:editar_endereco' user.pk %}" class="waves-effect waves-dark">
                                                 <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-                                                <span class="pcoded-mtext">Perfil </span>
+                                                <span class="pcoded-mtext">Editar Endereço</span>
                                                 <span class="pcoded-mcaret"></span>
                                             </a>
                                         </li>
 
                                         <li class=" ">
-                                            <a href="#" class="waves-effect waves-dark">
+                                            <a href="{% url 'password_change' %}" class="waves-effect waves-dark">
                                                 <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-                                                <span class="pcoded-mtext">Senha </span>
+                                                <span class="pcoded-mtext">Editar Senha </span>
                                                 <span class="pcoded-mcaret"></span>
                                             </a>
                                         </li>
                                     </ul>
                                 </li>
                             </ul>
+                            {% endblock %}
                         </div>
                     </nav>
                     <div class="pcoded-content">
@@ -195,6 +197,23 @@
                                     <!-- Page-body start -->
                                     <div class="page-body">
                                         <div class="row">
+                                            {% for message in messages %}
+                                            <div class="col-sm-12">
+                                                <div class="card">
+                                                    <div class="card-header">
+                                                    </div>
+                                                    <div class="card-block">
+                                                        <div {% if message.tags %} class="alert alert-{{ message.tags }} alert-dismissible fade show" {% endif %}>
+                                                            {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}Important: {% endif %}
+                                                            <strong>{{message}}</strong>
+                                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                                <span aria-hidden="true">&times;</span>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
                                             {% block conteudo %}
                                             {% endblock %}
                                         </div>

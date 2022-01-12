@@ -17,6 +17,12 @@ class UnidadeEscolar(Usuario):
     def __str__(self):
         return self.nome_escola
 
+    def imagem(self):
+        if self.logo_escola:
+            return True
+        else:
+            return False
+
     class Meta:
         verbose_name = 'Escola'
         verbose_name_plural = 'Escolas'

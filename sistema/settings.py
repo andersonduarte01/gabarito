@@ -34,6 +34,10 @@ INSTALLED_APPS = [
     'apps.core',
     'apps.accounts',
     'apps.escola',
+    'apps.direcao',
+    'apps.perfil',
+    'apps.funcao',
+    'cpf_field',
 ]
 
 MIDDLEWARE = [
