@@ -63,17 +63,17 @@
                                 </a>
                                 <ul class="show-notification profile-notification">
                                     <li class="waves-effect waves-light">
-                                        <a href="#!">
+                                        <a href="{% url 'password_change' %}">
                                             <i class="ti-settings"></i> Configurações
                                         </a>
                                     </li>
                                     <li class="waves-effect waves-light">
-                                        <a href="#">
+                                        <a href="{% url 'escola:editar_escola' user.pk %}">
                                             <i class="ti-user"></i> Perfil
                                         </a>
                                     </li>
                                     <li class="waves-effect waves-light">
-                                        <a href="#">
+                                        <a href="{% url 'logout' %}">
                                             <i class="ti-layout-sidebar-left"></i> Sair
                                         </a>
                                     </li>
@@ -101,16 +101,16 @@
                                 <div class="main-menu-content">
                                     <ul>
                                         <li class="more-details">
-                                            <a href="#"><i class="ti-user"></i>Ver perfil</a>
-                                            <a href="#!"><i class="ti-settings"></i>Configurações</a>
-                                            <a href="#"><i class="ti-layout-sidebar-left"></i>Sair</a>
+                                            <a href="{% url 'escola:editar_escola' user.pk %}"><i class="ti-user"></i>Ver perfil</a>
+                                            <a href="{% url 'password_change' %}"><i class="ti-settings"></i>Configurações</a>
+                                            <a href="{% url 'logout' %}"><i class="ti-layout-sidebar-left"></i>Sair</a>
                                         </li>
                                     </ul>
                                 </div>
                             </div>
                             <ul class="pcoded-item pcoded-left-item">
                                 <li class="active">
-                                    <a href="#" class="waves-effect waves-dark">
+                                    <a href="{% url 'escola:painel_escola' %}" class="waves-effect waves-dark">
                                         <span class="pcoded-micon"><i class="ti-home"></i><b>D</b></span>
                                         <span class="pcoded-mtext">Painel</span>
                                         <span class="pcoded-mcaret"></span>
@@ -118,7 +118,7 @@
                                 </li>
                             </ul>
                             {% block painel %}
-                            <div class="pcoded-navigation-label">Administrador</div>
+                            <div class="pcoded-navigation-label">Informações da Escola</div>
                             <ul class="pcoded-item pcoded-left-item">
                                 <li class="pcoded-hasmenu">
                                     <a href="javascript:void(0)" class="waves-effect waves-dark">
@@ -181,8 +181,7 @@
                                                 <a href="#"> <i class="fa fa-home"></i> </a>
                                             </li>
                                             {% block breadcrumbs %}
-                                            <li class="breadcrumb-item"><a href="#!">Painel</a>
-                                            </li>
+                                            <li class="breadcrumb-item"><a href="{% url 'escola:painel_escola' %}">Painel</a></li>
                                             {% endblock %}
                                         </ul>
                                     </div>

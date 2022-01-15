@@ -13,6 +13,44 @@
     {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
      class="img-radius" alt="Foto_Usuario">
 {% endblock %}
+
+{% block painel%}
+{{block.super}}
+<div class="pcoded-navigation-label">Funcionários</div>
+<ul class="pcoded-item pcoded-left-item">
+    <li class="pcoded-hasmenu">
+        <a href="javascript:void(0)" class="waves-effect waves-dark">
+            <span class="pcoded-micon"><i class="ti-layout-grid2-alt"></i><b>BC</b></span>
+            <span class="pcoded-mtext">Funcionários</span>
+            <span class="pcoded-mcaret"></span>
+        </a>
+        <ul class="pcoded-submenu">
+            <li class=" ">
+                <a href="{% url 'direcao:adicionar' %}" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">Adicionar Funcionário</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+            <li class=" ">
+                <a href="{% url 'direcao:lista_direcao' %}" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">Lista de Funcionários</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+        </ul>
+    </li>
+</ul>
+{% endblock %}
+{% block tema %}
+<h5 class="m-b-10">Lista Funcionário da Direção</h5>
+<p class="m-b-0">Todos os funcionários que fazem parte da direção</p>
+{% endblock %}
+{% block breadcrumbs %}
+{{block.super}}
+<li class="breadcrumb-item"><a href="{% url 'direcao:lista_direcao' %}">Funcionários</a></li>
+{% endblock %}
 {% block conteudo %}
 <div class="col-sm-12">
 <div class="card">
@@ -27,9 +65,9 @@
                     <th>ESCOLA</th>
                     <th>NOME</th>
                     <th>FUNÇÃO</th>
-                    <th>PERFIL</th>
-                    <th>ENDEREÇO</th>
-                    <th>IS_FUNCIONARIO</th>
+                    <th>ENDERECO</th>
+                    <th>EDITAR</th>
+                    <th>EXCLUIR</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -38,9 +76,17 @@
                     <td>{{funcionario.escola}}</td>
                     <td>{{funcionario.nome}}</td>
                     <td>{{funcionario.funcao}}</td>
-                    <td>{{funcionario.perfil}}</td>
                     <td>{{funcionario.endereco}}</td>
-                    <td>{{funcionario.is_funcionario}}</td>
+                    <td>
+                        <a href="{% url 'direcao:editar_direcao' funcionario.pk %}" class="btn btn-outline-primary">
+                            <i class="fas fa-edit"></i> Editar
+                        </a>
+                    </td>
+                    <td>
+                        <a href="#" class="btn btn-outline-danger">
+                            <i class="fas fa-trash"></i> Excluir
+                        </a>
+                    </td>
 
                 </tr>
                 {% empty %}

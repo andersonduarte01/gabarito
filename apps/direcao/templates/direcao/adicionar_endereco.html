@@ -1,7 +1,7 @@
 {% extends 'temp_base/adm.html' %}
 {% load static %}
 {% load bootstrap4 %}
-{% block titulo %}Editar Endereço{% endblock %}
+{% block titulo %}Adicionar Endereço{% endblock %}
 {% block imagem1 %}
 <img src="{% if escola.imagem %}
     {{escola.logo_escola.thumbnail.url}}
@@ -14,27 +14,28 @@
      class="img-radius" alt="Foto_Usuario">
 {% endblock %}
 {% block tema %}
-<h5 class="m-b-10">Endereço da Escola</h5>
-<p class="m-b-0">Destinado a atualização do endereço da instituição</p>
+<h5 class="m-b-10">Adicionar Endereço do Funcionário</h5>
+<p class="m-b-0">Destinado a adicionar endereço dos funcionários da instituição</p>
 {% endblock %}
 {% block breadcrumbs %}
 {{block.super}}
-<li class="breadcrumb-item"><a href="#">Endereço</a></li>
+<li class="breadcrumb-item"><a href="{% url 'direcao:lista_direcao' %}">Funcionários</a></li>
+<li class="breadcrumb-item"><a href="#">Adicionar Endereço</a></li>
 {% endblock %}
 {% block conteudo %}
 <div class="col-sm-10">
     <!-- Basic Form Inputs card start -->
     <div class="card">
         <div class="card-header">
-            <h4>Atualizar endereço</h4>
+            <h4>Adicionar Endereço</h4>
         </div>
         <div class="card-block">
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 {% bootstrap_form form layout='inline'%}
                 {% buttons %}
-                <button type="submit" class="btn btn-primary"><i class="fas fa-edit"></i></i> Atualizar</button>
-                <a href="{% url 'escola:painel_escola' %}">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-edit"></i></i> Salvar</button>
+                <a href="{% url 'direcao:editar_direcao' funcionario.pk %}">
                     <button type="button" class="btn btn-danger"><i class="fas fa-undo"></i>Cancelar</button>
                 </a>
                 {% endbuttons %}
