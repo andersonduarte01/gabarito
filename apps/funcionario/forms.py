@@ -3,20 +3,21 @@ from cProfile import label
 from django import forms
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import ValidationError
+from pyexpat import model
 
 from apps import funcao
 from apps.core.models import Usuario
-from apps.direcao.models import DirecaoEscolar
+from apps.funcionario.models import Funcionario
 from apps.escola.models import UnidadeEscolar
 from apps.funcao.models import Funcao
 
 
-class UserCreationDirecao(forms.ModelForm):
+class UserCreationFuncionario(forms.ModelForm):
     password1 = forms.CharField(label='Senha', widget=forms.PasswordInput)
     password2 = forms.CharField(label='Confirmar Senha', widget=forms.PasswordInput)
 
     class Meta:
-        model = DirecaoEscolar
+        model = Funcionario
         fields = ('email', 'nome', 'funcao')
 
     def clean_password2(self):
@@ -35,5 +36,16 @@ class UserCreationDirecao(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request')
-        super(UserCreationDirecao, self).__init__(*args, **kwargs)
+        super(UserCreationFuncionario, self).__init__(*args, **kwargs)
+        self.fields['funcao'].queryset = Funcao.objects.filter(escola=self.request.user)
+
+
+class DesignarFuncaoForm(forms.ModelForm):
+    class Meta:
+        model = Funcionario
+        fields = ('funcao', )
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request')
+        super(DesignarFuncaoForm, self).__init__(*args, **kwargs)
         self.fields['funcao'].queryset = Funcao.objects.filter(escola=self.request.user)

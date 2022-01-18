@@ -34,7 +34,7 @@ INSTALLED_APPS = [
     'apps.core',
     'apps.accounts',
     'apps.escola',
-    'apps.direcao',
+    'apps.funcionario',
     'apps.perfil',
     'apps.funcao',
     'cpf_field',

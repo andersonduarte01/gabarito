@@ -32,10 +32,9 @@ class Pessoa(models.Model):
     data_nascimento = models.DateTimeField(verbose_name='Data de Nascimento', null=True, blank=True)
     cpf = CPFField('CPF', blank=True, null=True)
     telefone = models.CharField(verbose_name='Telefone', max_length=20, null=True, blank=True)
-    escola = models.ForeignKey(UnidadeEscolar, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.escola.nome
+        return self.cpf
 
     class Meta:
         verbose_name = 'Pessoa'

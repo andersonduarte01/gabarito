@@ -1,11 +1,11 @@
 from django.contrib import admin
 
 # Register your models here.
-from apps.direcao.models import DirecaoEscolar
+from apps.funcionario.models import Funcionario
 from ..core.admin import UserAdmin
 
 
-class DirecaoEscolarAdmin(UserAdmin):
+class FuncionarioAdmin(UserAdmin):
     list_display = ('escola', 'nome', 'funcao', 'email')
     list_filter = ('escola', )
     fieldsets = (
@@ -19,4 +19,4 @@ class DirecaoEscolarAdmin(UserAdmin):
     )
 
 
-admin.site.register(DirecaoEscolar, DirecaoEscolarAdmin)
+admin.site.register(Funcionario, FuncionarioAdmin)
