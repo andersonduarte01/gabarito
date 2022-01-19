@@ -1,7 +1,7 @@
 {% extends 'temp_base/adm.html' %}
 {% load static %}
 {% load bootstrap4 %}
-{% block titulo %}Editar Endereço{% endblock %}
+{% block titulo %}Adicionar Funcionário {% endblock %}
 {% block imagem1 %}
 <img src="{% if escola.imagem %}
     {{escola.logo_escola.thumbnail.url}}
@@ -32,7 +32,7 @@
                 </a>
             </li>
             <li class=" ">
-                <a href="{% url 'funcionario:lista_funcionario' %}" class="waves-effect waves-dark">
+                <a href="{% url 'funcionario:lista_funcionarios' %}" class="waves-effect waves-dark">
                     <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
                     <span class="pcoded-mtext">Lista de Funcionários</span>
                     <span class="pcoded-mcaret"></span>

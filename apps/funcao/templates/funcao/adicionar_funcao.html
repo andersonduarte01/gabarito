@@ -1,7 +1,7 @@
 {% extends 'temp_base/adm.html' %}
 {% load static %}
 {% load bootstrap4 %}
-{% block titulo %}Adicionar Endereço{% endblock %}
+{% block titulo %}Adicionar Função{% endblock %}
 {% block imagem1 %}
 <img src="{% if escola.imagem %}
     {{escola.logo_escola.thumbnail.url}}
@@ -14,8 +14,8 @@
      class="img-radius" alt="Foto_Usuario">
 {% endblock %}
 {% block tema %}
-<h5 class="m-b-10">Adicionar Endereço do Funcionário</h5>
-<p class="m-b-0">Destinado a adicionar endereço dos funcionários da instituição</p>
+<h5 class="m-b-10">Adicionar Função</h5>
+<p class="m-b-0">Destinado a adicionar função</p>
 {% endblock %}
 {% block breadcrumbs %}
 {{block.super}}
