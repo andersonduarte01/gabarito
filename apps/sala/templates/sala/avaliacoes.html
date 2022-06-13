@@ -13,32 +13,33 @@
      class="img-radius" alt="Foto_Usuario">
 {% endblock %}
 {% block tema %}
-<h5 class="m-b-10">Painel Administrativo</h5>
+<h5 class="m-b-10">Avaliação</h5>
 <p class="m-b-0">Painel destinado ao administrador da escola</p>
 {% endblock %}
 {% block breadcrumbs %}
 {{block.super}}
+<li class="breadcrumb-item"><a href="#">Avaliação</a></li>
 {% endblock %}
 {% block conteudo %}
-{% for sala in salas %}
-<div class="col-xl-4 col-md-6">
+{% for avaliacao in avaliacoes %}
+<div class="col-xl-6 col-md-6">
     <div class="card">
         <div class="card-block">
             <div class="row align-items-center">
                 <div class="col-8">
-                    <h5 class="text-c-purple">{{sala.descricao}}</h5>
-                    <h6 class="text-muted m-b-0">{{sala.ano}}° Ano - {{sala.turno}}</h6>
+                    <h5 class="text-c-purple">{{avaliacao.descricao}}</h5>
+                    <h6 class="text-muted m-b-0">{{avaliacao.ano}}° Ano</h6>
                 </div>
                 <div class="col-4 text-right">
                     <i class="fa fa-file-text-o f-28"></i>
                 </div>
             </div>
         </div>
-        <div class="card-footer bg-c-purple">
-            <a href="{% url 'salas:opcoes' sala.pk %}">
+        <div class="card-footer bg-c-blue">
+            <a href="{% url 'avaliacao:avaliar' avaliacao_id=avaliacao.id sala_id=sala.id %}">
             <div class="row align-items-center">
                 <div class="col-9">
-                    <h6 class="text-white m-b-0">Avaliações</h6>
+                    <h6 class="text-white m-b-0">Avaliacao</h6>
                 </div>
                 <div class="col-3 text-right">
                     <i class="fa fa-external-link text-white f-16"></i>
@@ -49,6 +50,7 @@
     </div>
 </div>
 {% empty %}
-<h3>Nenhuma sala cadastrada</h3>
+<p>Não há nada</p>
 {% endfor %}
+</table>
 {% endblock %}

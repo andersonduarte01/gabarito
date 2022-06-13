@@ -1,0 +1,124 @@
+{% extends 'temp_base/adm.html' %}
+{% load bootstrap4 %}
+{% load static %}
+{% block titulo %}Painel de Controle{% endblock %}
+{% block imagem1 %}
+<img src="{% if escola.imagem %}
+    {{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block imagem2 %}
+<img src="{% if escola.imagem %}{{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block tema %}
+<h5 class="m-b-10">Alunos</h5>
+<p class="m-b-0">Painel destinado ao administrador da escola</p>
+{% endblock %}
+{% block breadcrumbs %}
+{{block.super}}
+<li class="breadcrumb-item"><a href="#">Alunos</a></li>
+{% endblock %}
+{% block conteudo %}
+<div class="col-sm-12">
+  <div class="card">
+  <div class="card-block table-border-style">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+        <tr>
+          <th>NOME</th>
+          <th>EDITAR</th>
+          <th>EXCLUIR</th>
+          <th>AVALIAÇÃO</th>
+        </tr>
+        </thead>
+{% for aluno in alunos %}
+        <tbody>
+        <tr>
+          <td>{{aluno}}</td>
+          <td>
+            <a href="{% url 'aluno:editar' aluno.pk %}" class="btn btn-outline-primary btn-sm">
+              <i class="fas fa-edit"></i>Editar
+            </a>
+          </td>
+          <td>
+            <button type="button" class="btn btn-outline-danger btn-sm" data-toggle="modal" data-target="#{{aluno.id}}">
+              <i class="far fa-trash-alt"></i> Excluir
+            </button>
+
+            <!-- Modal -->
+            <div class="modal fade" id="{{aluno.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle1">Deletar {{aluno.nome}}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <h6>Tem certeza que vai excluir {{aluno.nome}}?</h6>
+                  </div>
+                  <div class="modal-footer">
+                    <form method="post" action="{% url 'aluno:deletar' aluno.pk %}">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-danger">Deletar</button>
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Sair</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <a href="{% url 'aluno:provas' aluno.pk %}" class="btn btn-outline-success btn-sm">
+              <i class="fas fa-edit"></i>Gabarito
+            </a>
+          </td>
+        </tr>
+        </tbody>
+{% empty %}
+<p>Nenhum aluno cadastrado</p>
+{% endfor %}
+      </table>
+    </div>
+  </div>
+</div>
+  <!-- Button trigger modal -->
+<button type="button" class="btn btn-primary btn-block" data-toggle="modal" data-target="#exampleModalCenter">
+  Cadastrar Aluno
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLongTitle">Adicionar Aluno</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form method="post">
+          {% csrf_token %}
+          {% bootstrap_form form %}
+      </div>
+      <div class="modal-footer">
+        {% buttons %}
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Sair</button>
+        <button type="submit" class="btn btn-primary">Cadastrar</button>
+        {% endbuttons %}
+      </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+</div>
+
+
+{% endblock %}

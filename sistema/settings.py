@@ -37,6 +37,9 @@ INSTALLED_APPS = [
     'apps.funcionario',
     'apps.perfil',
     'apps.funcao',
+    'apps.avaliacao',
+    'apps.aluno',
+    'apps.sala',
     'cpf_field',
 ]
 
@@ -132,6 +135,8 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
 
+
 # RESET DE SENHA
 EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
 EMAIL_FILE_PATH = str(BASE_DIR.joinpath('sent_emails'))
+

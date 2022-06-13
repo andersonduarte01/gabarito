@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chegou</title>
+</head>
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>Gabarito</th>
+                <th>Questao</th>
+                <th>Resposta Certa</th>
+                <th>Resposta N°</th>
+                <th>Resposta</th>
+            </tr>
+        </thead>
+        {% for r in respostas %}
+        <tbody>
+            <tr>
+                <td>{{r.gabarito}}</td>
+                <td>{{r.questao.texto}}</td>
+                <td>{{r.questao.opcao_certa}}</td>
+                <td>{{r.id}}</td>
+                <td>{{r}}</td>
+            </tr>
+        </tbody>
+        {% empty %}
+        <p>Nenhum aluno cadastrado</p>
+        {% endfor %}
+    </table>
+</body>
+</html>

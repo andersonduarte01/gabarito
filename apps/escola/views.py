@@ -8,6 +8,7 @@ from django.views.generic import TemplateView, UpdateView
 
 from .models import UnidadeEscolar, EnderecoEscolar
 from ..core.models import Usuario
+from ..sala.models import Sala
 
 
 class Painel(LoginRequiredMixin, TemplateView):
@@ -16,7 +17,9 @@ class Painel(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         escola = UnidadeEscolar.objects.get(pk=self.request.user)
+        salas = Sala.objects.filter(escola=escola)
         context['escola'] = escola
+        context['salas'] = salas
         return context
 
 

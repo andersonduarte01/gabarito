@@ -11,4 +11,7 @@ urlpatterns = [
     path('funcionario/', include('apps.funcionario.urls', namespace='funcionario')),
     path('perfil/', include('apps.perfil.urls', namespace='perfil')),
     path('funcao/', include('apps.funcao.urls', namespace='funcao')),
+    path('avaliacao/', include('apps.avaliacao.urls', namespace='avaliacao')),
+    path('salas/', include('apps.sala.urls', namespace='salas')),
+    path('aluno/', include('apps.aluno.urls', namespace='alunos')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

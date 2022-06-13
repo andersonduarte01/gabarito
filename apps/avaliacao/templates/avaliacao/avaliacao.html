@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Avaliação</title>
+</head>
+<body>
+
+    <h1>{{avaliacao}}</h1>
+    <h2>{{ano}}° Ano</h2>
+
+    {% for q in object_list %}
+    <h3>{{q.questao}}</h3>
+    <h5>{{q.opcao_um}}</h5>
+    <h5>{{q.opcao_dois}}</h5>
+    <h5>{{q.opcao_tres}}</h5>
+    <h5>{{q.opcao_quatro}}</h5>
+    <h5>{{q.opcao_certa}}</h5>
+    {% empty %}
+    <h1>Nada</h1>
+    {% endfor %}
+</body>
+</html>
