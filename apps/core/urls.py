@@ -5,5 +5,5 @@ app_name = 'core'
 
 urlpatterns = [
     path('', views.Index.as_view(), name='inicio'),
-    path('avaliacao/', views.Avaliacao.as_view(), name='avaliacao'),
+    path('template/', views.Base.as_view(), name='avaliacao'),
 ]

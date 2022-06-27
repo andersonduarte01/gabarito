@@ -1,13 +1,10 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy, reverse
-from django.views import View
 from django.views.generic import UpdateView, DeleteView, TemplateView, DetailView, ListView
 
-from .forms import DesignarSalaForm
 from ..aluno.models import Aluno
 from ..avaliacao.models import Gabarito, Resposta
-from ..core.views import Avaliacao
 
 
 class EditarAluno(LoginRequiredMixin, UpdateView):

@@ -1,12 +1,49 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 # Create your views here.
-from django.urls import reverse
+from django.contrib.messages.views import SuccessMessageMixin
+from django.urls import reverse, reverse_lazy
 from django.views.generic import ListView, TemplateView, CreateView
 
 from ..aluno.models import Aluno
 from ..avaliacao.models import Avaliacao
-from ..sala.models import Sala
+from ..escola.models import UnidadeEscolar
+from ..sala.models import Sala, Ano
+
+
+class AdicionarAno(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+    model = Ano
+    fields = ('descricao',)
+    template_name = 'sala/adicionar_ano.html'
+    success_message = 'Ano cadastrado com sucesso.'
+    success_url = reverse_lazy('escola:painel_escola')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        escola = UnidadeEscolar.objects.get(pk=self.request.user)
+        context['escola'] = escola
+        return context
+
+
+class AdicionarSala(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+    model = Sala
+    fields = ('descricao', 'turno', 'ano')
+    template_name = 'sala/adicionar_sala.html'
+    success_message = 'Sala cadastrada com sucesso.'
+    success_url = reverse_lazy('escola:painel_escola')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        escola = UnidadeEscolar.objects.get(pk=self.request.user)
+        context['escola'] = escola
+        return context
+
+    def form_valid(self, form):
+        sala = form.save(commit=False)
+        escola = UnidadeEscolar.objects.get(pk=self.request.user)
+        sala.escola = escola
+        sala.save()
+        return super().form_valid(form)
 
 
 class ListaAvaliacoes(LoginRequiredMixin, ListView):
@@ -37,9 +74,10 @@ class ListarOpcoes(LoginRequiredMixin, TemplateView):
         return context
 
 
-class ListarAlunos(LoginRequiredMixin, CreateView):
+class ListarAlunos(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Aluno
     fields = ('nome',)
+    success_message = 'Aluno cadastrado com sucesso.'
     template_name = 'sala/alunos.html'
 
     def get_context_data(self, **kwargs):

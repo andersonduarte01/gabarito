@@ -1,14 +1,8 @@
 from cProfile import label
 
 from django import forms
-from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import ValidationError
-from pyexpat import model
-
-from apps import funcao
-from apps.core.models import Usuario
 from apps.funcionario.models import Funcionario
-from apps.escola.models import UnidadeEscolar
 from apps.funcao.models import Funcao
 
 

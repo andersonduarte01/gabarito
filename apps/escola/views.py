@@ -1,6 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.shortcuts import render
 
 # Create your views here.
 from django.urls import reverse_lazy
@@ -17,7 +16,7 @@ class Painel(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         escola = UnidadeEscolar.objects.get(pk=self.request.user)
-        salas = Sala.objects.filter(escola=escola)
+        salas = Sala.objects.filter(escola=escola).order_by('ano')
         context['escola'] = escola
         context['salas'] = salas
         return context

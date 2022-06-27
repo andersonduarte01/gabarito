@@ -1,13 +1,15 @@
-from django.forms import formset_factory, modelformset_factory
-from django.http import HttpResponse, HttpResponseRedirect
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.forms import modelformset_factory
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-from django.views.generic import ListView, CreateView, FormView, UpdateView
+from django.views.generic import ListView
 
-from .correcao import criarGabarito, alinharquestoes
+from .correcao import criarGabaritos, alinharquestoes, correcao
 from .forms import RespostaForm
 from ..aluno.models import Aluno
 from ..avaliacao.models import Questao, Avaliacao, Resposta, Gabarito
+from ..escola.models import UnidadeEscolar
 from ..sala.models import Ano, Sala
 
 
@@ -29,42 +31,7 @@ class AvaliacaoView(ListView):
         return context
 
 
-# class RespostaView(CreateView):
-#     model = Resposta
-#     fields = ('resposta',)
-#     template_name = 'avaliacao/resposta.html'
-#
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#
-#
-#     def form_valid(self, form):
-#         resposta = form.save(commit=False)
-#         gabarito = Gabarito.objects.get(pk=11)
-#         questao = Questao.objects.get(pk=5)
-#         resposta.gabarito = gabarito
-#         resposta.questao = questao
-#         resposta.save()
-#         return super(RespostaView, self).form_valid(form)
-
-
-# def parametrosGabarito(request, avaliacao_id, sala_id):
-#     sala = Sala.objects.get(pk=sala_id)
-#     avaliacao = Avaliacao.objects.get(pk=avaliacao_id)
-#     criarGabarito(sala=sala, avaliacao=avaliacao)
-#     alinharquestoes(sala=sala, avaliacao=avaliacao)
-#     return render(request, 'sala/teste.html')
-
-# class ProvaUpdate(UpdateView):
-#     model = Resposta
-#
-#     def get_form_kwargs(self):
-#         kwargs = super().get_form_kwargs()
-#         kwargs['avaliacao'] = self.avaliacao_id
-#         kwargs['sala'] = self.sala_id
-#         return kwargs
-
-def responderProva(request, sala_id, avaliacao_id):
+def responderProva1(request, sala_id, avaliacao_id):
         sala = Sala.objects.get(pk=sala_id)
         avaliacao = Avaliacao.objects.get(pk=avaliacao_id)
         aluno = Aluno.objects.filter(sala=sala).first()
@@ -80,3 +47,44 @@ def responderProva(request, sala_id, avaliacao_id):
         else:
             formset = RespostasFormSet(queryset=respostas)
         return render(request, 'avaliacao/resposta.html', {'formset':formset})
+
+
+class AvaliacaoAlunos(LoginRequiredMixin, ListView):
+    model = Aluno
+    template_name = 'avaliacao/avaliacao_alunos.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        avaliacao = Avaliacao.objects.get(pk=self.kwargs['avaliacao_id'])
+        sala = Sala.objects.get(pk=self.kwargs['sala_id'])
+        criarGabaritos(avaliacao=avaliacao, sala=sala)
+        alinharquestoes(avaliacao, sala)
+        alunos = Aluno.objects.filter(sala=self.kwargs['sala_id'])
+        escola = UnidadeEscolar.objects.get(pk=self.request.user)
+        context['escola'] = escola
+        context['avaliacao'] = avaliacao
+        context['alunos'] = alunos
+        context['sala'] = sala
+        return context
+
+
+def responderProva(request, aluno_id, avaliacao_id):
+    aluno = Aluno.objects.get(pk=aluno_id)
+    avaliacao = Avaliacao.objects.get(pk=avaliacao_id)
+    gabarito = Gabarito.objects.get(aluno=aluno, avaliacao=avaliacao)
+    respostas = Resposta.objects.filter(gabarito=gabarito)
+    RespostasFormSet = modelformset_factory(Resposta, form=RespostaForm, extra=0)
+    contador = [1, 2, 3, 4]
+
+    if request.method == 'POST':
+        formset = RespostasFormSet(request.POST, request.FILES, queryset=respostas,)
+        if formset.is_valid():
+            formset.save()
+            print('correção')
+            correcao(gabarito)
+            print('corrigido')
+        return HttpResponseRedirect(reverse('escola:painel_escola'))
+    else:
+        formset = RespostasFormSet(queryset=respostas)
+        correcao(gabarito)
+    return render(request, 'avaliacao/avaliar_aluno.html', {'formset': formset, 'avaliacao': avaliacao, 'contador': contador})

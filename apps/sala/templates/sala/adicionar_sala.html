@@ -1,0 +1,73 @@
+{% extends 'temp_base/adm.html' %}
+{% load static %}
+{% load bootstrap4 %}
+{% block titulo %}Adicionar Sala {% endblock %}
+{% block imagem1 %}
+<img src="{% if escola.imagem %}
+    {{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block imagem2 %}
+<img src="{% if escola.imagem %}{{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block painel%}
+{{block.super}}
+<div class="pcoded-navigation-label">Funcionários</div>
+<ul class="pcoded-item pcoded-left-item">
+    <li class="pcoded-hasmenu">
+        <a href="javascript:void(0)" class="waves-effect waves-dark">
+            <span class="pcoded-micon"><i class="ti-layout-grid2-alt"></i><b>BC</b></span>
+            <span class="pcoded-mtext">Funcionários</span>
+            <span class="pcoded-mcaret"></span>
+        </a>
+        <ul class="pcoded-submenu">
+            <li class=" ">
+                <a href="{% url 'funcionario:adicionar_funcionario' %}" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">Adicionar Funcionário</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+            <li class=" ">
+                <a href="{% url 'funcionario:lista_funcionarios' %}" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">Lista de Funcionários</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+        </ul>
+    </li>
+</ul>
+{% endblock %}
+{% block tema %}
+<h3 class="m-b-10">Adicionar Sala</h3>
+<p class="m-b-0">Adicionar sala de aula</p>
+{% endblock %}
+{% block breadcrumbs %}
+{{block.super}}
+<li class="breadcrumb-item"><a href="{% url 'escola:painel_escola' %}">Salas</a></li>
+<li class="breadcrumb-item"><a href="#">Adicionar</a></li>
+{% endblock %}
+{% block conteudo %}
+<div class="col-sm-12">
+    <!-- Basic Form Inputs card start -->
+    <div class="card">
+        <div class="card-header">
+            <h4>Adicionar Sala</h4>
+        </div>
+        <div class="card-block">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% bootstrap_form form layout='inline'%}
+                {% buttons %}
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i>Salvar</button>
+                {% endbuttons %}
+            </form>
+        </div>
+    </div>
+    <!-- Basic Form Inputs card end -->
+</div>
+{% endblock %}

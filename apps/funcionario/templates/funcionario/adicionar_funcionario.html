@@ -15,35 +15,9 @@
 {% endblock %}
 {% block painel%}
 {{block.super}}
-<div class="pcoded-navigation-label">Funcionários</div>
-<ul class="pcoded-item pcoded-left-item">
-    <li class="pcoded-hasmenu">
-        <a href="javascript:void(0)" class="waves-effect waves-dark">
-            <span class="pcoded-micon"><i class="ti-layout-grid2-alt"></i><b>BC</b></span>
-            <span class="pcoded-mtext">Funcionários</span>
-            <span class="pcoded-mcaret"></span>
-        </a>
-        <ul class="pcoded-submenu">
-            <li class=" ">
-                <a href="{% url 'funcionario:adicionar_funcionario' %}" class="waves-effect waves-dark">
-                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-                    <span class="pcoded-mtext">Adicionar Funcionário</span>
-                    <span class="pcoded-mcaret"></span>
-                </a>
-            </li>
-            <li class=" ">
-                <a href="{% url 'funcionario:lista_funcionarios' %}" class="waves-effect waves-dark">
-                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-                    <span class="pcoded-mtext">Lista de Funcionários</span>
-                    <span class="pcoded-mcaret"></span>
-                </a>
-            </li>
-        </ul>
-    </li>
-</ul>
 {% endblock %}
 {% block tema %}
-<h5 class="m-b-10">Adicionar Funcionário da Direção</h5>
+<h5 class="m-b-10">Adicionar Funcionário</h5>
 <p class="m-b-0">Destinado a adicionar funcionários da direção da instituição</p>
 {% endblock %}
 {% block breadcrumbs %}
@@ -56,7 +30,7 @@
     <!-- Basic Form Inputs card start -->
     <div class="card">
         <div class="card-header">
-            <h4>Adicionar funcionário da direção</h4>
+            <h4>Adicionar funcionário</h4>
         </div>
         <div class="card-block">
             <form method="post" enctype="multipart/form-data">

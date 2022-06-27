@@ -29,6 +29,7 @@ RESPOSTA = [
 
 
 class Questao(models.Model):
+    numero = models.CharField(verbose_name='Número', max_length=3)
     texto = models.TextField(null=True, blank=True)
     questao = models.TextField()
     opcao_um = models.CharField(max_length=255, verbose_name='01')
@@ -39,7 +40,7 @@ class Questao(models.Model):
     avaliacao = models.ForeignKey(Avaliacao, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
-        return self.questao
+        return self.numero
 
     class Meta:
         verbose_name = 'Questão'

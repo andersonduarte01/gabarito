@@ -14,4 +14,4 @@ urlpatterns = [
     path('avaliacao/', include('apps.avaliacao.urls', namespace='avaliacao')),
     path('salas/', include('apps.sala.urls', namespace='salas')),
     path('aluno/', include('apps.aluno.urls', namespace='alunos')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]

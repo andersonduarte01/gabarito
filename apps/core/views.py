@@ -8,5 +8,5 @@ class Index(TemplateView):
     template_name = 'core/index.html'
 
 
-class Avaliacao(TemplateView):
-    template_name = 'core/avaliacao.html'
+class Base(TemplateView):
+    template_name = 'temp_base/adm.html'
