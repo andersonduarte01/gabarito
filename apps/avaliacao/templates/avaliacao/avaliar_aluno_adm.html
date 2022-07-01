@@ -1,0 +1,48 @@
+{% extends 'temp_base/adm.html' %}
+{% load bootstrap4 %}
+{% load static %}
+{% block titulo %}Gabarito{% endblock %}
+{% block imagem1_adm %}
+<img src="{% if escola.imagem %}
+    {{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block imagem2_adm %}
+<img src="{% if escola.imagem %}{{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block tema_adm %}
+<h5 class="m-b-10">Aluno</h5>
+<p class="m-b-0">Gabarito</p>
+{% endblock %}
+{% block breadcrumbs_adm %}
+{{block.super}}
+<li class="breadcrumb-item"><a href="#">Gabarito</a></li>
+{% endblock %}
+{% block conteudo_adm %}
+<div class="col-sm-12">
+    <!-- Basic table card start -->
+    <div class="card">
+        <div class="card-header">
+            <h5>Basic Table</h5>
+            <span>use class <code>table</code> inside table element</span>
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            {{ formset.management_form }}
+            {% for form in formset %}
+            <span class="label label-inverse-info-border label-lg">Questao - {{ forloop.counter }}</span>
+            {% for field in form %}
+            {{ field }}
+            {% endfor %}
+            {% endfor %}
+            <hr>
+            {% buttons %}
+            <button type="submit" class="btn btn-primary">Submit</button>
+            {% endbuttons %}
+        </form>
+    </div>
+</div>
+{% endblock %}

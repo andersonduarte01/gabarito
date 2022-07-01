@@ -32,7 +32,300 @@
     {% block estatico %}
     {% endblock %}
 </head>
+{% if user.is_authenticated and user.is_administrator %}
+<body>
+    <div id="pcoded" class="pcoded">
+        <div class="pcoded-overlay-box"></div>
+        <div class="pcoded-container navbar-wrapper">
+            <nav class="navbar header-navbar pcoded-header">
+                <div class="navbar-wrapper">
+                    <div class="navbar-logo">
+                        <a class="mobile-menu waves-effect waves-light" id="mobile-collapse" href="#!">
+                            <i class="ti-menu"></i>
+                        </a>
 
+                        <a href="#">
+                            <img class="img-fluid" src="{% static 'adm/assets/images/logo.png' %}" alt="Logo" />
+                        </a>
+                        <a class="mobile-options waves-effect waves-light">
+                            <i class="ti-more"></i>
+                        </a>
+                    </div>
+                    <div class="navbar-container container-fluid">
+                        <ul class="nav-right">
+                            <li class="user-profile header-notification">
+                                <a href="#!" class="waves-effect waves-light">
+                                    {% block imagem1_adm %}
+                                    <img src="{% static 'adm/assets/images/user.jpg' %}" class="img-radius" alt="Foto_Usuario">
+                                    {% endblock %}
+                                    <span>{{user.nome}}</span>
+                                    <i class="ti-angle-down"></i>
+                                </a>
+                                <ul class="show-notification profile-notification">
+                                    <li class="waves-effect waves-light">
+                                        <a href="{% url 'password_change' %}">
+                                            <i class="ti-settings"></i> Configurações
+                                        </a>
+                                    </li>
+                                    <li class="waves-effect waves-light">
+                                        <a href="#">
+                                            <i class="ti-user"></i> Perfil
+                                        </a>
+                                    </li>
+                                    <li class="waves-effect waves-light">
+                                        <a href="{% url 'logout' %}">
+                                            <i class="ti-layout-sidebar-left"></i> Sair
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="pcoded-main-container">
+                <div class="pcoded-wrapper">
+                    <nav class="pcoded-navbar">
+                        <div class="sidebar_toggle"><a href="#"><i class="icon-close icons"></i></a></div>
+                        <div class="pcoded-inner-navbar main-menu">
+                            <div class="">
+                                <div class="main-menu-header">
+                                    {% block imagem2_adm %}
+                                    <img class="img-80 img-radius" src="{% static 'adm/assets/images/user.jpg' %}" alt="Foto_Perfil">
+                                    {% endblock %}
+                                    <div class="user-details">
+                                        <span id="more-details">{{user.nome}}<i class="fa fa-caret-down"></i></span>
+                                    </div>
+                                </div>
+                                <div class="main-menu-content">
+                                    <ul>
+                                        <li class="more-details">
+                                            <a href="#"><i class="ti-user"></i>Perfil</a>
+                                            <a href="{% url 'password_change' %}"><i class="ti-settings"></i>Configurações</a>
+                                            <a href="{% url 'logout' %}"><i class="ti-layout-sidebar-left"></i>Sair</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <ul class="pcoded-item pcoded-left-item">
+                                <li class="active">
+                                    <a href="#" class="waves-effect waves-dark">
+                                        <span class="pcoded-micon"><i class="ti-home"></i><b>D</b></span>
+                                        <span class="pcoded-mtext">Painel</span>
+                                        <span class="pcoded-mcaret"></span>
+                                    </a>
+                                </li>
+                            </ul>
+                            {% block painel_adm %}
+                            <ul class="pcoded-item pcoded-left-item">
+                                <li class="pcoded-hasmenu">
+                                    <a href="javascript:void(0)" class="waves-effect waves-dark">
+                                        <span class="pcoded-micon"><i class="ti-layout-grid2"></i><b>BC</b></span>
+                                        <span class="pcoded-mtext">Escolas</span>
+                                        <span class="pcoded-mcaret"></span>
+                                    </a>
+                                    <ul class="pcoded-submenu">
+                                        <li class=" ">
+                                            <a href="#" class="waves-effect waves-dark">
+                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                                                <span class="pcoded-mtext">Editar Escola</span>
+                                                <span class="pcoded-mcaret"></span>
+                                            </a>
+                                        </li>
+                                        <li class=" ">
+                                            <a href="#" class="waves-effect waves-dark">
+                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                                                <span class="pcoded-mtext">Editar Endereço</span>
+                                                <span class="pcoded-mcaret"></span>
+                                            </a>
+                                        </li>
+                                        <li class=" ">
+                                            <a href="#" class="waves-effect waves-dark">
+                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                                                <span class="pcoded-mtext">Editar Login</span>
+                                                <span class="pcoded-mcaret"></span>
+                                            </a>
+                                        </li>
+                                        <li class=" ">
+                                            <a href="#" class="waves-effect waves-dark">
+                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                                                <span class="pcoded-mtext">Editar Senha </span>
+                                                <span class="pcoded-mcaret"></span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+
+                            <ul class="pcoded-item pcoded-left-item">
+                                <li class="pcoded-hasmenu">
+                                    <a href="javascript:void(0)" class="waves-effect waves-dark">
+                                        <span class="pcoded-micon"><i class="ti-briefcase"></i><b>BC</b></span>
+                                        <span class="pcoded-mtext">Relatórios</span>
+                                        <span class="pcoded-mcaret"></span>
+                                    </a>
+                                    <ul class="pcoded-submenu">
+                                        <li class=" ">
+                                            <a href="#" class="waves-effect waves-dark">
+                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                                                <span class="pcoded-mtext">Relatórios das Escolas</span>
+                                                <span class="pcoded-mcaret"></span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+
+                            <ul class="pcoded-item pcoded-left-item">
+                                <li class="pcoded-hasmenu">
+                                    <a href="javascript:void(0)" class="waves-effect waves-dark">
+                                        <span class="pcoded-micon"><i class="ti-layers-alt"></i><b>BC</b></span>
+                                        <span class="pcoded-mtext">Salas</span>
+                                        <span class="pcoded-mcaret"></span>
+                                    </a>
+                                    <ul class="pcoded-submenu">
+                                        <li class=" ">
+                                            <a href="#" class="waves-effect waves-dark">
+                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                                                <span class="pcoded-mtext">Relatório Salas</span>
+                                                <span class="pcoded-mcaret"></span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+
+                            <ul class="pcoded-item pcoded-left-item">
+                                <li class="pcoded-hasmenu">
+                                    <a href="javascript:void(0)" class="waves-effect waves-dark">
+                                        <span class="pcoded-micon"><i class="ti-user"></i><b>BC</b></span>
+                                        <span class="pcoded-mtext">Alunos</span>
+                                        <span class="pcoded-mcaret"></span>
+                                    </a>
+                                    <ul class="pcoded-submenu">
+                                        <li class=" ">
+                                            <a href="#" class="waves-effect waves-dark">
+                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                                                <span class="pcoded-mtext">Relatórios dos Alunos</span>
+                                                <span class="pcoded-mcaret"></span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+
+                            <ul class="pcoded-item pcoded-left-item">
+                                <li class="pcoded-hasmenu">
+                                    <a href="javascript:void(0)" class="waves-effect waves-dark">
+                                        <span class="pcoded-micon"><i class="ti-bookmark"></i><b>BC</b></span>
+                                        <span class="pcoded-mtext">Ano</span>
+                                        <span class="pcoded-mcaret"></span>
+                                    </a>
+                                    <ul class="pcoded-submenu">
+                                        <li class=" ">
+                                            <a href="#" class="waves-effect waves-dark">
+                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                                                <span class="pcoded-mtext">Adicionar Ano</span>
+                                                <span class="pcoded-mcaret"></span>
+                                            </a>
+                                        </li>
+                                        <li class=" ">
+                                            <a href="#" class="waves-effect waves-dark">
+                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                                                <span class="pcoded-mtext">Listar Anos</span>
+                                                <span class="pcoded-mcaret"></span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+
+                            {% endblock %}
+                        </div>
+                    </nav>
+                    <div class="pcoded-content">
+                        <!-- Page-header start -->
+                        <div class="page-header">
+                            <div class="page-block">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <div class="page-header-title">
+                                            {% block tema_adm %}
+                                            <h5 class="m-b-10">Painel Padrão</h5>
+                                            <p class="m-b-0">Bem Vindo ao painel padrão!</p>
+                                            {% endblock %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <ul class="breadcrumb">
+                                            <li class="breadcrumb-item">
+                                                <a href="#"> <i class="fa fa-home"></i> </a>
+                                            </li>
+                                            {% block breadcrumbs_adm %}
+                                            <li class="breadcrumb-item"><a href="#">Painel</a></li>
+                                            {% endblock %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Page-header end -->
+                        <div class="pcoded-inner-content">
+                            <!-- Main-body start -->
+                            <div class="main-body">
+                                <div class="page-wrapper">
+                                    <!-- Page-body start -->
+                                    <div class="page-body">
+                                        <div class="row">
+                                            {% for message in messages %}
+                                            <div class="col-sm-12">
+                                                <div {% if message.tags %} class="alert alert-{{ message.tags }} alert-dismissible fade show" {% endif %}>
+                                                    {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}Important: {% endif %}
+                                                    <strong>{{message}}</strong>
+                                                    <strong>{{message.tags}}</strong>
+                                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                            {% block conteudo_adm %}
+                                            {% endblock %}
+                                        </div>
+                                    </div>
+                                    <!-- Page-body end -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Required Jquery -->
+    <script type="text/javascript" src="{% static 'adm/assets/js/jquery/jquery.min.js' %} "></script>
+    <script type="text/javascript" src="{% static 'adm/assets/js/jquery-ui/jquery-ui.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'adm/assets/js/popper.js/popper.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'adm/assets/js/bootstrap/js/bootstrap.min.js' %}"></script>
+    <!-- waves js -->
+    <script src="{% static 'adm/assets/pages/waves/js/waves.min.js' %}"></script>
+    <!-- jquery slimscroll js -->
+    <script type="text/javascript" src="{% static 'adm/assets/js/jquery-slimscroll/jquery.slimscroll.js' %}"></script>
+
+    <!-- slimscroll js -->
+    <script src="{% static 'adm/assets/js/jquery.mCustomScrollbar.concat.min.js' %}"></script>
+
+    <!-- menu js -->
+    <script src="{% static 'adm/assets/js/pcoded.min.js' %}"></script>
+    <script src="{% static 'adm/assets/js/vertical/vertical-layout.min.js' %}"></script>
+
+    <script type="text/javascript" src="{% static 'adm/assets/js/script.js' %}"></script>
+    {% block script_adm %}
+    {% endblock %}
+</body>
+{% else %}
 <body>
     <div id="pcoded" class="pcoded">
         <div class="pcoded-overlay-box"></div>
@@ -58,7 +351,7 @@
                                     {% block imagem1 %}
                                     <img src="{% static 'adm/assets/images/user.jpg' %}" class="img-radius" alt="Foto_Usuario">
                                     {% endblock %}
-                                    <span>{{user.nome}}</span>
+                                    <span>{{escola}}
                                     <i class="ti-angle-down"></i>
                                 </a>
                                 <ul class="show-notification profile-notification">
@@ -157,6 +450,7 @@
                                     </ul>
                                 </li>
                             </ul>
+
                             <ul class="pcoded-item pcoded-left-item">
                                 <li class="pcoded-hasmenu">
                                     <a href="javascript:void(0)" class="waves-effect waves-dark">
@@ -175,31 +469,7 @@
                                     </ul>
                                 </li>
                             </ul>
-                            <ul class="pcoded-item pcoded-left-item">
-                                <li class="pcoded-hasmenu">
-                                    <a href="javascript:void(0)" class="waves-effect waves-dark">
-                                        <span class="pcoded-micon"><i class="ti-bookmark"></i><b>BC</b></span>
-                                        <span class="pcoded-mtext">Ano</span>
-                                        <span class="pcoded-mcaret"></span>
-                                    </a>
-                                    <ul class="pcoded-submenu">
-                                        <li class=" ">
-                                            <a href="{% url 'salas:adicionar_ano' %}" class="waves-effect waves-dark">
-                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-                                                <span class="pcoded-mtext">Adicionar Ano</span>
-                                                <span class="pcoded-mcaret"></span>
-                                            </a>
-                                        </li>
-                                        <li class=" ">
-                                            <a href="#" class="waves-effect waves-dark">
-                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-                                                <span class="pcoded-mtext">Listar Anos</span>
-                                                <span class="pcoded-mcaret"></span>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </li>
-                            </ul>
+
                             <ul class="pcoded-item pcoded-left-item">
                                 <li class="pcoded-hasmenu">
                                     <a href="javascript:void(0)" class="waves-effect waves-dark">
@@ -225,6 +495,7 @@
                                     </ul>
                                 </li>
                             </ul>
+
                             <ul class="pcoded-item pcoded-left-item">
                                 <li class="pcoded-hasmenu">
                                     <a href="javascript:void(0)" class="waves-effect waves-dark">
@@ -335,5 +606,5 @@
     {% block script %}
     {% endblock %}
 </body>
-
+{% endif %}
 </html>

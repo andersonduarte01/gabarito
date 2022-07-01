@@ -9,4 +9,6 @@ urlpatterns = [
     path('<int:pk>/alunos/', views.ListarAlunos.as_view(), name='alunos'),
     path('add_sala/', views.AdicionarSala.as_view(), name='adicionar_sala'),
     path('add_ano/', views.AdicionarAno.as_view(), name='adicionar_ano'),
+    #Administrador
+    path('<int:pk>/<slug:slug>/', views.ListaAvaliacoesAdm.as_view(), name='lista_avaliacoes_adm'),
 ]

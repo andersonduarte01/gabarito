@@ -62,6 +62,24 @@ class ListaAvaliacoes(LoginRequiredMixin, ListView):
         return context
 
 
+class ListaAvaliacoesAdm(LoginRequiredMixin, ListView):
+    model = Avaliacao
+    template_name = 'sala/avaliacoes_adm.html'
+    context_object_name = 'avaliacoes'
+
+    def get_queryset(self):
+        sala = Sala.objects.get(pk=self.kwargs['pk'])
+        return Avaliacao.objects.filter(ano=sala.ano)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        sala = Sala.objects.get(pk=self.kwargs['pk'])
+        escola = UnidadeEscolar.objects.get(slug=self.kwargs['slug'])
+        context['sala'] = sala
+        context['escola'] = escola
+        return context
+
+
 class ListarOpcoes(LoginRequiredMixin, TemplateView):
     model = Sala
     template_name = 'sala/opcoes.html'

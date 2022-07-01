@@ -74,7 +74,6 @@ def responderProva(request, aluno_id, avaliacao_id):
     gabarito = Gabarito.objects.get(aluno=aluno, avaliacao=avaliacao)
     respostas = Resposta.objects.filter(gabarito=gabarito)
     RespostasFormSet = modelformset_factory(Resposta, form=RespostaForm, extra=0)
-    contador = [1, 2, 3, 4]
 
     if request.method == 'POST':
         formset = RespostasFormSet(request.POST, request.FILES, queryset=respostas,)
@@ -87,4 +86,48 @@ def responderProva(request, aluno_id, avaliacao_id):
     else:
         formset = RespostasFormSet(queryset=respostas)
         correcao(gabarito)
-    return render(request, 'avaliacao/avaliar_aluno.html', {'formset': formset, 'avaliacao': avaliacao, 'contador': contador})
+    return render(request, 'avaliacao/avaliar_aluno.html', {'formset': formset, 'avaliacao': avaliacao})
+
+# Administrador
+
+class AvaliacaoAlunosAdm(LoginRequiredMixin, ListView):
+    model = Aluno
+    template_name = 'avaliacao/avaliacao_alunos_adm.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        avaliacao = Avaliacao.objects.get(pk=self.kwargs['avaliacao_id'])
+        sala = Sala.objects.get(pk=self.kwargs['sala_id'])
+        criarGabaritos(avaliacao=avaliacao, sala=sala)
+        alinharquestoes(avaliacao, sala)
+        alunos = Aluno.objects.filter(sala=self.kwargs['sala_id'])
+        escola = UnidadeEscolar.objects.get(slug=self.kwargs['slug'])
+        context['escola'] = escola
+        context['avaliacao'] = avaliacao
+        context['alunos'] = alunos
+        context['sala'] = sala
+        return context
+
+
+def responderProvaAdm(request, aluno_id, avaliacao_id, slug):
+    escola = UnidadeEscolar.objects.get(slug=slug)
+    aluno = Aluno.objects.get(pk=aluno_id)
+    sala = Sala.objects.get(pk=aluno.sala.pk)
+    avaliacao = Avaliacao.objects.get(pk=avaliacao_id)
+    gabarito = Gabarito.objects.get(aluno=aluno, avaliacao=avaliacao)
+    respostas = Resposta.objects.filter(gabarito=gabarito)
+    RespostasFormSet = modelformset_factory(Resposta, form=RespostaForm, extra=0)
+
+    if request.method == 'POST':
+        formset = RespostasFormSet(request.POST, request.FILES, queryset=respostas,)
+        if formset.is_valid():
+            formset.save()
+            correcao(gabarito)
+            url = reverse('avaliacao:avaliar_adm', kwargs={'slug': escola.slug, 'avaliacao_id': avaliacao.id, 'sala_id': sala.id })
+        return HttpResponseRedirect(url)
+
+    else:
+        formset = RespostasFormSet(queryset=respostas)
+        correcao(gabarito)
+    return render(request, 'avaliacao/avaliar_aluno_adm.html',
+                  {'formset': formset, 'avaliacao': avaliacao, 'escola': escola, 'sala': sala})

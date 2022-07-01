@@ -1,0 +1,56 @@
+{% extends 'temp_base/adm.html' %}
+{% load bootstrap4 %}
+{% load static %}
+{% block titulo %}Avaliação Alunos{% endblock %}
+{% block imagem1_adm %}
+<img src="{% if escola.imagem %}
+    {{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block imagem2_adm %}
+<img src="{% if escola.imagem %}{{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block tema_adm %}
+<h5 class="m-b-10">Alunos</h5>
+<p class="m-b-0">Painel com lista de alunos</p>
+{% endblock %}
+{% block breadcrumbs_adm %}
+{{block.super}}
+<li class="breadcrumb-item"><a href="#">Alunos</a></li>
+{% endblock %}
+{% block conteudo_adm %}
+<div class="col-sm-12">
+  <div class="card">
+  <div class="card-block table-border-style">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+        <tr>
+          <th>NOME</th>
+          <th>EDITAR</th>
+          <th>EXCLUIR</th>
+          <th>AVALIAÇÃO</th>
+        </tr>
+        </thead>
+{% for aluno in alunos %}
+        <tbody>
+        <tr>
+          <td>{{aluno}}</td>
+          <td>
+            <a href="{% url 'avaliacao:avalie_adm' aluno_id=aluno.pk avaliacao_id=avaliacao.pk  slug=escola.slug %}" class="btn btn-outline-success btn-sm">
+              <i class="fas fa-edit"></i>Realizar Prova
+            </a>
+          </td>
+        </tr>
+        </tbody>
+{% empty %}
+<p>Nenhum aluno cadastrado</p>
+{% endfor %}
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -52,3 +52,57 @@
 <h3>Nenhuma sala cadastrada</h3>
 {% endfor %}
 {% endblock %}
+
+<!-- Painel Administrador -->
+
+{% block imagem1_adm %}
+<img src="{% if escola.imagem %}
+    {{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block imagem2_adm %}
+<img src="{% if escola.imagem %}{{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block tema_adm %}
+<h5 class="m-b-10">Painel Administrativo</h5>
+<p class="m-b-0">Painel destinado ao administrador</p>
+{% endblock %}
+{% block breadcrumbs_adm %}
+{{block.super}}
+{% endblock %}
+{% block conteudo_adm %}
+{% for escolar in escolas %}
+<div class="col-xl-6 col-md-6">
+    <div class="card">
+        <div class="card-block">
+            <div class="row align-items-center">
+                <div class="col-8">
+                    <h5 class="text-c-purple">{{escolar | truncatewords:3 }}</h5>
+                    <h6 class="text-muted m-b-0">INEP - {{escolar.inep}}</h6>
+                </div>
+                <div class="col-4 text-right">
+                    <i class="fa fa-file-text-o f-28"></i>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer bg-c-purple">
+            <a href="{% url 'escola:painel_da_escola' escolar.slug %}">
+            <div class="row align-items-center">
+                <div class="col-9">
+                    <h6 class="text-white m-b-0">Entrar</h6>
+                </div>
+                <div class="col-3 text-right">
+                    <i class="fa fa-external-link text-white f-16"></i>
+                </div>
+            </div>
+            </a>
+        </div>
+    </div>
+</div>
+{% empty %}
+<h3>Nenhuma escola cadastrada</h3>
+{% endfor %}
+{% endblock %}

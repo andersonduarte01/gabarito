@@ -6,6 +6,7 @@ from ..core.models import Usuario
 
 class UnidadeEscolar(Usuario):
     nome_escola = models.CharField(verbose_name='Escola', max_length=200)
+    slug = models.SlugField(max_length=200)
     logo_escola = StdImageField(upload_to='Imagens/Logo',
                                 variations={'thumbnail': {'width': 716, 'height': 716}},
                                 null=True, blank=True,

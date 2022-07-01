@@ -15,7 +15,24 @@ class Painel(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        escola = UnidadeEscolar.objects.get(pk=self.request.user)
+        if self.request.user.is_administrator:
+            escolas = UnidadeEscolar.objects.all()
+            context['escolas'] = escolas
+            return context
+        else:
+            escola = UnidadeEscolar.objects.get(pk=self.request.user)
+            salas = Sala.objects.filter(escola=escola).order_by('ano')
+            context['escola'] = escola
+            context['salas'] = salas
+            return context
+
+
+class PainelEscola(LoginRequiredMixin, TemplateView):
+    template_name = 'escola/painel_escola.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        escola = UnidadeEscolar.objects.get(slug=self.kwargs['slug'])
         salas = Sala.objects.filter(escola=escola).order_by('ano')
         context['escola'] = escola
         context['salas'] = salas
