@@ -14,8 +14,8 @@
      class="img-radius" alt="Foto_Usuario">
 {% endblock %}
 {% block tema_adm %}
-<h5 class="m-b-10">Aluno</h5>
-<p class="m-b-0">Gabarito</p>
+<h5 class="m-b-10">{{aluno}}</h5>
+<h6 class="m-b-0">{{sala.ano}}° Ano</h6>
 {% endblock %}
 {% block breadcrumbs_adm %}
 {{block.super}}
@@ -26,8 +26,8 @@
     <!-- Basic table card start -->
     <div class="card">
         <div class="card-header">
-            <h5>Basic Table</h5>
-            <span>use class <code>table</code> inside table element</span>
+            <h5>{{avaliacao}}</h5>
+            <span>{{sala}} - {{sala.turno}}</span>
         </div>
         <form method="post">
             {% csrf_token %}
@@ -40,7 +40,7 @@
             {% endfor %}
             <hr>
             {% buttons %}
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i>Salvar</button>
             {% endbuttons %}
         </form>
     </div>

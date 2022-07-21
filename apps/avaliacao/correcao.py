@@ -1,8 +1,9 @@
 from django.db import transaction
 
 from .models import *
+from ..aluno.models import Aluno
 
-@transaction.atomic
+
 def criarGabaritos(avaliacao, sala):
     alunos = Aluno.objects.filter(sala=sala)
     gabaritos = []
@@ -17,13 +18,11 @@ def criarGabaritos(avaliacao, sala):
     Gabarito.objects.bulk_create(gabaritos)
 
 
-@transaction.atomic
 def correcao(gabarito):
     respostas = Resposta.objects.filter(gabarito=gabarito)
-
+    gabarito.qtd_acertos = 0
     for r in respostas:
         q = Questao.objects.get(pk=r.questao.id)
-        gabarito.qtd_acertos = 0
         if(r.resposta == q.opcao_certa):
             r.acertou = True
             gabarito.qtd_acertos += 1
@@ -34,7 +33,8 @@ def correcao(gabarito):
             r.save()
 
 
-@transaction.atomic
+
+
 def alinharquestoes(avaliacao, sala):
     alunos = Aluno.objects.filter(sala=sala)
     questoes = Questao.objects.filter(avaliacao=avaliacao).order_by('numero')

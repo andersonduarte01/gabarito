@@ -30,9 +30,9 @@
         <thead>
         <tr>
           <th>NOME</th>
-          <th>EDITAR</th>
-          <th>EXCLUIR</th>
-          <th>AVALIAÇÃO</th>
+          <th>GABARITO</th>
+          <th>ACERTOS</th>
+          <th>CONCLUIDO</th>
         </tr>
         </thead>
 {% for aluno in alunos %}
@@ -44,6 +44,16 @@
               <i class="fas fa-edit"></i>Realizar Prova
             </a>
           </td>
+            {% for nota in avaliacao.gabarito_set.all %}
+                {% if aluno.id == nota.aluno.id %}
+                <td>{{nota.qtd_acertos}}</td>
+                <td class="success">{% if nota.concluido %} <i class="fa fa-check" aria-hidden="true">{% else %}Pendente{% endif %}</i></td>
+                {% endif %}
+                {% empty %}
+                Sem nota
+                {% endfor %}
+
+
         </tr>
         </tbody>
 {% empty %}

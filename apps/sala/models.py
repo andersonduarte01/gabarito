@@ -21,7 +21,7 @@ ANO = [
 TURNO = [
     ('selecione', 'Selecione o turno'),
     ('Manhã', 'Manhã'),
-    ('Tarde', 'Trade'),
+    ('Tarde', 'Tarde'),
     ('Integral', 'Tempo Integral'),
 ]
 

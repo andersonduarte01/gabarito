@@ -162,17 +162,19 @@
                                 <li class="pcoded-hasmenu">
                                     <a href="javascript:void(0)" class="waves-effect waves-dark">
                                         <span class="pcoded-micon"><i class="ti-briefcase"></i><b>BC</b></span>
-                                        <span class="pcoded-mtext">Relatórios</span>
+                                        <span class="pcoded-mtext">Relatório</span>
                                         <span class="pcoded-mcaret"></span>
                                     </a>
                                     <ul class="pcoded-submenu">
+                                        {% block relatorios %}
                                         <li class=" ">
                                             <a href="#" class="waves-effect waves-dark">
                                                 <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-                                                <span class="pcoded-mtext">Relatórios das Escolas</span>
+                                                <span class="pcoded-mtext">Todas as Escolas</span>
                                                 <span class="pcoded-mcaret"></span>
                                             </a>
                                         </li>
+                                        {% endblock %}
                                     </ul>
                                 </li>
                             </ul>
@@ -564,7 +566,6 @@
                                                 <div {% if message.tags %} class="alert alert-{{ message.tags }} alert-dismissible fade show" {% endif %}>
                                                     {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}Important: {% endif %}
                                                     <strong>{{message}}</strong>
-                                                    <strong>{{message.tags}}</strong>
                                                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                                                         <span aria-hidden="true">&times;</span>
                                                     </button>

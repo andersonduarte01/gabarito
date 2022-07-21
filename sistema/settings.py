@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'apps.avaliacao',
     'apps.aluno',
     'apps.sala',
+    'apps.relatorios',
     'cpf_field',
 ]
 
@@ -79,12 +80,8 @@ WSGI_APPLICATION = 'sistema.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'system',
-        'USER': 'root',
-        'PASSWORD': 'sosa1808',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 

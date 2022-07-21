@@ -19,6 +19,15 @@
 {% block breadcrumbs_adm %}
 {{block.super}}
 {% endblock %}
+{% block relatorios %}
+<li class=" ">
+    <a href="{% url 'relatorios:relatorio_escola' escola.slug %}" class="waves-effect waves-dark">
+        <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+        <span class="pcoded-mtext">Escola</span>
+        <span class="pcoded-mcaret"></span>
+    </a>
+</li>
+{% endblock %}
 {% block conteudo_adm %}
 {% for sala in salas %}
 <div class="col-xl-4 col-md-6">

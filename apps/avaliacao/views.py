@@ -123,11 +123,14 @@ def responderProvaAdm(request, aluno_id, avaliacao_id, slug):
         if formset.is_valid():
             formset.save()
             correcao(gabarito)
-            url = reverse('avaliacao:avaliar_adm', kwargs={'slug': escola.slug, 'avaliacao_id': avaliacao.id, 'sala_id': sala.id })
+            gabarito.concluido = True
+            gabarito.save()
+            url = reverse('avaliacao:avaliar_adm', kwargs={'slug': escola.slug,
+                                                           'avaliacao_id': avaliacao.id, 'sala_id': sala.id })
         return HttpResponseRedirect(url)
 
     else:
         formset = RespostasFormSet(queryset=respostas)
         correcao(gabarito)
     return render(request, 'avaliacao/avaliar_aluno_adm.html',
-                  {'formset': formset, 'avaliacao': avaliacao, 'escola': escola, 'sala': sala})
+                  {'formset': formset, 'avaliacao': avaliacao, 'escola': escola, 'sala': sala, 'aluno': aluno})
