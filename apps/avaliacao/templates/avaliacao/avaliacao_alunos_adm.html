@@ -21,6 +21,15 @@
 {{block.super}}
 <li class="breadcrumb-item"><a href="#">Alunos</a></li>
 {% endblock %}
+{% block relatorios %}
+<li class=" ">
+    <a href="{% url 'relatorios:relatorio_sala' escola.slug sala.pk %}" class="waves-effect waves-dark">
+        <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+        <span class="pcoded-mtext">Sala</span>
+        <span class="pcoded-mcaret"></span>
+    </a>
+</li>
+{% endblock %}
 {% block conteudo_adm %}
 <div class="col-sm-12">
   <div class="card">
@@ -33,6 +42,7 @@
           <th>GABARITO</th>
           <th>ACERTOS</th>
           <th>CONCLUIDO</th>
+          <th>RELATÓRIO</th>
         </tr>
         </thead>
 {% for aluno in alunos %}
@@ -46,8 +56,18 @@
           </td>
             {% for nota in avaliacao.gabarito_set.all %}
                 {% if aluno.id == nota.aluno.id %}
-                <td>{{nota.qtd_acertos}}</td>
-                <td class="success">{% if nota.concluido %} <i class="fa fa-check" aria-hidden="true">{% else %}Pendente{% endif %}</i></td>
+                <td>
+                    {{nota.qtd_acertos}}
+                </td>
+                <td class="success">{% if nota.concluido %} <i class="fa fa-check" aria-hidden="true">
+                    {% else %}Pendente{% endif %}</i>
+                </td>
+                <td>
+                    <a href="{% url 'relatorios:relatorio_aluno' pk=aluno.pk avaliacao_id=avaliacao.pk  slug=escola.slug %}"
+                       class="btn btn-outline-info btn-sm">
+                      <i class="fa fa-file-text-o"></i>Gerar Relatório
+                    </a>
+                </td>
                 {% endif %}
                 {% empty %}
                 Sem nota

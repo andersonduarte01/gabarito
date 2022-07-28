@@ -27,35 +27,15 @@ tr:nth-child(even) {
 <img src="https://tm.ibxk.com.br/2019/01/10/10161922807101.jpg?ims=1120x420" alt="Flowers in Chania" >
 </header>
 <section>
-<h1 style="text-align: center; font-size: 22px;" >Sabino Vieira Cavalcante</h1>
-  <h1 style="text-align:center; font-size: 18px;">5° ano - Manhã - Sala 05</h1>
-  <h1>Tiago Rodrigues</h1>
-  
-    <h1>Questão - 01</h1>
-    <h1>Texto 01</h1>
-  <h2>3 = 3 ? True</h2>
+<h1 style="text-align: center; font-size: 22px;" >{{data}}</h1>
+  <h1 style="text-align:center; font-size: 18px;">{{ gabarito.aluno.sala.ano }}° ano - {{gabarito.aluno.sala.turno}} - {{ gabarito.aluno.sala }}</h1>
+  <h1>{{gabarito.aluno}}</h1>
+  {% for resposta in gabarito.resposta_set.all %}
+    <h1>Questão - {{resposta.questao}}</h1>
+    <h1>{{resposta.questao.texto}}</h1>
+  <h2>{{resposta.questao.opcao_certa}} = {{resposta}} ? {{resposta.acertou}}</h2>
   <hr>
-  
-    <h1>Questão - 02</h1>
-    <h1>Testo 02</h1>
-  <h2>1 = 1 ? True</h2>
-  <hr>
-  
-    <h1>Questão - 03</h1>
-    <h1>Texto 03</h1>
-  <h2>4 = 4 ? True</h2>
-  <hr>
-  
-    <h1>Questão - 04</h1>
-    <h1>Texto 04</h1>
-  <h2>4 = 1 ? False</h2>
-  <hr>
-  
-    <h1>Questão - 05</h1>
-    <h1>Texto 05</h1>
-  <h2>3 = 2 ? False</h2>
-  <hr>
-  
+  {% endfor %}
 
 <!--<table>-->
 <!--  <tr>-->

@@ -2,8 +2,8 @@ from enum import unique
 
 from django.db import models
 
-from apps.aluno.models import Aluno
-from apps.sala.models import Ano
+from ..aluno.models import Aluno
+from ..sala.models import Ano
 
 
 class Avaliacao(models.Model):

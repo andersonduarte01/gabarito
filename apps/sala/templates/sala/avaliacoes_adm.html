@@ -20,6 +20,15 @@
 {{block.super}}
 <li class="breadcrumb-item"><a href="#">Avaliações</a></li>
 {% endblock %}
+{% block relatorios %}
+<li class=" ">
+    <a href="{% url 'relatorios:relatorio_sala' escola.slug sala.pk %}" class="waves-effect waves-dark">
+        <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+        <span class="pcoded-mtext">Sala</span>
+        <span class="pcoded-mcaret"></span>
+    </a>
+</li>
+{% endblock %}
 {% block conteudo_adm %}
 {% for avaliacao in avaliacoes %}
 <div class="col-xl-6 col-md-6">
