@@ -13,8 +13,8 @@
      class="img-radius" alt="Foto_Usuario">
 {% endblock %}
 {% block tema %}
-<h5 class="m-b-10">Painel Administrativo</h5>
-<p class="m-b-0">Painel destinado ao administrador da escola</p>
+<h5 class="m-b-10">{{escola}}</h5>
+<p class="m-b-0">Painel administrativo</p>
 {% endblock %}
 {% block breadcrumbs %}
 {{block.super}}
@@ -67,8 +67,8 @@
      class="img-radius" alt="Foto_Usuario">
 {% endblock %}
 {% block tema_adm %}
-<h5 class="m-b-10">Painel Administrativo</h5>
-<p class="m-b-0">Painel destinado ao administrador</p>
+<h5 class="m-b-10">{{user.nome}}</h5>
+<p class="m-b-0">Admin das escolas</p>
 {% endblock %}
 {% block breadcrumbs_adm %}
 {{block.super}}

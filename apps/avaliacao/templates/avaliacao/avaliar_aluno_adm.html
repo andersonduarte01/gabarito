@@ -14,8 +14,8 @@
      class="img-radius" alt="Foto_Usuario">
 {% endblock %}
 {% block tema_adm %}
-<h5 class="m-b-10">{{aluno}}</h5>
-<h6 class="m-b-0">{{sala.ano}}° Ano</h6>
+<h3 class="m-b-10">{{sala}} - {{sala.ano}}ºAno - {{sala.turno}}</h3>
+<h4 class="m-b-10">{{avaliacao}}</h4>
 {% endblock %}
 {% block breadcrumbs_adm %}
 {{block.super}}
@@ -26,8 +26,8 @@
     <!-- Basic table card start -->
     <div class="card">
         <div class="card-header">
-            <h5>{{avaliacao}}</h5>
-            <span>{{sala}} - {{sala.turno}}</span>
+            <h4>{{aluno}}</h4>
+            <span>{{avaliacao}}</span>
         </div>
         <form method="post">
             {% csrf_token %}

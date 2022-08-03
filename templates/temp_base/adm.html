@@ -44,7 +44,7 @@
                             <i class="ti-menu"></i>
                         </a>
 
-                        <a href="#">
+                        <a href="{% url 'escola:painel_escola' %}">
                             <img class="img-fluid" src="{% static 'adm/assets/images/logo.png' %}" alt="Logo" />
                         </a>
                         <a class="mobile-options waves-effect waves-light">
@@ -110,7 +110,7 @@
                             </div>
                             <ul class="pcoded-item pcoded-left-item">
                                 <li class="active">
-                                    <a href="#" class="waves-effect waves-dark">
+                                    <a href="{% url 'escola:painel_escola' %}" class="waves-effect waves-dark">
                                         <span class="pcoded-micon"><i class="ti-home"></i><b>D</b></span>
                                         <span class="pcoded-mtext">Painel</span>
                                         <span class="pcoded-mcaret"></span>
@@ -118,45 +118,6 @@
                                 </li>
                             </ul>
                             {% block painel_adm %}
-                            <ul class="pcoded-item pcoded-left-item">
-                                <li class="pcoded-hasmenu">
-                                    <a href="javascript:void(0)" class="waves-effect waves-dark">
-                                        <span class="pcoded-micon"><i class="ti-layout-grid2"></i><b>BC</b></span>
-                                        <span class="pcoded-mtext">Escolas</span>
-                                        <span class="pcoded-mcaret"></span>
-                                    </a>
-                                    <ul class="pcoded-submenu">
-                                        <li class=" ">
-                                            <a href="#" class="waves-effect waves-dark">
-                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-                                                <span class="pcoded-mtext">Editar Escola</span>
-                                                <span class="pcoded-mcaret"></span>
-                                            </a>
-                                        </li>
-                                        <li class=" ">
-                                            <a href="#" class="waves-effect waves-dark">
-                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-                                                <span class="pcoded-mtext">Editar Endereço</span>
-                                                <span class="pcoded-mcaret"></span>
-                                            </a>
-                                        </li>
-                                        <li class=" ">
-                                            <a href="#" class="waves-effect waves-dark">
-                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-                                                <span class="pcoded-mtext">Editar Login</span>
-                                                <span class="pcoded-mcaret"></span>
-                                            </a>
-                                        </li>
-                                        <li class=" ">
-                                            <a href="#" class="waves-effect waves-dark">
-                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-                                                <span class="pcoded-mtext">Editar Senha </span>
-                                                <span class="pcoded-mcaret"></span>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </li>
-                            </ul>
 
                             <ul class="pcoded-item pcoded-left-item">
                                 <li class="pcoded-hasmenu">
@@ -179,69 +140,6 @@
                                 </li>
                             </ul>
 
-                            <ul class="pcoded-item pcoded-left-item">
-                                <li class="pcoded-hasmenu">
-                                    <a href="javascript:void(0)" class="waves-effect waves-dark">
-                                        <span class="pcoded-micon"><i class="ti-layers-alt"></i><b>BC</b></span>
-                                        <span class="pcoded-mtext">Salas</span>
-                                        <span class="pcoded-mcaret"></span>
-                                    </a>
-                                    <ul class="pcoded-submenu">
-                                        <li class=" ">
-                                            <a href="#" class="waves-effect waves-dark">
-                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-                                                <span class="pcoded-mtext">Relatório Salas</span>
-                                                <span class="pcoded-mcaret"></span>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </li>
-                            </ul>
-
-                            <ul class="pcoded-item pcoded-left-item">
-                                <li class="pcoded-hasmenu">
-                                    <a href="javascript:void(0)" class="waves-effect waves-dark">
-                                        <span class="pcoded-micon"><i class="ti-user"></i><b>BC</b></span>
-                                        <span class="pcoded-mtext">Alunos</span>
-                                        <span class="pcoded-mcaret"></span>
-                                    </a>
-                                    <ul class="pcoded-submenu">
-                                        <li class=" ">
-                                            <a href="#" class="waves-effect waves-dark">
-                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-                                                <span class="pcoded-mtext">Relatórios dos Alunos</span>
-                                                <span class="pcoded-mcaret"></span>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </li>
-                            </ul>
-
-                            <ul class="pcoded-item pcoded-left-item">
-                                <li class="pcoded-hasmenu">
-                                    <a href="javascript:void(0)" class="waves-effect waves-dark">
-                                        <span class="pcoded-micon"><i class="ti-bookmark"></i><b>BC</b></span>
-                                        <span class="pcoded-mtext">Ano</span>
-                                        <span class="pcoded-mcaret"></span>
-                                    </a>
-                                    <ul class="pcoded-submenu">
-                                        <li class=" ">
-                                            <a href="#" class="waves-effect waves-dark">
-                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-                                                <span class="pcoded-mtext">Adicionar Ano</span>
-                                                <span class="pcoded-mcaret"></span>
-                                            </a>
-                                        </li>
-                                        <li class=" ">
-                                            <a href="#" class="waves-effect waves-dark">
-                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-                                                <span class="pcoded-mtext">Listar Anos</span>
-                                                <span class="pcoded-mcaret"></span>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </li>
-                            </ul>
 
                             {% endblock %}
                         </div>
@@ -339,7 +237,7 @@
                             <i class="ti-menu"></i>
                         </a>
 
-                        <a href="#">
+                        <a href="{% url 'escola:painel_escola' %}">
                             <img class="img-fluid" src="{% static 'adm/assets/images/logo.png' %}" alt="Logo" />
                         </a>
                         <a class="mobile-options waves-effect waves-light">
@@ -353,7 +251,7 @@
                                     {% block imagem1 %}
                                     <img src="{% static 'adm/assets/images/user.jpg' %}" class="img-radius" alt="Foto_Usuario">
                                     {% endblock %}
-                                    <span>{{escola}}
+                                    <span>{{escola}}</span>
                                     <i class="ti-angle-down"></i>
                                 </a>
                                 <ul class="show-notification profile-notification">
@@ -468,29 +366,10 @@
                                                 <span class="pcoded-mcaret"></span>
                                             </a>
                                         </li>
-                                    </ul>
-                                </li>
-                            </ul>
-
-                            <ul class="pcoded-item pcoded-left-item">
-                                <li class="pcoded-hasmenu">
-                                    <a href="javascript:void(0)" class="waves-effect waves-dark">
-                                        <span class="pcoded-micon"><i class="ti-user"></i><b>BC</b></span>
-                                        <span class="pcoded-mtext">Funcionários</span>
-                                        <span class="pcoded-mcaret"></span>
-                                    </a>
-                                    <ul class="pcoded-submenu">
                                         <li class=" ">
-                                            <a href="{% url 'funcionario:adicionar_funcionario' %}" class="waves-effect waves-dark">
+                                            <a href="#" class="waves-effect waves-dark">
                                                 <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-                                                <span class="pcoded-mtext">Adicionar Funcionário</span>
-                                                <span class="pcoded-mcaret"></span>
-                                            </a>
-                                        </li>
-                                        <li class=" ">
-                                            <a href="{% url 'funcionario:lista_funcionarios' %}" class="waves-effect waves-dark">
-                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-                                                <span class="pcoded-mtext">Lista de Funcionários</span>
+                                                <span class="pcoded-mtext">Editar Salas</span>
                                                 <span class="pcoded-mcaret"></span>
                                             </a>
                                         </li>
@@ -498,31 +377,57 @@
                                 </li>
                             </ul>
 
-                            <ul class="pcoded-item pcoded-left-item">
-                                <li class="pcoded-hasmenu">
-                                    <a href="javascript:void(0)" class="waves-effect waves-dark">
-                                        <span class="pcoded-micon"><i class="ti-briefcase"></i><b>BC</b></span>
-                                        <span class="pcoded-mtext">Funções</span>
-                                        <span class="pcoded-mcaret"></span>
-                                    </a>
-                                    <ul class="pcoded-submenu">
-                                        <li class=" ">
-                                            <a href="{% url 'funcao:adicionar_funcao' %}" class="waves-effect waves-dark">
-                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-                                                <span class="pcoded-mtext">Adicionar Função</span>
-                                                <span class="pcoded-mcaret"></span>
-                                            </a>
-                                        </li>
-                                        <li class=" ">
-                                            <a href="{% url 'funcao:lista_funcoes' %}" class="waves-effect waves-dark">
-                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-                                                <span class="pcoded-mtext">Lista de Funções</span>
-                                                <span class="pcoded-mcaret"></span>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </li>
-                            </ul>
+<!--                            <ul class="pcoded-item pcoded-left-item">-->
+<!--                                <li class="pcoded-hasmenu">-->
+<!--                                    <a href="javascript:void(0)" class="waves-effect waves-dark">-->
+<!--                                        <span class="pcoded-micon"><i class="ti-user"></i><b>BC</b></span>-->
+<!--                                        <span class="pcoded-mtext">Funcionários</span>-->
+<!--                                        <span class="pcoded-mcaret"></span>-->
+<!--                                    </a>-->
+<!--                                    <ul class="pcoded-submenu">-->
+<!--                                        <li class=" ">-->
+<!--                                            <a href="{% url 'funcionario:adicionar_funcionario' %}" class="waves-effect waves-dark">-->
+<!--                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>-->
+<!--                                                <span class="pcoded-mtext">Adicionar Funcionário</span>-->
+<!--                                                <span class="pcoded-mcaret"></span>-->
+<!--                                            </a>-->
+<!--                                        </li>-->
+<!--                                        <li class=" ">-->
+<!--                                            <a href="{% url 'funcionario:lista_funcionarios' %}" class="waves-effect waves-dark">-->
+<!--                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>-->
+<!--                                                <span class="pcoded-mtext">Lista de Funcionários</span>-->
+<!--                                                <span class="pcoded-mcaret"></span>-->
+<!--                                            </a>-->
+<!--                                        </li>-->
+<!--                                    </ul>-->
+<!--                                </li>-->
+<!--                            </ul>-->
+
+<!--                            <ul class="pcoded-item pcoded-left-item">-->
+<!--                                <li class="pcoded-hasmenu">-->
+<!--                                    <a href="javascript:void(0)" class="waves-effect waves-dark">-->
+<!--                                        <span class="pcoded-micon"><i class="ti-briefcase"></i><b>BC</b></span>-->
+<!--                                        <span class="pcoded-mtext">Funções</span>-->
+<!--                                        <span class="pcoded-mcaret"></span>-->
+<!--                                    </a>-->
+<!--                                    <ul class="pcoded-submenu">-->
+<!--                                        <li class=" ">-->
+<!--                                            <a href="{% url 'funcao:adicionar_funcao' %}" class="waves-effect waves-dark">-->
+<!--                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>-->
+<!--                                                <span class="pcoded-mtext">Adicionar Função</span>-->
+<!--                                                <span class="pcoded-mcaret"></span>-->
+<!--                                            </a>-->
+<!--                                        </li>-->
+<!--                                        <li class=" ">-->
+<!--                                            <a href="{% url 'funcao:lista_funcoes' %}" class="waves-effect waves-dark">-->
+<!--                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>-->
+<!--                                                <span class="pcoded-mtext">Lista de Funções</span>-->
+<!--                                                <span class="pcoded-mcaret"></span>-->
+<!--                                            </a>-->
+<!--                                        </li>-->
+<!--                                    </ul>-->
+<!--                                </li>-->
+<!--                            </ul>-->
 
                             {% endblock %}
                         </div>

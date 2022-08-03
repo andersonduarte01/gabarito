@@ -80,8 +80,12 @@ WSGI_APPLICATION = 'sistema.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'system',
+        'USER': 'root',
+        'PASSWORD': 'sosa1808',
+        'HOST': 'localhost',
+        'PORT': '3306',
     }
 }
 
@@ -131,7 +135,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'core.Usuario'
 
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/escola/'
 LOGOUT_REDIRECT_URL = '/'
 
 

@@ -55,7 +55,7 @@ class RelatorioEscola(View):
         salas = Sala.objects.filter(escola=data).order_by('ano')
 
         open('templates/temp.html', "w", encoding='UTF-8').write(render_to_string
-                                                                 ('relatorios/relatorio.html', {'data': data, 'salas': salas }))
+                                                                 ('relatorios/relatorio.html', {'data': data, 'salas': salas}))
 
         # Converting the HTML template into a PDF file
         pdf = html_to_pdf2('temp.html')
@@ -79,11 +79,27 @@ class RelatorioSala(View):
         return HttpResponse(pdf, content_type='application/pdf')
 
 
-class RelatorioAluno(View):
+class RelatorioAvaliacao(View):
     def get(self, request, *args, **kwargs):
         data = get_object_or_404(UnidadeEscolar, slug=self.kwargs['slug'])
+        sala = get_object_or_404(Sala, pk=self.kwargs['id'])
         avaliacao = get_object_or_404(Avaliacao, pk=self.kwargs['avaliacao_id'])
-        aluno = get_object_or_404(Aluno, pk=self.kwargs['pk'])
+
+        open('templates/temp.html', "w", encoding='UTF-8').write(render_to_string
+                                                                 ('relatorios/relatorio_avaliacao.html', {'data': data, 'sala': sala, 'avaliacao': avaliacao}))
+
+        # Converting the HTML template into a PDF file
+        pdf = html_to_pdf2('temp.html')
+
+        # rendering the template
+        return HttpResponse(pdf, content_type='application/pdf')
+
+
+class RelatorioAluno(View):
+    def get(self, request, *args, **kwargs):
+        avaliacao = get_object_or_404(Avaliacao, pk=self.kwargs['avaliacao_aluno'])
+        aluno = get_object_or_404(Aluno, pk=self.kwargs['aluno'])
+        data = get_object_or_404(UnidadeEscolar, slug=self.kwargs['slug'])
         gabarito = get_object_or_404(Gabarito, avaliacao=avaliacao, aluno=aluno)
 
         open('templates/temp.html', "w", encoding='UTF-8').write(render_to_string

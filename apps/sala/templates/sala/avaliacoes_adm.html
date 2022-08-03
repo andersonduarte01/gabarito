@@ -1,6 +1,6 @@
 {% extends 'temp_base/adm.html' %}
 {% load static %}
-{% block titulo %}Avaliações{% endblock %}
+{% block titulo %}Lista de Avaliações{% endblock %}
 {% block imagem1_adm %}
 <img src="{% if escola.imagem %}
     {{escola.logo_escola.thumbnail.url}}
@@ -13,8 +13,8 @@
      class="img-radius" alt="Foto_Usuario">
 {% endblock %}
 {% block tema_adm %}
-<h5 class="m-b-10">Avaliações</h5>
-<p class="m-b-0">Painel destinado ao administrador</p>
+<h3 class="m-b-10">{{sala}} - {{sala.ano}}ºAno - {{sala.turno}}</h3>
+<p class="m-b-0">Avaliações</p>
 {% endblock %}
 {% block breadcrumbs_adm %}
 {{block.super}}

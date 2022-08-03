@@ -14,8 +14,8 @@
      class="img-radius" alt="Foto_Usuario">
 {% endblock %}
 {% block tema_adm %}
-<h5 class="m-b-10">Alunos</h5>
-<p class="m-b-0">Painel com lista de alunos</p>
+<h3 class="m-b-10">{{sala}} - {{sala.ano}}ºAno - {{sala.turno}}</h3>
+<h5 class="m-b-10">{{avaliacao}}</h5>
 {% endblock %}
 {% block breadcrumbs_adm %}
 {{block.super}}
@@ -23,9 +23,9 @@
 {% endblock %}
 {% block relatorios %}
 <li class=" ">
-    <a href="{% url 'relatorios:relatorio_sala' escola.slug sala.pk %}" class="waves-effect waves-dark">
+    <a href="{% url 'relatorios:relatorio_avaliacao' id=sala.pk avaliacao_id=avaliacao.pk  slug=escola.slug %}" class="waves-effect waves-dark">
         <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-        <span class="pcoded-mtext">Sala</span>
+        <span class="pcoded-mtext">Avaliação</span>
         <span class="pcoded-mcaret"></span>
     </a>
 </li>
@@ -51,7 +51,7 @@
           <td>{{aluno}}</td>
           <td>
             <a href="{% url 'avaliacao:avalie_adm' aluno_id=aluno.pk avaliacao_id=avaliacao.pk  slug=escola.slug %}" class="btn btn-outline-success btn-sm">
-              <i class="fas fa-edit"></i>Realizar Prova
+              <i class="fas fa-edit"></i>Avaliação
             </a>
           </td>
             {% for nota in avaliacao.gabarito_set.all %}
@@ -63,7 +63,7 @@
                     {% else %}Pendente{% endif %}</i>
                 </td>
                 <td>
-                    <a href="{% url 'relatorios:relatorio_aluno' pk=aluno.pk avaliacao_id=avaliacao.pk  slug=escola.slug %}"
+                    <a href="{% url 'relatorios:relatorio_aluno' aluno=aluno.pk avaliacao_aluno=avaliacao.pk  slug=escola.slug %}"
                        class="btn btn-outline-info btn-sm">
                       <i class="fa fa-file-text-o"></i>Gerar Relatório
                     </a>

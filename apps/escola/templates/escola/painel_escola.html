@@ -13,10 +13,45 @@
      class="img-radius" alt="Foto_Usuario">
 {% endblock %}
 {% block tema_adm %}
-<h5 class="m-b-10">Painel Administrativo</h5>
-<p class="m-b-0">Painel destinado ao administrador da escola</p>
+<h5 class="m-b-10">{{escola}}</h5>
+<p class="m-b-0">Painel</p>
 {% endblock %}
 {% block breadcrumbs_adm %}
+{{block.super}}
+{% endblock %}
+{% block painel_adm%}
+<ul class="pcoded-item pcoded-left-item">
+    <li class="pcoded-hasmenu">
+        <a href="javascript:void(0)" class="waves-effect waves-dark">
+            <span class="pcoded-micon"><i class="ti-layout-grid2"></i><b>BC</b></span>
+            <span class="pcoded-mtext">Informações Escola</span>
+            <span class="pcoded-mcaret"></span>
+        </a>
+        <ul class="pcoded-submenu">
+            <li class=" ">
+                <a href="#" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">Editar Escola</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+            <li class=" ">
+                <a href="#" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">Editar Endereço</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+            <li class=" ">
+                <a href="#" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">Editar Login</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+        </ul>
+    </li>
+</ul>
 {{block.super}}
 {% endblock %}
 {% block relatorios %}
@@ -27,6 +62,7 @@
         <span class="pcoded-mcaret"></span>
     </a>
 </li>
+
 {% endblock %}
 {% block conteudo_adm %}
 {% for sala in salas %}
@@ -45,14 +81,14 @@
         </div>
         <div class="card-footer bg-c-purple">
             <a href="{% url 'salas:lista_avaliacoes_adm' sala.pk escola.slug %}">
-            <div class="row align-items-center">
-                <div class="col-9">
-                    <h6 class="text-white m-b-0">Avaliações</h6>
+                <div class="row align-items-center">
+                    <div class="col-9">
+                        <h6 class="text-white m-b-0">Avaliações</h6>
+                    </div>
+                    <div class="col-3 text-right">
+                        <i class="fa fa-external-link text-white f-16"></i>
+                    </div>
                 </div>
-                <div class="col-3 text-right">
-                    <i class="fa fa-external-link text-white f-16"></i>
-                </div>
-            </div>
             </a>
         </div>
     </div>

@@ -9,7 +9,11 @@
           <div class="col-md-8 ftco-animate text-center">
             <h1 class="mb-4">Secretaria Municipal de Educação</h1>
             <p>
+                {% if user.is_authenticated %}
+                <a href="{% url 'escola:painel_escola' %}" class="btn btn-primary px-4 py-3">Área Administrativa</a>
+                {% else %}
                 <a href="{% url 'login' %}" class="btn btn-primary px-4 py-3">Área Administrativa</a>
+                {% endif %}
                 <a href="#" class="btn btn-secondary px-4 py-3">Área do Estudante</a>
             </p>
           </div>

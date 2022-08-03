@@ -88,7 +88,9 @@ class ListarOpcoes(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         sala = Sala.objects.get(pk=self.kwargs['pk'])
+        escola = UnidadeEscolar.objects.get(pk=sala.escola.pk)
         context['sala'] = sala
+        context['escola'] = escola
         return context
 
 
@@ -102,8 +104,10 @@ class ListarAlunos(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         context = super().get_context_data(**kwargs)
         sala = Sala.objects.get(pk=self.kwargs['pk'])
         alunos = Aluno.objects.filter(sala=sala).order_by('nome')
+        escola = UnidadeEscolar.objects.get(pk=sala.escola.pk)
         context['sala'] = sala
         context['alunos'] = alunos
+        context['escola'] = escola
         return context
 
     def form_valid(self, form):
