@@ -23,33 +23,42 @@ tr:nth-child(even) {
 </style>
 </head>
 <body>
-<header>
-<img src="https://tm.ibxk.com.br/2019/01/10/10161922807101.jpg?ims=1120x420" alt="Flowers in Chania" >
-</header>
 <section>
 <h1 style="text-align: center; font-size: 22px;" >{{data}}</h1>
   <h1 style="text-align:center; font-size: 18px;">{{ gabarito.aluno.sala.ano }}° ano - {{gabarito.aluno.sala.turno}} - {{ gabarito.aluno.sala }}</h1>
-  <h1>{{gabarito.aluno}}</h1>
+  <h1 style="text-align:center; font-size: 15px;">{{ gabarito.avaliacao }}</h1>
+  <table>
+  <tr>
+    <th colspan="2" style="text-align:center; font-size: 15px;">{{gabarito.aluno}}</th>
+  </tr>
+  <tr>
+    <th colspan="2" style="font-size: 12px;">Acertos: {{gabarito.qtd_acertos}}</th>
+  </tr>
+  <tr>
+    <th style="font-size: 12px;">Questão</th>
+    <th style="font-size: 12px;">Correta?</th>
+  </tr>
   {% for resposta in gabarito.resposta_set.all %}
-    <h1>Questão - {{resposta.questao}}</h1>
-    <h1>{{resposta.questao.texto}}</h1>
-  <h2>{{resposta.questao.opcao_certa}} = {{resposta}} ? {{resposta.acertou}}</h2>
-  <hr>
+    <tr>
+    <td>{{resposta.questao}}</td>
+    <td>{% if resposta.acertou %} S{% else %}N{% endif %}</i></td>
+  </tr>
   {% endfor %}
+  </table>
 
 <!--<table>-->
 <!--  <tr>-->
 <!--    <th colspan="2">Nome</th>-->
-<!--  </tr>-->
+<!--  <e/tr>-->
 <!--  <tr>-->
-<!--    <th>Materia</th>-->
-<!--    <th>Acertos</th>-->
+<!--    <th>Questão</th>-->
+<!--    <th>Acerto</th>-->
 <!--  </tr>-->
 <!--  <tr>-->
 <!--    <td>Alfreds Futterkiste</td>-->
 <!--    <td>Maria Anders</td>-->
 <!--  </tr>-->
-<!--</table>-->
+<!--</tabl>-->
 
 </section>
 </body>
