@@ -1,0 +1,88 @@
+{% extends 'temp_base/adm.html' %}
+{% load static %}
+{% block titulo %}Lista de Salas{% endblock %}
+{% block imagem1 %}
+<img src="{% if escola.imagem %}
+    {{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block imagem2 %}
+<img src="{% if escola.imagem %}{{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block tema %}
+<h3 class="m-b-10"></h3>
+<p class="m-b-0">salas</p>
+{% endblock %}
+{% block breadcrumbs_adm %}
+{{block.super}}
+<li class="breadcrumb-item"><a href="#">salas</a></li>
+{% endblock %}
+{% block conteudo %}
+<div class="col-sm-12">
+  <div class="card">
+  <div class="card-block table-border-style">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+        <tr>
+          <th>SALA</th>
+          <th>ANO</th>
+          <th>TURNO</th>
+          <th>EDITAR</th>
+          <th>EXCLUIR</th>
+        </tr>
+        </thead>
+{% for sala in salas %}
+        <tbody>
+        <tr>
+          <td>{{sala}}</td>
+          <td>{{sala.ano}}º</td>
+          <td>{{sala.turno}}</td>
+          <td>
+            <a href="{% url 'salas:edit_sala' sala.pk %}" class="btn btn-outline-primary btn-sm">
+              <i class="fas fa-edit"></i>Editar
+            </a>
+          </td>
+          <td>
+            <button type="button" class="btn btn-outline-danger btn-sm" data-toggle="modal" data-target="#{{sala.id}}">
+              <i class="far fa-trash-alt"></i> Excluir
+            </button>
+
+            <!-- Modal -->
+            <div class="modal fade" id="{{sala.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle1">Deletar {{sala}}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <h6>Tem certeza que vai excluir {{sala}}?</h6>
+                  </div>
+                  <div class="modal-footer">
+                    <form method="post" action="{% url 'salas:deletar_sala' sala.pk %}">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-danger">Deletar</button>
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Sair</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        </tbody>
+{% empty %}
+<p>Nenhuma sala cadastrada</p>
+{% endfor %}
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+{% endblock %}

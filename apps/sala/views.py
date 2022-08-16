@@ -3,7 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 # Create your views here.
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse, reverse_lazy
-from django.views.generic import ListView, TemplateView, CreateView
+from django.views.generic import ListView, TemplateView, CreateView, UpdateView, DeleteView
 
 from ..aluno.models import Aluno
 from ..avaliacao.models import Avaliacao
@@ -44,6 +44,42 @@ class AdicionarSala(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         sala.escola = escola
         sala.save()
         return super().form_valid(form)
+
+
+class ListaSalas(LoginRequiredMixin, ListView):
+    model = Sala
+    template_name = 'sala/salas.html'
+    context_object_name = 'salas'
+
+    def get_queryset(self):
+        escola = UnidadeEscolar.objects.get(pk=self.request.user)
+        return Sala.objects.filter(escola=escola)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        escola = UnidadeEscolar.objects.get(pk=self.request.user)
+        context['escola'] = escola
+        return context
+
+
+class EditarSala(LoginRequiredMixin, UpdateView):
+    model = Sala
+    fields = ('descricao', 'turno', 'ano')
+    template_name = 'sala/editar_sala.html'
+
+    def get_success_url(self):
+        return reverse('salas:salas')
+
+
+class DeletarSala(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
+    model = Sala
+    success_message = 'sala removida com sucesso!'
+
+    def get_object(self, queryset=None):
+        return Sala.objects.get(pk=self.kwargs['pk'])
+
+    def get_success_url(self):
+        return reverse('salas:salas')
 
 
 class ListaAvaliacoes(LoginRequiredMixin, ListView):

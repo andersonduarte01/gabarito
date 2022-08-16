@@ -70,7 +70,7 @@
                   <div class="modal-footer">
                     <form method="post" action="{% url 'aluno:deletar' aluno.pk %}">
                       {% csrf_token %}
-                      <button type="submit" class="btn btn-danger">Deletar</button>
+                      <button type="submit" class="btn btn-danger"><i class="far fa-trash-alt"></i>Deletar</button>
                       <button type="button" class="btn btn-secondary" data-dismiss="modal">Sair</button>
                     </form>
                   </div>
@@ -106,7 +106,7 @@
       <div class="modal-footer">
         {% buttons %}
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Sair</button>
-        <button type="submit" class="btn btn-primary">Cadastrar</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i>Cadastrar</button>
         {% endbuttons %}
       </div>
       </form>
