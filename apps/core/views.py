@@ -14,7 +14,25 @@ class Index(TemplateView):
         return context
 
 
+class Contato(TemplateView):
+    template_name = 'core/contate_nos.html'
 
 
-class Base(TemplateView):
-    template_name = 'temp_base/adm.html'
+class Sobre(TemplateView):
+    template_name = 'core/sobre.html'
+
+
+class Noticias(TemplateView):
+    template_name = 'core/noticias.html'
+
+
+class Eventos(TemplateView):
+    template_name = 'core/eventos.html'
+
+
+class Biblioteca(TemplateView):
+    template_name = 'core/biblioteca.html'
+
+
+class Cursos(TemplateView):
+    template_name = 'core/cursos.html'

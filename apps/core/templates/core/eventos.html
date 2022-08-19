@@ -1,0 +1,15 @@
+{% extends 'temp_base/site.html' %}
+{% block titulo %}Eventos{% endblock %}
+{% load static %}
+{% block conteudo %}
+    <div class="hero-wrap hero-wrap-2" style="background-image: url('{% static 'images/bg_01.jpg' %}'); background-attachment:fixed;">
+      <div class="overlay"></div>
+      <div class="container">
+        <div class="row no-gutters slider-text align-items-center justify-content-center" data-scrollax-parent="true">
+          <div class="col-md-8 ftco-animate text-center">
+            <h1 class="mb-4">Eventos</h1>
+          </div>
+        </div>
+      </div>
+    </div>
+{% endblock %}

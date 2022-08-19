@@ -33,7 +33,7 @@
 
   <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-light ftco-navbar-light" id="ftco-navbar">
     <div class="container">
-      <a class="navbar-brand" href="#">
+      <a class="navbar-brand" href="{% url 'core:inicio' %}">
         <img src="{% static 'images/logo.png' %}" width="128" height="48" alt="">
       </a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav"
@@ -43,13 +43,13 @@
 
       <div class="collapse navbar-collapse" id="ftco-nav">
         <ul class="navbar-nav ml-auto">
-          <li class="nav-item active"><a href="#" class="nav-link">Início</a></li>
-          <li class="nav-item"><a href="#" class="nav-link">Notícias</a></li>
-          <li class="nav-item"><a href="#" class="nav-link">Eventos</a></li>
-          <li class="nav-item"><a href="#" class="nav-link">Sobre</a></li>
-          <li class="nav-item"><a href="#" class="nav-link">Cursos</a></li>
-          <li class="nav-item"><a href="#" class="nav-link">Biblioteca</a></li>
-          <li class="nav-item"><a href="#" class="nav-link">Contato</a></li>
+          <li class="nav-item active"><a href="{% url 'core:inicio' %}" class="nav-link">Início</a></li>
+          <li class="nav-item"><a href="{% url 'core:noticias' %}" class="nav-link">Notícias</a></li>
+          <li class="nav-item"><a href="{% url 'core:eventos' %}" class="nav-link">Eventos</a></li>
+          <li class="nav-item"><a href="{% url 'core:sobre' %}" class="nav-link">Sobre</a></li>
+          <li class="nav-item"><a href="{% url 'core:cursos' %}" class="nav-link">Cursos</a></li>
+          <li class="nav-item"><a href="{% url 'core:biblioteca' %}" class="nav-link">Biblioteca</a></li>
+          <li class="nav-item"><a href="{% url 'core:contato' %}" class="nav-link">Contato</a></li>
         </ul>
       </div>
     </div>
@@ -113,7 +113,7 @@
           </div>
           <div class="col-md-3">
             <div class="ftco-footer-widget mb-4">
-            	<h2 class="ftco-heading-2">Have a Questions?</h2>
+            	<h2 class="ftco-heading-2">Alguma pergunta?</h2>
             	<div class="block-23 mb-3">
 	              <ul>
 	                <li><span class="icon icon-map-marker"></span><span class="text">Rua Fortunato Silva, SN, Centro, Pedra Branca/CE</span></li>
