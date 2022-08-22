@@ -2,6 +2,7 @@ from pathlib import Path
 import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 from django.conf.global_settings import STATIC_ROOT, MEDIA_URL, AUTH_USER_MODEL, LOGIN_REDIRECT_URL, LOGIN_URL
+from django.core.mail.backends import smtp
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -147,6 +148,11 @@ LOGOUT_REDIRECT_URL = '/'
 
 
 # RESET DE SENHA
-EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
-EMAIL_FILE_PATH = str(BASE_DIR.joinpath('sent_emails'))
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_PORT = 25
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.office365.com'
+EMAIL_HOST_USER = 'san29081987@hotmail.com'
+DEFAULT_FROM_EMAIL = 'san29081987@hotmail.com'
+EMAIL_HOST_PASSWORD = '18671041anderson'
