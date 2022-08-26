@@ -40,8 +40,10 @@ INSTALLED_APPS = [
     'apps.avaliacao',
     'apps.aluno',
     'apps.sala',
+    'apps.blog',
     'apps.relatorios',
     'cpf_field',
+    'tinymce',
 ]
 
 MIDDLEWARE = [
@@ -144,9 +146,10 @@ AUTH_USER_MODEL = 'core.Usuario'
 LOGIN_REDIRECT_URL = '/escola/'
 LOGOUT_REDIRECT_URL = '/'
 
-
+#TINYMCE_JS_URL = os.path.join(STATIC_URL, 'tinymce/tinymce.min.js')
+TINYMCE_JS_URL = 'https://cdn.tiny.cloud/1/no-api-key/tinymce/5/tinymce.min.js'
+TINYMCE_COMPRESSOR = False
 
 # RESET DE SENHA
 EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
 EMAIL_FILE_PATH = str(BASE_DIR.joinpath('sent_emails'))
-

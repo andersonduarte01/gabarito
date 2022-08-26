@@ -1,0 +1,42 @@
+{% extends 'temp_base/site.html' %}
+{% block titulo %}Notícias{% endblock %}
+{% load static %}
+{% block conteudo %}
+<div class="container">
+    <hr>
+    <div class="row d-flex">
+        {% for noticia in noticias %}
+        <div class="col-md-4 d-flex ftco-animate">
+            <div class="blog-entry align-self-stretch">
+                <a href="{% url 'blog:noticia'  noticia.slug %}" class="block-20" style="background-image: url('{{noticia.imagem.url}}');">
+                </a>
+                <div class="text p-4 d-block">
+                    <div class="meta mb-3">
+                        <div><a href="#">{{noticia.data_atualizacao}}</a></div>
+                        <div><a href="#">{{noticia.autor}}</a></div>
+                    </div>
+                    <h3 class="heading mt-3"><a href="{% url 'blog:noticia'  noticia.slug %}">{{noticia.titulo}}</a></h3>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <h3>Vazio</h3>
+        {% endfor %}
+    </div>
+    <div class="row mt-5">
+        <div class="col text-center">
+            <div class="block-27">
+                <ul>
+                    <li><a href="#">&lt;</a></li>
+                    <li class="active"><span>1</span></li>
+                    <li><a href="#">2</a></li>
+                    <li><a href="#">3</a></li>
+                    <li><a href="#">4</a></li>
+                    <li><a href="#">5</a></li>
+                    <li><a href="#">&gt;</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

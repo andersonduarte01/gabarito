@@ -1,0 +1,45 @@
+{% extends 'temp_base/site.html' %}
+{% block titulo %}Notícia{% endblock %}
+{% load static %}
+{% block conteudo %}
+      <div class="container">
+        <div class="row">
+          <div class="col-md-8 ftco-animate">
+            <img src="{{noticia.imagem.url}}" alt="" class="img-fluid">
+            <hr>
+            <h2 class="mb-3">{{noticia}}</h2>
+            {{noticia.conteudo|safe}}
+          </div> <!-- .col-md-8 -->
+          <div class="col-md-4 sidebar ftco-animate">
+            <div class="sidebar-box ftco-animate">
+              <h3>Categorias</h3>
+              <div class="tagcloud">
+                {% for categoria in temas %}
+                <a href="#" class="tag-cloud-link">{{categoria}}</a>
+                {% empty %}
+                <a href="#" class="tag-cloud-link">vazio</a>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="sidebar-box ftco-animate">
+              <h3>Notícias Recentes</h3>
+              {% for noticia1 in recentes %}
+              <div class="block-21 mb-4 d-flex">
+                <a class="blog-img mr-4" style="background-image: url({{noticia1.imagem.url}});"></a>
+                <div class="text">
+                  <h3 class="heading"><a href="#">{{ noticia1.titulo }}</a></h3>
+                  <div class="meta">
+                    <div><a href="#"><span class="icon-calendar"></span> {{noticia1.data}}</a></div>
+                    <div><a href="#"><span class="icon-person"></span> {{noticia1.autor}}</a></div>
+                  </div>
+                </div>
+              </div>
+              {% empty %}
+              <p>Vazio</p>
+              {% endfor %}
+            </div>
+        </div>
+      </div>
+      </div>
+{% endblock %}

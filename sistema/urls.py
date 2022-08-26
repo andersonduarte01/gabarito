@@ -15,4 +15,6 @@ urlpatterns = [
     path('salas/', include('apps.sala.urls', namespace='salas')),
     path('aluno/', include('apps.aluno.urls', namespace='alunos')),
     path('relatorio/', include('apps.relatorios.urls', namespace='relatorios')),
+    path('blog/', include('apps.blog.urls', namespace='blog')),
+    path('tinymce/', include('tinymce.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
