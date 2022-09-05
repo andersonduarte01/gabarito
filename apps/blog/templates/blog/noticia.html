@@ -2,10 +2,6 @@
 {% block titulo %}Notícia{% endblock %}
 {% load static %}
 {% load social_share %}
-{% block estatico %}
-<meta property="og:title"         content="{{noticia}}" />
-<meta property="og:image"         content="{{noticia.imagem.url}}" />
-{% endblock %}
 {% block conteudo %}
 
       <div class="container">
@@ -15,7 +11,7 @@
             <hr>
             <div class="row">
               <div class="col-md-1">
-                {% post_to_facebook object_or_url "" %}
+                {% post_to_facebook 'blog:noticia noticia.slug' "" %}
               </div>
               <div class="col-md-1">
                 {% post_to_whatsapp object_or_url "" %}
