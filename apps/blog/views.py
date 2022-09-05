@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse
 from unidecode import unidecode
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 
@@ -19,6 +20,9 @@ class Noticia(LoginRequiredMixin, DetailView):
     model = Blog
     template_name = 'blog/noticia.html'
     context_object_name = 'noticia'
+
+    def get_absolute_url(self):
+        return reverse('blog:noticia', kwargs={'slug': self.slug})
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
