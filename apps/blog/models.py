@@ -1,5 +1,3 @@
-from turtle import mode
-
 from django.db import models
 from ckeditor.fields import RichTextField
 
@@ -32,7 +30,6 @@ class Blog(models.Model):
     def __str__(self):
         return self.titulo
 
-    class Meta:
         verbose_name = 'Noticia'
         verbose_name_plural = 'Noticias'
 
