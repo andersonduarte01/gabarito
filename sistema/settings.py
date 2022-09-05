@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'apps.blog',
     'apps.relatorios',
     'cpf_field',
-    'tinymce',
+    'ckeditor',
+    'django_social_share'
 ]
 
 MIDDLEWARE = [
@@ -136,7 +137,7 @@ STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
+CKEDITOR_UPLOAD_PATH = "media/Noticias"
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
@@ -145,10 +146,6 @@ AUTH_USER_MODEL = 'core.Usuario'
 
 LOGIN_REDIRECT_URL = '/escola/'
 LOGOUT_REDIRECT_URL = '/'
-
-#TINYMCE_JS_URL = os.path.join(STATIC_URL, 'tinymce/tinymce.min.js')
-TINYMCE_JS_URL = 'https://cdn.tiny.cloud/1/no-api-key/tinymce/5/tinymce.min.js'
-TINYMCE_COMPRESSOR = False
 
 # RESET DE SENHA
 EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"

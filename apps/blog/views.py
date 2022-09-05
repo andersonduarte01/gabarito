@@ -1,7 +1,5 @@
-from django.shortcuts import render
+from django.contrib.auth.mixins import LoginRequiredMixin
 from unidecode import unidecode
-# Create your views here.
-from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 
 from ..blog.models import Blog, Categoria
@@ -17,7 +15,7 @@ class Noticias(ListView):
         return Blog.objects.filter().order_by('-data')
 
 
-class Noticia(DetailView):
+class Noticia(LoginRequiredMixin, DetailView):
     model = Blog
     template_name = 'blog/noticia.html'
     context_object_name = 'noticia'
@@ -32,7 +30,7 @@ class Noticia(DetailView):
         return context
 
 
-class AddNoticia(CreateView):
+class AddNoticia(LoginRequiredMixin, CreateView):
     model = Blog
     fields = ('titulo', 'imagem', 'conteudo', 'categoria')
     template_name = 'blog/add_noticia.html'
@@ -51,7 +49,7 @@ class AddNoticia(CreateView):
         return super().form_valid(form)
 
 
-class EditNoticia(UpdateView):
+class EditNoticia(LoginRequiredMixin, UpdateView):
     model = Blog
     fields = ('titulo', 'imagem', 'conteudo', 'categoria')
     template_name = 'blog/add_noticia.html'

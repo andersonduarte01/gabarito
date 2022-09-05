@@ -1,5 +1,7 @@
+from turtle import mode
+
 from django.db import models
-from tinymce.models import HTMLField
+from ckeditor.fields import RichTextField
 
 # Create your models here.
 from ..escola.models import UnidadeEscolar
@@ -22,7 +24,7 @@ class Blog(models.Model):
     imagem = models.ImageField(upload_to='Imagens/Noticias', null=True, blank=True)
     autor = models.ForeignKey(UnidadeEscolar, verbose_name='Autor', on_delete=models.CASCADE)
     slug = models.SlugField(max_length=200)
-    conteudo = HTMLField()
+    conteudo = RichTextField()
     data = models.DateField(auto_now_add=True)
     data_atualizacao = models.DateField(auto_now=True)
     categoria = models.ForeignKey(Categoria, verbose_name='Categoria', on_delete=models.DO_NOTHING)

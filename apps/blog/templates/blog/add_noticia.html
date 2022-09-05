@@ -8,6 +8,7 @@
     <hr>
     <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
+    {{ form.media }}
     {% bootstrap_form form layout='inline'%}
     {% buttons %}
     <button type="submit" class="btn btn-primary"><i class="fas fa-edit"></i></i> Salvar</button>
