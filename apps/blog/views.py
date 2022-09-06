@@ -17,7 +17,7 @@ class Noticias(ListView):
         return Blog.objects.filter().order_by('-data')
 
 
-class Noticia(LoginRequiredMixin, DetailView):
+class Noticia(DetailView):
     model = Blog
     template_name = 'blog/noticia.html'
     context_object_name = 'noticia'
