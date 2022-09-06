@@ -12,7 +12,7 @@
 {% block conteudo %}
       <div class="container">
         <div id="fb-root"></div>
-<script async defer crossorigin="anonymous"
+        <script async defer crossorigin="anonymous"
         src="https://connect.facebook.net/pt_BR/sdk.js#xfbml=1&version=v14.0&appId=2624277097784962&autoLogAppEvents=1"
         nonce="n4ZzO278"></script>
         <div class="row">
@@ -20,19 +20,33 @@
             <img src="{{noticia.imagem.url}}" alt="" class="img-fluid">
             <hr>
             <div class="row">
-              <div class="col-md-1">
+              <div class="col-md-2">
                 <div class="fb-share-button" data-href="https://smepedrabranca.com.br/blog/{{noticia.slug}}/"
-                     data-layout="button" data-size="small">
+                     data-layout="button" data-size="large">
                   <a target="_blank"
                      href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fsmepedrabranca.com.br%2Fblog%2Flampadas-de-nicola-tesla%2F&amp;src=sdkpreparse"
-                     class="fb-xfbml-parse-ignore">Compartilhar</a></div>
+                     class="fb-xfbml-parse-ignore">Compartilhar</a>
                 </div>
               </div>
-              <div class="col-md-1">
+              <div class="col-md-3">
+                <button type="button" style="background-color: #4CAF50;
+                                            border: none;
+                                            color: white;
+                                            padding-left: 10px;
+                                            padding-right: 10px;
+                                            padding-top: 2px;
+                                            text-align: center;
+                                            text-decoration: none;
+                                            display: inline-block;
+                                            font-size: 14px;
+                                            margin: 0px 2px;
+                                            cursor: pointer;
+                                            font-family: Helvetica, Arial, sans-serif;
+                                            border-radius: 5px;">
                 {% post_to_whatsapp object_or_url "" %}
+                </button>
               </div>
             </div>
-
             <hr>
             <h2 class="mb-3">{{noticia}}</h2>
             {{noticia.conteudo|safe}}
