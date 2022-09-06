@@ -2,6 +2,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse
 from unidecode import unidecode
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
+from django_social_share.templatetags import social_share
 
 from ..blog.models import Blog, Categoria
 from ..escola.models import UnidadeEscolar
