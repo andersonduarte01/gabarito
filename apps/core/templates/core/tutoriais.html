@@ -1,0 +1,23 @@
+{% extends 'temp_base/site.html' %}
+{% block titulo %}Tutoriais{% endblock %}
+{% load static %}
+{% block conteudo %}
+<div class="jumbotron jumbotron-fluid" style="background-image: linear-gradient(to right, rgba(106,0,255,0.4) 0%, rgba(255,217,0,0.7) 100%), url('{% static 'images/bg_01.jpg' %}'); background-attachment:fixed;">
+  <div class="container">
+    <h1 class="mb-4 text-white text-center">Tutoriais</h1>
+  </div>
+</div>
+<div class="container">
+<div class="row">
+  <div class="card">
+ <iframe width="560" height="315" src="https://www.youtube.com/embed/jXAtPcMZbQ0"
+         title="YouTube video player" frameborder="0"
+         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+         allowfullscreen></iframe>
+  <div class="card-body">
+    <h5 class="card-title">Como adicioanar Sala</h5>
+  </div>
+</div>
+</div>
+</div>
+{% endblock %}

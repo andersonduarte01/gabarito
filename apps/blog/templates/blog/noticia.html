@@ -20,7 +20,7 @@
             <img src="{{noticia.imagem.url}}" alt="" class="img-fluid">
             <hr>
             <div class="row">
-              <div class="col-md-2">
+              <div class="col-md-2 col-3">
                 <div class="fb-share-button" data-href="https://smepedrabranca.com.br/blog/{{noticia.slug}}/"
                      data-layout="button" data-size="large">
                   <a target="_blank"
@@ -28,7 +28,7 @@
                      class="fb-xfbml-parse-ignore">Compartilhar</a>
                 </div>
               </div>
-              <div class="col-md-3">
+              <div class="col-md-3 col-4">
                 <button type="button" style="background-color: #4CAF50;
                                             border: none;
                                             color: white;
@@ -67,9 +67,9 @@
               <h3>Notícias Recentes</h3>
               {% for noticia1 in recentes %}
               <div class="block-21 mb-4 d-flex">
-                <a class="blog-img mr-4" style="background-image: url({{noticia1.imagem.url}});"></a>
+                <a href="{% url 'blog:noticia' noticia1.slug %}" class="blog-img mr-4" style="background-image: url({{noticia1.imagem.url}});"></a>
                 <div class="text">
-                  <h3 class="heading"><a href="#">{{ noticia1.titulo }}</a></h3>
+                  <h3 class="heading"><a href="{% url 'blog:noticia' noticia1.slug %}">{{ noticia1.titulo }}</a></h3>
                   <div class="meta">
                     <div><a href="#"><span class="icon-calendar"></span> {{noticia1.data}}</a></div>
                     <div><a href="#"><span class="icon-person"></span> {{noticia1.autor}}</a></div>

@@ -27,7 +27,7 @@ class Noticias(TemplateView):
 
 
 class Eventos(TemplateView):
-    template_name = 'core/eventos.html'
+    template_name = 'core/tutoriais.html'
 
 
 class Biblioteca(TemplateView):
