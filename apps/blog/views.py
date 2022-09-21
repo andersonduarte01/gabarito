@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator
 from django.urls import reverse
 from unidecode import unidecode
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
