@@ -38,6 +38,10 @@ class Sala(models.Model):
     escola = models.ForeignKey(UnidadeEscolar, on_delete=models.CASCADE)
     turno = models.CharField(max_length=30, choices=TURNO, default='selecione')
     ano = models.ForeignKey(Ano, on_delete=models.DO_NOTHING, null=True, blank=True)
+    total_alunos = models.IntegerField(verbose_name='Total Alunos', default=0)
 
     def __str__(self):
         return self.descricao
+
+
+

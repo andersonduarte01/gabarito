@@ -1,7 +1,7 @@
 {% extends 'temp_base/adm.html' %}
 {% load static %}
 {% load bootstrap4 %}
-{% block titulo %}Adicionar Função{% endblock %}
+{% block titulo %}Frequência{% endblock %}
 {% block imagem1 %}
 <img src="{% if escola.imagem %}
     {{escola.logo_escola.thumbnail.url}}
@@ -13,31 +13,31 @@
     {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
      class="img-radius" alt="Foto_Usuario">
 {% endblock %}
+{% block painel%}
+{{block.super}}
+{% endblock %}
 {% block tema %}
-<h5 class="m-b-10">Adicionar Função</h5>
-<p class="m-b-0">Destinado a adicionar função</p>
+<h3 class="m-b-10">{{sala}}</h3>
+<p class="m-b-0">{{data}}</p>
 {% endblock %}
 {% block breadcrumbs %}
 {{block.super}}
-<li class="breadcrumb-item"><a href="{% url 'funcao:adicionar_funcao' %}">Funcões</a></li>
-<li class="breadcrumb-item"><a href="#">Adicionar Função</a></li>
+<li class="breadcrumb-item"><a href="{% url 'escola:painel_escola' %}">Salas</a></li>
+<li class="breadcrumb-item"><a href="#">Adicionar</a></li>
 {% endblock %}
 {% block conteudo %}
-<div class="col-sm-10">
+<div class="col-sm-12">
     <!-- Basic Form Inputs card start -->
     <div class="card">
         <div class="card-header">
-            <h4>Adicionar Função</h4>
+            <h4>{{data}}</h4>
         </div>
         <div class="card-block">
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 {% bootstrap_form form layout='inline'%}
                 {% buttons %}
-                <button type="submit" class="btn btn-primary"><i class="fas fa-edit"></i> Salvar</button>
-                <a href="{% url 'funcao:lista_funcoes' %}">
-                    <button type="button" class="btn btn-danger"><i class="fas fa-undo"></i>Cancelar</button>
-                </a>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i>Salvar</button>
                 {% endbuttons %}
             </form>
         </div>

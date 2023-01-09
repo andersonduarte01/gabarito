@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'apps.avaliacao',
     'apps.aluno',
     'apps.sala',
+    'apps.frequencia',
     'apps.blog',
     'apps.relatorios',
     'cpf_field',

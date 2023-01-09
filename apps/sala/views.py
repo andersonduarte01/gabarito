@@ -27,7 +27,7 @@ class AdicionarAno(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
 class AdicionarSala(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Sala
-    fields = ('descricao', 'turno', 'ano')
+    fields = ('descricao', 'turno', 'ano', 'total_alunos')
     template_name = 'sala/adicionar_sala.html'
     success_message = 'Sala cadastrada com sucesso.'
     success_url = reverse_lazy('escola:painel_escola')
@@ -64,7 +64,7 @@ class ListaSalas(LoginRequiredMixin, ListView):
 
 class EditarSala(LoginRequiredMixin, UpdateView):
     model = Sala
-    fields = ('descricao', 'turno', 'ano')
+    fields = ('descricao', 'turno', 'ano', 'total_alunos')
     template_name = 'sala/editar_sala.html'
 
     def get_success_url(self):

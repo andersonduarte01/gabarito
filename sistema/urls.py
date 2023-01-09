@@ -16,5 +16,6 @@ urlpatterns = [
     path('aluno/', include('apps.aluno.urls', namespace='alunos')),
     path('relatorio/', include('apps.relatorios.urls', namespace='relatorios')),
     path('blog/', include('apps.blog.urls', namespace='blog')),
+    path('frequencia/', include('apps.frequencia.urls', namespace='frequencia')),
     path('ckeditor/', include('ckeditor_uploader.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

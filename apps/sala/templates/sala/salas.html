@@ -31,6 +31,7 @@
           <th>SALA</th>
           <th>ANO</th>
           <th>TURNO</th>
+          <th>QTD ALUNOS</th>
           <th>EDITAR</th>
           <th>EXCLUIR</th>
         </tr>
@@ -41,6 +42,7 @@
           <td>{{sala}}</td>
           <td>{{sala.ano}}º</td>
           <td>{{sala.turno}}</td>
+          <td>{{sala.total_alunos}}</td>
           <td>
             <a href="{% url 'salas:edit_sala' sala.pk %}" class="btn btn-outline-primary btn-sm">
               <i class="fas fa-edit"></i>Editar
