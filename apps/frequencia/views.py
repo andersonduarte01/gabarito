@@ -1,4 +1,3 @@
-import calendar
 import datetime
 
 from django.urls import reverse_lazy
