@@ -1,6 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-
+import datetime
 # Create your views here.
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView, UpdateView
@@ -8,10 +8,12 @@ from django.views.generic import TemplateView, UpdateView
 from .models import UnidadeEscolar, EnderecoEscolar
 from ..core.models import Usuario
 from ..sala.models import Sala
+from .traduzir import converter
+from .gerarPlanilhaFrequencia import criarFrequencia, dias_mes, presentesDia, dias
 
 
 class Painel(LoginRequiredMixin, TemplateView):
-    template_name = 'escola/painel_controle.html'
+    template_name = 'escola/painel_controle_escola.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -21,10 +23,30 @@ class Painel(LoginRequiredMixin, TemplateView):
             return context
         else:
             escola = UnidadeEscolar.objects.get(pk=self.request.user)
-            salas = Sala.objects.filter(escola=escola).order_by('ano')
             context['escola'] = escola
-            context['salas'] = salas
             return context
+
+
+class PainelPlanilha(LoginRequiredMixin, TemplateView):
+    template_name = 'escola/painel_controle.html'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        escola = UnidadeEscolar.objects.get(pk=self.request.user)
+        salas = Sala.objects.filter(escola=escola, turno=self.kwargs['turno']).order_by('ano')
+        ano = datetime.date.today().year
+        mes = datetime.date.today().month
+        mes_atual = dias_mes(mes=mes, ano=ano)
+        turma = []
+        for sala in salas:
+            freq = criarFrequencia(mes_atual, sala)
+            turma.append(freq)
+
+        context['mes'] = mes_atual
+        mes01 = converter(mes_atual[0].month)
+        context['turma'] = turma
+        context['mes1'] = mes01
+        context['escola'] = escola
+        return context
 
 
 class PainelEscola(LoginRequiredMixin, TemplateView):
@@ -34,8 +56,14 @@ class PainelEscola(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         escola = UnidadeEscolar.objects.get(slug=self.kwargs['slug'])
         salas = Sala.objects.filter(escola=escola).order_by('ano')
+        ano = datetime.date.today().year
+        mes = datetime.date.today().month
+        mes_atual = dias_mes(mes=mes, ano=ano)
+        presentes = presentesDia(mes_atual, salas)
         context['escola'] = escola
         context['salas'] = salas
+        context['mes'] = dias(mes_atual)
+        context['alunos'] = presentes
         return context
 
 

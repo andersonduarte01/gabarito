@@ -14,7 +14,7 @@
      class="img-radius" alt="Foto_Usuario">
 {% endblock %}
 {% block tema %}
-<h3 class="m-b-10">{{sala}} - {{sala.ano}}ºAno - {{sala.turno}}</h3>
+<h3 class="m-b-10">{{sala}} - {{sala.ano}}º Ano - {{sala.turno}}</h3>
 <p class="m-b-0">Lista de alunos</p>
 {% endblock %}
 {% block breadcrumbs %}
@@ -102,14 +102,14 @@
         <form method="post">
           {% csrf_token %}
           {% bootstrap_form form %}
-      </div>
-      <div class="modal-footer">
-        {% buttons %}
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Sair</button>
-        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i>Cadastrar</button>
-        {% endbuttons %}
-      </div>
-      </form>
+        </div>
+        <div class="modal-footer">
+          {% buttons %}
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Sair</button>
+          <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i>Cadastrar</button>
+          {% endbuttons %}
+        </div>
+        </form>
     </div>
   </div>
 </div>

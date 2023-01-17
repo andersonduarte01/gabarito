@@ -140,6 +140,38 @@
                                 </li>
                             </ul>
 
+                            <ul class="pcoded-item pcoded-left-item">
+                                <li class="pcoded-hasmenu">
+                                    <a href="javascript:void(0)" class="waves-effect waves-dark">
+                                        <span class="pcoded-micon"><i class="ti-bookmark-alt"></i><b>BC</b></span>
+                                        <span class="pcoded-mtext">Avaliação</span>
+                                        <span class="pcoded-mcaret"></span>
+                                    </a>
+                                    <ul class="pcoded-submenu">
+                                        <li class=" ">
+                                            <a href="{% url 'avaliacao:lista_avaliacoes' %}" class="waves-effect waves-dark">
+                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                                                <span class="pcoded-mtext">Avaliações</span>
+                                                <span class="pcoded-mcaret"></span>
+                                            </a>
+                                        </li>
+                                        <li class=" ">
+                                            <a href="{% url 'avaliacao:add_avaliacao' %}" class="waves-effect waves-dark">
+                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                                                <span class="pcoded-mtext">Adicionar Avaliação</span>
+                                                <span class="pcoded-mcaret"></span>
+                                            </a>
+                                        </li>
+                                        <li class=" ">
+                                            <a href="{% url 'avaliacao:add_questao' %}" class="waves-effect waves-dark">
+                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                                                <span class="pcoded-mtext">Adicionar Questão</span>
+                                                <span class="pcoded-mcaret"></span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
 
                             {% endblock %}
                         </div>
@@ -183,7 +215,6 @@
                                                 <div {% if message.tags %} class="alert alert-{{ message.tags }} alert-dismissible fade show" {% endif %}>
                                                     {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}Important: {% endif %}
                                                     <strong>{{message}}</strong>
-                                                    <strong>{{message.tags}}</strong>
                                                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                                                         <span aria-hidden="true">&times;</span>
                                                     </button>
@@ -369,7 +400,7 @@
                                         <li class=" ">
                                             <a href="{% url 'salas:salas' %}" class="waves-effect waves-dark">
                                                 <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-                                                <span class="pcoded-mtext">Editar Salas</span>
+                                                <span class="pcoded-mtext">Salas</span>
                                                 <span class="pcoded-mcaret"></span>
                                             </a>
                                         </li>
@@ -377,57 +408,57 @@
                                 </li>
                             </ul>
 
-<!--                            <ul class="pcoded-item pcoded-left-item">-->
-<!--                                <li class="pcoded-hasmenu">-->
-<!--                                    <a href="javascript:void(0)" class="waves-effect waves-dark">-->
-<!--                                        <span class="pcoded-micon"><i class="ti-user"></i><b>BC</b></span>-->
-<!--                                        <span class="pcoded-mtext">Funcionários</span>-->
-<!--                                        <span class="pcoded-mcaret"></span>-->
-<!--                                    </a>-->
-<!--                                    <ul class="pcoded-submenu">-->
-<!--                                        <li class=" ">-->
-<!--                                            <a href="{% url 'funcionario:adicionar_funcionario' %}" class="waves-effect waves-dark">-->
-<!--                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>-->
-<!--                                                <span class="pcoded-mtext">Adicionar Funcionário</span>-->
-<!--                                                <span class="pcoded-mcaret"></span>-->
-<!--                                            </a>-->
-<!--                                        </li>-->
-<!--                                        <li class=" ">-->
-<!--                                            <a href="{% url 'funcionario:lista_funcionarios' %}" class="waves-effect waves-dark">-->
-<!--                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>-->
-<!--                                                <span class="pcoded-mtext">Lista de Funcionários</span>-->
-<!--                                                <span class="pcoded-mcaret"></span>-->
-<!--                                            </a>-->
-<!--                                        </li>-->
-<!--                                    </ul>-->
-<!--                                </li>-->
-<!--                            </ul>-->
+                            <ul class="pcoded-item pcoded-left-item">
+                                <li class="pcoded-hasmenu">
+                                    <a href="javascript:void(0)" class="waves-effect waves-dark">
+                                        <span class="pcoded-micon"><i class="ti-user"></i><b>BC</b></span>
+                                        <span class="pcoded-mtext">Alunos</span>
+                                        <span class="pcoded-mcaret"></span>
+                                    </a>
+                                    <ul class="pcoded-submenu">
+                                        <li class=" ">
+                                            <a href="{% url 'aluno:adicionar_aluno' %}" class="waves-effect waves-dark">
+                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                                                <span class="pcoded-mtext">Adicionar Aluno</span>
+                                                <span class="pcoded-mcaret"></span>
+                                            </a>
+                                        </li>
+                                        <li class=" ">
+                                            <a href="#" class="waves-effect waves-dark">
+                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                                                <span class="pcoded-mtext">Buscar Aluno</span>
+                                                <span class="pcoded-mcaret"></span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
 
-<!--                            <ul class="pcoded-item pcoded-left-item">-->
-<!--                                <li class="pcoded-hasmenu">-->
-<!--                                    <a href="javascript:void(0)" class="waves-effect waves-dark">-->
-<!--                                        <span class="pcoded-micon"><i class="ti-briefcase"></i><b>BC</b></span>-->
-<!--                                        <span class="pcoded-mtext">Funções</span>-->
-<!--                                        <span class="pcoded-mcaret"></span>-->
-<!--                                    </a>-->
-<!--                                    <ul class="pcoded-submenu">-->
-<!--                                        <li class=" ">-->
-<!--                                            <a href="{% url 'funcao:adicionar_funcao' %}" class="waves-effect waves-dark">-->
-<!--                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>-->
-<!--                                                <span class="pcoded-mtext">Adicionar Função</span>-->
-<!--                                                <span class="pcoded-mcaret"></span>-->
-<!--                                            </a>-->
-<!--                                        </li>-->
-<!--                                        <li class=" ">-->
-<!--                                            <a href="{% url 'funcao:lista_funcoes' %}" class="waves-effect waves-dark">-->
-<!--                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>-->
-<!--                                                <span class="pcoded-mtext">Lista de Funções</span>-->
-<!--                                                <span class="pcoded-mcaret"></span>-->
-<!--                                            </a>-->
-<!--                                        </li>-->
-<!--                                    </ul>-->
-<!--                                </li>-->
-<!--                            </ul>-->
+                            <ul class="pcoded-item pcoded-left-item">
+                                <li class="pcoded-hasmenu">
+                                    <a href="javascript:void(0)" class="waves-effect waves-dark">
+                                        <span class="pcoded-micon"><i class="ti-bookmark-alt"></i><b>BC</b></span>
+                                        <span class="pcoded-mtext">Avaliação</span>
+                                        <span class="pcoded-mcaret"></span>
+                                    </a>
+                                    <ul class="pcoded-submenu">
+                                        <li class=" ">
+                                            <a href="{% url 'salas:salas_avaliacao' %}" class="waves-effect waves-dark">
+                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                                                <span class="pcoded-mtext">Avaliações</span>
+                                                <span class="pcoded-mcaret"></span>
+                                            </a>
+                                        </li>
+                                        <li class=" ">
+                                            <a href="#" class="waves-effect waves-dark">
+                                                <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                                                <span class="pcoded-mtext">Notas</span>
+                                                <span class="pcoded-mcaret"></span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
 
                             {% endblock %}
                         </div>

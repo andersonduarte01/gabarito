@@ -13,3 +13,14 @@ class DesignarSalaForm(forms.ModelForm):
         self.request = kwargs.pop('request')
         super(DesignarSalaForm, self).__init__(*args, **kwargs)
         self.fields['sala'].queryset = Sala.objects.filter(escola=self.request.user)
+
+
+class AlunoForm(forms.ModelForm):
+    class Meta:
+        model = Aluno
+        fields = ('nome', 'sala')
+
+    def __init__(self, *args, **kwargs):
+        escola = kwargs.pop('escola')
+        super(AlunoForm, self).__init__(*args, **kwargs)
+        self.fields['sala'].queryset = Sala.objects.filter(escola=escola)

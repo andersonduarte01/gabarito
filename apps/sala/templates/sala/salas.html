@@ -32,6 +32,7 @@
           <th>ANO</th>
           <th>TURNO</th>
           <th>QTD ALUNOS</th>
+          <th>VER</th>
           <th>EDITAR</th>
           <th>EXCLUIR</th>
         </tr>
@@ -43,6 +44,11 @@
           <td>{{sala.ano}}º</td>
           <td>{{sala.turno}}</td>
           <td>{{sala.total_alunos}}</td>
+          <td>
+            <a href="{% url 'salas:alunos' sala.pk %}" class="btn btn-outline-info btn-sm">
+              <i class="fas fa-eye"></i>Entrar
+            </a>
+          </td>
           <td>
             <a href="{% url 'salas:edit_sala' sala.pk %}" class="btn btn-outline-primary btn-sm">
               <i class="fas fa-edit"></i>Editar
@@ -64,7 +70,11 @@
                     </button>
                   </div>
                   <div class="modal-body">
-                    <h6>Tem certeza que vai excluir {{sala}}?</h6>
+                    <h5>Tem certeza que deseja excluir?</h5>
+                    <hr>
+                    <h6>{{sala}}</h6>
+                    <h6>Ano: {{sala.ano}}°</h6>
+                    <h6>Turno: {{sala.turno}}</h6>
                   </div>
                   <div class="modal-footer">
                     <form method="post" action="{% url 'salas:deletar_sala' sala.pk %}">

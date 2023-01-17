@@ -1,0 +1,85 @@
+{% extends 'temp_base/adm.html' %}
+{% load bootstrap4 %}
+{% load static %}
+{% block titulo %}Painel de Controle{% endblock %}
+{% block imagem1 %}
+<img src="{% if escola.imagem %}
+    {{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block imagem2 %}
+<img src="{% if escola.imagem %}{{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block tema %}
+<h5 class="m-b-10">Avaliação: {{avaliacao}}</h5>
+<p class="m-b-0">{{avaliacao.ano}}º Ano</p>
+{% endblock %}
+{% block breadcrumbs %}
+{{block.super}}
+<li class="breadcrumb-item"><a href="#">Avaliação</a></li>
+{% endblock %}
+{% block conteudo %}
+<div class="col-sm-12">
+    <!-- Basic table card start -->
+    <div class="card">
+        <div class="card-header">
+        <h5>{{avaliacao}}</h5>
+        <span>Aluno: {{aluno}}</span>
+        </div>
+        <form class="form" autocomplete="off" onsubmit="return saveAns()" action="/student/calculate-marks" method="POST">
+        {% csrf_token %}
+        <hr>
+        {% for q in questoes %}
+        <div class="d-flex w-100 align-items-center">
+            <div class="col-auto flex-shrink-1 flex-grow-1">
+                <h4 class="">{{ forloop.counter }}. {{q.questao}}</h4>
+            </div>
+            <div class="col-auto">
+                <h6 style="text-align: right;">[{{q.numero}} Pontos]</h6>
+            </div>
+        </div>
+        <input type="hidden" name="csrfmiddlewaretoken" value="C24rUotmdHawVQJL3KrqiWxvti8UffOFYUc8TRbZtLt36AVLdP3jbkzUVe3beRAa">
+
+
+        <div class="form-check mx-4 d-flex align-items-center">
+            <input class="form-check-input" type="radio" name="{{ forloop.counter }}" id="{{q.opcao_um}}" value="OpcaoUm">
+            <label class="form-check-label ml-3" for="opcao_um">
+              {{q.opcao_um}}
+            </label>
+        </div>
+
+
+        <div class="form-check mx-4 d-flex align-items-center">
+            <input class="form-check-input" type="radio" name="{{ forloop.counter }}" id="{{q.opcao_dois}}" value="OpcaoDois">
+            <label class="form-check-label ml-3" for="opcao_dois">
+              {{q.opcao_dois}}
+            </label>
+        </div>
+
+
+        <div class="form-check mx-4 d-flex align-items-center">
+            <input class="form-check-input" type="radio" name="{{ forloop.counter }}" id="{{q.opcao_tres}}" value="OpcaoTres">
+            <label class="form-check-label ml-3" for="opcao_tres">
+              {{q.opcao_tres}}
+            </label>
+        </div>
+
+
+        <div class="form-check mx-4 d-flex align-items-center">
+            <input class="form-check-input" type="radio" name="{{ forloop.counter }}" id="{{q.opcao_quatro}}" value="OpcaoQuatro">
+            <label class="form-check-label ml-3" for="opcao_quatro">
+              {{q.opcao_quatro}}
+            </label>
+        </div>
+        <hr>
+        {% endfor %}
+        <div class="col-md-12">
+            <input class="btn btn-primary" style="border-radius: 0%;" type="submit" value="Concluir">
+        </div>
+    </form>
+    </div>
+</div>
+{% endblock %}

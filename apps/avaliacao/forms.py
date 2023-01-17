@@ -17,3 +17,11 @@ class RespostaForm(forms.ModelForm):
                     'style': 'margin-right: 6px; border: 1px solid #ccc; border-radius: 5px; padding: 4px 15px; margin: 4px; text-align: center;'
                 }),
         }
+
+
+class AvaliacaoForm(forms.ModelForm):
+
+    class Meta:
+        model = Questao
+        fields = ('texto', 'questao', 'opcao_um', 'opcao_dois', 'opcao_tres', 'opcao_quatro')
+

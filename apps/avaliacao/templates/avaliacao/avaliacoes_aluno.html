@@ -1,7 +1,8 @@
 {% extends 'temp_base/adm.html' %}
 {% load static %}
-{% block titulo %}Painel de Controle{% endblock %}
+{% block titulo %}Avaliações{% endblock %}
 {% block imagem1 %}
+
 <img src="{% if escola.imagem %}
     {{escola.logo_escola.thumbnail.url}}
     {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
@@ -13,12 +14,12 @@
      class="img-radius" alt="Foto_Usuario">
 {% endblock %}
 {% block tema %}
-<h5 class="m-b-10">Avaliação</h5>
-<p class="m-b-0">Painel destinado ao administrador da escola</p>
+<h3 class="m-b-10">{{sala}} - {{sala.ano}}º Ano</h3>
+<p class="m-b-0">{{aluno}}</p>
 {% endblock %}
 {% block breadcrumbs %}
 {{block.super}}
-<li class="breadcrumb-item"><a href="#">Avaliação</a></li>
+<li class="breadcrumb-item"><a href="#">Avaliações</a></li>
 {% endblock %}
 {% block conteudo %}
 {% for avaliacao in avaliacoes %}
@@ -36,7 +37,7 @@
             </div>
         </div>
         <div class="card-footer bg-c-blue">
-            <a href="{% url 'avaliacao:avaliar' avaliacao_id=avaliacao.id sala_id=sala.id %}">
+            <a href="{% url 'avaliacao:iniciar_avaliacao' avaliacao_id=avaliacao.id aluno_id=aluno.id %}">
             <div class="row align-items-center">
                 <div class="col-9">
                     <h6 class="text-white m-b-0">Avaliacao</h6>

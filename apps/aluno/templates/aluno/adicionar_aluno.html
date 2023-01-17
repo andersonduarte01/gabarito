@@ -1,7 +1,7 @@
 {% extends 'temp_base/adm.html' %}
 {% load static %}
 {% load bootstrap4 %}
-{% block titulo %}Editar Escola{% endblock %}
+{% block titulo %}Adicionar Aluno {% endblock %}
 {% block imagem1 %}
 <img src="{% if escola.imagem %}
     {{escola.logo_escola.thumbnail.url}}
@@ -13,30 +13,30 @@
     {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
      class="img-radius" alt="Foto_Usuario">
 {% endblock %}
+{% block painel%}
+{{block.super}}
+{% endblock %}
 {% block tema %}
-<h3 class="m-b-10">{{escola}}</h3>
-<p class="m-b-0">Atualizar informações</p>
+<h3 class="m-b-10">Adicionar Aluno</h3>
 {% endblock %}
 {% block breadcrumbs %}
 {{block.super}}
-<li class="breadcrumb-item"><a href="#">Escola</a></li>
+<li class="breadcrumb-item"><a href="#">Aluno</a></li>
+<li class="breadcrumb-item"><a href="#">Adicionar</a></li>
 {% endblock %}
 {% block conteudo %}
 <div class="col-sm-12">
     <!-- Basic Form Inputs card start -->
     <div class="card">
         <div class="card-header">
-            <h4>Atualizar as informações básicas</h4>
+            <h4>Adicionar Aluno</h4>
         </div>
         <div class="card-block">
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 {% bootstrap_form form layout='inline'%}
                 {% buttons %}
-                <button type="submit" class="btn btn-primary"><i class="fas fa-edit"></i></i> Atualizar</button>
-                <a href="{% url 'escola:painel_escola' %}">
-                    <button type="button" class="btn btn-danger"><i class="fas fa-undo"></i>Cancelar</button>
-                </a>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i>Salvar</button>
                 {% endbuttons %}
             </form>
         </div>

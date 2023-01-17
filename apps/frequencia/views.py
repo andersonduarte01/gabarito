@@ -24,6 +24,7 @@ class FreqAtual(TemplateView):
         ano = datetime.date.today().year
         mes = datetime.date.today().month
         mes_atual = dias_mes(mes=mes, ano=ano)
+
         for sala in salas:
             freq = criarFrequencia(mes_atual, sala)
             resumo.append(freq)
@@ -38,7 +39,7 @@ class FreqDiaria(UpdateView):
     model = Frequencia
     fields = ('presentes', 'observacao')
     template_name = 'frequencia/freqdiaria.html'
-    success_url = reverse_lazy('frequencia:freq')
+    success_url = reverse_lazy('escola:painel_escola')
 
     def get_queryset(self):
         return Frequencia.objects.filter(pk=self.kwargs['pk'])

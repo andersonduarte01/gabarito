@@ -11,18 +11,18 @@ from ..escola.models import UnidadeEscolar
 from ..sala.models import Sala, Ano
 
 
-class AdicionarAno(LoginRequiredMixin, SuccessMessageMixin, CreateView):
-    model = Ano
-    fields = ('descricao',)
-    template_name = 'sala/adicionar_ano.html'
-    success_message = 'Ano cadastrado com sucesso.'
-    success_url = reverse_lazy('escola:painel_escola')
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        escola = UnidadeEscolar.objects.get(pk=self.request.user)
-        context['escola'] = escola
-        return context
+# class AdicionarAno(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+#     model = Ano
+#     fields = ('descricao',)
+#     template_name = 'sala/adicionar_ano.html'
+#     success_message = 'Ano cadastrado com sucesso.'
+#     success_url = reverse_lazy('escola:painel_escola')
+#
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         escola = UnidadeEscolar.objects.get(pk=self.request.user)
+#         context['escola'] = escola
+#         return context
 
 
 class AdicionarSala(LoginRequiredMixin, SuccessMessageMixin, CreateView):
@@ -53,7 +53,23 @@ class ListaSalas(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         escola = UnidadeEscolar.objects.get(pk=self.request.user)
-        return Sala.objects.filter(escola=escola)
+        return Sala.objects.filter(escola=escola).order_by('ano')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        escola = UnidadeEscolar.objects.get(pk=self.request.user)
+        context['escola'] = escola
+        return context
+
+
+class ListaSalasAvaliacao(LoginRequiredMixin, ListView):
+    model = Sala
+    template_name = 'sala/salas_avaliacao.html'
+    context_object_name = 'salas'
+
+    def get_queryset(self):
+        escola = UnidadeEscolar.objects.get(pk=self.request.user)
+        return Sala.objects.filter(escola=escola).order_by('ano')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -96,40 +112,40 @@ class ListaAvaliacoes(LoginRequiredMixin, ListView):
         sala = Sala.objects.get(pk=self.kwargs['pk'])
         context['sala'] = sala
         return context
-
-
-class ListaAvaliacoesAdm(LoginRequiredMixin, ListView):
-    model = Avaliacao
-    template_name = 'sala/avaliacoes_adm.html'
-    context_object_name = 'avaliacoes'
-
-    def get_queryset(self):
-        sala = Sala.objects.get(pk=self.kwargs['pk'])
-        return Avaliacao.objects.filter(ano=sala.ano)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        sala = Sala.objects.get(pk=self.kwargs['pk'])
-        escola = UnidadeEscolar.objects.get(slug=self.kwargs['slug'])
-        context['sala'] = sala
-        context['escola'] = escola
-        return context
-
-
-class ListarOpcoes(LoginRequiredMixin, TemplateView):
-    model = Sala
-    template_name = 'sala/opcoes.html'
-    context_object_name = 'opcoes'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        sala = Sala.objects.get(pk=self.kwargs['pk'])
-        escola = UnidadeEscolar.objects.get(pk=sala.escola.pk)
-        context['sala'] = sala
-        context['escola'] = escola
-        return context
-
-
+#
+#
+# class ListaAvaliacoesAdm(LoginRequiredMixin, ListView):
+#     model = Avaliacao
+#     template_name = 'sala/avaliacoes_adm.html'
+#     context_object_name = 'avaliacoes'
+#
+#     def get_queryset(self):
+#         sala = Sala.objects.get(pk=self.kwargs['pk'])
+#         return Avaliacao.objects.filter(ano=sala.ano)
+#
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         sala = Sala.objects.get(pk=self.kwargs['pk'])
+#         escola = UnidadeEscolar.objects.get(slug=self.kwargs['slug'])
+#         context['sala'] = sala
+#         context['escola'] = escola
+#         return context
+#
+#
+# class ListarOpcoes(LoginRequiredMixin, TemplateView):
+#     model = Sala
+#     template_name = 'sala/opcoes.html'
+#     context_object_name = 'opcoes'
+#
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         sala = Sala.objects.get(pk=self.kwargs['pk'])
+#         escola = UnidadeEscolar.objects.get(pk=sala.escola.pk)
+#         context['sala'] = sala
+#         context['escola'] = escola
+#         return context
+#
+#
 class ListarAlunos(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Aluno
     fields = ('nome',)
@@ -155,3 +171,20 @@ class ListarAlunos(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
     def get_success_url(self):
         return reverse('salas:alunos', kwargs={'pk': self.get_context_data()['sala'].pk})
+
+
+class AlunosAvaliacao(LoginRequiredMixin, ListView):
+    model = Aluno
+    template_name = 'sala/alunos_avaliacao.html'
+    context_object_name = 'alunos'
+
+    def get_queryset(self):
+        return Aluno.objects.filter(sala=self.kwargs['pk']).order_by('nome')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        escola = UnidadeEscolar.objects.get(pk=self.request.user)
+        sala = Sala.objects.get(pk=self.kwargs['pk'])
+        context['sala'] = sala
+        context['escola'] = escola
+        return context
