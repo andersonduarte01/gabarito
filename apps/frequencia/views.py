@@ -39,7 +39,7 @@ class FreqDiaria(UpdateView):
     model = Frequencia
     fields = ('presentes', 'observacao')
     template_name = 'frequencia/freqdiaria.html'
-    success_url = reverse_lazy('escola:painel_escola')
+    success_url = reverse_lazy('frequencia:freq')
 
     def get_queryset(self):
         return Frequencia.objects.filter(pk=self.kwargs['pk'])

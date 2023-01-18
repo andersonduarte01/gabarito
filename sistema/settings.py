@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     #Baixados
     'bootstrap4',
     'stdimage',
+    'tinymce',
     #APPS
     'apps.core',
     'apps.accounts',
