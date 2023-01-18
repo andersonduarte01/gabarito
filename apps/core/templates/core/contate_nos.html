@@ -2,61 +2,58 @@
 {% block titulo %}Contato{% endblock %}
 {% load static %}
 {% block conteudo %}
-    <div class="hero-wrap hero-wrap-2" style="background-image: url('{% static 'images/bg_01.jpg' %}'); background-attachment:fixed;">
-      <div class="overlay"></div>
-      <div class="container">
-        <div class="row no-gutters slider-text align-items-center justify-content-center" data-scrollax-parent="true">
-          <div class="col-md-8 ftco-animate text-center">
-            <h1 class="mb-4">Contate nos</h1>
-          </div>
-        </div>
+<div class="jumbotron jumbotron-fluid" style="background-image: linear-gradient(to right, rgba(106,0,255,0.4) 0%, rgba(255,217,0,0.7) 100%), url('{% static 'images/bg_01.jpg' %}'); background-attachment:fixed;">
+  <div class="container">
+    <h1 class="mb-4 text-white text-center">Contato</h1>
+  </div>
+</div>
+<section class="ftco-section contact-section ftco-degree-bg">
+  <div class="container">
+    <div class="row d-flex mb-5 contact-info">
+      <div class="col-md-12 mb-4">
+        <h2 class="h4">Informações de contato</h2>
+      </div>
+      <div class="w-100"></div>
+      <div class="col-md-3">
+        <p><span>Endereço:</span><br>Rua Fortunato Silva, SN<br>Centro, Pedra Branca/CE</p>
+      </div>
+      <div class="col-md-3">
+        <p><span>Telefone:</span> <a href="#">(99) 9 9999 9999</a></p>
+      </div>
+      <div class="col-md-3">
+        <p><span>Email:</span> <a href="#">email@gmail.com</a></p>
+      </div>
+      <div class="col-md-3">
+        <p><span>Website: </span> <a href="https://smepedrabranca.com.br">https://smepedrabranca.com.br</a></p>
       </div>
     </div>
-        <section class="ftco-section contact-section ftco-degree-bg">
-      <div class="container">
-        <div class="row d-flex mb-5 contact-info">
-          <div class="col-md-12 mb-4">
-            <h2 class="h4">Informações de contato</h2>
+    <div class="row block-9">
+      <div class="col-md-6 pr-md-5">
+        <h4 class="mb-4">Dúvidas ou sugestões?</h4>
+        <form action="#">
+          <div class="form-group">
+            <input type="text" class="form-control" placeholder="Nome">
           </div>
-          <div class="w-100"></div>
-          <div class="col-md-3">
-            <p><span>Endereço:</span>End</p>
+          <div class="form-group">
+            <input type="text" class="form-control" placeholder="Seu email">
           </div>
-          <div class="col-md-3">
-            <p><span>Telefone:</span> <a href="#">Tel</a></p>
+          <div class="form-group">
+            <input type="text" class="form-control" placeholder="Assunto">
           </div>
-          <div class="col-md-3">
-            <p><span>Email:</span> <a href="#">email@gmail.com</a></p>
+          <div class="form-group">
+            <textarea name="" id="" cols="30" rows="7" class="form-control" placeholder="Mensagem"></textarea>
           </div>
-          <div class="col-md-3">
-            <p><span>Website: </span> <a href="https://smepedrabranca.com.br">smepedrabranca.com.br</a></p>
+          <div class="form-group">
+            <input type="button" value="Enviar Mensagem" class="btn btn-primary py-3 px-5">
           </div>
-        </div>
-        <div class="row block-9">
-          <div class="col-md-6 pr-md-5">
-          	<h4 class="mb-4">Alguma pergunta ou sugestão?</h4>
-            <form action="#">
-              <div class="form-group">
-                <input type="text" class="form-control" placeholder="Nome">
-              </div>
-              <div class="form-group">
-                <input type="text" class="form-control" placeholder="Seu email">
-              </div>
-              <div class="form-group">
-                <input type="text" class="form-control" placeholder="Assunto">
-              </div>
-              <div class="form-group">
-                <textarea name="" id="" cols="30" rows="7" class="form-control" placeholder="Mensagem"></textarea>
-              </div>
-              <div class="form-group">
-                <input type="button" value="Enviar Mensagem" class="btn btn-primary py-3 px-5">
-              </div>
-            </form>
+        </form>
 
-          </div>
-
-          <div class="col-md-6" id="map"></div>
-        </div>
       </div>
-    </section>
+
+      <div class="col-md-6">
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3971.752252137137!2d-39.71829558572136!3d-5.454524596044336!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x7bd9f1cebb809f3%3A0x533b51bacb3a223c!2sCentro%20Administrativo%20Ces%C3%A1rio%20Mendes!5e0!3m2!1spt-BR!2sbr!4v1674007958837!5m2!1spt-BR!2sbr" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+    </div>
+  </div>
+</section>
 {% endblock %}

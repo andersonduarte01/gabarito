@@ -34,5 +34,5 @@ class Biblioteca(TemplateView):
     template_name = 'core/biblioteca.html'
 
 
-class Cursos(TemplateView):
+class Arquivos(TemplateView):
     template_name = 'core/cursos.html'
