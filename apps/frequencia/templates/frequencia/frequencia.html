@@ -51,7 +51,7 @@
                       <tr>
                          {% for sala in salas %}
                         <td class="font-weight-bold text-primary">{{sala.0.sala}} {{sala.0.sala.turno}}</td>
-                            {% for dia in sala%}
+                            {% for dia in sala %}
                                 <td>
                                     <a href="{% url 'frequencia:add' pk=dia.pk %}">
                                         {% if dia.presentes == 0 %}

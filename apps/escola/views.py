@@ -1,10 +1,9 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 import datetime
-# Create your views here.
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView, UpdateView
-
+from .traduzir import converter
 from .models import UnidadeEscolar, EnderecoEscolar
 from ..core.models import Usuario
 from ..sala.models import Sala
@@ -41,7 +40,6 @@ class PainelPlanilha(LoginRequiredMixin, TemplateView):
         for sala in salas:
             freq = criarFrequencia(mes_atual, sala)
             turma.append(freq)
-
         context['mes'] = mes_atual
         mes01 = converter(mes_atual[0].month)
         context['turma'] = turma
@@ -60,10 +58,13 @@ class PainelEscola(LoginRequiredMixin, TemplateView):
         ano = datetime.date.today().year
         mes = datetime.date.today().month
         mes_atual = dias_mes(mes=mes, ano=ano)
+        m = mes_atual[0].strftime('%m')
+        m1 = converter(int(m))
         presentes = presentesDia(mes_atual, salas)
         context['escola'] = escola
         context['salas'] = salas
         context['mes'] = dias(mes_atual)
+        context['mes_atual'] = m1
         context['alunos'] = presentes
         return context
 

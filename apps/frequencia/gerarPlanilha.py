@@ -1,8 +1,9 @@
-import calendar
 import datetime
 from calendar import monthrange
 
-from ..frequencia.models import Frequencia
+from ..frequencia.models import Frequencia, FrequenciaAluno
+
+
 def dias_mes(mes, ano):
     dias_mes_1 = []
     dia, mes_x = monthrange(ano, mes)
@@ -13,6 +14,8 @@ def dias_mes(mes, ano):
         else:
             dias_mes_1.append(dia_semana)
     return dias_mes_1
+
+
 def criarFrequencia(mes, sala):
     freq_salas = []
     frequencias = []
@@ -30,3 +33,31 @@ def criarFrequencia(mes, sala):
     Frequencia.objects.bulk_create(frequencias)
 
     return freq_salas
+
+
+def criarFrequenciaDiaria(data, alunos):
+    freq_alunos = []
+    freq_alunos_salve = []
+    for aluno in alunos:
+        try:
+            frequencia = FrequenciaAluno.objects.get(aluno=aluno, data=data)
+            freq_alunos.append(frequencia)
+        except:
+            freq01 = FrequenciaAluno(aluno=aluno, data=data)
+            freq_alunos.append(freq01)
+            freq_alunos_salve.append(freq01)
+
+    FrequenciaAluno.objects.bulk_create(freq_alunos_salve)
+
+    return freq_alunos
+
+
+def percentual(frequencias, freq):
+    contador = 0
+    total = len(frequencias)
+    for frequency in frequencias:
+        if frequency.presente:
+            contador += 1
+    resultado = (contador/total) * 100
+    freq.presentes = int(resultado)
+    freq.save()

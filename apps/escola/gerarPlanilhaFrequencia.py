@@ -2,7 +2,11 @@ import calendar
 import datetime
 from calendar import monthrange
 
-from ..frequencia.models import Frequencia
+from ..aluno.models import Aluno
+from ..frequencia.models import Frequencia, FrequenciaAluno
+from ..sala.models import Sala
+
+
 def dias_mes(mes, ano):
     dias_mes_1 = []
     dia, mes_x = monthrange(ano, mes)
@@ -39,9 +43,14 @@ def presentesDia(mes, salas):
         totalschool = 0
         for sala in salas:
             if Frequencia.objects.filter(sala=sala, data=dia).exists():
+                freq = 0
                 f = Frequencia.objects.filter(sala=sala, data=dia)
-                freq = f[0].presentes
-                freq_total = f[0].total
+                alunos = Aluno.objects.filter(sala=sala)
+                aluno_freq = FrequenciaAluno.objects.filter(data=dia, aluno__in=alunos)
+                for frequencia in aluno_freq:
+                    if frequencia.presente:
+                        freq += 1
+                freq_total = f[0].sala.total_alunos
                 total += freq
                 totalschool += freq_total
         try:
@@ -60,3 +69,14 @@ def dias(mes):
 
     return dias01
 
+
+def percentual(frequencias, freq):
+    contador = 0
+    total = len(frequencias)
+    for frequency in frequencias:
+        if frequency.presente:
+            contador += 1
+            print(contador)
+    resultado = (contador/total) * 100
+    freq.presentes = int(resultado)
+    freq.save()

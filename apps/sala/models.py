@@ -1,4 +1,3 @@
-from random import choices
 
 from django.db import models
 
@@ -42,6 +41,5 @@ class Sala(models.Model):
 
     def __str__(self):
         return self.descricao
-
 
 

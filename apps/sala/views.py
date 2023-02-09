@@ -3,26 +3,12 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 # Create your views here.
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse, reverse_lazy
-from django.views.generic import ListView, TemplateView, CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 
 from ..aluno.models import Aluno
 from ..avaliacao.models import Avaliacao
 from ..escola.models import UnidadeEscolar
-from ..sala.models import Sala, Ano
-
-
-# class AdicionarAno(LoginRequiredMixin, SuccessMessageMixin, CreateView):
-#     model = Ano
-#     fields = ('descricao',)
-#     template_name = 'sala/adicionar_ano.html'
-#     success_message = 'Ano cadastrado com sucesso.'
-#     success_url = reverse_lazy('escola:painel_escola')
-#
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         escola = UnidadeEscolar.objects.get(pk=self.request.user)
-#         context['escola'] = escola
-#         return context
+from ..sala.models import Sala
 
 
 class AdicionarSala(LoginRequiredMixin, SuccessMessageMixin, CreateView):
@@ -80,7 +66,7 @@ class ListaSalasAvaliacao(LoginRequiredMixin, ListView):
 
 class EditarSala(LoginRequiredMixin, UpdateView):
     model = Sala
-    fields = ('descricao', 'turno', 'ano', 'total_alunos')
+    fields = ('descricao', 'turno', 'ano')
     template_name = 'sala/editar_sala.html'
 
     def get_success_url(self):
@@ -165,6 +151,8 @@ class ListarAlunos(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     def form_valid(self, form):
         aluno = form.save(commit=False)
         sala = Sala.objects.get(pk=self.kwargs['pk'])
+        sala.total_alunos += 1
+        sala.save()
         aluno.sala = sala
         aluno.save()
         return super(ListarAlunos, self).form_valid(form)

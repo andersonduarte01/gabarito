@@ -81,9 +81,7 @@ def responderProva(request, aluno_id, avaliacao_id):
         formset = RespostasFormSet(request.POST, request.FILES, queryset=respostas,)
         if formset.is_valid():
             formset.save()
-            print('correção')
             correcao(gabarito)
-            print('corrigido')
         return HttpResponseRedirect(reverse('escola:painel_escola'))
     else:
         formset = RespostasFormSet(queryset=respostas)

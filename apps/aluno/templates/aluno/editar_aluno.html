@@ -31,7 +31,16 @@
         <div class="card-block">
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
-                {% bootstrap_form form layout='inline'%}
+                <fieldset class="form-group border p-3">
+                    <legend class="w-auto px-2">Informações Pessoais</legend>
+                    {% bootstrap_form form layout='inline'%}
+                    <hr>
+                    {% bootstrap_form form1 layout='inline'%}
+                </fieldset>
+                <fieldset class="form-group border p-3">
+                    <legend class="w-auto px-2">Endereço</legend>
+                    {% bootstrap_form form2 layout='inline'%}
+                </fieldset>
                 {% buttons %}
                 <button type="submit" class="btn btn-primary"><i class="fas fa-edit"></i></i> Atualizar</button>
                 <a href="{% url 'salas:alunos' aluno.sala.pk %}">
@@ -43,4 +52,11 @@
     </div>
     <!-- Basic Form Inputs card end -->
 </div>
+<script>
+  $(function () {
+    $("#datetimepicker1").datetimepicker({
+      format: 'DD/MM/YYYY',
+    });
+  });
+</script>
 {% endblock %}

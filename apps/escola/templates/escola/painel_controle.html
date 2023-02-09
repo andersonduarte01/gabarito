@@ -1,6 +1,6 @@
 {% extends 'temp_base/adm.html' %}
 {% load static %}
-{% block titulo %}Painel de Controle{% endblock %}
+{% block titulo %}Painel{% endblock %}
 {% block imagem1 %}
 <img src="{% if escola.imagem %}
     {{escola.logo_escola.thumbnail.url}}
@@ -44,13 +44,13 @@
                     <tr>
                         {% for sala in turma %}
                         <td class="font-weight-bold text-primary">{{sala.0.sala}}</td>
-                        {% for dia in sala%}
+                        {% for freq_dia in sala %}
                         <td>
-                            <a href="{% url 'frequencia:add' pk=dia.pk %}">
-                                {% if dia.presentes == 0 %}
+                            <a href="{% url 'frequencia:freq_aluno' pk=freq_dia.pk sala_id=freq_dia.sala.id %}">
+                                {% if freq_dia.presentes == 0 %}
                                 <i class="fa fa-calendar-plus-o"></i>
                                 {% else %}
-                                {{dia.presentes}}
+                                {{freq_dia.presentes}}%
                                 {% endif %}
                             </a>
                         </td>

@@ -1,4 +1,3 @@
-import attrs as attrs
 from django import forms
 from django.forms import TextInput
 
