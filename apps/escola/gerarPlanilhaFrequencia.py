@@ -27,7 +27,7 @@ def criarFrequencia(mes, sala):
             frequencia = Frequencia.objects.get(sala=sala, data=dia)
             freq_salas.append(frequencia)
         except:
-            freq01 = Frequencia(sala=sala, data=dia, presentes=0, total=sala.total_alunos, status=True)
+            freq01 = Frequencia(sala=sala, data=dia, presentes=0, status=True)
             freq_salas.append(freq01)
             frequencias.append(freq01)
 
