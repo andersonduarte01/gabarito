@@ -56,14 +56,22 @@ def update_imagem(sender, instance, **kwargs):
         if not instance.pdf_miniatura:
             save_dir = r'C:\Users\Anderson\Desktop\projeto\SME\gabarito\media\miniaturas'
             # save_dir = r'/home/anderson/projeto/gabarito/media\miniaturas'
+            print('Passo 01')
             arquivo = instance.pdf.path
+            print('Passo 02')
             images_from_path = convert_from_path(arquivo, output_folder=save_dir, fmt='.jpg',
                                                  first_page=0, last_page=1, size=(200, 280))
+            print('Passo 03')
             blob = open(images_from_path[0].filename, 'rb', encoding='UTF-8')
+            print('Passo 04')
             fi = blob.read()
+            print('Passo 05')
             blob.close()
+            print('Passo 06')
             instance.pdf_miniatura.save(f'{instance.descricao}.jpeg', ContentFile(fi), save=False)
+            print('Passo 07')
             instance.save()
+            print('Passo 08')
     except:
         print('Error de formato de documento')
 
