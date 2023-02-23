@@ -21,15 +21,17 @@
                             <a class="card" href="#">
                             {% if arquivo.pdf_miniatura %}
                             <img src="{{arquivo.pdf_miniatura.url}}"/>
-                                <h6>{{arquivo.pdf_miniatura.url}}</h6>
+                                <h6>entrou..</h6>
                              {% else %}
                             <img src="{% static 'images/fila.png' %}"/>
+                             <h6>{{arquivo.pdf_miniatura.url}}</h6>
                              {% endif %}
                           </a>
                             <div class="card-content">
                                 <h6 class="card-title">
                                     {{arquivo.titulo}}
-                                </h6>
+                                    <br>{{arquivo.pdf_miniatura.url}}
+                                </br>
                                 <p class="">
                                     {{arquivo.descricao}}
                                 </p>
