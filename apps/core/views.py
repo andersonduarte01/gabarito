@@ -1,6 +1,7 @@
 from django.views.generic import TemplateView
 
 from ..escola.models import UnidadeEscolar
+from ..arquivos.models import Arquivo
 
 
 class Index(TemplateView):
@@ -35,4 +36,10 @@ class Biblioteca(TemplateView):
 
 
 class Arquivos(TemplateView):
-    template_name = 'core/cursos.html'
+    template_name = 'core/arquivos.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        arquivos = Arquivo.objects.all().order_by('-data_modificacao')
+        context['arquivos'] = arquivos
+        return context

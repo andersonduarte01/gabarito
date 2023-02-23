@@ -134,7 +134,7 @@ class ListaAvaliacoes(LoginRequiredMixin, ListView):
 #
 class ListarAlunos(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Aluno
-    fields = ('nome',)
+    fields = ('nome', 'data_nascimento', 'portador_deficiencia', 'situacao', 'responsavel_legal')
     success_message = 'Aluno cadastrado com sucesso.'
     template_name = 'sala/alunos.html'
 

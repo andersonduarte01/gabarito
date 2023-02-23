@@ -5,16 +5,18 @@ from django.db import models
 from ..escola.models import UnidadeEscolar
 
 ANO = [
-    (0, 'Selecione o ano'),
-    (1, '1° Ano'),
-    (2, '2° Ano'),
-    (3, '3° Ano'),
-    (4, '4° Ano'),
-    (5, '5° Ano'),
-    (6, '6° Ano'),
-    (7, '7° Ano'),
-    (8, '8° Ano'),
-    (9, '9° Ano'),
+    ('Selecione o ano', 'Selecione o ano'),
+    ('Educação Infantil', 'Educação Infantil'),
+    ('Pré-Escola', 'Pré-Escola'),
+    ('1', '1° Ano'),
+    ('2', '2° Ano'),
+    ('3', '3° Ano'),
+    ('4', '4° Ano'),
+    ('5', '5° Ano'),
+    ('6', '6° Ano'),
+    ('7', '7° Ano'),
+    ('8', '8° Ano'),
+    ('9', '9° Ano'),
 ]
 
 TURNO = [
@@ -26,7 +28,7 @@ TURNO = [
 
 
 class Ano(models.Model):
-    descricao = models.IntegerField(verbose_name='Ano', choices=ANO, default=0)
+    descricao = models.CharField(verbose_name='Ano', choices=ANO, default='Selecione o ano', max_length=100)
 
     def __str__(self):
         return str(self.descricao)

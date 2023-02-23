@@ -7,8 +7,27 @@ from ..perfil.models import Pessoa, Endereco
 from ..sala.models import Sala
 
 
+PORT_DEF = [
+    ('nao', 'Não'),
+    ('TDAH', 'Transtorno de déficit de atenção com hiperatividade'),
+    ('TEA', 'Transtorno do espectro autista'),
+    ('TOD', 'Transtorno opositivo desafiador'),
+    ('TDL', 'Transtorno do desenvolvimento da linguagem'),
+]
+
+SITUACAO = [
+    ('1', 'Matriculado(a)'),
+    ('2', 'Transferido(a)'),
+    ('3', 'Outro'),
+]
+
+
 class Aluno(models.Model):
     nome = models.CharField(verbose_name='Nome', max_length=255)
+    data_nascimento = models.DateTimeField(verbose_name='Data de Nascimento', null=True, blank=True)
+    portador_deficiencia = models.CharField(verbose_name='Portador de deficiência?', choices=PORT_DEF, default='nao', max_length=255)
+    responsavel_legal = models.CharField(verbose_name='Responsável Legal', max_length=120)
+    situacao = models.CharField(verbose_name='Situação', max_length=120, choices=SITUACAO, default='1')
     perfil = models.ForeignKey(Pessoa, verbose_name='Perfil', on_delete=models.CASCADE, blank=True, null=True)
     endereco = models.ForeignKey(Endereco, verbose_name='Endereço', on_delete=models.CASCADE, blank=True, null=True)
     sala = models.ForeignKey(Sala, verbose_name='Sala', on_delete=models.DO_NOTHING)

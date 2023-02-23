@@ -25,16 +25,15 @@
 <div class="col-sm-12">
     <!-- Basic Form Inputs card start -->
     <div class="card">
-        <div class="card-header">
-            <h4>Atualizar Aluno</h4>
-        </div>
         <div class="card-block">
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 <fieldset class="form-group border p-3">
-                    <legend class="w-auto px-2">Informações Pessoais</legend>
+                    <legend class="w-auto px-2">Informações do Aluno</legend>
                     {% bootstrap_form form layout='inline'%}
-                    <hr>
+                </fieldset>
+                <fieldset class="form-group border p-3">
+                    <legend class="w-auto px-2">Informações do Responsável Legal</legend>
                     {% bootstrap_form form1 layout='inline'%}
                 </fieldset>
                 <fieldset class="form-group border p-3">

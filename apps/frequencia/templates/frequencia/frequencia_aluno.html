@@ -38,6 +38,7 @@
             <tr>
               <th>PRESENÇA</th>
               <th>NOME</th>
+              <th>JUSTIFICADA</th>
               <th>OBS:</th>
             </tr>
             </thead>
@@ -48,12 +49,11 @@
                     {{ hidden_field }}
                     {% endfor %}
                 <tbody>
-                    {% for field in form.visible_fields %}
                     <tr>
-                        <td>{{field}}</td>
-                        <td class="text-left">{{field.label}}</td>
-                        <td><a href="#">X</a></td>
-                    {% endfor %}
+                        <td>{{form.presente}}</td>
+                        <td class="text-left">{{form.presente.label}}</td>
+                        <td class="text-left">{{form.falta_justificada}}</td>
+                        <td>{{form.observacao}}</td>
                     {% endfor %}
                     </tr>
                 </tbody>

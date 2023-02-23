@@ -2,5 +2,6 @@ venv/
 media/
 migrations/
 db.sqlite3
+sistema/settings.py
 templates/temp.html
 *__pycache__*

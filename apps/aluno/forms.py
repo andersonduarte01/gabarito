@@ -20,7 +20,7 @@ class AlunoForm(forms.ModelForm):
 class EditarAlunoForm(forms.ModelForm):
     class Meta:
         model = Aluno
-        fields = ('nome', 'sala')
+        fields = ('nome', 'sala', 'data_nascimento', 'portador_deficiencia', 'situacao', 'responsavel_legal')
 
     def __init__(self, *args, **kwargs):
         instance = kwargs.pop('instance', None)
@@ -29,6 +29,10 @@ class EditarAlunoForm(forms.ModelForm):
             self.instance = instance
             self.fields['sala'].initial = instance.sala
             self.fields['nome'].initial = instance
+            self.fields['data_nascimento'].initial = instance.data_nascimento.strftime("%d/%m/%Y")
+            self.fields['portador_deficiencia'].initial = instance.portador_deficiencia
+            self.fields['situacao'].initial = instance.situacao
+            self.fields['responsavel_legal'].initial = instance.responsavel_legal
             self.fields['sala'].queryset = Sala.objects.filter(escola=instance.sala.escola)
 
 

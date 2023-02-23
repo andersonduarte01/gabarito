@@ -1,7 +1,8 @@
 {% extends 'temp_base/adm.html' %}
 {% load static %}
 {% load bootstrap4 %}
-{% block titulo %}Adicionar Avaliacao {% endblock %}
+{% block titulo %}Atualizar Livro {% endblock %}
+
 {% block imagem1_adm %}
 <img src="{% if escola.imagem %}
     {{escola.logo_escola.thumbnail.url}}
@@ -17,24 +18,27 @@
 {{block.super}}
 {% endblock %}
 {% block tema_adm %}
-<h3 class="m-b-10">Adicionar Avaliação</h3>
+<h3 class="m-b-10">Atualizar Livro</h3>
+<p class="m-b-0">Atualizar</p>
 {% endblock %}
 {% block breadcrumbs_adm %}
 {{block.super}}
-<li class="breadcrumb-item"><a href="#">Adicionar</a></li>
+<li class="breadcrumb-item"><a href="#">Livro</a></li>
+<li class="breadcrumb-item"><a href="#">Atualizar</a></li>
 {% endblock %}
 {% block conteudo_adm %}
 <div class="col-sm-12">
+    <!-- Basic Form Inputs card start -->
     <div class="card">
         <div class="card-header">
-            <h4>Avaliação</h4>
+            <h4>Atualizar Livro</h4>
         </div>
         <div class="card-block">
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 {% bootstrap_form form layout='inline'%}
                 {% buttons %}
-                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i>Salvar</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i>Atualizar</button>
                 {% endbuttons %}
             </form>
         </div>

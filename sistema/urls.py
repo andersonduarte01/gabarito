@@ -16,6 +16,7 @@ urlpatterns = [
     path('aluno/', include('apps.aluno.urls', namespace='alunos')),
     path('relatorio/', include('apps.relatorios.urls', namespace='relatorios')),
     path('blog/', include('apps.blog.urls', namespace='blog')),
+    path('pdf/', include('apps.arquivos.urls', namespace='arquivos')),
     path('frequencia/', include('apps.frequencia.urls', namespace='frequencia')),
     path('tinymce/', include('tinymce.urls')),
     path('ckeditor/', include('ckeditor_uploader.urls')),
