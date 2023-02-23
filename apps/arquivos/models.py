@@ -55,10 +55,11 @@ def update_imagem(sender, instance, **kwargs):
     try:
         if not instance.pdf_miniatura:
             save_dir = r'C:\Users\Anderson\Desktop\projeto\SME\gabarito\media\miniaturas'
+            # save_dir = r'/home/anderson/projeto/gabarito/media\miniaturas'
             arquivo = instance.pdf.path
             images_from_path = convert_from_path(arquivo, output_folder=save_dir, fmt='.jpg',
                                                  first_page=0, last_page=1, size=(200, 280))
-            blob = open(images_from_path[0].filename, 'rb')
+            blob = open(images_from_path[0].filename, 'rb', encoding='UTF-8')
             fi = blob.read()
             blob.close()
             instance.pdf_miniatura.save(f'{instance.descricao}.jpeg', ContentFile(fi), save=False)
@@ -72,10 +73,11 @@ def update_imagem(sender, instance, **kwargs):
     try:
         if not instance.pdf_miniatura:
             save_dir = r'C:\Users\Anderson\Desktop\projeto\SME\gabarito\media\miniaturas'
+            #save_dir = r'/home/anderson/projeto/gabarito/media\miniaturas'
             livro = instance.pdf.path
             images_from_path = convert_from_path(livro, output_folder=save_dir, fmt='.jpg',
-                                                 first_page=0, last_page=1, size=(200, 280))
-            blob = open(images_from_path[0].filename, 'rb')
+                                                 first_page=0, last_page=1, size=(230, 390))
+            blob = open(images_from_path[0].filename, 'rb', encoding='UTF-8')
             fi = blob.read()
             blob.close()
             instance.pdf_miniatura.save(f'{instance.descricao}.jpeg', ContentFile(fi), save=False)

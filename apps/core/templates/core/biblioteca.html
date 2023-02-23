@@ -1,11 +1,44 @@
 {% extends 'temp_base/site.html' %}
 {% block titulo %}Biblioteca{% endblock %}
 {% load static %}
+{% block estatico %}
+<link rel="stylesheet" href="{% static 'cards/book_file.css' %}">
+{% endblock %}
 {% block conteudo %}
 <div class="jumbotron jumbotron-fluid" style="background-image: linear-gradient(to right, rgba(106,0,255,0.4) 0%, rgba(255,217,0,0.7) 100%), url('{% static 'images/bg_01.jpg' %}'); background-attachment:fixed;">
-  <div class="container">
-    <h1 class="mb-4 text-white text-center">Biblioteca</h1>
-    <h4 class="mb-4 text-white text-center">Em desenvolvimento</h4>
-  </div>
+    <div class="container">
+        <h1 class="mb-4 text-white text-center">Biblioteca</h1>
+    </div>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="book read">
+            <div class="cover">
+                <img src="https://s-media-cache-ak0.pinimg.com/564x/f9/8e/2d/f98e2d661445620266c0855d418aab71.jpg">
+            </div>
+            <div class="description">
+                <p class="title">Frankenstein<br>
+                    <span class="author">Mary Shelley</span></p>
+            </div>
+        </div>
+        </div>
+    </div>
+    <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" id="pills-home-tab" data-toggle="pill" href="#pills-home" role="tab" aria-controls="pills-home" aria-selected="true">Home</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="pills-profile-tab" data-toggle="pill" href="#pills-profile" role="tab" aria-controls="pills-profile" aria-selected="false">Profile</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="pills-contact-tab" data-toggle="pill" href="#pills-contact" role="tab" aria-controls="pills-contact" aria-selected="false">Contact</a>
+  </li>
+</ul>
+<div class="tab-content" id="pills-tabContent">
+  <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">Pill Home</div>
+  <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">Pill Profile</div>
+  <div class="tab-pane fade" id="pills-contact" role="tabpanel" aria-labelledby="pills-contact-tab">Pill Contact</div>
+</div>
 </div>
 {% endblock %}

@@ -74,10 +74,17 @@
           <li class="nav-item"><a href="{% url 'core:contato' %}" class="nav-link">Contato</a></li>
             {% if user.is_authenticated %}
             <li class="nav-item">
-              <a href="{% url 'logout' %}" class="nav-link">
-                <button class="button-7 info" role="button">{{user.nome|slice:":10"}}</button>
-              </a>
+              <div class="dropdown nav-link">
+                <button class="btn btn-outline-info dropdown-toggle btn-sm" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  {{user.nome|slice:":15"}}
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                  <a class="dropdown-item" href="{% url 'escola:painel_escola' %}">Painel</a>
+                  <a class="dropdown-item" href="{% url 'logout' %}">Sair</a>
+                </div>
+              </div>
             </li>
+
             {% else %}
             <li class="nav-item">
               <a href="{% url 'login' %}" class="nav-link">
