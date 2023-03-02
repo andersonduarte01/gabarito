@@ -22,7 +22,7 @@ class Noticia(DetailView):
     context_object_name = 'noticia'
 
     def get_absolute_url(self):
-        return reverse('blog:noticia', kwargs={'slug': self.slug})
+        return reverse('blog:noticia', kwargs={'pk': self.pk})
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

@@ -34,4 +34,11 @@ class Blog(models.Model):
         verbose_name = 'Noticia'
         verbose_name_plural = 'Noticias'
 
+    def imagem00(self):
+        if self.imagem:
+            return True
+        else:
+            return False
+
+
 

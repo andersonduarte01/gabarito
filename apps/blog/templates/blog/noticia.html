@@ -1,86 +1,99 @@
-{% extends 'temp_base/site.html' %}
+{% extends 'temp_base/indice.html' %}
 {% block titulo %}Notícia{% endblock %}
 {% load static %}
 {% load social_share %}
 {% block estatico %}
-<meta property="og:url"           content="https://smepedrabranca.com.br/blog/{{noticia.slug}}" />
+<meta property="og:url"           content="https://smepedrabranca.com.br/blog/{{noticia.pk}}" />
 <meta property="og:type"          content="website" />
 <meta property="og:title"         content="{{noticia}}" />
 <meta property="og:description"   content="" />
 <meta property="og:image"         content="{{noticia.imagem.url}}" />
 {% endblock %}
 {% block conteudo %}
-      <div class="container">
-        <div id="fb-root"></div>
-        <script async defer crossorigin="anonymous"
-        src="https://connect.facebook.net/pt_BR/sdk.js#xfbml=1&version=v14.0&appId=2624277097784962&autoLogAppEvents=1"
-        nonce="n4ZzO278"></script>
-        <div class="row">
-          <div class="col-md-8 ftco-animate">
-            <img src="{{noticia.imagem.url}}" alt="" class="img-fluid">
-            <hr>
-            <div class="row">
-              <div class="col-md-2 col-4">
-                <div class="fb-share-button" data-href="https://smepedrabranca.com.br/blog/{{noticia.slug}}/"
-                     data-layout="button" data-size="large">
-                  <a target="_blank"
-                     href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fsmepedrabranca.com.br%2Fblog%2Flampadas-de-nicola-tesla%2F&amp;src=sdkpreparse"
-                     class="fb-xfbml-parse-ignore">Compartilhar</a>
+<div class="container">
+    <div id="fb-root"></div>
+    <script async defer crossorigin="anonymous"
+            src="https://connect.facebook.net/pt_BR/sdk.js#xfbml=1&version=v14.0&appId=2624277097784962&autoLogAppEvents=1"
+            nonce="n4ZzO278"></script>
+</div>
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Post content-->
+            <article>
+                <!-- Post header-->
+                <header class="mb-4">
+                    <!-- Post title-->
+                    <h1 class="fw-bolder mb-1">{{noticia}}</h1>
+                    <!-- Post meta content-->
+                    <div class="text-muted fst-italic mb-2">Publicado: {{noticia.data_atualizacao}}</div>
+                </header>
+                <!-- Preview image figure-->
+                {% if noticia.imagem00 %}
+                <figure class="mb-4"><img class="img-fluid rounded" src="{{noticia.imagem.url}}" alt="..." /></figure>
+                {% else %}
+                <figure class="mb-4"><img class="img-fluid rounded" src="https://dummyimage.com/900x400/ced4da/6c757d.jpg" alt="..." /></figure>
+                {% endif %}
+                <!-- Post content-->
+                <hr>
+                <div class="row">
+                    <div style="margin-bottom:2px;" class="fb-share-button col-md-2" data-href="https://smepedrabranca.com.br/blog/{{noticia.pk}}/"
+                         data-layout="button" data-size="large">
+                        <a target="_blank"
+                           href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fsmepedrabranca.com.br%2Fblog%2Flampadas-de-nicola-tesla%2F&amp;src=sdkpreparse"
+                           class="fb-xfbml-parse-ignore">Compartilhar</a>
+                    </div>
+                    <div class="col-md-6">
+                    <a class="btn btn-success btn-sm" href="https://api.whatsapp.com/send?text=https://smepedrabranca.com.br/blog/{{noticia.pk}}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" class="bi bi-whatsapp" viewBox="0 0 16 16">
+                          <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
+                        </svg>
+                         Whatsapp
+                    </a>
                 </div>
-              </div>
-              <div class="col-md-3 col-5">
-                <button type="button" style="background-color: #4CAF50;
-                                            border: none;
-                                            color: white;
-                                            padding-left: 10px;
-                                            padding-right: 10px;
-                                            padding-top: 2px;
-                                            text-align: center;
-                                            text-decoration: none;
-                                            display: inline-block;
-                                            font-size: 14px;
-                                            margin: 0px 2px;
-                                            cursor: pointer;
-                                            font-family: Helvetica, Arial, sans-serif;
-                                            border-radius: 5px;">
-                {% post_to_whatsapp object_or_url "" %}
-                </button>
-              </div>
-            </div>
-            <hr>
-            <h2 class="mb-3">{{noticia}}</h2>
-            {{noticia.conteudo|safe}}
-          </div> <!-- .col-md-8 -->
-          <div class="col-md-4 sidebar ftco-animate">
-            <div class="sidebar-box ftco-animate">
-              <h3>Categorias</h3>
-              <div class="tagcloud">
-                {% for categoria in temas %}
-                <a href="#" class="tag-cloud-link">{{categoria}}</a>
-                {% empty %}
-                <a href="#" class="tag-cloud-link">vazio</a>
-                {% endfor %}
-              </div>
-            </div>
-
-            <div class="sidebar-box ftco-animate">
-              <h3>Notícias Recentes</h3>
-              {% for noticia1 in recentes %}
-              <div class="block-21 mb-4 d-flex">
-                <a href="{% url 'blog:noticia' noticia1.slug %}" class="blog-img mr-4" style="background-image: url({{noticia1.imagem.url}});"></a>
-                <div class="text">
-                  <h3 class="heading"><a href="{% url 'blog:noticia' noticia1.slug %}">{{ noticia1.titulo }}</a></h3>
-                  <div class="meta">
-                    <div><a href="#"><span class="icon-calendar"></span> {{noticia1.data}}</a></div>
-                    <div><a href="#"><span class="icon-person"></span> {{noticia1.autor}}</a></div>
-                  </div>
                 </div>
-              </div>
-              {% empty %}
-              <p>Vazio</p>
-              {% endfor %}
+                <hr>
+                <section class="mb-5">
+                    {{noticia.conteudo|safe}}
+                </section>
+            </article>
+            <!-- Comments section-->
+        </div>
+        <!-- Side widgets-->
+        <div class="col-lg-4">
+            <!-- Search widget-->
+            <div class="card mb-4">
+                <div class="card-header">Search</div>
+                <div class="card-body">
+                    <div class="input-group">
+                        <input class="form-control" type="text" placeholder="Enter search term..." aria-label="Enter search term..." aria-describedby="button-search" />
+                        <button class="btn btn-primary" id="button-search" type="button">Go!</button>
+                    </div>
+                </div>
+            </div>
+            <!-- Categories widget-->
+            <div class="card mb-4">
+                <div class="card-header">Categorias</div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-10">
+                            <ul class="list-unstyled mb-0">
+                                {% for categoria in temas %}
+                                <li><a href="#!">{{categoria}}</a></li>
+                                {% empty %}
+                                <li><a href="#!">VAZIO</a></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Side widget-->
+            <div class="card mb-4">
+                <div class="card-header">Side Widget</div>
+                <div class="card-body">You can put anything you want inside of these side widgets. They are easy to use, and feature the Bootstrap 5 card component!</div>
             </div>
         </div>
-      </div>
-      </div>
+    </div>
+</div>
 {% endblock %}
