@@ -60,22 +60,6 @@ Book stuff
   }
 }
 
-/*********************************
-other
-**********************************/
-
-h1 {
-  color: gray;
-  text-align: center;
-  font-size: 50px;
-  margin-bottom: -3px;
-}
-
-/**********************************
-display change
-***********************************/
-/*book height smaller, cover opacity, move text onto cover and star too
-animate it */
 #list-th:target .book {
   height: 100px;
   width: 250px;

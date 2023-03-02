@@ -6,7 +6,6 @@ from django.views.generic import CreateView, ListView, DeleteView, UpdateView
 
 from .models import Arquivo, Categoria, Livro
 from ..core.models import Usuario
-from ..escola.models import UnidadeEscolar
 
 
 # Create your views here.

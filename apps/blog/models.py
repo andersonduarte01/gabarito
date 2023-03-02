@@ -3,7 +3,6 @@ from ckeditor.fields import RichTextField
 
 # Create your models here.
 from ..escola.models import UnidadeEscolar
-from tinymce.models import HTMLField
 
 
 class Categoria(models.Model):
@@ -23,7 +22,7 @@ class Blog(models.Model):
     imagem = models.ImageField(upload_to='Imagens/Noticias', null=True, blank=True)
     autor = models.ForeignKey(UnidadeEscolar, verbose_name='Autor', on_delete=models.CASCADE)
     slug = models.SlugField(max_length=200)
-    conteudo = HTMLField()
+    conteudo = RichTextField()
     data = models.DateField(auto_now_add=True)
     data_atualizacao = models.DateField(auto_now=True)
     categoria = models.ForeignKey(Categoria, verbose_name='Categoria', on_delete=models.DO_NOTHING)
@@ -31,6 +30,7 @@ class Blog(models.Model):
     def __str__(self):
         return self.titulo
 
+    class Meta:
         verbose_name = 'Noticia'
         verbose_name_plural = 'Noticias'
 

@@ -46,7 +46,6 @@ def frequencia_diaria(request, pk, sala_id):
 
     if request.method == 'POST':
         formset = RespostasFormSet(request.POST, request.FILES, queryset=frequencias,)
-        print(formset)
         if formset.is_valid():
             formset.save()
             freq = FrequenciaAluno.objects.filter(data=data, aluno__in=alunos).order_by()

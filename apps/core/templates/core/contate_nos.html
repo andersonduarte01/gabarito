@@ -1,12 +1,22 @@
-{% extends 'temp_base/site.html' %}
+{% extends 'temp_base/indice.html' %}
 {% block titulo %}Contato{% endblock %}
 {% load static %}
 {% block conteudo %}
-<div class="jumbotron jumbotron-fluid" style="background-image: linear-gradient(to right, rgba(106,0,255,0.4) 0%, rgba(255,217,0,0.7) 100%), url('{% static 'images/bg_01.jpg' %}'); background-attachment:fixed;">
-  <div class="container">
-    <h1 class="mb-4 text-white text-center">Contato</h1>
-  </div>
-</div>
+<div class="container-fluid bg-primary py-5 mb-5 page-header">
+        <div class="container py-5">
+            <div class="row justify-content-left">
+                <div class="col-lg-10 text-left">
+                    <h1 class="display-3 text-white animated slideInDown">Contato</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-left">
+                            <li class="breadcrumb-item"><a class="text-white" href="{% url 'core:inicio' %}">Inicio</a></li>
+                            <li class="breadcrumb-item text-white active" aria-current="page">Contato</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
 <section class="ftco-section contact-section ftco-degree-bg">
   <div class="container">
     <div class="row d-flex mb-5 contact-info">

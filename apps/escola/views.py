@@ -15,6 +15,9 @@ class Painel(LoginRequiredMixin, TemplateView):
     template_name = 'escola/painel_controle_escola.html'
 
     def get_context_data(self, **kwargs):
+        bool_m = False
+        bool_t = False
+        bool_i = False
         context = super().get_context_data(**kwargs)
         if self.request.user.is_administrator:
             escolas = UnidadeEscolar.objects.all()
@@ -22,7 +25,18 @@ class Painel(LoginRequiredMixin, TemplateView):
             return context
         else:
             escola = UnidadeEscolar.objects.get(pk=self.request.user)
+            if Sala.objects.filter(turno='manha', escola=escola).exists():
+                print('verdadeiro')
+                bool_m = True
+            if Sala.objects.filter(turno='tarde').exists():
+                bool_t = True
+            if Sala.objects.filter(turno='integral').exists():
+                bool_i = True
+
             context['escola'] = escola
+            context['manha'] = bool_m
+            context['tarde'] = bool_t
+            context['integral'] = bool_i
             return context
 
 
@@ -75,6 +89,9 @@ class EditarEscola(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     success_message = 'Informações da instituição atualizadas'
     template_name = 'escola/editarescolar_form.html'
     success_url = reverse_lazy('escola:painel_escola')
+
+    def get_object(self, queryset=None):
+        return UnidadeEscolar.objects.get(pk=self.kwargs['pk'])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

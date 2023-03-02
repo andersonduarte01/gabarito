@@ -1,9 +1,23 @@
-{% extends 'temp_base/site.html' %}
+{% extends 'temp_base/indice.html' %}
 {% block titulo %}Notícias{% endblock %}
 {% load static %}
 {% block conteudo %}
+<div class="container-fluid bg-primary py-5 mb-5 page-header">
+        <div class="container py-5">
+            <div class="row justify-content-left">
+                <div class="col-lg-10 text-left">
+                    <h1 class="display-3 text-white animated slideInDown">Notícias</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-left">
+                            <li class="breadcrumb-item"><a class="text-white" href="{% url 'core:inicio' %}">Inicio</a></li>
+                            <li class="breadcrumb-item text-white active" aria-current="page">Notícias</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
 <div class="container">
-    <hr>
     <div class="row d-flex">
         {% for noticia in noticias %}
         <div class="col-md-4 d-flex ftco-animate">
@@ -22,21 +36,6 @@
         {% empty %}
         <h3>Vazio</h3>
         {% endfor %}
-    </div>
-    <div class="row mt-5">
-        <div class="col text-center">
-            <div class="block-27">
-                <ul>
-                    <li><a href="#">&lt;</a></li>
-                    <li class="active"><span>1</span></li>
-                    <li><a href="#">2</a></li>
-                    <li><a href="#">3</a></li>
-                    <li><a href="#">4</a></li>
-                    <li><a href="#">5</a></li>
-                    <li><a href="#">&gt;</a></li>
-                </ul>
-            </div>
-        </div>
     </div>
 </div>
 {% endblock %}

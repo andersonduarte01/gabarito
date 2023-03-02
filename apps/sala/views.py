@@ -13,7 +13,7 @@ from ..sala.models import Sala
 
 class AdicionarSala(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Sala
-    fields = ('descricao', 'turno', 'ano', 'total_alunos')
+    fields = ('descricao', 'turno', 'ano')
     template_name = 'sala/adicionar_sala.html'
     success_message = 'Sala cadastrada com sucesso.'
     success_url = reverse_lazy('escola:painel_escola')

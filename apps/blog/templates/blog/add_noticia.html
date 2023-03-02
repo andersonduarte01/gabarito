@@ -1,15 +1,30 @@
-{% extends 'temp_base/site.html' %}
+{% extends 'temp_base/indice.html' %}
 {% load bootstrap4 %}
 {% block titulo %}Notícia{% endblock %}
 {% load static %}
 {% block conteudo %}
-
+<div class="container-fluid bg-primary py-5 mb-5 page-header">
+        <div class="container py-5">
+            <div class="row justify-content-left">
+                <div class="col-lg-10 text-left">
+                    <h1 class="display-3 text-white animated slideInDown">Criar Notícia</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-left">
+                            <li class="breadcrumb-item"><a class="text-white" href="{% url 'core:inicio' %}">Inicio</a></li>
+                            <li class="breadcrumb-item text-white active" aria-current="page">Notícia</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
 <div class="container">
     <hr>
     <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.media }}
     {% bootstrap_form form layout='inline'%}
+        <hr>
     {% buttons %}
     <button type="submit" class="btn btn-primary"><i class="fas fa-edit"></i></i> Salvar</button>
     <a href="#">

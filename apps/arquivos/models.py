@@ -39,7 +39,7 @@ class Livro(models.Model):
     categoria = models.ForeignKey(Categoria, on_delete=models.DO_NOTHING, verbose_name='Categoria')
     autor = models.CharField(max_length=255, verbose_name='Autor')
     editora = models.CharField(max_length=255, verbose_name='Editora')
-    ano_referencia = models.ForeignKey(Ano, on_delete=models.DO_NOTHING , verbose_name='Ano Referência')
+    ano_referencia = models.ForeignKey(Ano, on_delete=models.DO_NOTHING, verbose_name='Ano Referência')
     pdf = models.FileField(upload_to='arquivos/')
     pdf_miniatura = models.ImageField(upload_to='miniaturas/', blank=True)
     data_publicacao = models.DateTimeField(auto_now_add=True)
@@ -54,11 +54,11 @@ class Livro(models.Model):
 def update_imagem(sender, instance, **kwargs):
     try:
         if not instance.pdf_miniatura:
-            #save_dir = r'C:\Users\Anderson\Desktop\projeto\SME\gabarito\media\miniaturas'
-            save_dir = r'/home/anderson/projeto/gabarito/media/miniaturas'
-            arquivo = instance.pdf.path.encode('UTF-8')
-            images_from_path = convert_from_path(arquivo, output_folder=save_dir, fmt='.jpg',
-                                                 first_page=0, last_page=1, size=(400, 560))
+            save_dir = r'C:\Users\Anderson\Desktop\projeto\SME\gabarito\media\miniaturas'
+            #save_dir = r'/home/anderson/projeto/gabarito/media/miniaturas'
+            arquivo = instance.pdf.path
+            images_from_path = convert_from_path(arquivo, dpi=500, output_folder=save_dir, fmt='.jpg',
+                                                 first_page=0, last_page=1, size=(200, 280))
             blob = open(images_from_path[0].filename, 'rb')
             fi = blob.read()
             blob.close()
@@ -72,9 +72,9 @@ def update_imagem(sender, instance, **kwargs):
 def update_imagem(sender, instance, **kwargs):
     try:
         if not instance.pdf_miniatura:
-            #save_dir = r'C:\Users\Anderson\Desktop\projeto\SME\gabarito\media\miniaturas'
-            save_dir = r'/home/anderson/projeto/gabarito/media/miniaturas'
-            livro = instance.pdf.path.encode('UTF-8')
+            save_dir = r'C:\Users\Anderson\Desktop\projeto\SME\gabarito\media\miniaturas'
+            #save_dir = r'/home/anderson/projeto/gabarito/media/miniaturas'
+            livro = instance.pdf.path
             images_from_path = convert_from_path(livro, output_folder=save_dir, fmt='.jpg',
                                                  first_page=0, last_page=1, size=(230, 390))
             blob = open(images_from_path[0].filename, 'rb')

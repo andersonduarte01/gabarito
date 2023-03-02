@@ -1,9 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.paginator import Paginator
 from django.urls import reverse
 from unidecode import unidecode
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
-from django_social_share.templatetags import social_share
 
 from ..blog.models import Blog, Categoria
 from ..escola.models import UnidadeEscolar
@@ -45,9 +43,7 @@ class AddNoticia(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         noticia = form.save(commit=False)
         x = noticia.titulo.replace(' ', '-')
-        print(x)
         notice = unidecode(x)
-        print(notice)
         escola = UnidadeEscolar.objects.get(pk=self.request.user)
         noticia.autor = escola
         noticia.slug = notice.lower()

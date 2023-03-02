@@ -8,15 +8,15 @@ ANO = [
     ('Selecione o ano', 'Selecione o ano'),
     ('Educação Infantil', 'Educação Infantil'),
     ('Pré-Escola', 'Pré-Escola'),
-    ('1', '1° Ano'),
-    ('2', '2° Ano'),
-    ('3', '3° Ano'),
-    ('4', '4° Ano'),
-    ('5', '5° Ano'),
-    ('6', '6° Ano'),
-    ('7', '7° Ano'),
-    ('8', '8° Ano'),
-    ('9', '9° Ano'),
+    ('1º Ano', '1° Ano'),
+    ('2º Ano', '2° Ano'),
+    ('3º Ano', '3° Ano'),
+    ('4º Ano', '4° Ano'),
+    ('5º Ano', '5° Ano'),
+    ('6º Ano', '6° Ano'),
+    ('7º Ano', '7° Ano'),
+    ('8º Ano', '8° Ano'),
+    ('9º Ano', '9° Ano'),
 ]
 
 TURNO = [
@@ -31,7 +31,7 @@ class Ano(models.Model):
     descricao = models.CharField(verbose_name='Ano', choices=ANO, default='Selecione o ano', max_length=100)
 
     def __str__(self):
-        return str(self.descricao)
+        return self.descricao
 
 
 class Sala(models.Model):
