@@ -41,4 +41,13 @@ class Blog(models.Model):
             return False
 
 
+class Video(models.Model):
+    titulo = models.CharField(max_length=255, verbose_name='Título')
+    url_video = models.CharField(max_length=255, verbose_name='Url')
+    descricao = RichTextField()
+    data = models.DateTimeField(auto_now_add=True)
+    data_atualizada = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.titulo
 

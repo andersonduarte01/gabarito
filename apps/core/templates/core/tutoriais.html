@@ -1,56 +1,63 @@
 {% extends 'temp_base/indice.html' %}
 {% block titulo %}Vídeos{% endblock %}
 {% load static %}
+{% block estatico %}
+<style>
+.video-container {
+  position: relative;
+  padding-bottom: 56.25%;
+}
+
+.video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+</style>
+{% endblock %}
 {% block conteudo %}
 <div class="container-fluid bg-primary py-5 mb-5 page-header">
-        <div class="container py-5">
-            <div class="row justify-content-left">
-                <div class="col-lg-10 text-left">
-                    <h1 class="display-3 text-white animated slideInDown">Vídeos</h1>
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb justify-content-left">
-                            <li class="breadcrumb-item"><a class="text-white" href="{% url 'core:inicio' %}">Inicio</a></li>
-                            <li class="breadcrumb-item text-white active" aria-current="page">Vídeos</li>
-                        </ol>
-                    </nav>
-                </div>
-            </div>
-        </div>
-    </div>
-<section class="ftco-section">
-    	<div class="container">
-    		<div class="row d-flex">
-    			<div class="col-md-6 d-flex ftco-animate embed-responsive embed-responsive-16by9">
-    				<iframe class="embed-responsive-item" src="https://www.youtube.com/embed/tgbNymZ7vqY?playlist=tgbNymZ7vqY&loop=1"
-                          title="YouTube video player" frameborder="0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowfullscreen>
-                  </iframe>
-    			</div>
-    			<div class="col-md-6 pl-md-5 ftco-animate">
-    				<h2 class="mb-4">Vídeo Demonstrativo</h2>
-    				<p>The Big Oxmox advised her not to do so, because there were thousands of bad Commas, wild Question Marks and devious Semikoli, but the Little Blind Text didn’t listen. She packed her seven versalia, put her initial into the belt and made herself on the way.</p>
-    				<p>On her way she met a copy. The copy warned the Little Blind Text, that where it came from it would have been rewritten a thousand times and everything that was left from its origin would be the word "and" and the Little Blind Text should turn around and return to its own, safe country. But nothing the copy said could convince her and so it didn’t take long until a few insidious Copy Writers ambushed her, made her drunk with Longe and Parole and dragged her into their agency, where they abused her for their.</p>
-    			</div>
-    		</div>
-    	</div>
-    </section>
-<section class="ftco-section">
-    	<div class="container">
-    		<div class="row d-flex">
-    			<div class="col-md-6 d-flex ftco-animate embed-responsive embed-responsive-16by9">
-    				<iframe class="embed-responsive-item" src="https://www.youtube.com/embed/tgbNymZ7vqY?playlist=tgbNymZ7vqY&loop=1"
-                          title="YouTube video player" frameborder="0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowfullscreen>
-                  </iframe>
-    			</div>
-    			<div class="col-md-6 pl-md-5 ftco-animate">
-    				<h2 class="mb-4">Vídeo Demonstrativo</h2>
-    				<p>The Big Oxmox advised her not to do so, because there were thousands of bad Commas, wild Question Marks and devious Semikoli, but the Little Blind Text didn’t listen. She packed her seven versalia, put her initial into the belt and made herself on the way.</p>
-    				<p>On her way she met a copy. The copy warned the Little Blind Text, that where it came from it would have been rewritten a thousand times and everything that was left from its origin would be the word "and" and the Little Blind Text should turn around and return to its own, safe country. But nothing the copy said could convince her and so it didn’t take long until a few insidious Copy Writers ambushed her, made her drunk with Longe and Parole and dragged her into their agency, where they abused her for their.</p>
-    			</div>
-    		</div>
-    	</div>
-    </section>
+	<div class="container py-5">
+		<div class="row justify-content-left">
+			<div class="col-lg-10 text-left">
+				<h1 class="display-3 text-white animated slideInDown">Vídeos</h1>
+				<nav aria-label="breadcrumb">
+					<ol class="breadcrumb justify-content-left">
+						<li class="breadcrumb-item"><a class="text-white" href="{% url 'core:inicio' %}">Inicio</a></li>
+						<li class="breadcrumb-item text-white active" aria-current="page">Vídeos</li>
+					</ol>
+				</nav>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="container">
+	<hr>
+		{% for video in videos %}
+		<div class="row">
+		<div class="col-md-7">
+			<div class="video-container">
+				<iframe
+						src="https://www.youtube.com/embed/{{video.url_video}}"
+						frameborder="0"
+						allow="accelerometer; autoplay; encrypted-media; gyroscope;"
+						allowfullscreen></iframe>
+			</div>
+		</div>
+		<div class="col-md-5" style="margin-bottom:100px;">
+			<div class="ftco-animate">
+				<h2 class="mb-4">{{video.titulo}}</h2>
+				<p>{{video.descricao|safe}}</p>
+			</div>
+		</div>
+		</div>
+		<hr>
+		{% empty %}
+		<p>Nenhum video cadastrado</p>
+		{% endfor %}
+
+</div>
 {% endblock %}

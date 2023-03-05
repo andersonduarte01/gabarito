@@ -1,6 +1,7 @@
 from django.views.generic import TemplateView
 
 from ..arquivos.models import Arquivo, Livro
+from ..blog.models import Video
 
 
 class Index(TemplateView):
@@ -17,6 +18,13 @@ class Sobre(TemplateView):
 
 class Eventos(TemplateView):
     template_name = 'core/tutoriais.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        videos = Video.objects.all().order_by('-data_atualizada')
+        context['videos'] = videos
+        return context
+
 
 
 class Biblioteca(TemplateView):
