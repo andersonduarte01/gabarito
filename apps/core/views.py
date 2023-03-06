@@ -1,4 +1,5 @@
-from django.views.generic import TemplateView
+from django.db.models import Q
+from django.views.generic import TemplateView, ListView
 
 from ..arquivos.models import Arquivo, Livro
 from ..blog.models import Video
@@ -46,7 +47,6 @@ class Biblioteca(TemplateView):
         livros = Livro.objects.all().order_by('-data_modificacao')
 
         for periodo in livros:
-            print(periodo.ano_referencia.descricao)
             if periodo.ano_referencia.descricao == "Educação Infantil":
                 infantil.append(periodo)
             elif periodo.ano_referencia.descricao == "Pré-Escola":
@@ -94,3 +94,33 @@ class Arquivos(TemplateView):
         arquivos = Arquivo.objects.all().order_by('-data_modificacao')
         context['arquivos'] = arquivos
         return context
+
+
+class PesquisarArquivo(ListView):
+    model = Arquivo
+    template_name = 'core/arquivos_resultado.html'
+    context_object_name = 'arquivos'
+    def get_queryset(self):
+        query = self.request.GET.get("q")
+        arquivos = Arquivo.objects.filter(Q(titulo__icontains=query))
+        return arquivos
+
+
+class PesquisarLivro(ListView):
+    model = Livro
+    template_name = 'core/biblioteca_resultado.html'
+    context_object_name = 'livros'
+    def get_queryset(self):
+        query = self.request.GET.get("q")
+        livros = Livro.objects.filter(Q(titulo__icontains=query))
+        return livros
+
+
+class PesquisarVideo(ListView):
+    model = Video
+    template_name = 'core/tutoriais_resultado.html'
+    context_object_name = 'videos'
+    def get_queryset(self):
+        query = self.request.GET.get("q")
+        videos = Video.objects.filter(Q(titulo__icontains=query))
+        return videos

@@ -8,14 +8,26 @@
 <div class="container-fluid bg-primary py-5 mb-5 page-header">
         <div class="container py-5">
             <div class="row justify-content-left">
-                <div class="col-lg-10 text-left">
-                    <h1 class="display-3 text-white animated slideInDown">Arquivos</h1>
+                <div class="col-lg-8">
+                    <h1 class="display-3 text-left text-white animated slideInDown">Arquivos</h1>
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb justify-content-left">
                             <li class="breadcrumb-item"><a class="text-white" href="{% url 'core:inicio' %}">Inicio</a></li>
                             <li class="breadcrumb-item text-white active" aria-current="page">Arquivos</li>
                         </ol>
                     </nav>
+                </div>
+                <div class="col-lg-4">
+                    <form action="{% url 'core:arquivos_pesquisados' %}" method="get">
+                       <div class="row">
+                        <div class="col-8">
+                            <input class="form-control" name="q" type="text" placeholder="Pesquisar notícia...">
+                        </div>
+                        <div class="col-1">
+                        <button type="submit" class="btn btn-outline-primary text-white"><i class="fas fa-search"></i></button>
+                        </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -46,7 +58,6 @@
                             <div class="card-read-more">
                                 <p class="small text-left" style="margin:3%;">
                                     Publicado: {{arquivo.data_modificacao|date:"d M Y"}}<br>
-                                    Autor: {{arquivo.escola}}
                                 </p>
                                 <div class="btn-group-sm" role="group" aria-label="Exenplo" style="margin-bottom: 3px;">
                                   <a href="{{arquivo.pdf.url}}" class="btn btn-outline-info" target="_blank">Baixar</a>

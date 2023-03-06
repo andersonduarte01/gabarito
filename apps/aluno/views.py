@@ -1,9 +1,10 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse_lazy, reverse
-from django.views.generic import DeleteView, ListView, CreateView
+from django.views.generic import DeleteView, ListView, CreateView, TemplateView
 
 from ..aluno.models import Aluno
 from ..avaliacao.models import Gabarito, Resposta
@@ -98,3 +99,19 @@ class ProvaView(ListView):
     def get_queryset(self):
         gabarito = Gabarito.objects.get(pk=self.kwargs['pk'])
         return Resposta.objects.filter(gabarito=gabarito)
+
+
+class ResultadoPesquisa(ListView):
+    model = Aluno
+    template_name = 'aluno/resultado.html'
+
+    def get_queryset(self):
+        salas = Sala.objects.filter(escola=self.request.user)
+        query = self.request.GET.get("q")
+        object_list = Aluno.objects.filter(Q(nome__icontains=query) | Q(responsavel_legal__icontains=query), sala__in=salas)
+        return object_list
+
+
+class Pesquisar(TemplateView):
+    template_name = 'aluno/pesquisar.html'
+

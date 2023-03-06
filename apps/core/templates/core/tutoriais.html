@@ -21,7 +21,7 @@
 <div class="container-fluid bg-primary py-5 mb-5 page-header">
 	<div class="container py-5">
 		<div class="row justify-content-left">
-			<div class="col-lg-10 text-left">
+			<div class="col-lg-8">
 				<h1 class="display-3 text-white animated slideInDown">Vídeos</h1>
 				<nav aria-label="breadcrumb">
 					<ol class="breadcrumb justify-content-left">
@@ -30,6 +30,18 @@
 					</ol>
 				</nav>
 			</div>
+			<div class="col-lg-4">
+                    <form action="{% url 'core:videos_pesquisados' %}" method="get">
+                       <div class="row">
+                        <div class="col-8">
+                            <input class="form-control" name="q" type="text" placeholder="Pesquisar...">
+                        </div>
+                        <div class="col-1">
+                        <button type="submit" class="btn btn-outline-primary text-white"><i class="fas fa-search"></i></button>
+                        </div>
+                        </div>
+                    </form>
+                </div>
 		</div>
 	</div>
 </div>

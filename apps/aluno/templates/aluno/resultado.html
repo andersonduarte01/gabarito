@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Resultado Pesquisa</title>
+</head>
+<body>
+{% for aluno in object_list %}
+<p>{{aluno}} - {{aluno.sala}} - {{aluno.sala.ano}}</p>
+{% empty %}
+<p>Nenhum resultado encontrado</p>
+{% endfor %}
+</body>
+</html>

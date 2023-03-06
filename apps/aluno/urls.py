@@ -9,4 +9,6 @@ urlpatterns = [
     path('<int:pk>/deletar/', views.delete_view, name='deletar'),
     path('<int:pk>/', views.ProvasView.as_view(), name='provas'),
     path('prova/<int:pk>/', views.ProvaView.as_view(), name='prova'),
+    path('resultado_busca/', views.ResultadoPesquisa.as_view(), name='resultado'),
+    path('pesquisar/', views.Pesquisar.as_view(), name='pesquisar'),
 ]

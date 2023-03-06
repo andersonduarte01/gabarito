@@ -10,4 +10,7 @@ urlpatterns = [
     path('videos/', views.Eventos.as_view(), name='videos'),
     path('biblioteca/', views.Biblioteca.as_view(), name='biblioteca'),
     path('arquivos/', views.Arquivos.as_view(), name='arquivos'),
+    path('resultado_pesquisa/arquivos/', views.PesquisarArquivo.as_view(), name='arquivos_pesquisados'),
+    path('biblioteca/livros/', views.PesquisarLivro.as_view(), name='livros_pesquisados'),
+    path('videos/resultado/', views.PesquisarVideo.as_view(), name='videos_pesquisados'),
 ]
