@@ -11,4 +11,5 @@ urlpatterns = [
     path('prova/<int:pk>/', views.ProvaView.as_view(), name='prova'),
     path('resultado_busca/', views.ResultadoPesquisa.as_view(), name='resultado'),
     path('pesquisar/', views.Pesquisar.as_view(), name='pesquisar'),
+    path('perfil/aluno/<int:pk>/', views.PerfilAluno.as_view(), name='perfil'),
 ]

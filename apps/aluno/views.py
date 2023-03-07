@@ -108,10 +108,24 @@ class ResultadoPesquisa(ListView):
     def get_queryset(self):
         salas = Sala.objects.filter(escola=self.request.user)
         query = self.request.GET.get("q")
-        object_list = Aluno.objects.filter(Q(nome__icontains=query) | Q(responsavel_legal__icontains=query), sala__in=salas)
+        object_list = Aluno.objects.filter(Q(nome__icontains=query), sala__in=salas)
         return object_list
 
 
 class Pesquisar(TemplateView):
     template_name = 'aluno/pesquisar.html'
+
+
+class PerfilAluno(ListView):
+    model = Aluno
+    template_name = 'aluno/perfil_aluno.html'
+    context_object_name = 'aluno'
+
+    def get_queryset(self):
+        return Aluno.objects.get(pk=self.kwargs['pk'])
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        aluno = Aluno.objects.get(pk=self.kwargs['pk'])
+        return context
 

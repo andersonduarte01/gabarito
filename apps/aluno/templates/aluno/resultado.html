@@ -1,14 +1,62 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Resultado Pesquisa</title>
-</head>
-<body>
-{% for aluno in object_list %}
-<p>{{aluno}} - {{aluno.sala}} - {{aluno.sala.ano}}</p>
-{% empty %}
-<p>Nenhum resultado encontrado</p>
-{% endfor %}
-</body>
-</html>
+{% extends 'temp_base/adm.html' %}
+{% load static %}
+{% load bootstrap4 %}
+{% block titulo %}Resultado Pesquisa {% endblock %}
+{% block imagem1 %}
+<img src="{% if escola.imagem %}
+    {{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block imagem2 %}
+<img src="{% if escola.imagem %}{{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block painel%}
+{{block.super}}
+{% endblock %}
+{% block tema %}
+<h3 class="m-b-10">Resultado da pesquisa</h3>
+{% endblock %}
+{% block breadcrumbs %}
+{{block.super}}
+<li class="breadcrumb-item"><a href="#">Aluno</a></li>
+<li class="breadcrumb-item"><a href="#">Resultado</a></li>
+{% endblock %}
+{% block conteudo %}
+<div class="col-xl-12 col-md-12">
+    <div class="card table-card">
+        <div class="card-header">
+            <h5>Lista</h5>
+        </div>
+        <div class="card-block">
+            <div class="table-responsive">
+                <table class="table table-hover m-b-0 without-header">
+                    <tbody>
+                    {% for aluno in object_list %}
+                    <tr>
+                        <td>
+                            <div class="d-inline-block align-middle">
+                                <div class="d-inline-block">
+                                    <a href="{% url 'aluno:perfil' aluno.pk %}"><h6>{{aluno}}</h6></a>
+                                    <a href="#"><p class="text-muted m-b-0"><span class="f-w-700">Responsável legal:</span> {{aluno.responsavel_legal}}</p></a>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-right">
+                            <h6 class="f-w-700">{{aluno.sala}}</h6>
+                            <h6 class="f-w-700">{{aluno.sala.ano}} - {{aluno.sala.turno}}</h6>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <h4 class="text-center">Aluno não encontrado</h4>
+                    {% endfor %}
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
