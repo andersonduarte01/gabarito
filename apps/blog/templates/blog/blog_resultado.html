@@ -6,11 +6,11 @@
     <div class="container py-5">
         <div class="row justify-content-left">
             <div class="col-lg-8 text-left">
-                <h1 class="display-3 text-white animated slideInDown">Notícias</h1>
+                <h1 class="display-3 text-white animated slideInDown">Resultado Pesquisa</h1>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb justify-content-left">
                         <li class="breadcrumb-item"><a class="text-white" href="{% url 'core:inicio' %}">Inicio</a></li>
-                        <li class="breadcrumb-item text-white active" aria-current="page">Notícias</li>
+                        <li class="breadcrumb-item text-white active" aria-current="page">Resultado</li>
                     </ol>
                 </nav>
             </div>
@@ -18,7 +18,7 @@
                     <form action="{% url 'blog:noticias_pesquisadas' %}" method="get">
                        <div class="row">
                         <div class="col-8">
-                            <input class="form-control" name="q" type="text" placeholder="Pesquisar noticia...">
+                            <input class="form-control" name="q" type="text" placeholder="Nova pesquisa...">
                         </div>
                         <div class="col-1">
                         <button type="submit" class="btn btn-outline-primary text-white"><i class="fas fa-search"></i></button>

@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
 from django.urls import reverse
 from unidecode import unidecode
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
@@ -14,6 +15,16 @@ class Noticias(ListView):
 
     def get_queryset(self):
         return Blog.objects.filter().order_by('-data')
+
+
+class ResultadoNoticias(ListView):
+    model = Blog
+    template_name = 'blog/blog_resultado.html'
+    context_object_name = 'noticias'
+
+    def get_queryset(self):
+        query = self.request.GET.get("q")
+        return Blog.objects.filter(Q(titulo__icontains=query)).order_by('-data')
 
 
 class Noticia(DetailView):
