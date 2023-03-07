@@ -31,12 +31,12 @@
         <div class="card-block">
             <form action="{% url 'aluno:resultado' %}" method="get">
                <div class="row">
-                <div class="col-md-8">
+                <div class="col-md-6 col-10">
                     <input class="form-control" name="q" type="text" placeholder="Pesquisar...">
                 </div>
-                {% buttons %}
+                 <div class="col-md-2 col-2">
                 <button type="submit" class="btn btn-outline-primary btn-sm"><i class="fas fa-search"></i></button>
-                {% endbuttons %}
+                </div>
                 </div>
             </form>
         </div>
