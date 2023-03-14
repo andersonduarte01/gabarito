@@ -26,11 +26,10 @@ class Painel(LoginRequiredMixin, TemplateView):
         else:
             escola = UnidadeEscolar.objects.get(pk=self.request.user)
             if Sala.objects.filter(turno='manha', escola=escola).exists():
-                print('verdadeiro')
                 bool_m = True
-            if Sala.objects.filter(turno='tarde').exists():
+            if Sala.objects.filter(turno='tarde', escola=escola).exists():
                 bool_t = True
-            if Sala.objects.filter(turno='integral').exists():
+            if Sala.objects.filter(turno='integral', escola=escola).exists():
                 bool_i = True
 
             context['escola'] = escola
