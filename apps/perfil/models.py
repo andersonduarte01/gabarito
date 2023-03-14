@@ -8,7 +8,7 @@ from stdimage import StdImageField
 class Endereco(models.Model):
     rua = models.CharField(verbose_name='Rua', max_length=100)
     numero = models.CharField(verbose_name='Número', max_length=20)
-    complemento = models.CharField(verbose_name='Complemento', max_length=200)
+    complemento = models.CharField(verbose_name='Complemento', max_length=200, blank=True, null=True)
     bairro = models.CharField(verbose_name='Bairro', max_length=100)
     cep = models.CharField(verbose_name='Cep', max_length=10, blank=True)
     cidade = models.CharField(verbose_name='Cidade', max_length=100, blank=True)

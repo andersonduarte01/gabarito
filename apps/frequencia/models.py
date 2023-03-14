@@ -7,7 +7,7 @@ from ..sala.models import Sala
 
 
 class Frequencia(models.Model):
-    sala = models.ForeignKey(Sala, related_name='freq_sala', on_delete=models.DO_NOTHING)
+    sala = models.ForeignKey(Sala, related_name='freq_sala', on_delete=models.CASCADE)
     presentes = models.IntegerField(verbose_name='Presentes')
     data = models.DateField()
     status = models.BooleanField(verbose_name='Status', default=False)
