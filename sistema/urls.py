@@ -18,6 +18,7 @@ urlpatterns = [
     path('blog/', include('apps.blog.urls', namespace='blog')),
     path('pdf/', include('apps.arquivos.urls', namespace='arquivos')),
     path('frequencia/', include('apps.frequencia.urls', namespace='frequencia')),
+    path('cadastro/', include('apps.cadastro.urls', namespace='cadastro')),
     path('tinymce/', include('tinymce.urls')),
     path('ckeditor/', include('ckeditor_uploader.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

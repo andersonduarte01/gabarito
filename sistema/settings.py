@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'apps.blog',
     'apps.relatorios',
     'apps.arquivos',
+    'apps.cadastro',
     'cpf_field',
     'ckeditor',
     'django_social_share'
