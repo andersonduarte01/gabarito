@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     #Baixados
     'bootstrap4',
+    'django_bootstrap5',
     'stdimage',
     'tinymce',
     #APPS
