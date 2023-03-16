@@ -22,3 +22,8 @@ urlpatterns = [
     path('tinymce/', include('tinymce.urls')),
     path('ckeditor/', include('ckeditor_uploader.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+handler404 = 'apps.erros.views.error_404'
+handler500 = 'apps.erros.views.error_500'
+handler403 = 'apps.erros.views.error_403'
+handler400 = 'apps.erros.views.error_400'
