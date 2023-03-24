@@ -1,23 +1,22 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-import datetime
+from datetime import datetime
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView, UpdateView
 from .traduzir import converter
 from .models import UnidadeEscolar, EnderecoEscolar
+from ..aluno.models import Aluno
 from ..core.models import Usuario
+from ..frequencia.models import Frequencia, FrequenciaAluno
 from ..sala.models import Sala
 from .traduzir import converter
-from .gerarPlanilhaFrequencia import criarFrequencia, dias_mes, presentesDia, dias
+from .gerarPlanilhaFrequencia import criarFrequencia, dias_mes, presentesDia, dias, percentual
 
 
 class Painel(LoginRequiredMixin, TemplateView):
     template_name = 'escola/painel_controle_escola.html'
 
     def get_context_data(self, **kwargs):
-        bool_m = False
-        bool_t = False
-        bool_i = False
         context = super().get_context_data(**kwargs)
         if self.request.user.is_administrator:
             escolas = UnidadeEscolar.objects.all()
@@ -25,38 +24,120 @@ class Painel(LoginRequiredMixin, TemplateView):
             return context
         else:
             escola = UnidadeEscolar.objects.get(pk=self.request.user)
-            if Sala.objects.filter(turno='manha', escola=escola).exists():
-                bool_m = True
-            if Sala.objects.filter(turno='tarde', escola=escola).exists():
-                bool_t = True
-            if Sala.objects.filter(turno='integral', escola=escola).exists():
-                bool_i = True
-
             context['escola'] = escola
-            context['manha'] = bool_m
-            context['tarde'] = bool_t
-            context['integral'] = bool_i
             return context
 
 
 class PainelPlanilha(LoginRequiredMixin, TemplateView):
-    template_name = 'escola/painel_controle.html'
+    template_name = 'escola/painel_controle01.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        dia = self.request.GET.get("data")
+        data = datetime.strptime(dia, '%d/%m/%Y')
         escola = UnidadeEscolar.objects.get(pk=self.request.user)
-        salas = Sala.objects.filter(escola=escola, turno=self.kwargs['turno']).order_by('ano')
-        ano = datetime.date.today().year
-        mes = datetime.date.today().month
-        mes_atual = dias_mes(mes=mes, ano=ano)
-        turma = []
-        for sala in salas:
-            freq = criarFrequencia(mes_atual, sala)
-            turma.append(freq)
-        context['mes'] = mes_atual
-        mes01 = converter(mes_atual[0].month)
-        context['turma'] = turma
-        context['mes1'] = mes01
+        manha = Sala.objects.filter(turno='manha', escola=escola)
+        tarde = Sala.objects.filter(turno='tarde', escola=escola)
+        integral = Sala.objects.filter(turno='integral', escola=escola)
+
+        fre_manha = []
+        for sala in manha:
+            alunos = Aluno.objects.filter(sala=sala)
+            freq = FrequenciaAluno.objects.filter(data=data, aluno__in=alunos).order_by()
+            try:
+                frequence = Frequencia.objects.get(sala=sala, data=data)
+                percentual(frequencias=freq, freq=frequence)
+                fre_manha.append(frequence)
+            except:
+                frequence = Frequencia.objects.create(sala=sala, data=data, presentes=0)
+                fre_manha.append(frequence)
+
+        fre_tarde = []
+        for sala in tarde:
+            alunos = Aluno.objects.filter(sala=sala)
+            freq = FrequenciaAluno.objects.filter(data=data, aluno__in=alunos).order_by()
+            try:
+                frequence = Frequencia.objects.get(sala=sala, data=data)
+                percentual(frequencias=freq, freq=frequence)
+                fre_tarde.append(frequence)
+            except:
+                frequence = Frequencia.objects.create(sala=sala, data=data, presentes=0)
+                fre_tarde.append(frequence)
+
+        fre_integral = []
+        for sala in integral:
+            alunos = Aluno.objects.filter(sala=sala)
+            freq = FrequenciaAluno.objects.filter(data=data, aluno__in=alunos).order_by()
+            try:
+                frequence = Frequencia.objects.get(sala=sala, data=data)
+                percentual(frequencias=freq, freq=frequence)
+                fre_integral.append(frequence)
+            except:
+                frequence = Frequencia.objects.create(sala=sala, data=data, presentes=0)
+                fre_integral.append(frequence)
+
+        context['escola'] = escola
+        context['manha'] = fre_manha
+        context['tarde'] = fre_tarde
+        context['integral'] = fre_integral
+        context['data'] = data.date()
+        context['escola'] = escola
+        return context
+
+
+class PainelPlanilha00(LoginRequiredMixin, TemplateView):
+    template_name = 'escola/painel_controle01.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        dia = self.kwargs['data']
+        x = dia.replace("-", "/")
+        data_e = datetime.strptime(x, '%Y/%m/%d')
+        escola = UnidadeEscolar.objects.get(pk=self.request.user)
+        manha = Sala.objects.filter(turno='manha', escola=escola)
+        tarde = Sala.objects.filter(turno='tarde', escola=escola)
+        integral = Sala.objects.filter(turno='integral', escola=escola)
+        fre_manha = []
+        for sala in manha:
+            alunos = Aluno.objects.filter(sala=sala)
+            freq = FrequenciaAluno.objects.filter(data=data_e, aluno__in=alunos).order_by()
+            try:
+                frequence = Frequencia.objects.get(sala=sala, data=data_e)
+                percentual(frequencias=freq, freq=frequence)
+                fre_manha.append(frequence)
+            except:
+                frequence = Frequencia.objects.create(sala=sala, data=data_e, presentes=0)
+                fre_manha.append(frequence)
+
+        fre_tarde = []
+        for sala in tarde:
+            alunos = Aluno.objects.filter(sala=sala)
+            freq = FrequenciaAluno.objects.filter(data=data_e, aluno__in=alunos).order_by()
+            try:
+                frequence = Frequencia.objects.get(sala=sala, data=data_e)
+                percentual(frequencias=freq, freq=frequence)
+                fre_tarde.append(frequence)
+            except:
+                frequence = Frequencia.objects.create(sala=sala, data=data_e, presentes=0)
+                fre_tarde.append(frequence)
+
+        fre_integral = []
+        for sala in integral:
+            alunos = Aluno.objects.filter(sala=sala)
+            freq = FrequenciaAluno.objects.filter(data=data_e, aluno__in=alunos).order_by()
+            try:
+                frequence = Frequencia.objects.get(sala=sala, data=data_e)
+                percentual(frequencias=freq, freq=frequence)
+                fre_integral.append(frequence)
+            except:
+                frequence = Frequencia.objects.create(sala=sala, data=data_e, presentes=0)
+                fre_integral.append(frequence)
+
+        context['escola'] = escola
+        context['manha'] = fre_manha
+        context['tarde'] = fre_tarde
+        context['integral'] = fre_integral
+        context['data'] = data_e.date()
         context['escola'] = escola
         return context
 

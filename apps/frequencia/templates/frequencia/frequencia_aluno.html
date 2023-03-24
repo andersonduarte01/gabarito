@@ -15,7 +15,7 @@
 {% endblock %}
 {% block tema %}
 <h5 class="m-b-10">{{escola}}</h5>
-<p class="m-b-0">{{sala}} - {{sala.ano}}º Ano - {{sala.turno}}</p>
+<p class="m-b-0">{{sala}} - {{sala.ano}}- {{sala.turno}}</p>
 {% endblock %}
 {% block breadcrumbs %}
 {{block.super}}
@@ -26,43 +26,41 @@
     <!-- Basic table card start -->
     <div class="card">
         <div class="card-header">
-            <h5>{{data}}</h5>
+            <h4>{{data}}</h4>
             <span><code>* Em caso de falta desmarque o campo presença referente ao aluno</code></span>
         </div>
         <div class="card-block">
             <form method="post">
-            {% csrf_token %}
-            {{ formset.management_form }}
-            <table class="table table-hover">
-            <thead>
-            <tr>
-              <th>PRESENÇA</th>
-              <th>NOME</th>
-              <th>JUSTIFICADA</th>
-              <th>OBS:</th>
-            </tr>
-            </thead>
+                {% csrf_token %}
+                {{ formset.management_form }}
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>PRESENÇA</th>
+                        <th class="text-center">NOME</th>
+                        <th class="text-center">OBSERVAÇÂO:</th>
+                    </tr>
+                    </thead>
 
                     {% for form in formset %}
                     {% for hidden_field in form.hidden_fields %}
                     {{ hidden_field.errors }}
                     {{ hidden_field }}
                     {% endfor %}
-                <tbody>
+                    <tbody>
                     <tr>
                         <td>{{form.presente}}</td>
-                        <td class="text-left">{{form.presente.label}}</td>
-                        <td class="text-left">{{form.falta_justificada}}</td>
+                        <td class="text-center">{{form.presente.label}}</td>
                         <td>{{form.observacao}}</td>
-                    {% endfor %}
+                        {% endfor %}
                     </tr>
-                </tbody>
-            </table>
-            <hr>
-            {% buttons %}
-            <button type="submit" class="btn btn-primary">Salvar</button>
-            {% endbuttons %}
-        </form>
+                    </tbody>
+                </table>
+                <hr>
+                {% buttons %}
+                <button type="submit" class="btn btn-primary">Salvar</button>
+                {% endbuttons %}
+            </form>
         </div>
     </div>
 </div>

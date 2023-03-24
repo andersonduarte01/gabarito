@@ -33,19 +33,19 @@
                     {% for sala in manha %}
                     <tr>
                         <td>
-                            <a href="{% url 'frequencia:freq_aluno' sala_id=sala.id cal=data %}">
+                            <a href="{% url 'frequencia:freq_aluno' sala_id=sala.sala.id cal=data %}">
                             <div class="d-inline-block align-middle">
                                 <img src="{% static 'images/logo1.png' %}" alt="user image" class="img-radius img-40 align-top m-r-15">
                                 <div class="d-inline-block">
-                                    <h6>{{sala}}</h6>
-                                    <p class="text-muted m-b-0">{{sala.ano}}</p>
+                                    <h6>{{sala.sala}}</h6>
+                                    <p class="text-muted m-b-0">{{sala.sala.ano}}</p>
                                 </div>
                             </div>
                             </a>
                         </td>
                         <td class="text-right">
                             <a href="#">
-                                {% if sala.freq_sala.all.0.status %}
+                                {% if sala.presentes %}
                                 <div class="text-success">
                                     <i class="fa fa-check fa-lg" aria-hidden="true"></i>
                                 </div>
@@ -56,7 +56,7 @@
                                 {% endif %}
                                 <br>
                                 <div class="text-primary">
-                                    {{ sala.freq_sala.all.0.presentes }}%
+                                    {{ sala.presentes }}%
                                 </div>
                             </a>
                         </td>
@@ -71,6 +71,7 @@
     </div>
 </div>
 {% endif %}
+
 {% if tarde %}
 <div class="col-xl-6 col-md-12">
     <div class="card table-card">
@@ -84,19 +85,19 @@
                     {% for sala in tarde %}
                     <tr>
                         <td>
-                            <a href="{% url 'frequencia:freq_aluno' sala_id=sala.id cal=data %}">
+                            <a href="{% url 'frequencia:freq_aluno' sala_id=sala.sala.id cal=data %}">
                             <div class="d-inline-block align-middle">
                                 <img src="{% static 'images/logo1.png' %}" alt="user image" class="img-radius img-40 align-top m-r-15">
                                 <div class="d-inline-block">
-                                    <h6>{{sala}}</h6>
-                                    <p class="text-muted m-b-0">{{sala.ano}}</p>
+                                    <h6>{{sala.sala}}</h6>
+                                    <p class="text-muted m-b-0">{{sala.sala.ano}}</p>
                                 </div>
                             </div>
                             </a>
                         </td>
                         <td class="text-right">
                             <a href="#">
-                                {% if sala.freq_sala.all.0.status %}
+                                {% if sala.presentes %}
                                 <div class="text-success">
                                     <i class="fa fa-check fa-lg" aria-hidden="true"></i>
                                 </div>
@@ -107,7 +108,7 @@
                                 {% endif %}
                                 <br>
                                 <div class="text-primary">
-                                    {{ sala.freq_sala.all.0.presentes }}%
+                                    {{ sala.presentes }}%
                                 </div>
                             </a>
                         </td>
@@ -122,11 +123,12 @@
     </div>
 </div>
 {% endif %}
+
 {% if integral %}
 <div class="col-xl-6 col-md-12">
     <div class="card table-card">
         <div class="card-header">
-            <h4 class="text-center">Integral</h4>
+            <h4 class="text-center">Tempo Integral</h4>
         </div>
         <div class="card-block">
             <div class="table-responsive">
@@ -135,19 +137,19 @@
                     {% for sala in integral %}
                     <tr>
                         <td>
-                            <a href="{% url 'frequencia:freq_aluno' sala_id=sala.id cal=data %}">
+                            <a href="{% url 'frequencia:freq_aluno' sala_id=sala.sala.id cal=data %}">
                             <div class="d-inline-block align-middle">
                                 <img src="{% static 'images/logo1.png' %}" alt="user image" class="img-radius img-40 align-top m-r-15">
                                 <div class="d-inline-block">
-                                    <h6>{{sala}}</h6>
-                                    <p class="text-muted m-b-0">{{sala.ano}}</p>
+                                    <h6>{{sala.sala}}</h6>
+                                    <p class="text-muted m-b-0">{{sala.sala.ano}}</p>
                                 </div>
                             </div>
                             </a>
                         </td>
                         <td class="text-right">
                             <a href="#">
-                                {% if sala.freq_sala.all.0.status %}
+                                {% if sala.presentes %}
                                 <div class="text-success">
                                     <i class="fa fa-check fa-lg" aria-hidden="true"></i>
                                 </div>
@@ -158,7 +160,7 @@
                                 {% endif %}
                                 <br>
                                 <div class="text-primary">
-                                    {{ sala.freq_sala.all.0.presentes }}%
+                                    {{ sala.presentes }}%
                                 </div>
                             </a>
                         </td>

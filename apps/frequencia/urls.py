@@ -6,5 +6,5 @@ app_name = 'frequencia'
 urlpatterns = [
     #path('', views.FreqAtual.as_view(), name='freq'),
     path('adicionar/<int:pk>/', views.FreqDiaria.as_view(), name='add'),
-    path('<int:pk>/<int:sala_id>/', views.frequencia_diaria, name='freq_aluno'),
+    path('<int:sala_id>/<str:cal>/', views.frequencia_diaria, name='freq_aluno'),
 ]
