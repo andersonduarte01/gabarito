@@ -1,4 +1,3 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.views.generic import TemplateView, ListView
 
@@ -18,7 +17,7 @@ class Sobre(TemplateView):
     template_name = 'core/sobre.html'
 
 
-class Eventos(LoginRequiredMixin, TemplateView):
+class Eventos(TemplateView):
     template_name = 'core/tutoriais.html'
 
     def get_context_data(self, **kwargs):
@@ -117,7 +116,7 @@ class PesquisarLivro(ListView):
         return livros
 
 
-class PesquisarVideo(LoginRequiredMixin, ListView):
+class PesquisarVideo(ListView):
     model = Video
     template_name = 'core/tutoriais_resultado.html'
     context_object_name = 'videos'
