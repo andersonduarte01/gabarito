@@ -3,6 +3,7 @@ from ckeditor.fields import RichTextField
 
 # Create your models here.
 from ..escola.models import UnidadeEscolar
+from ..sala.models import Ano
 
 
 class Categoria(models.Model):
@@ -44,7 +45,8 @@ class Blog(models.Model):
 class Video(models.Model):
     titulo = models.CharField(max_length=255, verbose_name='Título')
     url_video = models.CharField(max_length=255, verbose_name='Url')
-    descricao = RichTextField()
+    ano = models.ForeignKey(Ano, on_delete=models.DO_NOTHING, null=True, blank=True)
+    materia = models.CharField(verbose_name='Materia', max_length=255, null=True, blank=True)
     data = models.DateTimeField(auto_now_add=True)
     data_atualizada = models.DateTimeField(auto_now=True)
 

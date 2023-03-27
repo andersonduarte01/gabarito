@@ -2,27 +2,14 @@
 {% block titulo %}Vídeos{% endblock %}
 {% load static %}
 {% block estatico %}
-<style>
-.video-container {
-  position: relative;
-  padding-bottom: 56.25%;
-}
 
-.video-container iframe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-</style>
 {% endblock %}
 {% block conteudo %}
 <div class="container-fluid bg-primary py-5 mb-5 page-header">
 	<div class="container py-5">
 		<div class="row justify-content-left">
 			<div class="col-lg-8">
-				<h1 class="display-3 text-white animated slideInDown">Vídeos</h1>
+				<h1 class="display-3 text-white animated slideInDown">Vídeo</h1>
 				<nav aria-label="breadcrumb">
 					<ol class="breadcrumb justify-content-left">
 						<li class="breadcrumb-item"><a class="text-white" href="{% url 'core:inicio' %}">Inicio</a></li>
@@ -45,31 +32,50 @@
 		</div>
 	</div>
 </div>
-
 <div class="container">
-	<hr>
-		{% for video in videos %}
-		<div class="row">
-		<div class="col-md-7">
-			<div class="video-container">
-				<iframe
-						src="https://www.youtube.com/embed/{{video.url_video}}"
-						frameborder="0"
-						allow="accelerometer; autoplay; encrypted-media; gyroscope;"
-						allowfullscreen></iframe>
-			</div>
+	<div class="row">
+		<div class="card col-md-3" style="margin-left: 5px;">
+		  <img src="{% static 'images/logo0.png' %}" style="margin-top:10px;" class="card-img-top " alt="...">
+		  <div class="card-body">
+			<hr>
+			<h4 class="card-title text-center">1º Ano</h4>
+			<ul class="list-group list-group-flush">
+				<li class="list-group-item"><a href="#">Língua Portuguesa</a></li>
+				<li class="list-group-item"><a href="#">Matemática</a></li>
+				<li class="list-group-item"><a href="#">História</a></li>
+				<li class="list-group-item"><a href="#">Geografia</a></li>
+				<li class="list-group-item"><a href="#">Ciências</a></li>
+			  </ul>
+		  </div>
 		</div>
-		<div class="col-md-5" style="margin-bottom:100px;">
-			<div class="ftco-animate">
-				<h2 class="mb-4">{{video.titulo}}</h2>
-				<p>{{video.descricao|safe}}</p>
-			</div>
+		<div class="card col-md-3" style="margin-left: 5px;">
+		  <img src="{% static 'images/logo0.png' %}" style="margin-top:10px;" class="card-img-top " alt="...">
+		  <div class="card-body">
+			<hr>
+			<h4 class="card-title text-center">2º Ano</h4>
+			<ul class="list-group list-group-flush">
+				<li class="list-group-item"><a href="#">Língua Portuguesa</a></li>
+				<li class="list-group-item"><a href="#">Matemática</a></li>
+				<li class="list-group-item"><a href="#">História</a></li>
+				<li class="list-group-item"><a href="#">Geografia</a></li>
+				<li class="list-group-item"><a href="#">Ciências</a></li>
+			  </ul>
+		  </div>
 		</div>
+		<div class="card col-md-3" style="margin-left: 5px;">
+		  <img src="{% static 'images/logo0.png' %}" style="margin-top:10px;" class="card-img-top " alt="...">
+		  <div class="card-body">
+			<hr>
+			<h4 class="card-title text-center">3º Ano</h4>
+			<ul class="list-group list-group-flush">
+				<li class="list-group-item"><a href="#">Língua Portuguesa</a></li>
+				<li class="list-group-item"><a href="#">Matemática</a></li>
+				<li class="list-group-item"><a href="#">História</a></li>
+				<li class="list-group-item"><a href="#">Geografia</a></li>
+				<li class="list-group-item"><a href="#">Ciências</a></li>
+			  </ul>
+		  </div>
 		</div>
-		<hr>
-		{% empty %}
-		<p>Nenhum video cadastrado</p>
-		{% endfor %}
-
+	</div>
 </div>
 {% endblock %}
