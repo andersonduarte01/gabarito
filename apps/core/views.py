@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.views.generic import TemplateView, ListView
 
@@ -17,7 +18,7 @@ class Sobre(TemplateView):
     template_name = 'core/sobre.html'
 
 
-class Eventos(TemplateView):
+class Eventos(LoginRequiredMixin, TemplateView):
     template_name = 'core/tutoriais.html'
 
     def get_context_data(self, **kwargs):
@@ -116,7 +117,7 @@ class PesquisarLivro(ListView):
         return livros
 
 
-class PesquisarVideo(ListView):
+class PesquisarVideo(LoginRequiredMixin, ListView):
     model = Video
     template_name = 'core/tutoriais_resultado.html'
     context_object_name = 'videos'
@@ -124,3 +125,13 @@ class PesquisarVideo(ListView):
         query = self.request.GET.get("q")
         videos = Video.objects.filter(Q(titulo__icontains=query))
         return videos
+
+
+class Videos(LoginRequiredMixin, TemplateView):
+    template_name = 'core/tutoriais00.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        videos = Video.objects.all().order_by('-data_atualizada')
+        context['videos'] = videos
+        return context
