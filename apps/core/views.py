@@ -1,11 +1,13 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView, ListView, CreateView
 
 from ..arquivos.models import Arquivo, Livro
 from ..blog.models import Video
 from.forms import UserCreationForm
+from ..sala.models import Ano
 
 
 class Index(TemplateView):
@@ -149,3 +151,36 @@ class SignUpADM(CreateView):
         coordenador.is_administrator = True
         coordenador.save()
         return super(SignUpADM, self).form_valid(form)
+
+
+class AnoMateria(LoginRequiredMixin, ListView):
+    model = Video
+    template_name = 'core/tutoriais00.html'
+    context_object_name = 'videos'
+
+    def get_queryset(self):
+        periodo = self.kwargs['ano']
+        ano=''
+        print(periodo)
+        if periodo == '1Ano':
+            ano = Ano.objects.get(descricao='1º Ano')
+        elif periodo == '2Ano':
+            ano = Ano.objects.get(descricao='2º Ano')
+        elif periodo == '3Ano':
+            ano = Ano.objects.get(descricao='3º Ano')
+        elif periodo == '4Ano':
+            ano = Ano.objects.get(descricao='4º Ano')
+        elif periodo == '5Ano':
+            ano = Ano.objects.get(descricao='5º Ano')
+        elif periodo == '6Ano':
+            ano = Ano.objects.get(descricao='6º Ano')
+        elif periodo == '7Ano':
+            ano = Ano.objects.get(descricao='7º Ano')
+        elif periodo == '8Ano':
+            ano = Ano.objects.get(descricao='8º Ano')
+        elif periodo == '9Ano':
+            ano = Ano.objects.get(descricao='9º Ano')
+        else:
+            ano = Ano.objects.get(descricao='Educação Infantil')
+        lista = Video.objects.filter(ano=ano, sigla=self.kwargs['sigla'])
+        return lista

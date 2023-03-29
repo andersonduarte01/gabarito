@@ -14,5 +14,6 @@ urlpatterns = [
     path('resultado_pesquisa/arquivos/', views.PesquisarArquivo.as_view(), name='arquivos_pesquisados'),
     path('biblioteca/livros/', views.PesquisarLivro.as_view(), name='livros_pesquisados'),
     path('videos/resultado/', views.PesquisarVideo.as_view(), name='videos_pesquisados'),
+    path('videos/<str:ano>/<str:sigla>/', views.AnoMateria.as_view(), name='ano_materia'),
     path('pedagogico/cadastro/', views.SignUpADM.as_view(), name='cad_adm'),
 ]
