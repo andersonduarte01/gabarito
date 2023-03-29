@@ -1,9 +1,11 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from django.views.generic import TemplateView, ListView
+from django.urls import reverse_lazy
+from django.views.generic import TemplateView, ListView, CreateView
 
 from ..arquivos.models import Arquivo, Livro
 from ..blog.models import Video
+from.forms import UserCreationForm
 
 
 class Index(TemplateView):
@@ -135,3 +137,15 @@ class Videos(LoginRequiredMixin, TemplateView):
         videos = Video.objects.all().order_by('data')
         context['videos'] = videos
         return context
+
+
+class SignUpADM(CreateView):
+    form_class = UserCreationForm
+    success_url = reverse_lazy('login')
+    template_name = 'core/cadastro_adm.html'
+
+    def form_valid(self, form):
+        coordenador = form.save(commit=False)
+        coordenador.is_administrator = True
+        coordenador.save()
+        return super(SignUpADM, self).form_valid(form)

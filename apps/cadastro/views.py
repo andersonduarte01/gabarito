@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.views.generic import CreateView, TemplateView
 
 from ..cadastro.models import Cadastro
+from ..core.models import Usuario
 
 
 # Create your views here.
@@ -15,4 +16,3 @@ class Cadastrar(CreateView):
 
 class CadastroSucess(TemplateView):
     template_name = 'cadastro/sucesso.html'
-

@@ -2,16 +2,20 @@ from django import forms
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import ValidationError
 
-from apps.core.models import Usuario
+from ..core.models import Usuario
 
 
 class UserCreationForm(forms.ModelForm):
-    password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
-    password2 = forms.CharField(label='Password confirmation', widget=forms.PasswordInput)
+    password1 = forms.CharField(label='Senha', widget=forms.PasswordInput)
+    password2 = forms.CharField(label='Confirme a senha', widget=forms.PasswordInput)
 
     class Meta:
         model = Usuario
         fields = ('email', 'nome')
+
+    def __init__(self, *args, **kwargs):
+        super(UserCreationForm, self).__init__(*args, **kwargs)
+        self.fields['nome'].label = "Nome"
 
     def clean_password2(self):
         password1 = self.cleaned_data.get("password1")
