@@ -43,10 +43,13 @@ class Blog(models.Model):
 
 
 class Video(models.Model):
+    numero = models.CharField(max_length=255, verbose_name='Numero', default='')
     titulo = models.CharField(max_length=255, verbose_name='Título')
     url_video = models.CharField(max_length=255, verbose_name='Url')
     ano = models.ForeignKey(Ano, on_delete=models.DO_NOTHING, null=True, blank=True)
     materia = models.CharField(verbose_name='Materia', max_length=255, null=True, blank=True)
+    professora = models.CharField(verbose_name='Professor(a)', max_length=255, null=True, blank=True)
+    tempo = models.CharField(verbose_name='Tempo', max_length=255, null=True, blank=True)
     data = models.DateTimeField(auto_now_add=True)
     data_atualizada = models.DateTimeField(auto_now=True)
 

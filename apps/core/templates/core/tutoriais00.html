@@ -61,8 +61,22 @@
 		</div>
 		<div class="col-md-5" style="margin-bottom:100px;">
 			<div class="ftco-animate">
-				<h2 class="mb-4">{{video.titulo}}</h2>
-				<p>{{video.descricao|safe}}</p>
+				<div class="card">
+				  <ul class="list-group">
+					<li class="list-group-item text-uppercase text-center fw-bold active">{{video.titulo}}</li>
+					<li class="list-group-item"></li>
+					  <li class="list-group-item list-group-item-action text-uppercase"><span class="fw-bold">Aula:</span> {{video.numero}}</li>
+					<li class="list-group-item"></li>
+					  <li class="list-group-item list-group-item-action text-uppercase"><span class="fw-bold">Matéria: </span>{{video.materia}}</li>
+					<li class="list-group-item"></li>
+					  <li class="list-group-item list-group-item-action text-uppercase"><span class="fw-bold">Ano:</span> {{video.ano}}</li>
+					<li class="list-group-item"></li>
+					  <li class="list-group-item list-group-item-action text-uppercase"><span class="fw-bold">Prof(A):</span> {{video.professora}}</li>
+					<li class="list-group-item"></li>
+					<li class="list-group-item list-group-item-action"><span class="fw-bold text-uppercase">Duração:</span> {{video.tempo}} minutos</li>
+					<li class="list-group-item"></li>
+				  </ul>
+				</div>
 			</div>
 		</div>
 		</div>
@@ -70,6 +84,5 @@
 		{% empty %}
 		<p>Nenhum video cadastrado</p>
 		{% endfor %}
-
 </div>
 {% endblock %}
