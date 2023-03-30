@@ -48,16 +48,9 @@ def frequencia_diaria(request, cal, sala_id):
         formset = RespostasFormSet(request.POST, request.FILES, queryset=frequencias,)
         if formset.is_valid():
             formset.save()
-            freq = FrequenciaAluno.objects.filter(data=data, aluno__in=alunos).order_by()
-            try:
-                frequence = Frequencia.objects.get(sala=sala, data=data)
-                percentual(frequencias=freq, freq=frequence)
-            except:
-                frequence = Frequencia.objects.create(sala=sala, data=data, presentes=0, status=True)
-                percentual(frequencias=freq, freq=frequence)
             url = reverse_lazy('escola:painel_planilha_00', kwargs={'slug': escola.slug, 'data': data.date()})
             return HttpResponseRedirect(url)
     else:
         formset = RespostasFormSet(queryset=frequencias)
     return render(request, 'frequencia/frequencia_aluno.html',
-                  {'formset': formset, 'escola': escola, 'sala': sala, 'data':data.date()})
+                  {'formset': formset, 'escola': escola, 'sala': sala, 'data': data.date()})
