@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from apps.funcionario.models import Funcionario
+from ..funcionario.models import Funcionario, Professor
 from ..core.admin import UserAdmin
 
 
@@ -20,3 +20,11 @@ class FuncionarioAdmin(UserAdmin):
 
 
 admin.site.register(Funcionario, FuncionarioAdmin)
+
+
+class ProfessorAdmin(UserAdmin):
+    list_display = ('professor_nome', 'email', 'is_professor')
+    list_filter = ('professor_nome', )
+
+
+admin.site.register(Professor, ProfessorAdmin)

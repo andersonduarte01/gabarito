@@ -13,4 +13,9 @@ urlpatterns = [
     path('designar/funcao/<pk>/', views.DesignarFuncao.as_view(), name='designar_funcao'),
     path('<pk>/adicionar/endereco/', views.EnderecoAdicionar.as_view(), name='adicionar_endereco'),
     path('<pk>/remover/', views.DeletarDirecao.as_view(), name='deletar_funcionario'),
+    #####
+    path('cadastrar/professor/', views.CadastrarProfessor.as_view(), name='adicionar_professor'),
+    path('professores/', views.ListaProfessores.as_view(), name='lista_professores'),
+    path('professor/<pk>/', views.EditarProfessor.as_view(), name='editar_professor'),
+    path('deletar/<pk>/', views.DeletarProfessor.as_view(), name='deletar_professor'),
 ]
