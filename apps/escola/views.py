@@ -50,11 +50,13 @@ class PainelPlanilha(LoginRequiredMixin, TemplateView):
                 fre_manha.append(frequence)
             except:
                 frequence = Frequencia.objects.create(sala=sala, data=data, presentes=0)
+                percentual(frequencias=freq, freq=frequence)
                 fre_manha.append(frequence)
 
         fre_tarde = []
         for sala in tarde:
             alunos = Aluno.objects.filter(sala=sala)
+            print(alunos)
             freq = FrequenciaAluno.objects.filter(data=data, aluno__in=alunos).order_by()
             try:
                 frequence = Frequencia.objects.get(sala=sala, data=data)
@@ -62,11 +64,13 @@ class PainelPlanilha(LoginRequiredMixin, TemplateView):
                 fre_tarde.append(frequence)
             except:
                 frequence = Frequencia.objects.create(sala=sala, data=data, presentes=0)
+                percentual(frequencias=freq, freq=frequence)
                 fre_tarde.append(frequence)
 
         fre_integral = []
         for sala in integral:
             alunos = Aluno.objects.filter(sala=sala)
+            print(alunos)
             freq = FrequenciaAluno.objects.filter(data=data, aluno__in=alunos).order_by()
             try:
                 frequence = Frequencia.objects.get(sala=sala, data=data)
@@ -74,6 +78,7 @@ class PainelPlanilha(LoginRequiredMixin, TemplateView):
                 fre_integral.append(frequence)
             except:
                 frequence = Frequencia.objects.create(sala=sala, data=data, presentes=0)
+                percentual(frequencias=freq, freq=frequence)
                 fre_integral.append(frequence)
 
         context['escola'] = escola
@@ -98,41 +103,44 @@ class PainelPlanilha00(LoginRequiredMixin, TemplateView):
         tarde = Sala.objects.filter(turno='tarde', escola=escola)
         integral = Sala.objects.filter(turno='integral', escola=escola)
         fre_manha = []
+
         for sala in manha:
             alunos = Aluno.objects.filter(sala=sala)
-            freq = FrequenciaAluno.objects.filter(data=data_e, aluno__in=alunos).order_by()
             try:
+                freq = FrequenciaAluno.objects.filter(data=data_e, aluno__in=alunos).order_by()
                 frequence = Frequencia.objects.get(sala=sala, data=data_e)
                 percentual(frequencias=freq, freq=frequence)
                 fre_manha.append(frequence)
             except:
                 frequence = Frequencia.objects.create(sala=sala, data=data_e, presentes=0)
+                percentual(frequencias=freq, freq=frequence)
                 fre_manha.append(frequence)
 
         fre_tarde = []
         for sala in tarde:
             alunos = Aluno.objects.filter(sala=sala)
-            freq = FrequenciaAluno.objects.filter(data=data_e, aluno__in=alunos).order_by()
             try:
+                freq = FrequenciaAluno.objects.filter(data=data_e, aluno__in=alunos).order_by()
                 frequence = Frequencia.objects.get(sala=sala, data=data_e)
                 percentual(frequencias=freq, freq=frequence)
                 fre_tarde.append(frequence)
             except:
                 frequence = Frequencia.objects.create(sala=sala, data=data_e, presentes=0)
+                percentual(frequencias=freq, freq=frequence)
                 fre_tarde.append(frequence)
 
         fre_integral = []
         for sala in integral:
             alunos = Aluno.objects.filter(sala=sala)
-            freq = FrequenciaAluno.objects.filter(data=data_e, aluno__in=alunos).order_by()
             try:
+                freq = FrequenciaAluno.objects.filter(data=data_e, aluno__in=alunos).order_by()
                 frequence = Frequencia.objects.get(sala=sala, data=data_e)
                 percentual(frequencias=freq, freq=frequence)
                 fre_integral.append(frequence)
             except:
                 frequence = Frequencia.objects.create(sala=sala, data=data_e, presentes=0)
+                percentual(frequencias=freq, freq=frequence)
                 fre_integral.append(frequence)
-
         context['escola'] = escola
         context['manha'] = fre_manha
         context['tarde'] = fre_tarde

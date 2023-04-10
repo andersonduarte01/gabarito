@@ -76,7 +76,9 @@ def percentual(frequencias, freq):
     for frequency in frequencias:
         if frequency.presente:
             contador += 1
-            print(contador)
-    resultado = (contador/total) * 100
-    freq.presentes = int(resultado)
-    freq.save()
+    try:
+        resultado = (contador/total) * 100
+        freq.presentes = int(resultado)
+        freq.save()
+    except:
+        print('Fuga')
