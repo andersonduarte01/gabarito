@@ -24,3 +24,5 @@ class FrequenciaAlunoForm(forms.ModelForm):
 
 
 
+
+

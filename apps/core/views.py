@@ -131,28 +131,6 @@ class PesquisarVideo(LoginRequiredMixin, ListView):
         return videos
 
 
-class Videos(LoginRequiredMixin, TemplateView):
-    template_name = 'core/tutoriais00.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        videos = Video.objects.all().order_by('data')
-        context['videos'] = videos
-        return context
-
-
-class SignUpADM(CreateView):
-    form_class = UserCreationForm
-    success_url = reverse_lazy('login')
-    template_name = 'core/cadastro_adm.html'
-
-    def form_valid(self, form):
-        coordenador = form.save(commit=False)
-        coordenador.is_administrator = True
-        coordenador.save()
-        return super(SignUpADM, self).form_valid(form)
-
-
 class AnoMateria(LoginRequiredMixin, ListView):
     model = Video
     template_name = 'core/tutoriais00.html'

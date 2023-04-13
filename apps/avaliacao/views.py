@@ -4,10 +4,10 @@ from django.forms import modelformset_factory
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
-from django.views.generic import ListView, CreateView
+from django.views.generic import ListView, CreateView, UpdateView
 
 from .correcao import criarGabaritos, alinharquestoes, correcao
-from .forms import RespostaForm, AvaliacaoForm
+from .forms import RespostaForm, AvaliacaoForm, AvaliacaoUpdateForm
 from ..aluno.models import Aluno
 from ..avaliacao.models import Questao, Avaliacao, Resposta, Gabarito
 from ..escola.models import UnidadeEscolar
@@ -153,12 +153,34 @@ def responderProvaAdm(request, aluno_id, avaliacao_id, slug):
                   {'formset': formset, 'avaliacao': avaliacao, 'escola': escola, 'sala': sala, 'aluno': aluno})
 
 
-class AddAvaliacao(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+# class AddAvaliacao(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+#     model = Avaliacao
+#     fields = ('descricao', 'ano')
+#     template_name = 'avaliacao/adicionar_avaliacao.html'
+#     success_message = 'Avaliação cadastrada com sucesso.'
+#     success_url = reverse_lazy('escola:painel_escola')
+
+def criarAvaliacao(request):
+    if request.method == 'POST':
+        form = AvaliacaoForm(request.POST)
+        if form.is_valid():
+            avaliacao = form.save()
+            url = reverse_lazy('escola:painel_escola')
+            return HttpResponseRedirect(url)
+    else:
+        form = AvaliacaoForm()
+
+    context = {'form': form}
+    return render(request, 'avaliacao/adicionar_avaliacao.html', context)
+
+
+class EditarAvaliacao(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Avaliacao
-    fields = ('descricao', 'ano')
+    form_class = AvaliacaoUpdateForm
     template_name = 'avaliacao/adicionar_avaliacao.html'
-    success_message = 'Avaliação cadastrada com sucesso.'
+    success_message = 'Avaliação atualizada!'
     success_url = reverse_lazy('escola:painel_escola')
+
 
 
 class ListaAvaliacoes(LoginRequiredMixin, ListView):

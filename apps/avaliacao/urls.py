@@ -5,7 +5,9 @@ app_name = 'avaliacao'
 
 urlpatterns = [
     path('<int:pk>/<int:sala_id>/', views.AvaliacaoView.as_view(), name='prova'),
-    path('adicionar/', views.AddAvaliacao.as_view(), name='add_avaliacao'),
+    #path('adicionar/', views.AddAvaliacao.as_view(), name='add_avaliacao'),
+    path('adicionar/', views.criarAvaliacao, name='add_avaliacao'),
+    path('editar/<int:pk>/', views.EditarAvaliacao.as_view(), name='edit_avaliacao'),
     path('questao/add/', views.AddQuestao.as_view(), name='add_questao'),
     path('lista/', views.ListaAvaliacoes.as_view(), name='lista_avaliacoes'),
     path('questoes/<int:pk>/', views.ListaQuestoes.as_view(), name='lista_questoes'),

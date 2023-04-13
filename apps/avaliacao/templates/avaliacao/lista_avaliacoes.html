@@ -60,6 +60,7 @@
           <th>DESCRIÇÂO</th>
           <th>ANO</th>
           <th>QUESTÕES</th>
+          <th>AVALIAÇÂO</th>
 
         </tr>
         </thead>
@@ -67,11 +68,18 @@
         <tbody>
         <tr>
           <td>{{avaliacao}}</td>
-          <td>{{avaliacao.ano}}º</td>
+          <td>{{avaliacao.ano}}</td>
           <td>
               <a href="{% url 'avaliacao:lista_questoes'  avaliacao.pk %}" class="btn btn-outline-info btn-sm">
               <i class="fas fa-eye"></i>Entrar
-            </a></td>
+            </a>
+          </td>
+          <td>
+              <a href="{% url 'avaliacao:edit_avaliacao'  avaliacao.pk %}" class="btn btn-outline-info btn-sm">
+              <i class="fas fa-eye"></i>Editar
+            </a>
+          </td>
+
         </tr>
         </tbody>
 {% empty %}

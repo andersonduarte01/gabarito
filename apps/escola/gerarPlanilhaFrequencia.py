@@ -69,7 +69,6 @@ def dias(mes):
 
     return dias01
 
-
 def percentual(frequencias, freq):
     contador = 0
     total = len(frequencias)

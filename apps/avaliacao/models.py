@@ -1,7 +1,5 @@
-from enum import unique
-
+from django.conf import settings
 from django.db import models
-
 from ..aluno.models import Aluno
 from ..sala.models import Ano
 
@@ -9,6 +7,7 @@ from ..sala.models import Ano
 class Avaliacao(models.Model):
     descricao = models.CharField(max_length=255, verbose_name='Descrição')
     ano = models.ForeignKey(Ano, on_delete=models.DO_NOTHING)
+    escola = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='avaliacao_escola')
 
     def __str__(self):
         return self.descricao
