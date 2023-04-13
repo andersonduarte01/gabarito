@@ -7,7 +7,7 @@ from django.urls import reverse, reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView
 
 from .correcao import criarGabaritos, alinharquestoes, correcao
-from .forms import RespostaForm, AvaliacaoForm, AvaliacaoUpdateForm
+from .forms import RespostaForm, AvaliacaoForm, AvaliacaoUpdateForm, AvaliacaoQuestaoForm
 from ..aluno.models import Aluno
 from ..avaliacao.models import Questao, Avaliacao, Resposta, Gabarito
 from ..escola.models import UnidadeEscolar
@@ -70,30 +70,11 @@ class AvaliacaoAlunos(LoginRequiredMixin, ListView):
         return context
 
 
-def responderProva(request, aluno_id, avaliacao_id):
-    aluno = Aluno.objects.get(pk=aluno_id)
-    avaliacao = Avaliacao.objects.get(pk=avaliacao_id)
-    gabarito = Gabarito.objects.get(aluno=aluno, avaliacao=avaliacao)
-    respostas = Resposta.objects.filter(gabarito=gabarito)
-    RespostasFormSet = modelformset_factory(Resposta, form=RespostaForm, extra=0)
-
-    if request.method == 'POST':
-        formset = RespostasFormSet(request.POST, request.FILES, queryset=respostas,)
-        if formset.is_valid():
-            formset.save()
-            correcao(gabarito)
-        return HttpResponseRedirect(reverse('escola:painel_escola'))
-    else:
-        formset = RespostasFormSet(queryset=respostas)
-        correcao(gabarito)
-    return render(request, 'avaliacao/avaliar_aluno.html', {'formset': formset, 'avaliacao': avaliacao})
-
-
 def responderProvaAluno(request, aluno_id, avaliacao_id):
     aluno = Aluno.objects.get(pk=aluno_id)
     avaliacao = Avaliacao.objects.get(pk=avaliacao_id)
     questoes = Questao.objects.filter(avaliacao=avaliacao)
-    QuestoesFormSet = modelformset_factory(Questao, form=AvaliacaoForm, extra=0)
+    QuestoesFormSet = modelformset_factory(Questao, form=AvaliacaoQuestaoForm, extra=0)
 
     if request.method == 'POST':
         formset = QuestoesFormSet(request.POST, request.FILES, queryset=questoes)

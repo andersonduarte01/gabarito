@@ -1,9 +1,9 @@
 from django import forms
 from django.forms import TextInput
-
+from django.forms.widgets import CheckboxSelectMultiple
+from .models import Avaliacao
 from ..avaliacao.models import Resposta, Questao
 from ..escola.models import UnidadeEscolar
-
 
 class RespostaForm(forms.ModelForm):
     class Meta:
@@ -19,17 +19,11 @@ class RespostaForm(forms.ModelForm):
         }
 
 
-class AvaliacaoForm(forms.ModelForm):
+class AvaliacaoQuestaoForm(forms.ModelForm):
 
     class Meta:
         model = Questao
         fields = ('texto', 'questao', 'opcao_um', 'opcao_dois', 'opcao_tres', 'opcao_quatro')
-
-
-from django import forms
-from django.contrib.auth import get_user_model
-from django.forms.widgets import CheckboxSelectMultiple
-from .models import Avaliacao
 
 
 class AvaliacaoForm(forms.ModelForm):
@@ -43,11 +37,6 @@ class AvaliacaoForm(forms.ModelForm):
     class Meta:
         model = Avaliacao
         fields = ['descricao', 'ano', 'escola']
-
-from django import forms
-from django.contrib.auth import get_user_model
-from django.forms.widgets import CheckboxSelectMultiple
-from .models import Avaliacao
 
 
 class AvaliacaoUpdateForm(forms.ModelForm):
