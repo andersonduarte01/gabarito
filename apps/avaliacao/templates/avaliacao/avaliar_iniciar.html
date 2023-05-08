@@ -14,8 +14,8 @@
      class="img-radius" alt="Foto_Usuario">
 {% endblock %}
 {% block tema %}
-<h5 class="m-b-10">Avaliação: {{avaliacao}}</h5>
-<p class="m-b-0">{{avaliacao.ano}}</p>
+<h3 class="m-b-10">{{avaliacao}} - {{avaliacao.ano}}</h3>
+<h5 class="m-b-0">{{aluno}}</h5>
 {% endblock %}
 {% block breadcrumbs %}
 {{block.super}}
@@ -29,57 +29,29 @@
         <h5>{{avaliacao}}</h5>
         <span>Aluno: {{aluno}}</span>
         </div>
-        <form class="form" autocomplete="off" onsubmit="return saveAns()" action="/student/calculate-marks" method="POST">
-        {% csrf_token %}
-        <hr>
-        {% for q in questoes %}
-        <div class="d-flex w-100 align-items-center">
-            <div class="col-auto flex-shrink-1 flex-grow-1">
-                <h4 class="">{{ forloop.counter }}. {{q.questao}}</h4>
-            </div>
-            <div class="col-auto">
-                <h6 style="text-align: right;">[{{q.numero}} Pontos]</h6>
-            </div>
+
+
+<div class="container">
+       <form method="post">
+          {% csrf_token %}
+          {{ formset.management_form }}
+          {% for form in formset %}
+           {% for hidden_field in form.hidden_fields %}
+                    {{ hidden_field.errors }}
+                    {{ hidden_field }}
+                    {% endfor %}
+            <h6>{{ forloop.counter }} - {{ form.instance.questao }}</h6>
+            {% for field in form.visible_fields %}
+              <div class="form-group">
+                {{ field.errors }}
+                {{ field.label_tag }}
+                {{ field }}
+              </div>
+            {% endfor %}
+          {% endfor %}
+          <button type="submit" class="btn btn-outline-info" style="margin-bottom:10px;">Concluir</button>
+        </form>
         </div>
-        <input type="hidden" name="csrfmiddlewaretoken" value="C24rUotmdHawVQJL3KrqiWxvti8UffOFYUc8TRbZtLt36AVLdP3jbkzUVe3beRAa">
-
-
-        <div class="form-check mx-4 d-flex align-items-center">
-            <input class="form-check-input" type="radio" name="{{ forloop.counter }}" id="{{q.opcao_um}}" value="OpcaoUm">
-            <label class="form-check-label ml-3" for="opcao_um">
-              {{q.opcao_um}}
-            </label>
-        </div>
-
-
-        <div class="form-check mx-4 d-flex align-items-center">
-            <input class="form-check-input" type="radio" name="{{ forloop.counter }}" id="{{q.opcao_dois}}" value="OpcaoDois">
-            <label class="form-check-label ml-3" for="opcao_dois">
-              {{q.opcao_dois}}
-            </label>
-        </div>
-
-
-        <div class="form-check mx-4 d-flex align-items-center">
-            <input class="form-check-input" type="radio" name="{{ forloop.counter }}" id="{{q.opcao_tres}}" value="OpcaoTres">
-            <label class="form-check-label ml-3" for="opcao_tres">
-              {{q.opcao_tres}}
-            </label>
-        </div>
-
-
-        <div class="form-check mx-4 d-flex align-items-center">
-            <input class="form-check-input" type="radio" name="{{ forloop.counter }}" id="{{q.opcao_quatro}}" value="OpcaoQuatro">
-            <label class="form-check-label ml-3" for="opcao_quatro">
-              {{q.opcao_quatro}}
-            </label>
-        </div>
-        <hr>
-        {% endfor %}
-        <div class="col-md-12">
-            <input class="btn btn-primary" style="border-radius: 0%;" type="submit" value="Concluir">
-        </div>
-    </form>
     </div>
 </div>
 {% endblock %}

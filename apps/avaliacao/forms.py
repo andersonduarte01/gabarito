@@ -48,7 +48,7 @@ class AvaliacaoUpdateForm(forms.ModelForm):
 
     class Meta:
         model = Avaliacao
-        fields = ['descricao', 'ano', 'escola']
+        fields = ['descricao', 'ano', 'data_encerramento', 'escola']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -63,3 +63,29 @@ class AvaliacaoUpdateForm(forms.ModelForm):
         else:
             avaliacao.escola.clear()
         return avaliacao
+
+
+class QuestaoForm1(forms.ModelForm):
+    opcao = forms.ChoiceField(choices=Questao.RESPOSTA, widget=forms.RadioSelect, label='')
+
+    class Meta:
+        model = Questao
+        fields = ('opcao',)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['opcao'].choices = [(1, self.instance.opcao_um), (2, self.instance.opcao_dois), (3, self.instance.opcao_tres), (4, self.instance.opcao_quatro)]
+
+
+
+class QuestaoFormEditar(forms.ModelForm):
+    opcao = forms.ChoiceField(choices=Questao.RESPOSTA, widget=forms.RadioSelect, label='')
+
+    class Meta:
+        model = Questao
+        fields = ('opcao',)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['opcao'].choices = [(1, self.instance.opcao_um), (2, self.instance.opcao_dois), (3, self.instance.opcao_tres), (4, self.instance.opcao_quatro)]
+

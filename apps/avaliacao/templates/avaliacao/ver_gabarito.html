@@ -1,0 +1,129 @@
+{% extends 'temp_base/indice.html' %}
+{% block titulo %}Gabarito{% endblock %}
+{% load static %}
+{% block conteudo %}
+<div class="container-fluid bg-primary py-5 mb-5 page-header">
+	<div class="container py-5">
+		<div class="row justify-content-left">
+			<div class="col-lg-12">
+				<h3 class="text-center text-white animated slideInDown">{{aluno}}</h3>
+				<h4 class="text-center text-white animated slideInDown">{{gabarito.avaliacao}}</h4>
+				<h6 class="text-center text-white animated slideInDown">{{aluno.sala}} - {{aluno.sala.ano}}</h6>
+			</div>
+		</div>
+	</div>
+</div>
+<section class="wrapper">
+	<div class="container-fostrap">
+		<div class="content">
+			<div class="container">
+				<div class="row">
+					{% for resposta in respostas %}
+					<div class="container">
+						<h4 class="fw-bold">{{ forloop.counter }} - {{resposta.questao}}</h4>
+						{% if resposta.corrigirQuestao == "1" %}
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" id="resposta1" checked disabled>
+							<label class="form-check-label text-primary fw-bold" for="resposta1">
+								{{resposta.questao.opcao_um}}
+							</label>
+						</div>
+						{% elif  resposta.marcada == "1"%}
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" id="resposta01" checked disabled>
+							<label class="form-check-label text-danger fw-bold" for="resposta01">
+								{{resposta.questao.opcao_um}} - (Incorreta)
+							</label>
+						</div>
+						{% else %}
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" id="resposta001" disabled>
+							<label class="form-check-label fw-bold" for="resposta001">
+								{{resposta.questao.opcao_um}}
+							</label>
+						</div>
+						{% endif %}
+
+
+						{% if resposta.corrigirQuestao == "2" %}
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" id="resposta2" checked disabled>
+							<label class="form-check-label text-primary fw-bold" for="resposta2">
+								{{resposta.questao.opcao_dois}}
+							</label>
+						</div>
+						{% elif  resposta.marcada == "2" %}
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" id="resposta02" disabled>
+							<label class="form-check-label text-danger fw-bold" for="resposta02">
+								{{resposta.questao.opcao_dois}}- (Incorreta)
+							</label>
+						</div>
+						{% else %}
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" id="resposta002" disabled>
+							<label class="form-check-label fw-bold" for="resposta002">
+								{{resposta.questao.opcao_dois}}
+							</label>
+						</div>
+						{% endif %}
+
+
+						{% if resposta.corrigirQuestao == "3" %}
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" id="resposta3" checked disabled>
+							<label class="form-check-label text-primary fw-bold" for="resposta3">
+								{{resposta.questao.opcao_tres}}
+							</label>
+						</div>
+						{% elif  resposta.marcada == "3" %}
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" id="resposta03" disabled>
+							<label class="form-check-label text-danger fw-bold" for="resposta03">
+								{{resposta.questao.opcao_tres}}- (Incorreta)
+							</label>
+						</div>
+						{% else %}
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" id="resposta003" disabled>
+							<label class="form-check-label fw-bold" for="resposta003">
+								{{resposta.questao.opcao_tres}}
+							</label>
+						</div>
+						{% endif %}
+
+						{% if resposta.corrigirQuestao == "4" %}
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" id="resposta4" checked disabled>
+							<label class="form-check-label text-primary fw-bold" for="resposta4">
+								{{resposta.questao.opcao_quatro}}
+							</label>
+						</div>
+						{% elif  resposta.marcada == "4" %}
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" id="resposta04" disabled>
+							<label class="form-check-label text-danger fw-bold" for="resposta04">
+								{{resposta.questao.opcao_quatro}}- (Incorreta)
+							</label>
+						</div>
+						{% else %}
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" id="resposta004" disabled>
+							<label class="form-check-label fw-bold" for="resposta004">
+								{{resposta.questao.opcao_quatro}}
+							</label>
+						</div>
+						{% endif %}
+						<hr>
+					</div>
+					{% empty %}
+					<h1>...</h1>
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+
+{% endblock %}

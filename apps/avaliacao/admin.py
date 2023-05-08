@@ -13,14 +13,14 @@ class QuestaoInline(admin.StackedInline):
 
 
 class AvaliacaoAdmin(ModelAdmin):
-    list_display = ('descricao', 'ano')
+    list_display = ('descricao', 'ano', 'data_encerramento')
     fieldsets = (
-        ('Dados Avaliação', {'fields': ['descricao', 'ano']}),
+        ('Dados Avaliação', {'fields': ['descricao', 'ano', 'data_encerramento']}),
     )
     add_fieldsets = (
         ('Informações da Avaliação', {
             'classes': ('wide',),
-            'fields': ('descricao', 'ano'),
+            'fields': ('descricao', 'ano', 'data_encerramento'),
         }),
     )
     inlines = [QuestaoInline]

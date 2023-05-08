@@ -1,7 +1,7 @@
 {% extends 'temp_base/adm.html' %}
 {% load static %}
 {% load bootstrap4 %}
-{% block titulo %}Adicionar Questao {% endblock %}
+{% block titulo %}Editar Questao {% endblock %}
 {% block imagem1_adm %}
 <img src="{% if escola.imagem %}
     {{escola.logo_escola.thumbnail.url}}
@@ -17,7 +17,7 @@
 {{block.super}}
 {% endblock %}
 {% block tema_adm %}
-<h3 class="m-b-10">Adicionar Questão</h3>
+<h3 class="m-b-10">Editar Avaliação</h3>
 {% endblock %}
 {% block breadcrumbs_adm %}
 {{block.super}}
@@ -30,11 +30,11 @@
             <h4>Questão</h4>
         </div>
         <div class="card-block">
-            <form method="post" enctype="multipart/form-data">
+            <form method="post"  enctype="multipart/form-data">
                 {% csrf_token %}
                 {% bootstrap_form form layout='inline'%}
                 {% buttons %}
-                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i>Salvar</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i>Salvar Alteração</button>
                 {% endbuttons %}
             </form>
         </div>

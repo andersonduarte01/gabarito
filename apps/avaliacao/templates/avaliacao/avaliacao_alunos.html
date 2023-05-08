@@ -14,8 +14,8 @@
      class="img-radius" alt="Foto_Usuario">
 {% endblock %}
 {% block tema %}
-<h5 class="m-b-10">Alunos</h5>
-<p class="m-b-0">Painel com lista de alunos</p>
+<h3 class="m-b-10">{{sala}} - {{sala.ano}}</h3>
+<h6 class="m-b-0">{{avaliacao}}</h6>
 {% endblock %}
 {% block breadcrumbs %}
 {{block.super}}
@@ -30,8 +30,6 @@
         <thead>
         <tr>
           <th>NOME</th>
-          <th>EDITAR</th>
-          <th>EXCLUIR</th>
           <th>AVALIAÇÃO</th>
         </tr>
         </thead>
@@ -40,7 +38,7 @@
         <tr>
           <td>{{aluno}}</td>
           <td>
-            <a href="{% url 'avaliacao:avalie' aluno_id=aluno.pk avaliacao_id=avaliacao.pk %}" class="btn btn-outline-success btn-sm">
+            <a href="{% url 'avaliacao:iniciar_prova' aluno_id=aluno.id avaliacao_id=avaliacao.id %}" class="btn btn-outline-success btn-sm">
               <i class="fas fa-edit"></i>Realizar Prova
             </a>
           </td>

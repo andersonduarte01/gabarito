@@ -11,7 +11,7 @@ urlpatterns = [
     path('add_sala/', views.AdicionarSala.as_view(), name='adicionar_sala'),
     path('editar_sala/<int:pk>/', views.EditarSala.as_view(), name='edit_sala'),
     path('<int:pk>/deletar/', views.DeletarSala.as_view(), name='deletar_sala'),
-    path('avaliacao/', views.ListaSalasAvaliacao.as_view(), name='salas_avaliacao'),
+    path('avaliacoes/', views.ListaAvaliacoes.as_view(), name='avaliacoes_escola'),
     path('', views.ListaSalas.as_view(), name='salas'),
     #path('add_ano/', views.AdicionarAno.as_view(), name='adicionar_ano'),
     #Administrador

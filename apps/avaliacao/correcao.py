@@ -32,6 +32,8 @@ def correcao(gabarito):
             r.acertou = False
             r.save()
 
+    return respostas
+
 
 
 

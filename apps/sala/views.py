@@ -48,8 +48,8 @@ class ListaSalas(LoginRequiredMixin, ListView):
         return context
 
 
-class ListaSalasAvaliacao(LoginRequiredMixin, ListView):
-    model = Sala
+class ListaAvaliacoes(LoginRequiredMixin, ListView):
+    model = Avaliacao
     template_name = 'sala/salas_avaliacao.html'
     context_object_name = 'salas'
 

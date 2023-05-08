@@ -14,8 +14,8 @@
      class="img-radius" alt="Foto_Usuario">
 {% endblock %}
 {% block tema %}
-<h3 class="m-b-10">{{sala}} - {{sala.ano}}º Ano</h3>
-<p class="m-b-0">{{aluno}}</p>
+<h3 class="m-b-10">Avaliações</h3>
+<p class="m-b-0"></p>
 {% endblock %}
 {% block breadcrumbs %}
 {{block.super}}
@@ -28,8 +28,9 @@
         <div class="card-block">
             <div class="row align-items-center">
                 <div class="col-8">
-                    <h5 class="text-c-purple">{{avaliacao.descricao}}</h5>
-                    <h6 class="text-muted m-b-0">{{avaliacao.ano}}° Ano</h6>
+                    <h5 class="text-c-purple">{{avaliacao.descricao |slice:":28"}}</h5>
+                    <h6 class="text-muted m-b-0">{{avaliacao.ano}}</h6>
+                    <h6 class="text-muted m-b-0" style="margin-top: 10px;">Encerra: {{avaliacao.data_encerramento}}</h6>
                 </div>
                 <div class="col-4 text-right">
                     <i class="fa fa-file-text-o f-28"></i>
@@ -37,7 +38,7 @@
             </div>
         </div>
         <div class="card-footer bg-c-blue">
-            <a href="{% url 'avaliacao:iniciar_avaliacao' avaliacao_id=avaliacao.id aluno_id=aluno.id %}">
+            <a href="{% url 'avaliacao:avaliacao_salas' id_avaliacao=avaliacao.id %}">
             <div class="row align-items-center">
                 <div class="col-9">
                     <h6 class="text-white m-b-0">Avaliacao</h6>

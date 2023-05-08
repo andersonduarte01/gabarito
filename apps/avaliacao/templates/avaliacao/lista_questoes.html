@@ -67,17 +67,45 @@
 {% for questao in questoes %}
         <tbody>
         <tr>
-          <td>{{questao.id}}</td>
+          <td>{{questao}}</td>
           <td>{{questao.avaliacao}}</td>
           <td>
-              <a href="#" class="btn btn-outline-primary btn-sm">
+              <a href="{% url 'avaliacao:edit_questao' pk=questao.pk %}" class="btn btn-outline-primary btn-sm">
               <i class="fas fa-edit"></i>Editar
             </a>
           </td>
           <td>
-              <a href="#" class="btn btn-outline-danger btn-sm">
-              <i class="fas fa-trash"></i>Deletar
-            </a>
+              <button type="button" class="btn btn-outline-danger btn-sm" data-toggle="modal" data-target="#{{questao.id}}">
+              <i class="far fa-trash-alt"></i> Excluir
+            </button>
+
+            <div class="modal fade" id="{{questao.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle1">Deletar {{questao}}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <h5>Tem certeza que deseja excluir?</h5>
+                    <hr>
+                    <h6>{{questao}}</h6>
+                    <h6>{{questao.avaliacao}}</h6>
+                    <h6>{{questao.avaliacao.ano}}</h6>
+                  </div>
+                  <div class="modal-footer">
+                    <form method="post" action="{% url 'avaliacao:deletar_questao' questao.pk %}">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-danger">Deletar</button>
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Sair</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </td>
         </tr>
         </tbody>
