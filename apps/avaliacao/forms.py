@@ -36,7 +36,7 @@ class AvaliacaoForm(forms.ModelForm):
 
     class Meta:
         model = Avaliacao
-        fields = ['descricao', 'ano', 'escola']
+        fields = ['descricao', 'ano', 'data_encerramento', 'escola']
 
 
 class AvaliacaoUpdateForm(forms.ModelForm):
