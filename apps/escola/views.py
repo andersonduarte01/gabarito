@@ -174,7 +174,7 @@ class PainelEscola(LoginRequiredMixin, TemplateView):
 class EditarEscola(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = UnidadeEscolar
     fields = ('nome_escola', 'inep', 'cnpj', 'telefone', 'logo_escola')
-    success_message = 'Informações da instituição atualizadas'
+    success_message = 'Informações atualizadas com sucesso!'
     template_name = 'escola/editarescolar_form.html'
     success_url = reverse_lazy('escola:painel_escola')
 
@@ -191,7 +191,7 @@ class EditarEscola(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 class EditarUsuario(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Usuario
     fields = ('email', 'nome')
-    success_message = 'Informações do usuário atualizadas'
+    success_message = 'Informações atualizadas com sucesso!'
     template_name = 'escola/editarusuario_form.html'
     success_url = reverse_lazy('escola:painel_escola')
 

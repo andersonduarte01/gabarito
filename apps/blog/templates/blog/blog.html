@@ -46,7 +46,7 @@
                     <div class="small text-muted">{{noticia.data_atualizacao}}</div>
                     <h4 class="card-title">{{noticia.titulo}}</h4>
                     <p class="card-text">{{noticia.conteudo|safe|slice:":200"}}</p><hr>
-                    <a class="btn btn-primary" href="{% url 'blog:noticia' noticia.pk %}">Saiba Mais →</a>
+                    <a class="btn btn-primary" href="{% url 'blog:noticia' noticia.slug %}">Saiba Mais →</a>
                 </div>
             </div>
             <!-- Nested row for non-featured blog posts-->

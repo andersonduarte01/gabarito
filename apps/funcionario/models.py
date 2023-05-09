@@ -1,9 +1,5 @@
 from django.db import models
 
-# Create your models here.
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-
 from ..core.models import Usuario
 from ..escola.models import UnidadeEscolar
 from ..funcao.models import Funcao

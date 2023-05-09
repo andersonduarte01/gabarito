@@ -1,7 +1,7 @@
 {% extends 'temp_base/adm.html' %}
 {% load bootstrap4 %}
 {% load static %}
-{% block titulo %}Painel de Controle{% endblock %}
+{% block titulo %}Iniciar Avaliação{% endblock %}
 {% block imagem1 %}
 <img src="{% if escola.imagem %}
     {{escola.logo_escola.thumbnail.url}}
@@ -14,8 +14,8 @@
      class="img-radius" alt="Foto_Usuario">
 {% endblock %}
 {% block tema %}
-<h3 class="m-b-10">{{sala}} - {{sala.ano}}</h3>
-<h6 class="m-b-0">{{avaliacao}}</h6>
+<h3 class="m-b-10">{{avaliacao}}</h3>
+<h6 class="m-b-0">{{sala}} - {{sala.ano}} - {{sala.turno}}</h6>
 {% endblock %}
 {% block breadcrumbs %}
 {{block.super}}
@@ -30,7 +30,7 @@
         <thead>
         <tr>
           <th>NOME</th>
-          <th>AVALIAÇÃO</th>
+          <th>INICIAR</th>
         </tr>
         </thead>
 {% for aluno in alunos %}
@@ -39,7 +39,7 @@
           <td>{{aluno}}</td>
           <td>
             <a href="{% url 'avaliacao:iniciar_prova' aluno_id=aluno.id avaliacao_id=avaliacao.id %}" class="btn btn-outline-success btn-sm">
-              <i class="fas fa-edit"></i>Realizar Prova
+              <i class="fas fa-edit"></i>Avaliação
             </a>
           </td>
         </tr>

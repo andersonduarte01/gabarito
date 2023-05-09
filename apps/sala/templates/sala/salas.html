@@ -28,64 +28,75 @@
       <table class="table table-hover">
         <thead>
         <tr>
+          <th>Nº</th>
           <th>SALA</th>
           <th>ANO</th>
           <th>TURNO</th>
           <th>QTD ALUNOS</th>
-          <th>VER</th>
-          <th>EDITAR</th>
-          <th>EXCLUIR</th>
+          <th></th>
+          <th></th>
         </tr>
         </thead>
 {% for sala in salas %}
         <tbody>
         <tr>
+          <td>{{forloop.counter}}</td>
           <td>{{sala}}</td>
           <td>{{sala.ano}}</td>
           <td>{{sala.turno}}</td>
           <td>{{sala.total_alunos}}</td>
-          <td>
-            <a href="{% url 'salas:alunos' sala.pk %}" class="btn btn-outline-info btn-sm">
-              <i class="fas fa-eye"></i>Entrar
+          <td align="right">
+            <a href="{% url 'salas:alunos' sala.pk %}" class="info">
+              <i class="fas fa-eye" style="color: #318c48;"></i>
             </a>
           </td>
-          <td>
-            <a href="{% url 'salas:edit_sala' sala.pk %}" class="btn btn-outline-primary btn-sm">
-              <i class="fas fa-edit"></i>Editar
+          <td align="right">
+            <a href="{% url 'salas:edit_sala' sala.pk %}" class="primary">
+               <i class="fas fa-edit" style="color: #2c28e6;"></i>
             </a>
-          </td>
-          <td>
-            <button type="button" class="btn btn-outline-danger btn-sm" data-toggle="modal" data-target="#{{sala.id}}">
-              <i class="far fa-trash-alt"></i> Excluir
-            </button>
+            <a type="button" class="danger" data-toggle="modal" data-target="#{{sala.id}}">
+              <i class="far fa-trash-alt" style="color: #ed1d1d;"></i>
+            </a>
 
-            <!-- Modal -->
-            <div class="modal fade" id="{{sala.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-              <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLongTitle1">Deletar {{sala}}</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                      <span aria-hidden="true">&times;</span>
-                    </button>
-                  </div>
-                  <div class="modal-body">
-                    <h5>Tem certeza que deseja excluir?</h5>
-                    <hr>
-                    <h6>{{sala}}</h6>
-                    <h6>Ano: {{sala.ano}}°</h6>
-                    <h6>Turno: {{sala.turno}}</h6>
-                  </div>
-                  <div class="modal-footer">
-                    <form method="post" action="{% url 'salas:deletar_sala' sala.pk %}">
-                      {% csrf_token %}
-                      <button type="submit" class="btn btn-danger">Deletar</button>
-                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Sair</button>
-                    </form>
+            <div class="modal fade" id="{{sala.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+                     aria-hidden="true">
+                  <div class="modal-dialog modal-notify modal-info" role="document">
+                    <!--Content-->
+                    <div class="modal-content text-center">
+                      <!--Header-->
+                      <div class="modal-header d-flex justify-content-center bg-danger">
+                        <h5 class="heading">Deletar Sala</h5>
+                      </div>
+
+                      <!--Body-->
+                      <div class="modal-body">
+
+                        <i class="far fa-trash-alt fa-4x animated rotateIn mb-4" style="color: #ed1d1d;"></i>
+
+                        <h6>Tem certeza que deseja excluir</h6>
+                        <h6>{{sala}} - {{sala.ano}} - {{sala.turno}}?</h6>
+
+                      </div>
+
+                      <!--Footer-->
+                      <div class="modal-footer flex-center">
+                        <form method="post" action="{% url 'salas:deletar_sala' sala.pk %}">
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-outline-danger">
+                            <i class="far fa-trash-alt"></i>
+                            Deletar
+                          </button>
+                          <button type="button" class="btn btn-outline-info" data-dismiss="modal">
+                            <i class="fas fa-times" style="color: #588adf;"></i>
+                            Cancelar
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                    <!--/.Content-->
                   </div>
                 </div>
-              </div>
-            </div>
+
           </td>
         </tr>
         </tbody>

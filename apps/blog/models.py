@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from ckeditor.fields import RichTextField
 
@@ -21,7 +22,7 @@ class Categoria(models.Model):
 class Blog(models.Model):
     titulo = models.CharField(max_length=200)
     imagem = models.ImageField(upload_to='Imagens/Noticias', null=True, blank=True)
-    autor = models.ForeignKey(UnidadeEscolar, verbose_name='Autor', on_delete=models.CASCADE)
+    autor = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='Autor', on_delete=models.CASCADE)
     slug = models.SlugField(max_length=200)
     conteudo = RichTextField()
     data = models.DateField(auto_now_add=True)

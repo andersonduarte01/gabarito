@@ -28,64 +28,11 @@
 {% endblock %}
 {% block tema %}
 <h5 class="m-b-10">{{escola}}</h5>
-<p class="m-b-0">Painel administrativo</p>
 {% endblock %}
 {% block breadcrumbs %}
 {{block.super}}
 {% endblock %}
 {% block conteudo %}
-<!--    {% if manha %}-->
-<!--    <div class="col-md-4">-->
-<!--        <div class="card mat-clr-stat-card text-white blue">-->
-<!--        <div class="card-block">-->
-<!--            <div class="row">-->
-<!--                <div class="col-3 text-center bg-c-blue">-->
-<!--                    <a href="{% url 'escola:painel_planilha' slug=escola.slug turno='manha' %}" class="btn text-white"><i class="fa fa-edit mat-icon f-24"></i></a>-->
-<!--                </div>-->
-<!--                <div class="col-9 cst-cont">-->
-<!--                    <h5>Manhã</h5>-->
-<!--                    <p class="m-b-0">Frequência</p>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--    </div>-->
-<!--    </div>-->
-<!--    {% endif %}-->
-<!--    {% if tarde %}-->
-<!--    <div class="col-md-4">-->
-<!--        <div class="card mat-clr-stat-card text-white blue">-->
-<!--        <div class="card-block">-->
-<!--            <div class="row">-->
-<!--                <div class="col-3 text-center bg-c-blue">-->
-<!--                    <a href="{% url 'escola:painel_planilha' slug=escola.slug turno='tarde' %}" class="btn text-white"><i class="fa fa-edit mat-icon f-24"></i></a>-->
-<!--                </div>-->
-<!--                <div class="col-9 cst-cont">-->
-<!--                    <h5>Tarde</h5>-->
-<!--                    <p class="m-b-0">Frequência</p>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--    </div>-->
-<!--    </div>-->
-<!--    {% endif %}-->
-<!--    {% if integral %}-->
-<!--    <div class="col-md-4">-->
-<!--        <div class="card mat-clr-stat-card text-white blue">-->
-<!--        <div class="card-block">-->
-<!--            <div class="row">-->
-<!--                <div class="col-3 text-center bg-c-blue">-->
-<!--                    <a href="{% url 'escola:painel_planilha' slug=escola.slug turno='integral' %}" class="btn text-white"><i class="fa fa-edit mat-icon f-24"></i></a>-->
-<!--                </div>-->
-<!--                <div class="col-9 cst-cont">-->
-<!--                    <h5>Tempo Integral</h5>-->
-<!--                    <p class="m-b-0">Frequência</p>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--    </div>-->
-<!--    </div>-->
-<!--    {% endif %}-->
-
 
 <div class="col-sm-12">
     <div class="card">
@@ -149,7 +96,6 @@
 {% endblock %}
 {% block tema_adm %}
 <h5 class="m-b-10">{{user.nome}}</h5>
-<p class="m-b-0">Admin das escolas</p>
 {% endblock %}
 {% block breadcrumbs_adm %}
 {{block.super}}

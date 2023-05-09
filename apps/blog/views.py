@@ -33,7 +33,7 @@ class Noticia(DetailView):
     context_object_name = 'noticia'
 
     def get_absolute_url(self):
-        return reverse('blog:noticia', kwargs={'pk': self.pk})
+        return reverse('blog:noticia', kwargs={'slug': self.slug})
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -53,10 +53,13 @@ class AddNoticia(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         noticia = form.save(commit=False)
+        char = [":", ";", ","]
         x = noticia.titulo.replace(' ', '-')
+        for c in char:
+            x = x.replace(c, '-')
+
         notice = unidecode(x)
-        escola = UnidadeEscolar.objects.get(pk=self.request.user)
-        noticia.autor = escola
+        noticia.autor = self.request.user
         noticia.slug = notice.lower()
         noticia.save()
         return super().form_valid(form)

@@ -1,7 +1,7 @@
 {% extends 'temp_base/adm.html' %}
 {% load static %}
 {% load bootstrap4 %}
-{% block titulo %}Pesquisa{% endblock %}
+{% block titulo %}Pesquisar Aluno{% endblock %}
 {% block imagem1 %}
 <img src="{% if escola.imagem %}
     {{escola.logo_escola.thumbnail.url}}
@@ -15,7 +15,7 @@
 {% endblock %}
 {% block tema %}
 <h5 class="m-b-10">Pesquisar</h5>
-<p class="m-b-0">Pesquisar por aluno</p>
+<p class="m-b-0">Pesquisar aluno por nome</p>
 {% endblock %}
 {% block breadcrumbs %}
 {{block.super}}
