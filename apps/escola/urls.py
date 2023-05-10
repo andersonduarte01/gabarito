@@ -11,5 +11,12 @@ urlpatterns = [
     path('atualizar/<pk>/', views.EditarEscola.as_view(), name='editar_escola'),
     path('<pk>/usuario/', views.EditarUsuario.as_view(), name='editar_usuario'),
     path('<pk>/endereco/', views.EditarEndereco.as_view(), name='editar_endereco'),
+    ### Administrador ###
+    path('<slug:slug>/salas/', views.ListaEscolaSalas.as_view(), name='escola_salas'),
+    path('<slug:slug>/sala/<int:id>/alunos', views.ListaEscolaSalaAlunos.as_view(), name='escola_sala_alunos'),
+    path('<slug:slug>/professores/', views.ListaEscolaProfessores.as_view(), name='escola_professores'),
+    path('l<slug:slug>/avaliacoes/', views.EscolaListAvaliacoes.as_view(), name='avaliacoes_escola'),
+    path('<slug:slug>/lista_salas/<int:id_avaliacao>/', views.EscolaAvaliacaoListSalas.as_view(), name='escola_avaliacao_salas'),
+
 ]
 

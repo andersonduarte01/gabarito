@@ -1,6 +1,6 @@
 {% extends 'temp_base/adm.html' %}
 {% load static %}
-{% block titulo %}Gráfico Frequência Mensal{% endblock %}
+{% block titulo %}Avaliações por Escola{% endblock %}
 {% block imagem1_adm %}
 <img src="{% if escola.imagem %}
     {{escola.logo_escola.thumbnail.url}}
@@ -13,13 +13,15 @@
      class="img-radius" alt="Foto_Usuario">
 {% endblock %}
 {% block tema_adm %}
-<h5 class="m-b-10">{{escola}}</h5>
-<p class="m-b-0">Gráfico Mensal</p>
+<h3 class="m-b-10">{{escola}}</h3>
+<p class="m-b-0">Lista de avaliações</p>
 {% endblock %}
 {% block breadcrumbs_adm %}
 {{block.super}}
+<li class="breadcrumb-item"><a href="#">Escola</a></li>
+<li class="breadcrumb-item"><a href="#">Avaliações</a></li>
 {% endblock %}
-{% block painel_adm%}
+{% block painel_adm %}
 <ul class="pcoded-item pcoded-left-item">
     <li class="pcoded-hasmenu">
         <a href="{% url 'core:inicio' %}" class="waves-effect waves-dark">
@@ -94,55 +96,37 @@
     </li>
 </ul>
 {% endblock %}
-{% block relatorios %}
-<li class=" ">
-    <a href="{% url 'relatorios:relatorio_escola' escola.slug %}" class="waves-effect waves-dark">
-        <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-        <span class="pcoded-mtext">Escola</span>
-        <span class="pcoded-mcaret"></span>
-    </a>
-</li>
-{% endblock %}
 {% block conteudo_adm %}
-<div class="col-sm-12">
+{% for avaliacao in avaliacoes %}
+<div class="col-xl-6 col-md-6">
     <div class="card">
-        <div class="card-header">
-            <h5>{{mes_atual}}</h5>
-        </div>
         <div class="card-block">
             <div class="row align-items-center">
-                <canvas id="meuGrafico"></canvas>
+                <div class="col-8">
+                    <h5 class="text-c-purple">{{avaliacao.descricao |slice:":28"}}</h5>
+                    <h6 class="text-muted m-b-0">{{avaliacao.ano}}</h6>
+                    <h6 class="text-muted m-b-0" style="margin-top: 10px;">Encerra: {{avaliacao.data_encerramento}}</h6>
+                </div>
+                <div class="col-4 text-right">
+                    <i class="fa fa-file-text-o f-28"></i>
+                </div>
             </div>
+        </div>
+        <div class="card-footer bg-c-blue">
+            <a href="{% url 'escola:escola_avaliacao_salas' id_avaliacao=avaliacao.id slug=escola.slug %}">
+            <div class="row align-items-center">
+                <div class="col-9">
+                    <h6 class="text-white m-b-0">Avaliacao</h6>
+                </div>
+                <div class="col-3 text-right">
+                    <i class="fa fa-external-link text-white f-16"></i>
+                </div>
+            </div>
+            </a>
         </div>
     </div>
 </div>
-{% block script %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-  const ctx = document.getElementById('meuGrafico');
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: {{mes|safe}},
-      datasets: [{
-        label: '% de alunos presentes',
-        data: {{alunos}},
-        borderWidth: 1,
-        fill: {
-                target: 'origin',
-                above: 'rgb(150, 220, 238)',   // Area will be red above the origin
-                below: 'rgb(0, 0, 255)'    // And blue below the origin
-              }
-      }]
-    },
-    options: {
-      scales: {
-        y: {
-          beginAtZero: true
-        }
-      }
-    }
-  });
-</script>
-{% endblock %}
+{% empty %}
+<p>Não há nada</p>
+{% endfor %}
 {% endblock %}

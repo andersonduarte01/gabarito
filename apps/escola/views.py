@@ -1,16 +1,21 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from datetime import date
 from datetime import datetime
+
+from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
-from django.views.generic import TemplateView, UpdateView
+from django.views.generic import TemplateView, UpdateView, ListView
 from .traduzir import converter
 from .models import UnidadeEscolar, EnderecoEscolar
 from ..aluno.models import Aluno
+from ..avaliacao.models import Avaliacao
 from ..core.models import Usuario
 from ..frequencia.models import Frequencia, FrequenciaAluno
+from ..funcionario.models import Professor
 from ..sala.models import Sala
 from .traduzir import converter
-from .gerarPlanilhaFrequencia import criarFrequencia, dias_mes, presentesDia, dias, percentual
+from .gerarPlanilhaFrequencia import dias_mes, presentesDia, dias, percentual
 
 
 class Painel(LoginRequiredMixin, TemplateView):
@@ -157,8 +162,8 @@ class PainelEscola(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         escola = UnidadeEscolar.objects.get(slug=self.kwargs['slug'])
         salas = Sala.objects.filter(escola=escola).order_by('ano')
-        ano = datetime.date.today().year
-        mes = datetime.date.today().month
+        ano = date.today().year
+        mes = date.today().month
         mes_atual = dias_mes(mes=mes, ano=ano)
         m = mes_atual[0].strftime('%m')
         m1 = converter(int(m))
@@ -216,4 +221,92 @@ class EditarEndereco(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         escola = UnidadeEscolar.objects.get(pk=self.request.user)
         context['escola'] = escola
+        return context
+
+
+### Administrador ###
+
+
+class ListaEscolaSalas(LoginRequiredMixin, ListView):
+    model = Sala
+    template_name = 'escola/escola_salas.html'
+    context_object_name = 'salas'
+
+    def get_queryset(self):
+        escola = get_object_or_404(UnidadeEscolar, slug=self.kwargs['slug'])
+        return Sala.objects.filter(escola=escola).order_by('ano')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        escola = get_object_or_404(UnidadeEscolar, slug=self.kwargs['slug'])
+        context['escola'] = escola
+        return context
+
+
+class ListaEscolaSalaAlunos(LoginRequiredMixin, ListView):
+    model = Aluno
+    template_name = 'escola/escola_sala_alunos.html'
+    context_object_name = 'alunos'
+
+    def get_queryset(self):
+        sala = Sala.objects.get(pk=self.kwargs['id'])
+        return Aluno.objects.filter(sala=sala).order_by('nome')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        escola = get_object_or_404(UnidadeEscolar, slug=self.kwargs['slug'])
+        sala = Sala.objects.get(pk=self.kwargs['id'])
+        context['escola'] = escola
+        context['sala'] = sala
+        return context
+
+
+class ListaEscolaProfessores(LoginRequiredMixin, ListView):
+    model = Professor
+    template_name = 'escola/escola_lista_professores.html'
+    context_object_name = 'professores'
+
+    def get_queryset(self):
+        escola = get_object_or_404(UnidadeEscolar, slug=self.kwargs['slug'])
+        return Professor.objects.filter(escola=escola)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        escola = get_object_or_404(UnidadeEscolar, slug=self.kwargs['slug'])
+        context['escola'] = escola
+        return context
+
+
+class EscolaListAvaliacoes(LoginRequiredMixin, ListView):
+    model = Avaliacao
+    template_name = 'escola/escola_avaliacoes.html'
+    context_object_name = 'avaliacoes'
+
+    def get_queryset(self):
+        escola = get_object_or_404(UnidadeEscolar, slug=self.kwargs['slug'])
+        return escola.avaliacao_escola.all().filter(data_encerramento__gte=datetime.now().date())
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        escola = get_object_or_404(UnidadeEscolar, slug=self.kwargs['slug'])
+        context['escola'] = escola
+        return context
+
+
+class EscolaAvaliacaoListSalas(LoginRequiredMixin, ListView):
+    model = Sala
+    template_name = 'escola/escola_avaliacao_salas.html'
+    context_object_name = 'salas'
+
+    def get_queryset(self):
+        escola = get_object_or_404(UnidadeEscolar, slug=self.kwargs['slug'])
+        avaliacao = Avaliacao.objects.get(id=self.kwargs['id_avaliacao'])
+        return Sala.objects.filter(escola=escola, ano=avaliacao.ano)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        escola = get_object_or_404(UnidadeEscolar, slug=self.kwargs['slug'])
+        avaliacao = Avaliacao.objects.get(id=self.kwargs['id_avaliacao'])
+        context['escola'] = escola
+        context['avaliacao'] = avaliacao
         return context

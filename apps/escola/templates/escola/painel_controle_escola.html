@@ -116,12 +116,10 @@
 {% for school in escolas %}
         <tbody>
         <tr>
-<!--          <td><a href="{% url 'escola:painel_da_escola' school.slug %}">{{school}}</a></td>-->
-          <td><a href="#">{{school}}</a></td>
+          <td><a href="{% url 'escola:painel_da_escola' school.slug %}">{{school}}</a></td>
           <td>{{school.inep}}</td>
           <td>
-<!--              <a href="{% url 'escola:painel_da_escola' school.slug %}" class="btn btn-outline-primary btn-sm">-->
-              <a href="#" class="btn btn-outline-primary btn-sm">
+              <a href="{% url 'escola:painel_da_escola' school.slug %}" class="btn btn-outline-primary btn-sm">
                 <i class="fas fa-edit"></i> Entrar
               </a>
           </td>

@@ -117,21 +117,8 @@ class ListaAvaliacoes(LoginRequiredMixin, ListView):
 #         context['escola'] = escola
 #         return context
 #
-#
-# class ListarOpcoes(LoginRequiredMixin, TemplateView):
-#     model = Sala
-#     template_name = 'sala/opcoes.html'
-#     context_object_name = 'opcoes'
-#
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         sala = Sala.objects.get(pk=self.kwargs['pk'])
-#         escola = UnidadeEscolar.objects.get(pk=sala.escola.pk)
-#         context['sala'] = sala
-#         context['escola'] = escola
-#         return context
-#
-#
+
+
 class ListarAlunos(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Aluno
     fields = ('nome', 'data_nascimento', 'sexo', 'portador_deficiencia', 'situacao', 'responsavel_legal')

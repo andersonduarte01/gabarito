@@ -1,7 +1,7 @@
 {% extends 'temp_base/adm.html' %}
 {% load bootstrap4 %}
 {% load static %}
-{% block titulo %}Sala{% endblock %}
+{% block titulo %}Lista de Alunos por Sala{% endblock %}
 {% block imagem1 %}
 <img src="{% if escola.imagem %}
     {{escola.logo_escola.thumbnail.url}}
@@ -31,6 +31,7 @@
         <table class="table table-hover">
           <thead>
           <tr>
+            <th>Nº</th>
             <th>NOME</th>
             <th></th>
           </tr>
@@ -38,6 +39,7 @@
           {% for aluno in alunos %}
           <tbody>
           <tr>
+            <td>{{forloop.counter}}</td>
             <td>{{aluno}}</td>
             <td align="right">
               <a href="{% url 'aluno:perfil' aluno.pk %}" class="primary">

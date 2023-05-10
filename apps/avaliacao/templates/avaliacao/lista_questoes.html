@@ -15,32 +15,6 @@
 {% endblock %}
 {% block painel_adm %}
 {{block.super}}
-<!--<div class="pcoded-navigation-label">Funcionários</div>-->
-<!--<ul class="pcoded-item pcoded-left-item">-->
-<!--    <li class="pcoded-hasmenu">-->
-<!--        <a href="javascript:void(0)" class="waves-effect waves-dark">-->
-<!--            <span class="pcoded-micon"><i class="ti-layout-grid2-alt"></i><b>BC</b></span>-->
-<!--            <span class="pcoded-mtext">Funcionários</span>-->
-<!--            <span class="pcoded-mcaret"></span>-->
-<!--        </a>-->
-<!--        <ul class="pcoded-submenu">-->
-<!--            <li class=" ">-->
-<!--                <a href="{% url 'funcionario:adicionar_funcionario' %}" class="waves-effect waves-dark">-->
-<!--                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>-->
-<!--                    <span class="pcoded-mtext">Adicionar Funcionário</span>-->
-<!--                    <span class="pcoded-mcaret"></span>-->
-<!--                </a>-->
-<!--            </li>-->
-<!--            <li class=" ">-->
-<!--                <a href="{% url 'funcionario:lista_funcionarios' %}" class="waves-effect waves-dark">-->
-<!--                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>-->
-<!--                    <span class="pcoded-mtext">Lista de Funcionários</span>-->
-<!--                    <span class="pcoded-mcaret"></span>-->
-<!--                </a>-->
-<!--            </li>-->
-<!--        </ul>-->
-<!--    </li>-->
-<!--</ul>-->
 {% endblock %}
 {% block tema_adm %}
 <h3 class="m-b-10">Questões</h3>
@@ -59,8 +33,8 @@
         <tr>
           <th>QUESTAO</th>
           <th>AVALIAÇÂO</th>
-          <th>EDITAR</th>
-          <th>DELETAR</th>
+          <th></th>
+          <th></th>
 
         </tr>
         </thead>
@@ -69,42 +43,79 @@
         <tr>
           <td>{{questao}}</td>
           <td>{{questao.avaliacao}}</td>
-          <td>
-              <a href="{% url 'avaliacao:edit_questao' pk=questao.pk %}" class="btn btn-outline-primary btn-sm">
-              <i class="fas fa-edit"></i>Editar
+          <td align="right">
+              <a href="{% url 'avaliacao:edit_questao' pk=questao.pk %}" class="primary">
+              <i class="fas fa-edit" style="color: #2c28e6;"></i>
             </a>
-          </td>
-          <td>
-              <button type="button" class="btn btn-outline-danger btn-sm" data-toggle="modal" data-target="#{{questao.id}}">
-              <i class="far fa-trash-alt"></i> Excluir
-            </button>
+              <a type="button" class="danger" data-toggle="modal" data-target="#{{questao.id}}">
+              <i class="far fa-trash-alt" style="color: #ed1d1d;"></i>
+            </a>
+            <div class="modal fade" id="{{questao.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+                     aria-hidden="true">
+                  <div class="modal-dialog modal-notify modal-info" role="document">
+                    <!--Content-->
+                    <div class="modal-content text-center">
+                      <!--Header-->
+                      <div class="modal-header d-flex justify-content-center bg-danger">
+                        <h5 class="heading">Deletar Questão</h5>
+                      </div>
 
-            <div class="modal fade" id="{{questao.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-              <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLongTitle1">Deletar {{questao}}</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                      <span aria-hidden="true">&times;</span>
-                    </button>
-                  </div>
-                  <div class="modal-body">
-                    <h5>Tem certeza que deseja excluir?</h5>
-                    <hr>
-                    <h6>{{questao}}</h6>
-                    <h6>{{questao.avaliacao}}</h6>
-                    <h6>{{questao.avaliacao.ano}}</h6>
-                  </div>
-                  <div class="modal-footer">
-                    <form method="post" action="{% url 'avaliacao:deletar_questao' questao.pk %}">
-                      {% csrf_token %}
-                      <button type="submit" class="btn btn-danger">Deletar</button>
-                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Sair</button>
-                    </form>
+                      <!--Body-->
+                      <div class="modal-body">
+
+                        <i class="far fa-trash-alt fa-4x animated rotateIn mb-4" style="color: #ed1d1d;"></i>
+
+                        <h6>Tem certeza que deseja excluir?</h6>
+                        <h6>{{questao}}</h6>
+                        <h6>{{questao.avaliacao}}</h6>
+                        <h6>{{questao.avaliacao.ano}}</h6>
+                      </div>
+
+                      <!--Footer-->
+                      <div class="modal-footer flex-center">
+                        <form method="post" action="{% url 'avaliacao:deletar_questao' questao.pk %}">
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-outline-danger">
+                            <i class="far fa-trash-alt"></i>
+                            Deletar
+                          </button>
+                          <button type="button" class="btn btn-outline-info" data-dismiss="modal">
+                            <i class="fas fa-times" style="color: #588adf;"></i>
+                            Cancelar
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                    <!--/.Content-->
                   </div>
                 </div>
-              </div>
-            </div>
+
+<!--            <div class="modal fade" id="{{questao.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">-->
+<!--              <div class="modal-dialog modal-dialog-centered" role="document">-->
+<!--                <div class="modal-content">-->
+<!--                  <div class="modal-header">-->
+<!--                    <h5 class="modal-title" id="exampleModalLongTitle1">Deletar {{questao}}</h5>-->
+<!--                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">-->
+<!--                      <span aria-hidden="true">&times;</span>-->
+<!--                    </button>-->
+<!--                  </div>-->
+<!--                  <div class="modal-body">-->
+<!--                    <h5>Tem certeza que deseja excluir?</h5>-->
+<!--                    <hr>-->
+<!--                    <h6>{{questao}}</h6>-->
+<!--                    <h6>{{questao.avaliacao}}</h6>-->
+<!--                    <h6>{{questao.avaliacao.ano}}</h6>-->
+<!--                  </div>-->
+<!--                  <div class="modal-footer">-->
+<!--                    <form method="post" action="{% url 'avaliacao:deletar_questao' questao.pk %}">-->
+<!--                      {% csrf_token %}-->
+<!--                      <button type="submit" class="btn btn-danger">Deletar</button>-->
+<!--                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Sair</button>-->
+<!--                    </form>-->
+<!--                  </div>-->
+<!--                </div>-->
+<!--              </div>-->
+<!--            </div>-->
 
           </td>
         </tr>

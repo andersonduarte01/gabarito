@@ -1,6 +1,7 @@
 {% extends 'temp_base/adm.html' %}
 {% load static %}
-{% block titulo %}Gráfico Frequência Mensal{% endblock %}
+{% load bootstrap4 %}
+{% block titulo %}Lista de Professores por Escola{% endblock %}
 {% block imagem1_adm %}
 <img src="{% if escola.imagem %}
     {{escola.logo_escola.thumbnail.url}}
@@ -14,12 +15,13 @@
 {% endblock %}
 {% block tema_adm %}
 <h5 class="m-b-10">{{escola}}</h5>
-<p class="m-b-0">Gráfico Mensal</p>
+<p>Lista de professores</p>
 {% endblock %}
 {% block breadcrumbs_adm %}
 {{block.super}}
+<li class="breadcrumb-item"><a href="#">Professores</a></li>
 {% endblock %}
-{% block painel_adm%}
+{% block painel_adm %}
 <ul class="pcoded-item pcoded-left-item">
     <li class="pcoded-hasmenu">
         <a href="{% url 'core:inicio' %}" class="waves-effect waves-dark">
@@ -94,55 +96,37 @@
     </li>
 </ul>
 {% endblock %}
-{% block relatorios %}
-<li class=" ">
-    <a href="{% url 'relatorios:relatorio_escola' escola.slug %}" class="waves-effect waves-dark">
-        <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-        <span class="pcoded-mtext">Escola</span>
-        <span class="pcoded-mcaret"></span>
-    </a>
-</li>
-{% endblock %}
 {% block conteudo_adm %}
 <div class="col-sm-12">
-    <div class="card">
-        <div class="card-header">
-            <h5>{{mes_atual}}</h5>
-        </div>
-        <div class="card-block">
-            <div class="row align-items-center">
-                <canvas id="meuGrafico"></canvas>
-            </div>
+<div class="card">
+    <div class="card-block table-border-style">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th>Nº</th>
+                    <th>NOME</th>
+                    <th>EMAIL</th>
+                    <th>ENDEREÇO</th>
+                    <th>PERFIL</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for professor in professores %}
+                <tr>
+                    <td>{{forloop.counter}}</td>
+                    <td>{{professor.professor_nome}}</td>
+                    <td>{{professor.email}}</td>
+                    <td><a href="#" class="btn btn-outline-success btn-sm disabled">Desabilitado</a></td>
+                    <td><a href="#" class="btn btn-outline-secondary btn-sm disabled">Desabilitado</a></td>
+                </tr>
+                {% empty %}
+                <p>Não há nada</p>
+                {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
-{% block script %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-  const ctx = document.getElementById('meuGrafico');
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: {{mes|safe}},
-      datasets: [{
-        label: '% de alunos presentes',
-        data: {{alunos}},
-        borderWidth: 1,
-        fill: {
-                target: 'origin',
-                above: 'rgb(150, 220, 238)',   // Area will be red above the origin
-                below: 'rgb(0, 0, 255)'    // And blue below the origin
-              }
-      }]
-    },
-    options: {
-      scales: {
-        y: {
-          beginAtZero: true
-        }
-      }
-    }
-  });
-</script>
-{% endblock %}
+</div>
 {% endblock %}
