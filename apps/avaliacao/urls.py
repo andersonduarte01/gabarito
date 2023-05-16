@@ -17,6 +17,7 @@ urlpatterns = [
     path('avaliacao/<int:avaliacao_id>/<int:sala_id>/', views.AvaliacaoAlunos.as_view(), name='avaliar_alunos'),
     # path('iniciar_avaliacao/<int:aluno_id>/<int:avaliacao_id>/', views.responderProvaAluno, name='iniciar_avaliacao'),
     path('prova/<int:aluno_id>/<int:avaliacao_id>/', views.iniciarAvaliacao, name='iniciar_prova'),
+    path('prova/<int:gabarito_id>/', views.RefazerAvaliacao, name='refazer_prova'),
     path('prova/gabarito/<int:gabarito_id>/', views.VerGabarito.as_view(), name='ver_gabarito'),
     # path('editar/<int:aluno_id>/<int:avaliacao_id>/', views.EditarAvaliacao, name='editar_prova'),
     # # administrador

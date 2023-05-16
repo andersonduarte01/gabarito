@@ -1,6 +1,7 @@
 {% extends 'temp_base/adm.html' %}
+{% load bootstrap4 %}
 {% load static %}
-{% block titulo %}Salas por Avaliação{% endblock %}
+{% block titulo %}Iniciar Avaliação{% endblock %}
 {% block imagem1_adm %}
 <img src="{% if escola.imagem %}
     {{escola.logo_escola.thumbnail.url}}
@@ -14,12 +15,12 @@
 {% endblock %}
 {% block tema_adm %}
 <h3 class="m-b-10">{{escola}}</h3>
-<p class="m-b-0">{{avaliacao}} - {{avaliacao.ano}}</p>
+<h6 class="m-b-0">{{avaliacao}} - {{avaliacao.ano}}</h6>
 {% endblock %}
 {% block breadcrumbs_adm %}
 {{block.super}}
-<li class="breadcrumb-item"><a href="#">avaliação</a></li>
-<li class="breadcrumb-item"><a href="#">salas</a></li>
+<li class="breadcrumb-item"><a href="#">Avaliação</a></li>
+<li class="breadcrumb-item"><a href="#">Alunos</a></li>
 {% endblock %}
 {% block painel_adm %}
 <ul class="pcoded-item pcoded-left-item">
@@ -99,38 +100,77 @@
 {% block conteudo_adm %}
 <div class="col-sm-12">
   <div class="card">
+  <div class="card-header">
+     <h5>Avaliações Pendentes</h5>
+  </div>
   <div class="card-block table-border-style">
     <div class="table-responsive">
       <table class="table table-hover">
         <thead>
         <tr>
-          <th>SALA</th>
-          <th>ANO</th>
-          <th>TURNO</th>
-          <th>QTD ALUNOS</th>
-          <th>AVALIAÇÂO</th>
+          <th>NOME</th>
+          <th>INICIAR</th>
         </tr>
         </thead>
-{% for sala in salas %}
+{% for aluno in alunos %}
         <tbody>
         <tr>
-          <td>{{sala}}</td>
-          <td>{{sala.ano}}</td>
-          <td>{{sala.turno}}</td>
-          <td>{{sala.total_alunos}}</td>
+          <td>{{aluno}}</td>
           <td>
-            <a href="{% url 'escola:escola_avaliar_alunos' avaliacao_id=avaliacao.id sala_id=sala.id slug=escola.slug %}" class="btn btn-outline-info btn-sm">
-              <i class="fas fa-eye"></i>Entrar
+            <a href="{% url 'avaliacao:iniciar_prova' aluno_id=aluno.id avaliacao_id=avaliacao.id %}" class="btn btn-outline-success btn-sm">
+              <i class="fas fa-edit"></i>Avaliação
             </a>
           </td>
         </tr>
         </tbody>
 {% empty %}
-<p>Nenhuma sala cadastrada</p>
+<p>Nenhum aluno cadastrado</p>
 {% endfor %}
       </table>
     </div>
+    </div>
   </div>
 </div>
+
+<div class="col-sm-12">
+  <div class="card">
+  <div class="card-header">
+     <h5>Avaliações concluídas</h5>
+  </div>
+  <div class="card-block table-border-style">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+        <tr>
+          <th>NOME</th>
+          <th>VISUALIZAR</th>
+          <th>ACERTOS</th>
+          <th>EDITAR</th>
+        </tr>
+        </thead>
+{% for aluno in gabaritos %}
+        <tbody>
+        <tr>
+          <td>{{aluno.aluno}}</td>
+          <td>
+            <a href="{% url 'avaliacao:ver_gabarito' gabarito_id=aluno.id %}" class="btn btn-outline-info btn-sm">
+              <i class="fas fa-eye"></i>Visualizar
+            </a>
+          </td>
+          <td>{{aluno.qtd_acertos}}/{{questoes}}</td>
+          <td>
+            <a href="{% url 'avaliacao:refazer_prova' gabarito_id=aluno.id %}" class="info">
+              <i class="fas fa-edit"></i>
+            </a>
+          </td>
+        </tr>
+        </tbody>
+{% empty %}
+<p>Nenhum aluno cadastrado</p>
+{% endfor %}
+      </table>
+    </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

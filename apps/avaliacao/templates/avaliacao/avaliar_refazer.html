@@ -1,13 +1,15 @@
 {% extends 'temp_base/prova.html' %}
 {% load bootstrap4 %}
 {% load static %}
-{% block titulo %}Avaliação{% endblock %}
+{% block titulo %}Refazer Avaliação{% endblock %}
 
 {% block prova %}
     <!-- Basic table card start -->
     <div class="card-header text-center">
         <div class="container">
         <h3 class="display-6">{{aluno.sala.escola}}</h3>
+        <span><code>* Fazer avaliação novamente</code></span>
+
         <h4>{{aluno}}</h4>
         <h6>{{gabarito.avaliacao}}</h6>
         <h6>{{aluno.sala}} - {{aluno.sala.ano}}</h6>

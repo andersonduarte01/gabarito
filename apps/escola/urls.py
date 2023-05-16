@@ -17,6 +17,7 @@ urlpatterns = [
     path('<slug:slug>/professores/', views.ListaEscolaProfessores.as_view(), name='escola_professores'),
     path('l<slug:slug>/avaliacoes/', views.EscolaListAvaliacoes.as_view(), name='avaliacoes_escola'),
     path('<slug:slug>/lista_salas/<int:id_avaliacao>/', views.EscolaAvaliacaoListSalas.as_view(), name='escola_avaliacao_salas'),
+    path('<slug:slug>/avaliacao/<int:avaliacao_id>/<int:sala_id>/', views.EscolaAvaliacaoAlunos.as_view(), name='escola_avaliar_alunos'),
 
 ]
 

@@ -10,7 +10,7 @@ from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, TemplateView
 
-from .correcao import criarGabaritos, alinharquestoes, correcao
+from .correcao import correcao
 from .forms import RespostaForm, AvaliacaoForm, AvaliacaoUpdateForm, AvaliacaoQuestaoForm, QuestaoForm1, \
     QuestaoFormEditar
 from ..aluno.models import Aluno
@@ -237,34 +237,63 @@ class ListaQuestoes(LoginRequiredMixin, ListView):
 def iniciarAvaliacao(request, avaliacao_id, aluno_id):
     avaliacao = get_object_or_404(Avaliacao, pk=avaliacao_id)
     aluno = get_object_or_404(Aluno, pk=aluno_id)
+    questoes = Questao.objects.filter(avaliacao=avaliacao)
+    QuestaoFormSet = modelformset_factory(Questao, form=QuestaoForm1, extra=0)
 
-    try:
-        gabarito = Gabarito.objects.get(avaliacao=avaliacao, aluno=aluno)
-        return HttpResponseRedirect(reverse_lazy('avaliacao:ver_gabarito', kwargs={'gabarito_id': gabarito.id}))
-    except:
-        questoes = Questao.objects.filter(avaliacao=avaliacao)
-        QuestaoFormSet = modelformset_factory(Questao, form=QuestaoForm1, extra=0)
-        if request.method == 'POST':
-            formset = QuestaoFormSet(request.POST, request.FILES, queryset=questoes)
+    if request.method == 'POST':
+        formset = QuestaoFormSet(request.POST, request.FILES, queryset=questoes)
 
-            if formset.is_valid():
-                gabarito_resposta = Gabarito.objects.create(avaliacao=avaliacao, aluno=aluno)
-                for form in formset:
-                    opcao_selecionada = form.cleaned_data.get('opcao')
-                    questao = form.save(commit=False)
-                    if opcao_selecionada == questao.opcao_certa:
-                        resp = Resposta.objects.create(resposta=opcao_selecionada,
-                                                       gabarito=gabarito_resposta, questao=questao, acertou=True)
-                    else:
-                        resp = Resposta.objects.create(resposta=opcao_selecionada,
-                                                       gabarito=gabarito_resposta, questao=questao)
-                gabarito_resposta.concluido = True
-                gabarito_resposta.save()
-                formset.save()
-                return HttpResponseRedirect(reverse('core:inicio'))
-        else:
-            formset = QuestaoFormSet(queryset=questoes)
-        return render(request, 'avaliacao/avaliar_iniciar.html', {'formset': formset, 'avaliacao': avaliacao, 'aluno': aluno})
+        if formset.is_valid():
+            gabarito_resposta = Gabarito.objects.create(avaliacao=avaliacao, aluno=aluno)
+            for form in formset:
+                opcao_selecionada = form.cleaned_data.get('opcao')
+                questao = form.save(commit=False)
+                if opcao_selecionada == questao.opcao_certa:
+                    resp = Resposta.objects.create(resposta=opcao_selecionada,
+                                                   gabarito=gabarito_resposta, questao=questao, acertou=True)
+                else:
+                    resp = Resposta.objects.create(resposta=opcao_selecionada,
+                                                   gabarito=gabarito_resposta, questao=questao)
+            gabarito_resposta.concluido = True
+            gabarito_resposta.save()
+            formset.save()
+            return HttpResponseRedirect(reverse('core:inicio'))
+    else:
+        formset = QuestaoFormSet(queryset=questoes)
+    return render(request, 'avaliacao/avaliar_iniciar.html', {'formset': formset, 'avaliacao': avaliacao, 'aluno': aluno})
+
+
+def RefazerAvaliacao(request, gabarito_id):
+    gabarito = get_object_or_404(Gabarito, id=gabarito_id)
+    avaliacao = get_object_or_404(Avaliacao, pk=gabarito.avaliacao.id)
+    aluno = get_object_or_404(Aluno, pk=gabarito.aluno.id)
+    questoes = Questao.objects.filter(avaliacao=avaliacao)
+    QuestaoFormSet = modelformset_factory(Questao, form=QuestaoForm1, extra=0)
+
+    if request.method == 'POST':
+        formset = QuestaoFormSet(request.POST, request.FILES, queryset=questoes)
+
+        if formset.is_valid():
+            gabarito_resposta = get_object_or_404(Gabarito, id=gabarito_id)
+            for form in formset:
+                opcao_selecionada = form.cleaned_data.get('opcao')
+                questao = form.save(commit=False)
+                resp = get_object_or_404(Resposta, questao=questao, gabarito=gabarito)
+                if opcao_selecionada == questao.opcao_certa:
+                    resp.resposta = opcao_selecionada
+                    resp.acertou = True
+
+                else:
+                    resp.resposta = opcao_selecionada
+                    resp.acertou = False
+                resp.save()
+            gabarito_resposta.concluido = True
+            gabarito_resposta.save()
+            formset.save()
+            return HttpResponseRedirect(reverse('core:inicio'))
+    else:
+        formset = QuestaoFormSet(queryset=questoes)
+    return render(request, 'avaliacao/avaliar_refazer.html', {'formset': formset, 'avaliacao': avaliacao, 'aluno': aluno})
 
 
 class VerGabarito(LoginRequiredMixin, TemplateView):

@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.shortcuts import get_object_or_404, get_list_or_404
 
 from .models import *
 from ..aluno.models import Aluno
@@ -36,21 +37,18 @@ def correcao(gabarito):
 
 
 
-
-def alinharquestoes(avaliacao, sala):
-    alunos = Aluno.objects.filter(sala=sala)
-    questoes = Questao.objects.filter(avaliacao=avaliacao).order_by('numero')
+def alunos_prova(avaliacao, alunos):
+    questoes = len(Questao.objects.filter(avaliacao=avaliacao))
+    alunos_gabarito = []
+    aluno_aval_falta = []
     for aluno in alunos:
-            gabarito = Gabarito.objects.get(aluno=aluno, avaliacao=avaliacao)
-            gabarito_atualizar = []
-            for q in questoes:
-                try:
-                    r = Resposta.objects.get(questao=q, gabarito=gabarito)
-                except:
-                    gabarito_atualizar.append(
-                        Resposta(gabarito=gabarito, questao=q)
-                    )
-            Resposta.objects.bulk_create(gabarito_atualizar)
-            correcao(gabarito=gabarito)
+        try:
+            aluno_prova_ok = get_object_or_404(Gabarito, avaliacao=avaliacao, aluno=aluno)
+            correcao(aluno_prova_ok)
+            alunos_gabarito.append(aluno_prova_ok)
+        except:
+            aluno_aval_falta.append(aluno)
+
+    return alunos_gabarito, aluno_aval_falta, questoes
 
 

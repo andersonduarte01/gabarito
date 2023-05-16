@@ -9,7 +9,8 @@ from django.views.generic import TemplateView, UpdateView, ListView
 from .traduzir import converter
 from .models import UnidadeEscolar, EnderecoEscolar
 from ..aluno.models import Aluno
-from ..avaliacao.models import Avaliacao
+from ..avaliacao.correcao import alunos_prova
+from ..avaliacao.models import Avaliacao, Gabarito
 from ..core.models import Usuario
 from ..frequencia.models import Frequencia, FrequenciaAluno
 from ..funcionario.models import Professor
@@ -309,4 +310,24 @@ class EscolaAvaliacaoListSalas(LoginRequiredMixin, ListView):
         avaliacao = Avaliacao.objects.get(id=self.kwargs['id_avaliacao'])
         context['escola'] = escola
         context['avaliacao'] = avaliacao
+        return context
+
+
+class EscolaAvaliacaoAlunos(LoginRequiredMixin, ListView):
+    model = Aluno
+    template_name = 'escola/escola_avaliacao_alunos.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        avaliacao = Avaliacao.objects.get(pk=self.kwargs['avaliacao_id'])
+        sala = Sala.objects.get(pk=self.kwargs['sala_id'])
+        alunos = Aluno.objects.filter(sala=self.kwargs['sala_id'])
+        escola = get_object_or_404(UnidadeEscolar, slug=self.kwargs['slug'])
+        gabaritos, alunos_avaliar, questoes = alunos_prova(avaliacao=avaliacao, alunos=alunos)
+        context['escola'] = escola
+        context['avaliacao'] = avaliacao
+        context['alunos'] = alunos_avaliar
+        context['sala'] = sala
+        context['questoes'] = questoes
+        context['gabaritos'] = gabaritos
         return context
