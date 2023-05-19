@@ -12,7 +12,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView, T
 
 from .correcao import correcao
 from .forms import RespostaForm, AvaliacaoForm, AvaliacaoUpdateForm, AvaliacaoQuestaoForm, QuestaoForm1, \
-    QuestaoFormEditar
+    QuestaoFormEditar, AIRespostaForm
 from ..aluno.models import Aluno
 from ..avaliacao.models import Questao, Avaliacao, Resposta, Gabarito
 from ..escola.models import UnidadeEscolar
@@ -126,33 +126,38 @@ class AvaliacaoAlunos(LoginRequiredMixin, ListView):
 #         return context
 #
 #
-# def responderProvaAdm(request, aluno_id, avaliacao_id, slug):
-#     escola = UnidadeEscolar.objects.get(slug=slug)
-#     aluno = Aluno.objects.get(pk=aluno_id)
-#     sala = Sala.objects.get(pk=aluno.sala.pk)
-#     avaliacao = Avaliacao.objects.get(pk=avaliacao_id)
-#     gabarito = Gabarito.objects.get(aluno=aluno, avaliacao=avaliacao)
-#     respostas = Resposta.objects.filter(gabarito=gabarito)
-#     RespostasFormSet = modelformset_factory(Resposta, form=RespostaForm, extra=0)
-#
-#     if request.method == 'POST':
-#         formset = RespostasFormSet(request.POST, request.FILES, queryset=respostas,)
-#         if formset.is_valid():
-#             formset.save()
-#             correcao(gabarito)
-#             gabarito.concluido = True
-#             gabarito.save()
-#             url = reverse('avaliacao:avaliar_adm', kwargs={'slug': escola.slug,
-#                                                            'avaliacao_id': avaliacao.id, 'sala_id': sala.id })
-#         return HttpResponseRedirect(url)
-#
-#     else:
-#         formset = RespostasFormSet(queryset=respostas)
-#         correcao(gabarito)
-#     return render(request, 'avaliacao/avaliar_aluno_adm.html',
-#                   {'formset': formset, 'avaliacao': avaliacao, 'escola': escola, 'sala': sala, 'aluno': aluno})
-#
-#
+def responderProvaAdm(request, aluno_id, avaliacao_id, slug):
+    avaliacao = get_object_or_404(Avaliacao, pk=avaliacao_id)
+    aluno = get_object_or_404(Aluno, pk=aluno_id)
+    questoes = Questao.objects.filter(avaliacao=avaliacao)
+    QuestaoFormSet = modelformset_factory(Questao, form=AIRespostaForm, extra=0)
+
+    if request.method == 'POST':
+        formset = QuestaoFormSet(request.POST, request.FILES, queryset=questoes)
+        if formset.is_valid():
+            gabarito_resposta = Gabarito.objects.create(avaliacao=avaliacao, aluno=aluno)
+            for form in formset:
+                opcao_selecionada = form.cleaned_data.get('resposta')
+                questao = form.save(commit=False)
+                if opcao_selecionada == questao.opcao_certa:
+                    resp = Resposta.objects.create(resposta=opcao_selecionada,
+                                                   gabarito=gabarito_resposta, questao=questao, acertou=True)
+                else:
+                    resp = Resposta.objects.create(resposta=opcao_selecionada,
+                                                   gabarito=gabarito_resposta, questao=questao)
+            gabarito_resposta.concluido = True
+            gabarito_resposta.save()
+            formset.save()
+            url = reverse_lazy('escola:escola_avaliar_alunos',
+                               kwargs={'slug': aluno.sala.escola.slug, 'avaliacao_id': avaliacao.id,
+                                       'sala_id': aluno.sala.id})
+            return HttpResponseRedirect(url)
+    else:
+        formset = QuestaoFormSet(queryset=questoes)
+    return render(request, 'avaliacao/avaliar_aluno_adm.html',
+                  {'formset': formset, 'avaliacao': avaliacao, 'aluno': aluno})
+
+
 # # class AddAvaliacao(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 # #     model = Avaliacao
 # #     fields = ('descricao', 'ano')
@@ -215,7 +220,7 @@ class ListaAvaliacoes(LoginRequiredMixin, ListView):
     def get_queryset(self):
         return Avaliacao.objects.all()
 
-#
+
 class AddQuestao(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Questao
     fields = ('avaliacao', 'questao', 'opcao_um', 'opcao_dois', 'opcao_tres', 'opcao_quatro', 'opcao_certa')
@@ -257,7 +262,9 @@ def iniciarAvaliacao(request, avaliacao_id, aluno_id):
             gabarito_resposta.concluido = True
             gabarito_resposta.save()
             formset.save()
-            return HttpResponseRedirect(reverse('core:inicio'))
+            url = reverse_lazy('escola:escola_avaliar_alunos',
+                               kwargs={'slug': aluno.sala.escola.slug, 'avaliacao_id': avaliacao.id, 'sala_id': aluno.sala.id})
+            return HttpResponseRedirect(url)
     else:
         formset = QuestaoFormSet(queryset=questoes)
     return render(request, 'avaliacao/avaliar_iniciar.html', {'formset': formset, 'avaliacao': avaliacao, 'aluno': aluno})
@@ -290,7 +297,10 @@ def RefazerAvaliacao(request, gabarito_id):
             gabarito_resposta.concluido = True
             gabarito_resposta.save()
             formset.save()
-            return HttpResponseRedirect(reverse('core:inicio'))
+            url = reverse_lazy('escola:escola_avaliar_alunos',
+                               kwargs={'slug': aluno.sala.escola.slug, 'avaliacao_id': avaliacao.id,
+                                       'sala_id': aluno.sala.id})
+            return HttpResponseRedirect(url)
     else:
         formset = QuestaoFormSet(queryset=questoes)
     return render(request, 'avaliacao/avaliar_refazer.html', {'formset': formset, 'avaliacao': avaliacao, 'aluno': aluno})
@@ -309,25 +319,3 @@ class VerGabarito(LoginRequiredMixin, TemplateView):
         context['gabarito'] = gabarito
         return context
 
-
-
-
-# def EditarAvaliacao(request, avaliacao_id, aluno_id):
-#     aluno = Aluno.objects.get(pk=aluno_id)
-#     avaliacao = Avaliacao.objects.get(pk=avaliacao_id)
-#     gabarito = get_object_or_404(Gabarito, avaliacao=avaliacao, aluno=aluno)
-#     respostas = get_list_or_404(Resposta, gabarito=gabarito)
-#     questoes = []
-#     for r in respostas:
-#         q = get_object_or_404(Questao, id=r.questao.id)
-#         questoes.append(q)
-#     QuestoesFormSet = modelformset_factory(Questao, form=AvaliacaoQuestaoForm, extra=0)
-#
-#     if request.method == 'POST':
-#         formset = QuestoesFormSet(request.POST, request.FILES, queryset=questoes)
-#         if formset.is_valid():
-#             formset.save()
-#         return HttpResponseRedirect(reverse('escola:painel_escola'))
-#     else:
-#         formset = QuestoesFormSet(queryset=questoes)
-#     return render(request, 'avaliacao/avaliar_iniciar.html', {'questoes': questoes, 'avaliacao': avaliacao, 'aluno': aluno})

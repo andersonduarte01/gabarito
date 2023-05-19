@@ -1,4 +1,4 @@
-{% extends 'temp_base/adm.html' %}
+{% extends 'temp_base/prova.html' %}
 {% load bootstrap4 %}
 {% load static %}
 {% block titulo %}Gabarito{% endblock %}
@@ -21,27 +21,33 @@
 {{block.super}}
 <li class="breadcrumb-item"><a href="#">Gabarito</a></li>
 {% endblock %}
-{% block conteudo_adm %}
-<div class="col-sm-12">
+{% block prova %}
     <!-- Basic table card start -->
-    <div class="card">
-        <div class="card-header">
-            <h4>{{aluno}}</h4>
-            <span>{{avaliacao}}</span>
-        </div>
+<div class="card">
+    <div class="card-header">
+        <h4>{{aluno}}</h4>
+        <span>{{avaliacao}} - {{avaliacao.ano}}</span>
+    </div>
+    <hr>
+    <div class="container">
         <form method="post">
             {% csrf_token %}
-            {{ formset.management_form }}
-            {% for form in formset %}
-            <span class="label label-inverse-info-border label-lg">Questao - {{ forloop.counter }}</span>
-            {% for field in form %}
-            {{ field }}
-            {% endfor %}
-            {% endfor %}
+            {{formset.management_form}}
+            <div class="row">
+                {% for form in formset %}
+                {% for hidden in form.hidden_fields %}
+                    {{ hidden }}
+                {% endfor %}
+                <span class="col-md-3" style="margin-bottom:15px;">
+                {{ forloop.counter }}
+                {% for field in form.visible_fields %}
+                  {{ field }}
+                </span>
+                {% endfor %}
+                {% endfor %}
+            </div>
             <hr>
-            {% buttons %}
-            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i>Salvar</button>
-            {% endbuttons %}
+            <button type="submit" class="btn btn-outline-primary">Finalizar</button>
         </form>
     </div>
 </div>

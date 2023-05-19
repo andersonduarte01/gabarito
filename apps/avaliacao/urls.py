@@ -19,8 +19,7 @@ urlpatterns = [
     path('prova/<int:aluno_id>/<int:avaliacao_id>/', views.iniciarAvaliacao, name='iniciar_prova'),
     path('prova/<int:gabarito_id>/', views.RefazerAvaliacao, name='refazer_prova'),
     path('prova/gabarito/<int:gabarito_id>/', views.VerGabarito.as_view(), name='ver_gabarito'),
-    # path('editar/<int:aluno_id>/<int:avaliacao_id>/', views.EditarAvaliacao, name='editar_prova'),
     # # administrador
     # path('<int:sala_id>/<int:avaliacao_id>/<slug:slug>/', views.AvaliacaoAlunosAdm.as_view(), name='avaliar_adm'),
-    # path('<slug:slug>/<int:aluno_id>/<int:avaliacao_id>/', views.responderProvaAdm, name='avalie_adm'),
+    path('<slug:slug>/<int:aluno_id>/<int:avaliacao_id>/', views.responderProvaAdm, name='avalie_adm'),
 ]

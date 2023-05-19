@@ -32,7 +32,6 @@ class Eventos(LoginRequiredMixin, TemplateView):
         return context
 
 
-
 class Biblioteca(TemplateView):
     template_name = 'core/biblioteca.html'
 

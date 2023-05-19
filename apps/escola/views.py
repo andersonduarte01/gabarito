@@ -3,6 +3,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from datetime import date
 from datetime import datetime
 
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView, UpdateView, ListView
@@ -242,6 +243,16 @@ class ListaEscolaSalas(LoginRequiredMixin, ListView):
         escola = get_object_or_404(UnidadeEscolar, slug=self.kwargs['slug'])
         context['escola'] = escola
         return context
+
+
+class PesquisarEscola(ListView):
+    model = UnidadeEscolar
+    template_name = 'escola/escola_resultados.html'
+    context_object_name = 'escolas'
+    def get_queryset(self):
+        query = self.request.GET.get("q")
+        escolas = UnidadeEscolar.objects.filter(Q(nome_escola__icontains=query))
+        return escolas
 
 
 class ListaEscolaSalaAlunos(LoginRequiredMixin, ListView):

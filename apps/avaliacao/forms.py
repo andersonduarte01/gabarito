@@ -5,6 +5,29 @@ from .models import Avaliacao
 from ..avaliacao.models import Resposta, Questao
 from ..escola.models import UnidadeEscolar
 
+class AIRespostaForm(forms.ModelForm):
+    OPCOES_RESPOSTA = [
+        ('0', 'Selecione'),
+        ('1', 'A'),
+        ('2', 'B'),
+        ('3', 'C'),
+        ('4', 'D'),
+    ]
+
+    resposta = forms.ChoiceField(choices=OPCOES_RESPOSTA, label='', widget=forms.Select(attrs={'class': 'form-control'}))
+
+    def clean_resposta(self):
+        resposta = self.cleaned_data['resposta']
+        if resposta == '0':
+            raise forms.ValidationError('Selecione uma opção válida.')
+        return int(resposta)
+
+    class Meta:
+        model = Resposta
+        fields = ['resposta']
+
+
+
 class RespostaForm(forms.ModelForm):
     class Meta:
         model = Resposta

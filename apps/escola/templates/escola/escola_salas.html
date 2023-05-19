@@ -104,12 +104,12 @@
       <table class="table table-hover">
         <thead>
         <tr>
-          <th>Nº</th>
-          <th>SALA</th>
-          <th>ANO</th>
-          <th>TURNO</th>
-          <th>QTD ALUNOS</th>
-          <th class="text-center">Entrar</th>
+          <th class="font-weight-bold text-primary">Nº</th>
+          <th class="font-weight-bold text-primary">SALA</th>
+          <th class="font-weight-bold text-primary">ANO</th>
+          <th class="font-weight-bold text-primary">TURNO</th>
+          <th class="font-weight-bold text-primary">QTD ALUNOS</th>
+          <th class="font-weight-bold text-primary text-center">Entrar</th>
         </tr>
         </thead>
 {% for sala in salas %}
@@ -122,7 +122,7 @@
           <td>{{sala.total_alunos}}</td>
           <td class="text-center">
             <a href="{% url 'escola:escola_sala_alunos' id=sala.id slug=escola.slug %}" class="info">
-              <i class="fas fa-eye" style="color: #318c48;"></i>
+              <i class="fas fa-eye" style="color: #0080FF;"></i>
             </a>
           </td>
         </tr>

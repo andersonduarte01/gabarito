@@ -1,6 +1,6 @@
 {% extends 'temp_base/adm.html' %}
 {% load static %}
-{% block titulo %}Salas por Avaliação{% endblock %}
+{% block titulo %}Salas/Avaliação{% endblock %}
 {% block imagem1_adm %}
 <img src="{% if escola.imagem %}
     {{escola.logo_escola.thumbnail.url}}
@@ -104,11 +104,11 @@
       <table class="table table-hover">
         <thead>
         <tr>
-          <th>SALA</th>
-          <th>ANO</th>
-          <th>TURNO</th>
-          <th>QTD ALUNOS</th>
-          <th>AVALIAÇÂO</th>
+          <th class="font-weight-bold text-primary">SALA</th>
+          <th class="font-weight-bold text-primary">ANO</th>
+          <th class="font-weight-bold text-primary">TURNO</th>
+          <th class="font-weight-bold text-primary">QTD ALUNOS</th>
+          <th  class="font-weight-bold text-primary text-center">AVALIAÇÂO</th>
         </tr>
         </thead>
 {% for sala in salas %}
@@ -118,9 +118,9 @@
           <td>{{sala.ano}}</td>
           <td>{{sala.turno}}</td>
           <td>{{sala.total_alunos}}</td>
-          <td>
-            <a href="{% url 'escola:escola_avaliar_alunos' avaliacao_id=avaliacao.id sala_id=sala.id slug=escola.slug %}" class="btn btn-outline-info btn-sm">
-              <i class="fas fa-eye"></i>Entrar
+          <td class="text-center">
+            <a href="{% url 'escola:escola_avaliar_alunos' avaliacao_id=avaliacao.id sala_id=sala.id slug=escola.slug %}" class="info">
+              <i class="fas fa-eye" style="color: #0080FF;"></i>
             </a>
           </td>
         </tr>
