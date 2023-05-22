@@ -76,23 +76,19 @@
         <thead>
         <tr>
           <th>CATEGORIA</th>
-          <th>EDITAR</th>
-          <th>EXCLUIR</th>
         </tr>
         </thead>
 {% for categoria in categorias %}
         <tbody>
         <tr>
           <td>{{categoria}}</td>
-          <td>
-            <a href="{% url 'arquivos:editar_categoria' categoria.pk %}" class="btn btn-outline-primary btn-sm">
-              <i class="fas fa-edit"></i>Editar
+          <td align="right">
+            <a href="{% url 'arquivos:editar_categoria' categoria.pk %}" class="primary">
+              <i class="fas fa-edit" style="color:#4045CE;"></i>
             </a>
-          </td>
-          <td>
-            <button type="button" class="btn btn-outline-danger btn-sm" data-toggle="modal" data-target="#{{categoria.id}}">
-              <i class="far fa-trash-alt"></i> Excluir
-            </button>
+            <a type="button" class="danger" data-toggle="modal" data-target="#{{categoria.id}}">
+              <i class="far fa-trash-alt" style="color:#EE2222;"></i>
+            </a>
 
             <!-- Modal -->
             <div class="modal fade" id="{{categoria.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">

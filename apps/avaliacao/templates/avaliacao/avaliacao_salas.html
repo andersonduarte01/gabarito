@@ -32,7 +32,7 @@
           <th>ANO</th>
           <th>TURNO</th>
           <th>QTD ALUNOS</th>
-          <th>AVALIAÇÂO</th>
+          <th class="text-center">AVALIAÇÂO</th>
         </tr>
         </thead>
 {% for sala in salas %}
@@ -42,9 +42,9 @@
           <td>{{sala.ano}}</td>
           <td>{{sala.turno}}</td>
           <td>{{sala.total_alunos}}</td>
-          <td>
-            <a href="{% url 'avaliacao:avaliar_alunos' avaliacao_id=avaliacao.id sala_id=sala.id %}" class="btn btn-outline-info btn-sm">
-              <i class="fas fa-eye"></i>Entrar
+          <td class="text-center">
+            <a href="{% url 'avaliacao:avaliar_alunos' avaliacao_id=avaliacao.id sala_id=sala.id %}" class="info">
+              <i class="fas fa-eye" style="color:#5050F3;"></i>
             </a>
           </td>
         </tr>

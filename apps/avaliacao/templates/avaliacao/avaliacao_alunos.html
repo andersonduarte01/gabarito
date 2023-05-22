@@ -38,7 +38,7 @@
         <tr>
           <td>{{aluno}}</td>
           <td>
-            <a href="{% url 'avaliacao:iniciar_prova' aluno_id=aluno.id avaliacao_id=avaliacao.id %}" class="btn btn-outline-success btn-sm">
+            <a href="#" class="btn btn-outline-success btn-sm disabled">
               <i class="fas fa-edit"></i>Avaliação
             </a>
           </td>
@@ -48,6 +48,7 @@
 <p>Nenhum aluno cadastrado</p>
 {% endfor %}
       </table>
+    </div>
     </div>
   </div>
 </div>
