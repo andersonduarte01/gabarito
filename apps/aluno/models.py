@@ -30,7 +30,7 @@ SEXO = [
 
 class Aluno(models.Model):
     nome = models.CharField(verbose_name='Nome', max_length=255)
-    data_nascimento = models.DateTimeField(verbose_name='Data de Nascimento', null=True, blank=True)
+    data_nascimento = models.CharField(max_length=20, verbose_name='Data de Nascimento', null=True, blank=True, help_text='dia/mes/ano')
     sexo = models.CharField(verbose_name='Sexo', choices=SEXO, default='Outro', max_length=100)
     portador_deficiencia = models.CharField(verbose_name='Portador de deficiência?', choices=PORT_DEF, default='nao', max_length=255)
     responsavel_legal = models.CharField(verbose_name='Responsável Legal', max_length=120)
