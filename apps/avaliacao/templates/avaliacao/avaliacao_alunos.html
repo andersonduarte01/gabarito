@@ -42,9 +42,15 @@
         <tr>
           <td>{{aluno}}</td>
           <td class="text-center">
-            <a href="{% url 'avaliacao:iniciar_prova' aluno_id=aluno.id avaliacao_id=avaliacao.id %}" class="success">
-              <i class="fas fa-file" style="color: #0080FF;"></i>
-            </a>
+            {% if avaliacao.escola_responde %}
+                <a href="#" class="success">
+                  <i class="fas fa-file" style="color: #0080FF;"></i>
+                </a>
+            {% else %}
+              <a href="{% url 'avaliacao:iniciar_prova' aluno_id=aluno.id avaliacao_id=avaliacao.id %}" class="success">
+                  <i class="fas fa-file" style="color: #0080FF;"></i>
+                </a>
+            {% endif %}
           </td>
         </tr>
         </tbody>
@@ -85,9 +91,15 @@
           </td>
           <td class="text-center">{{aluno.qtd_acertos}}/{{questoes}}</td>
           <td class="text-center">
-            <a href="{% url 'avaliacao:refazer_prova' gabarito_id=aluno.id %}" class="info">
+           {% if avaliacao.escola_responde %}
+            <a href="#" class="info">
               <i class="fas fa-edit" style="color:#4C9900;"></i>
             </a>
+           {% else %}
+              <a href="{% url 'avaliacao:refazer_prova' gabarito_id=aluno.id %}" class="info">
+              <i class="fas fa-edit" style="color:#4C9900;"></i>
+            </a>
+           {% endif %}
           </td>
         </tr>
         </tbody>
