@@ -29,7 +29,7 @@ class EditarAlunoForm(forms.ModelForm):
             self.instance = instance
             self.fields['sala'].initial = instance.sala
             self.fields['nome'].initial = instance
-            self.fields['data_nascimento'].initial = instance.data_nascimento
+            self.fields['data_nascimento'].initial = instance.data_nascimento.strftime("%d/%m/%Y")
             self.fields['sexo'].initial = instance.sexo
             self.fields['portador_deficiencia'].initial = instance.portador_deficiencia
             self.fields['situacao'].initial = instance.situacao

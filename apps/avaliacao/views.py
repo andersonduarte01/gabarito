@@ -10,7 +10,7 @@ from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, TemplateView
 
-from .correcao import correcao
+from .correcao import correcao, alunos_prova
 from .forms import RespostaForm, AvaliacaoForm, AvaliacaoUpdateForm, AvaliacaoQuestaoForm, QuestaoForm1, \
     QuestaoFormEditar, AIRespostaForm
 from ..aluno.models import Aluno
@@ -54,23 +54,6 @@ class AvaliacaoListSalas(LoginRequiredMixin, ListView):
 
 
 
-# class AvaliacaoView(ListView):
-#     model = Questao
-#     template_name = 'avaliacao/avaliacao.html'
-#
-#     def get_queryset(self):
-#         return Questao.objects.filter(avaliacao=self.kwargs['pk'])
-#
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         avaliacao = Avaliacao.objects.get(pk=self.kwargs['pk'])
-#         sala = Sala.objects.get(pk=self.kwargs['sala_id'])
-#         ano = Ano.objects.get(id=avaliacao.ano.id)
-#         context['avaliacao'] = avaliacao
-#         context['ano'] = ano
-#         context['sala'] = sala
-#         return context
-#
 
 class AvaliacaoAlunos(LoginRequiredMixin, ListView):
     model = Aluno
@@ -81,51 +64,19 @@ class AvaliacaoAlunos(LoginRequiredMixin, ListView):
         avaliacao = Avaliacao.objects.get(pk=self.kwargs['avaliacao_id'])
         sala = Sala.objects.get(pk=self.kwargs['sala_id'])
         alunos = Aluno.objects.filter(sala=self.kwargs['sala_id'])
-        escola = UnidadeEscolar.objects.get(pk=self.request.user)
+        escola = get_object_or_404(UnidadeEscolar, slug=sala.escola.slug)
+        gabaritos, alunos_avaliar, questoes = alunos_prova(avaliacao=avaliacao, alunos=alunos)
         context['escola'] = escola
         context['avaliacao'] = avaliacao
-        context['alunos'] = alunos
+        context['alunos'] = alunos_avaliar
         context['sala'] = sala
+        context['questoes'] = questoes
+        context['gabaritos'] = gabaritos
         return context
 
-#
-# def responderProvaAluno(request, aluno_id, avaliacao_id):
-#     aluno = Aluno.objects.get(pk=aluno_id)
-#     avaliacao = Avaliacao.objects.get(pk=avaliacao_id)
-#     questoes = Questao.objects.filter(avaliacao=avaliacao)
-#     QuestoesFormSet = modelformset_factory(Questao, form=AvaliacaoQuestaoForm, extra=0)
-#
-#     if request.method == 'POST':
-#         formset = QuestoesFormSet(request.POST, request.FILES, queryset=questoes)
-#         if formset.is_valid():
-#             formset.save()
-#         return HttpResponseRedirect(reverse('escola:painel_escola'))
-#     else:
-#         formset = QuestoesFormSet(queryset=questoes)
-#     return render(request, 'avaliacao/avaliar_iniciar.html', {'questoes': questoes, 'avaliacao': avaliacao, 'aluno': aluno})
-#
+
 # # Administrador
-#
-#
-# class AvaliacaoAlunosAdm(LoginRequiredMixin, ListView):
-#     model = Aluno
-#     template_name = 'avaliacao/avaliacao_alunos_adm.html'
-#
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         avaliacao = Avaliacao.objects.get(pk=self.kwargs['avaliacao_id'])
-#         sala = Sala.objects.get(pk=self.kwargs['sala_id'])
-#         #criarGabaritos(avaliacao=avaliacao, sala=sala)
-#         #alinharquestoes(avaliacao, sala)
-#         alunos = Aluno.objects.filter(sala=self.kwargs['sala_id'])
-#         escola = UnidadeEscolar.objects.get(slug=self.kwargs['slug'])
-#         context['escola'] = escola
-#         context['avaliacao'] = avaliacao
-#         context['alunos'] = alunos
-#         context['sala'] = sala
-#         return context
-#
-#
+
 def responderProvaAdm(request, aluno_id, avaliacao_id, slug):
     avaliacao = get_object_or_404(Avaliacao, pk=avaliacao_id)
     aluno = get_object_or_404(Aluno, pk=aluno_id)
@@ -158,13 +109,6 @@ def responderProvaAdm(request, aluno_id, avaliacao_id, slug):
                   {'formset': formset, 'avaliacao': avaliacao, 'aluno': aluno})
 
 
-# # class AddAvaliacao(LoginRequiredMixin, SuccessMessageMixin, CreateView):
-# #     model = Avaliacao
-# #     fields = ('descricao', 'ano')
-# #     template_name = 'avaliacao/adicionar_avaliacao.html'
-# #     success_message = 'Avaliação cadastrada com sucesso.'
-# #     success_url = reverse_lazy('escola:painel_escola')
-#
 def criarAvaliacao(request):
     if request.method == 'POST':
         form = AvaliacaoForm(request.POST)
@@ -189,7 +133,7 @@ class EditarAvaliacao(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 
 class EditarQuestao(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Questao
-    fields = ('questao', 'opcao_um', 'opcao_dois', 'opcao_tres', 'opcao_quatro', 'opcao_certa')
+    fields = ('questao','texto', 'imagem_prova', 'opcao_um', 'opcao_dois', 'opcao_tres', 'opcao_quatro', 'opcao_certa')
     template_name = 'avaliacao/editar_questao.html'
     success_message = 'Questão atualizada!'
 
@@ -223,7 +167,7 @@ class ListaAvaliacoes(LoginRequiredMixin, ListView):
 
 class AddQuestao(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Questao
-    fields = ('avaliacao', 'questao', 'opcao_um', 'opcao_dois', 'opcao_tres', 'opcao_quatro', 'opcao_certa')
+    fields = ('avaliacao', 'texto', 'imagem_prova', 'questao', 'opcao_um', 'opcao_dois', 'opcao_tres', 'opcao_quatro', 'opcao_certa')
     template_name = 'avaliacao/adicionar_questao.html'
     success_message = 'questão cadastrada com sucesso.'
     success_url = reverse_lazy('escola:painel_escola')
@@ -262,8 +206,8 @@ def iniciarAvaliacao(request, avaliacao_id, aluno_id):
             gabarito_resposta.concluido = True
             gabarito_resposta.save()
             formset.save()
-            url = reverse_lazy('escola:escola_avaliar_alunos',
-                               kwargs={'slug': aluno.sala.escola.slug, 'avaliacao_id': avaliacao.id, 'sala_id': aluno.sala.id})
+            url = reverse_lazy('avaliacao:avaliar_alunos',
+                               kwargs={'avaliacao_id': avaliacao.id, 'sala_id': aluno.sala.id})
             return HttpResponseRedirect(url)
     else:
         formset = QuestaoFormSet(queryset=questoes)
@@ -282,6 +226,7 @@ def RefazerAvaliacao(request, gabarito_id):
 
         if formset.is_valid():
             gabarito_resposta = get_object_or_404(Gabarito, id=gabarito_id)
+            print(formset)
             for form in formset:
                 opcao_selecionada = form.cleaned_data.get('opcao')
                 questao = form.save(commit=False)
@@ -297,8 +242,8 @@ def RefazerAvaliacao(request, gabarito_id):
             gabarito_resposta.concluido = True
             gabarito_resposta.save()
             formset.save()
-            url = reverse_lazy('escola:escola_avaliar_alunos',
-                               kwargs={'slug': aluno.sala.escola.slug, 'avaliacao_id': avaliacao.id,
+            url = reverse_lazy('avaliacao:avaliar_alunos',
+                               kwargs={'avaliacao_id': avaliacao.id,
                                        'sala_id': aluno.sala.id})
             return HttpResponseRedirect(url)
     else:

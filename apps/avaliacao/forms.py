@@ -59,7 +59,7 @@ class AvaliacaoForm(forms.ModelForm):
 
     class Meta:
         model = Avaliacao
-        fields = ['descricao', 'ano', 'data_encerramento', 'escola']
+        fields = ['descricao', 'ano', 'escola_responde', 'data_encerramento', 'escola']
 
 
 class AvaliacaoUpdateForm(forms.ModelForm):
@@ -71,7 +71,7 @@ class AvaliacaoUpdateForm(forms.ModelForm):
 
     class Meta:
         model = Avaliacao
-        fields = ['descricao', 'ano', 'data_encerramento', 'escola']
+        fields = ['descricao', 'ano', 'escola_responde', 'data_encerramento', 'escola']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -45,7 +45,7 @@ class Noticia(DetailView):
         return context
 
 
-class AddNoticia(LoginRequiredMixin, CreateView):
+class AddNoticia(CreateView):
     model = Blog
     fields = ('titulo', 'imagem', 'conteudo', 'categoria')
     template_name = 'blog/add_noticia.html'

@@ -22,24 +22,28 @@
 <li class="breadcrumb-item"><a href="#">Alunos</a></li>
 {% endblock %}
 {% block conteudo %}
+{% if alunos %}
 <div class="col-sm-12">
   <div class="card">
+  <div class="card-header">
+     <h5>Avaliações Pendentes</h5>
+  </div>
   <div class="card-block table-border-style">
     <div class="table-responsive">
       <table class="table table-hover">
         <thead>
         <tr>
-          <th>NOME</th>
-          <th>INICIAR</th>
+          <th class="font-weight-bold text-primary">NOME</th>
+          <th class="font-weight-bold text-primary text-center">INICIAR</th>
         </tr>
         </thead>
 {% for aluno in alunos %}
         <tbody>
         <tr>
           <td>{{aluno}}</td>
-          <td>
-            <a href="#" class="btn btn-outline-success btn-sm disabled">
-              <i class="fas fa-edit"></i>Avaliação
+          <td class="text-center">
+            <a href="{% url 'avaliacao:iniciar_prova' aluno_id=aluno.id avaliacao_id=avaliacao.id %}" class="success">
+              <i class="fas fa-file" style="color: #0080FF;"></i>
             </a>
           </td>
         </tr>
@@ -52,4 +56,48 @@
     </div>
   </div>
 </div>
+{% endif %}
+{% if gabaritos %}
+<div class="col-sm-12">
+  <div class="card">
+  <div class="card-header">
+     <h5>Avaliações concluídas</h5>
+  </div>
+  <div class="card-block table-border-style">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+        <tr>
+          <th class="font-weight-bold text-primary">NOME</th>
+          <th class="font-weight-bold text-primary text-center">VISUALIZAR</th>
+          <th  class="font-weight-bold text-primary text-center">ACERTOS</th>
+          <th class="font-weight-bold text-primary text-center">EDITAR</th>
+        </tr>
+        </thead>
+{% for aluno in gabaritos %}
+        <tbody>
+        <tr>
+          <td>{{aluno.aluno}}</td>
+          <td class="text-center">
+            <a href="{% url 'avaliacao:ver_gabarito' gabarito_id=aluno.id %}" class="info">
+              <i class="fas fa-eye" style="color: #0080FF;"></i>
+            </a>
+          </td>
+          <td class="text-center">{{aluno.qtd_acertos}}/{{questoes}}</td>
+          <td class="text-center">
+            <a href="{% url 'avaliacao:refazer_prova' gabarito_id=aluno.id %}" class="info">
+              <i class="fas fa-edit" style="color:#4C9900;"></i>
+            </a>
+          </td>
+        </tr>
+        </tbody>
+{% empty %}
+<p>Nenhum aluno cadastrado</p>
+{% endfor %}
+      </table>
+    </div>
+    </div>
+  </div>
+</div>
+{% endif %}
 {% endblock %}

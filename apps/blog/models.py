@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.db import models
-from ckeditor.fields import RichTextField
+from ckeditor_uploader.fields import RichTextUploadingField
 
 # Create your models here.
 from ..escola.models import UnidadeEscolar
@@ -24,7 +24,7 @@ class Blog(models.Model):
     imagem = models.ImageField(upload_to='Imagens/Noticias', null=True, blank=True)
     autor = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='Autor', on_delete=models.CASCADE)
     slug = models.SlugField(max_length=200)
-    conteudo = RichTextField()
+    conteudo = RichTextUploadingField()
     data = models.DateField(auto_now_add=True)
     data_atualizacao = models.DateField(auto_now=True)
     categoria = models.ForeignKey(Categoria, verbose_name='Categoria', on_delete=models.DO_NOTHING)
