@@ -17,7 +17,7 @@
         </div>
 <hr>
 <div class="container">
-       <form method="post">
+       <form method="post" enctype="multipart/form-data">
           {% csrf_token %}
           {{ formset.management_form }}
           {% for form in formset %}
@@ -25,7 +25,21 @@
                     {{ hidden_field.errors }}
                     {{ hidden_field }}
                     {% endfor %}
-            <h6>{{ forloop.counter }} - {{ form.instance.questao }}</h6>
+           {% if form.instance.texto %}
+            <h6>{{ forloop.counter }} <br><br> {{ form.instance.texto }}</h6>
+            <div class="text-center" style="margin:2%;">
+                <img class="img-fluid" src="{{form.instance.imagem_prova.thumbnail.url}}">
+            </div>
+            <h6>{{ form.instance.questao }}</h6>
+           {% elif  form.instance.imagem_prova %}
+           <h6>{{ forloop.counter }}</h6>
+           <div class="text-center" style="margin:2%;">
+                <img class="img-fluid" src="{{form.instance.imagem_prova.thumbnail.url}}">
+            </div>
+           <h6>{{ form.instance.questao }}</h6>
+           {% else %}
+           <h6>{{ forloop.counter }} - {{ form.instance.questao }}</h6>
+           {% endif %}
             {% for field in form.visible_fields %}
               <div class="form-group">
                 {{ field.errors }}
@@ -35,7 +49,7 @@
             {% endfor %}
            <hr>
           {% endfor %}
-          <button type="submit" class="btn btn-outline-info" style="margin-bottom:10px;"><i class="far fa-hdd"></i> Salvar</button>
+          <button type="submit" class="btn btn-outline-info" style="margin-bottom:10px;"><i class="far fa-hdd"></i> Salvar </button>
         </form>
         </div>
     </div>

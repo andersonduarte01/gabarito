@@ -2,6 +2,9 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import never_cache
+from ckeditor_uploader import views as ckeditor_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -20,7 +23,8 @@ urlpatterns = [
     path('frequencia/', include('apps.frequencia.urls', namespace='frequencia')),
     path('cadastro/', include('apps.cadastro.urls', namespace='cadastro')),
     path('tinymce/', include('tinymce.urls')),
-    path('ckeditor/', include('ckeditor_uploader.urls')),
+    path('ckeditor/upload/', login_required(ckeditor_views.upload), name='ckeditor_upload'),
+    path('ckeditor/browse/', never_cache(login_required(ckeditor_views.browse)), name='ckeditor_browse'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 handler404 = 'apps.erros.views.error_404'

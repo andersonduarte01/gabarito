@@ -57,7 +57,7 @@ def presentesDia(mes, salas):
             percentual = ((total / totalschool) * 100)
             presentes.append(int(percentual))
         except:
-            print('Impossivel dividir por zero.')
+            presentes.append(0)
 
     return presentes
 
