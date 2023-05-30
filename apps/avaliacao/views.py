@@ -243,8 +243,7 @@ def RefazerAvaliacao(request, gabarito_id):
             gabarito_resposta.save()
             formset.save()
             url = reverse_lazy('avaliacao:avaliar_alunos',
-                               kwargs={'avaliacao_id': avaliacao.id,
-                                       'sala_id': aluno.sala.id})
+                               kwargs={'avaliacao_id': avaliacao.id, 'sala_id': aluno.sala.id})
             return HttpResponseRedirect(url)
     else:
         formset = QuestaoFormSet(queryset=questoes)
