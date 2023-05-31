@@ -24,7 +24,7 @@
                     {{ hidden_field }}
                     {% endfor %}
            {% if form.instance.texto %}
-            <h6>{{ forloop.counter }} <br><br> {{ form.instance.texto }}</h6>
+            <h6>{{ forloop.counter }} <br><br> {{ form.instance.texto|safe }}</h6>
             <div class="text-center" style="margin:2%;">
                 <img class="img-fluid" src="{{form.instance.imagem_prova.thumbnail.url}}">
             </div>

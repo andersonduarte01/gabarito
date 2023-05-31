@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from stdimage import StdImageField
+from ckeditor_uploader.fields import RichTextUploadingField
 
 from ..aluno.models import Aluno
 from ..escola.models import UnidadeEscolar
@@ -24,7 +25,7 @@ class Avaliacao(models.Model):
 
 class Questao(models.Model):
     numero = models.CharField(verbose_name='Número', max_length=3, null=True, blank=True)
-    texto = models.TextField(null=True, blank=True)
+    texto = RichTextUploadingField(null=True, blank=True)
     imagem_prova = StdImageField(upload_to='Imagens/Logo',
                                 variations={'thumbnail': {'width': 600, 'height': 450}},
                                 null=True, blank=True,
