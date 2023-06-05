@@ -150,9 +150,9 @@
               <td>{{gabarito.aluno}}</td>
               <td style="text-align:center">{{gabarito.qtd_acertos}}/{{questoes}}</td>
               {% if gabarito.soma >= 50 %}
-              <td style="text-align:center">{{gabarito.soma}}%</td>
+              <td style="text-align:center">{{gabarito.soma |slice:"0:4"}}%</td>
               {% else %}
-              <td style="text-align:center; color:red;">{{gabarito.soma}}%</td>
+              <td style="text-align:center; color:red;">{{gabarito.soma|slice:"0:4"}}%</td>
               {% endif %}
             </tr>
             {% endfor %}
