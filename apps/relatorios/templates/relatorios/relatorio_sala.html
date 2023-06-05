@@ -140,6 +140,7 @@
           <th style="width:30px; text-align:center;">N°</th>
           <th style="text-align:center">Nome</th>
           <th style="text-align:center">Acertos</th>
+          <th style="text-align:center">Percentual</th>
         </tr>
       </thead>
        <tbody>
@@ -147,6 +148,7 @@
             <tr>
               <td style="text-align:center">{{forloop.counter}}</td>
               <td>{{gabarito.aluno}}</td>
+              <td style="text-align:center">{{gabarito.qtd_acertos}}/{{questoes}}</td>
               {% if gabarito.soma >= 50 %}
               <td style="text-align:center">{{gabarito.soma}}%</td>
               {% else %}
