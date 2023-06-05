@@ -5,7 +5,7 @@ from django.views.generic import View
 from .conversor import html_to_pdf, html_to_pdf2, html_to_pdf1
 from ..aluno import models
 from ..aluno.models import Aluno
-from ..avaliacao.models import Avaliacao, Gabarito
+from ..avaliacao.models import Avaliacao, Gabarito, Questao
 from ..escola.models import UnidadeEscolar
 from ..sala.models import Sala
 
@@ -68,9 +68,17 @@ class RelatorioSala(View):
     def get(self, request, *args, **kwargs):
         data = get_object_or_404(UnidadeEscolar, slug=self.kwargs['slug'])
         sala = get_object_or_404(Sala, pk=self.kwargs['pk'])
+        avaliacao = get_object_or_404(Avaliacao, pk=self.kwargs['avaliacao_id'])
+        alunos = get_list_or_404(Aluno, sala=sala)
+        questoes = len(Questao.objects.filter(avaliacao=avaliacao))
+        try:
+            gabaritos = get_list_or_404(Gabarito, avaliacao=avaliacao, aluno__in=alunos)
+        except:
+            gabaritos = []
+
 
         open('templates/temp.html', "w", encoding='UTF-8').write(render_to_string
-                                                                 ('relatorios/relatorio_sala.html', {'data': data, 'sala': sala }))
+                                                                 ('relatorios/relatorio_sala.html', {'data': data, 'gabaritos': gabaritos, 'questoes': questoes}))
 
         # Converting the HTML template into a PDF file
         pdf = html_to_pdf2('temp.html')

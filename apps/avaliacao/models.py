@@ -63,6 +63,10 @@ class Gabarito(models.Model):
     def __str__(self):
         return self.avaliacao.descricao
 
+    def soma(self):
+        return (self.qtd_acertos/len(Questao.objects.filter(avaliacao=self.avaliacao))) * 100
+
+
     class Meta:
         verbose_name = 'Gabarito'
         verbose_name_plural = 'Gabaritos'
