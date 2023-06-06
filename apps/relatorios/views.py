@@ -1,3 +1,5 @@
+import os
+
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, get_list_or_404
 from django.template.loader import render_to_string
@@ -76,15 +78,18 @@ class RelatorioSala(View):
         except:
             gabaritos = []
 
+        nome_arquivo = f'{sala}{sala.id}'
         # open('templates/temp.html', "w", encoding='UTF-8').write(render_to_string
         #                                                          ('relatorios/relatorio_sala.html', {'data': data, 'gabaritos': gabaritos, 'questoes': questoes}))
         #
-        open('/home/anderson/projeto/gabarito/templates/temp.html', "w", encoding='UTF-8').write(render_to_string
+        open(f'/home/anderson/projeto/gabarito/templates/{nome_arquivo}.html', "w", encoding='UTF-8').write(render_to_string
                                                                          ('relatorios/relatorio_sala.html', {'data': data, 'gabaritos': gabaritos, 'questoes': questoes}))
 
         # Converting the HTML template into a PDF file
         # pdf = html_to_pdf2('temp.html')
-        pdf = html_to_pdf2('/home/anderson/projeto/gabarito/templates/temp.html')
+        pdf = html_to_pdf2(f'/home/anderson/projeto/gabarito/templates/{nome_arquivo}.html')
+
+        os.remove(f'/home/anderson/projeto/gabarito/templates/{nome_arquivo}.html')
 
         # rendering the template
         return HttpResponse(pdf, content_type='application/pdf')
