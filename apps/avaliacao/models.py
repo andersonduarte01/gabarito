@@ -65,7 +65,7 @@ class Gabarito(models.Model):
 
     def soma(self):
         soma = (self.qtd_acertos/len(Questao.objects.filter(avaliacao=self.avaliacao))) * 100
-        return "{:.2f}".format(soma)
+        return float("{:.1f}".format(soma))
 
 
     class Meta:
