@@ -76,15 +76,15 @@ class RelatorioSala(View):
         except:
             gabaritos = []
 
-        open('templates/temp.html', "w", encoding='UTF-8').write(render_to_string
-                                                                 ('relatorios/relatorio_sala.html', {'data': data, 'gabaritos': gabaritos, 'questoes': questoes}))
-
-        # open('/home/anderson/projeto/gabarito/templates/temp.html', "w", encoding='UTF-8').write(render_to_string
-        #                                                                  ('relatorios/relatorio_sala.html', {'data': data, 'gabaritos': gabaritos, 'questoes': questoes}))
+        # open('templates/temp.html', "w", encoding='UTF-8').write(render_to_string
+        #                                                          ('relatorios/relatorio_sala.html', {'data': data, 'gabaritos': gabaritos, 'questoes': questoes}))
+        #
+        open('/home/anderson/projeto/gabarito/templates/temp.html', "w", encoding='UTF-8').write(render_to_string
+                                                                         ('relatorios/relatorio_sala.html', {'data': data, 'gabaritos': gabaritos, 'questoes': questoes}))
 
         # Converting the HTML template into a PDF file
-        pdf = html_to_pdf2('temp.html')
-        #pdf = html_to_pdf2('/home/anderson/projeto/gabarito/templates/temp.html')
+        # pdf = html_to_pdf2('temp.html')
+        pdf = html_to_pdf2('/home/anderson/projeto/gabarito/templates/temp.html')
 
         # rendering the template
         return HttpResponse(pdf, content_type='application/pdf')
