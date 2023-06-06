@@ -78,7 +78,7 @@ class RelatorioSala(View):
         except:
             gabaritos = []
 
-        nome_arquivo = f'{sala}{sala.id}'
+        nome_arquivo = f'{avaliacao.id}{sala.id}'
         # open('templates/temp.html', "w", encoding='UTF-8').write(render_to_string
         #                                                          ('relatorios/relatorio_sala.html', {'data': data, 'gabaritos': gabaritos, 'questoes': questoes}))
         #
