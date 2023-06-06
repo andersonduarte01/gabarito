@@ -1,3 +1,5 @@
+import os
+import datetime
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, get_list_or_404
 from django.template.loader import render_to_string
@@ -64,7 +66,7 @@ class RelatorioEscola(View):
         return HttpResponse(pdf, content_type='application/pdf')
 
 
-class RelatorioSala(View):
+class RelatorioSala1(View):
     def get(self, request, *args, **kwargs):
         data = get_object_or_404(UnidadeEscolar, slug=self.kwargs['slug'])
         sala = get_object_or_404(Sala, pk=self.kwargs['pk'])
@@ -85,9 +87,53 @@ class RelatorioSala(View):
         # Converting the HTML template into a PDF file
         # pdf = html_to_pdf2('temp.html')
         pdf = html_to_pdf2('/home/anderson/projeto/gabarito/templates/temp.html')
-
+        os.remove('/home/anderson/projeto/gabarito/templates/temp.html')
         # rendering the template
         return HttpResponse(pdf, content_type='application/pdf')
+
+
+class RelatorioSala(View):
+    def get(self, request, *args, **kwargs):
+        # Your existing code...
+        data = get_object_or_404(UnidadeEscolar, slug=self.kwargs['slug'])
+        sala = get_object_or_404(Sala, pk=self.kwargs['pk'])
+        avaliacao = get_object_or_404(Avaliacao, pk=self.kwargs['avaliacao_id'])
+        alunos = get_list_or_404(Aluno, sala=sala)
+        questoes = len(Questao.objects.filter(avaliacao=avaliacao))
+        try:
+            gabaritos = get_list_or_404(Gabarito, avaliacao=avaliacao, aluno__in=alunos)
+        except:
+            gabaritos = []
+        # Generate a unique file name using timestamp
+        timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        file_name = f"temp_{timestamp}.html"
+        file_path = os.path.join('/home/anderson/projeto/gabarito/templates/', file_name)
+
+        # Save the HTML template with the unique file name
+        open(file_path, "w", encoding='UTF-8').write(render_to_string('relatorios/relatorio_sala.html', {'data': data, 'gabaritos': gabaritos, 'questoes': questoes}))
+
+        # Generate a unique file name for the PDF
+        pdf_file_name = f"relatorio_{timestamp}.pdf"
+        pdf_file_path = os.path.join('/home/anderson/projeto/gabarito/templates/', pdf_file_name)
+
+        # Convert the HTML template into a PDF file
+        pdf = html_to_pdf2(file_path)
+
+        # Save the PDF with the unique file name
+        open(pdf_file_path, "wb").write(pdf)
+
+        # Delete the temporary HTML file
+        os.remove(file_path)
+
+        # Serve the PDF file as a response
+        with open(pdf_file_path, "rb") as f:
+            response = HttpResponse(f.read(), content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename={pdf_file_name}'
+
+        # Delete the temporary PDF file
+        os.remove(pdf_file_path)
+
+        return response
 
 
 class RelatorioAvaliacao(View):
