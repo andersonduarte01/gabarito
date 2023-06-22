@@ -7,6 +7,7 @@ from django.views.generic import View
 from .conversor import html_to_pdf, html_to_pdf2, html_to_pdf1
 from ..aluno import models
 from ..aluno.models import Aluno
+from ..avaliacao.correcao import acertos_por_questao
 from ..avaliacao.models import Avaliacao, Gabarito, Questao
 from ..escola.models import UnidadeEscolar
 from ..sala.models import Sala
@@ -123,6 +124,31 @@ class RelatorioAluno(View):
 
         # Converting the HTML template into a PDF file
         pdf = html_to_pdf2('temp.html')
+
+        # rendering the template
+        return HttpResponse(pdf, content_type='application/pdf')
+
+
+class Notas(View):
+
+    def get(self, request, *args, **kwargs):
+        avaliacao = get_object_or_404(Avaliacao, id=self.kwargs['avaliacao_id'])
+        resultado = acertos_por_questao(self.kwargs['avaliacao_id'])
+
+        nome_arquivo = f'{avaliacao.id}{len(resultado)}'
+
+        open(f'/home/anderson/projeto/gabarito/templates/{nome_arquivo}.html', "w", encoding='UTF-8').write(render_to_string
+                                                                         ('relatorios/relatorio_geral.html', {'resultado': resultado,}))
+
+        # open('templates/temp.html', "w", encoding='UTF-8').write(render_to_string
+        #                                                          ('relatorios/relatorio_geral.html', {'resultado': resultado,}))
+        #
+        #
+        # Converting the HTML template into a PDF file
+        # pdf = html_to_pdf2('temp.html')
+        pdf = html_to_pdf2(f'/home/anderson/projeto/gabarito/templates/{nome_arquivo}.html')
+
+        os.remove(f'/home/anderson/projeto/gabarito/templates/{nome_arquivo}.html')
 
         # rendering the template
         return HttpResponse(pdf, content_type='application/pdf')

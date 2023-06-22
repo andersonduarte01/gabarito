@@ -52,3 +52,26 @@ def alunos_prova(avaliacao, alunos):
     return alunos_gabarito, aluno_aval_falta, questoes
 
 
+def acertos_por_questao(avaliacao):
+    resultados = []
+    avaliacao = get_object_or_404(Avaliacao, id=avaliacao)
+    questoes = get_list_or_404(Questao, avaliacao=avaliacao)
+
+    for questao in questoes:
+        acertos = 0
+        acerts = 0
+        conjunto = []
+        respostas = Resposta.objects.filter(questao=questao, acertou=True)
+        respostasALL = Resposta.objects.filter(questao=questao)
+        try:
+            acertos = float("{:.1f}".format((len(respostas)/len(respostasALL) * 100)))
+            acerts = f'{len(respostas)}/{len(respostasALL)}'
+        except:
+            print()
+        conjunto.append(questao)
+        conjunto.append(acertos)
+        conjunto.append(acerts)
+        resultados.append(conjunto)
+
+    return resultados
+

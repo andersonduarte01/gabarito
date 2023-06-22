@@ -53,7 +53,6 @@ class Questao(models.Model):
         verbose_name_plural = 'Questões'
 
 
-
 class Gabarito(models.Model):
     avaliacao = models.ForeignKey(Avaliacao, on_delete=models.DO_NOTHING)
     qtd_acertos = models.IntegerField(verbose_name='Acertos', default=0)

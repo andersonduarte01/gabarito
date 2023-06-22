@@ -10,7 +10,7 @@ from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, TemplateView
 
-from .correcao import correcao, alunos_prova
+from .correcao import correcao, alunos_prova, acertos_por_questao
 from .forms import RespostaForm, AvaliacaoForm, AvaliacaoUpdateForm, AvaliacaoQuestaoForm, QuestaoForm1, \
     QuestaoFormEditar, AIRespostaForm
 from ..aluno.models import Aluno
@@ -262,4 +262,6 @@ class VerGabarito(LoginRequiredMixin, TemplateView):
         context['aluno'] = aluno
         context['gabarito'] = gabarito
         return context
+
+
 

@@ -35,6 +35,7 @@
           <th>ANO</th>
           <th class="text-center">QUESTÕES</th>
           <th class="text-center">EDITAR</th>
+          <th class="text-center">RELATÓRIO</th>
 
         </tr>
         </thead>
@@ -51,6 +52,11 @@
           <td class="text-center">
               <a href="{% url 'avaliacao:edit_avaliacao'  avaliacao.pk %}" class="info">
               <i class="fas fa-edit" style="color: #2c28e6;"></i>
+            </a>
+          </td>
+          <td class="text-center">
+              <a href="{% url 'relatorios:relatorio_geral'  avaliacao.id %}" class="info">
+              <i class="fas fa-file" style="color: #60CEB1;"></i>
             </a>
           </td>
 
