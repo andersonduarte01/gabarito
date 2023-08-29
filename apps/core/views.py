@@ -1,12 +1,8 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from django.shortcuts import get_object_or_404
-from django.urls import reverse_lazy
-from django.views.generic import TemplateView, ListView, CreateView
-
-from ..arquivos.models import Arquivo, Livro
+from django.views.generic import TemplateView, ListView
+from ..arquivos.models import Arquivo, Livro, Categoria
 from ..blog.models import Video
-from.forms import UserCreationForm
 from ..sala.models import Ano
 
 
@@ -33,60 +29,14 @@ class Eventos(LoginRequiredMixin, TemplateView):
 
 
 class Biblioteca(TemplateView):
-    template_name = 'core/biblioteca.html'
+    template_name = 'core/biblioteca_novo.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        infantil = []
-        pre = []
-        ano1 = []
-        ano2 = []
-        ano3 = []
-        ano4 = []
-        ano5 = []
-        ano6 = []
-        ano7 = []
-        ano8 = []
-        ano9 = []
         livros = Livro.objects.all().order_by('-data_modificacao')
-
-        for periodo in livros:
-            if periodo.ano_referencia.descricao == "Educação Infantil":
-                infantil.append(periodo)
-            elif periodo.ano_referencia.descricao == "Pré-Escola":
-                pre.append(periodo)
-            elif periodo.ano_referencia.descricao == '1º Ano':
-                ano1.append(periodo)
-            elif periodo.ano_referencia.descricao == "2º Ano":
-                ano2.append(periodo)
-            elif periodo.ano_referencia.descricao == "3º Ano":
-                ano3.append(periodo)
-            elif periodo.ano_referencia.descricao == "4º Ano":
-                ano4.append(periodo)
-            elif periodo.ano_referencia.descricao == "5º Ano":
-                ano5.append(periodo)
-            elif periodo.ano_referencia.descricao == "6º Ano":
-                ano6.append(periodo)
-            elif periodo.ano_referencia.descricao == "7º Ano":
-                ano7.append(periodo)
-            elif periodo.ano_referencia.descricao == "8º Ano":
-                ano8.append(periodo)
-            elif periodo.ano_referencia.descricao == "9º Ano":
-                ano9.append(periodo)
-            else:
-                print('saiu sem anexar')
-
-        context['infantil'] = infantil
-        context['pre'] = pre
-        context['ano1'] = ano1
-        context['ano2'] = ano2
-        context['ano3'] = ano3
-        context['ano4'] = ano4
-        context['ano5'] = ano5
-        context['ano6'] = ano6
-        context['ano7'] = ano7
-        context['ano8'] = ano8
-        context['ano9'] = ano9
+        categorias = Categoria.objects.all().order_by('categoria')
+        context['livros'] = livros
+        context['categorias'] = categorias
         return context
 
 

@@ -6,8 +6,6 @@ from django.views.generic import CreateView, ListView, DeleteView, UpdateView
 
 from .models import Arquivo, Categoria, Livro
 from ..core.models import Usuario
-
-
 # Create your views here.
 
 class Arquivos(LoginRequiredMixin, SuccessMessageMixin,CreateView):
