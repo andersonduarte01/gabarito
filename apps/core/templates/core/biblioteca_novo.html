@@ -103,37 +103,32 @@
             <div class="col-md-9">
                 <div class="row">
                     {% for arquivo in livros %}
-                    <div class="col-xs-12 col-sm-3">
+                    <div class="col-xs-12 col-sm-2">
                         <div class="card" style="margin-top: 10px;">
-                            <a class="card" href="#">
+                            <a class="card center" href="#">
                             {% if arquivo.pdf_miniatura %}
-                            <img src="{{arquivo.pdf_miniatura.url}}"/>
+                            <img src="{{arquivo.pdf_miniatura.url}}" width="100px" height="150px"/>
                              {% else %}
-                            <img src="{% static 'images/fila.png' %}"/>
+                            <img src="{% static 'images/fila.png' %}" width="100px" height="150px"/>
                              {% endif %}
                           </a>
                             <div class="card-content" style="margin-top: 10px; margin-left: 5px;">
                                 <h6 class="card-title">
                                     {{arquivo.titulo}}
                                 </h6>
-                                <p class="">
+                                <p>
                                     {{arquivo.descricao}}
                                 </p>
                             </div>
-                            <div class="card-read-more">
-                                <p class="small text-left" style="margin-left:5px;">
-                                    Publicado: {{arquivo.data_modificacao|date:"d M Y"}}<br>
-                                </p>
-                                <div class="btn-group-sm" role="group" aria-label="Exenplo" style="margin: 5px;">
-                                  <a href="{{arquivo.pdf.url}}" class="btn btn-outline-info" target="_blank">Visualizar</a>
-                                  {% if user.is_authenticated %}
-                                  <a href="{% url 'arquivos:editar_arquivo' arquivo.pk %}" class="btn btn-outline-success">Editar</a>
-                                  <a href="#" class="btn btn-outline-danger" data-toggle="modal" data-target="#{{arquivo.id}}">
+                            <div class="d-grid gap-2" style="margin: 5px;">
+                            <a href="{{arquivo.pdf.url}}" class="btn btn-block btn-outline-info btn-sm " target="_blank">Visualizar</a>
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'arquivos:editar_arquivo' arquivo.pk %}" class="btn btn-block btn-outline-primary btn-sm ">Adicionar Músicas</a>
+                            <a href="#" class="btn btn-outline-danger" data-toggle="modal" data-target="#{{arquivo.id}}">
                                       <i class="far fa-trash-alt"></i> Deletar
-                                  </a>
-                                  {% endif %}
-                                </div>
-                            </div>
+                            </a>
+                            {% endif %}
+                          </div>
                         </div>
                     </div>
                     <td>
