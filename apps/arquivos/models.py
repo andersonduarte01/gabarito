@@ -3,6 +3,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.files.base import ContentFile
 from pdf2image import convert_from_path
+import unicodedata
 
 from ..core.models import Usuario
 from ..escola.models import UnidadeEscolar
@@ -54,15 +55,19 @@ class Livro(models.Model):
 def update_imagem(sender, instance, **kwargs):
     try:
         if not instance.pdf_miniatura:
-            save_dir = r'C:\Users\Anderson\Desktop\projeto\SME\gabarito\media\miniaturas'
-            #save_dir = r'/home/anderson/projeto/gabarito/media/miniaturas'
+            #save_dir = r'C:\Users\Anderson\Desktop\projeto\SME\gabarito\media\miniaturas'
+            save_dir = r'/home/anderson/projeto/gabarito/media/miniaturas'
             arquivo = instance.pdf.path
             images_from_path = convert_from_path(arquivo, dpi=500, output_folder=save_dir, fmt='.jpg',
                                                  first_page=0, last_page=1, size=(200, 280))
             blob = open(images_from_path[0].filename, 'rb')
             fi = blob.read()
             blob.close()
-            instance.pdf_miniatura.save(f'{instance.descricao}.jpeg', ContentFile(fi), save=False)
+            m2 = instance.descricao
+            processamento_2 = unicodedata.normalize("NFD", m2)
+            processamento_2 = processamento_2.encode("ascii", "ignore")
+            processamento_2 = processamento_2.decode("utf-8")
+            instance.pdf_miniatura.save(f'{processamento_2}.jpeg', ContentFile(fi), save=False)
             instance.save()
     except:
         print('Error de formato de documento')
@@ -72,15 +77,19 @@ def update_imagem(sender, instance, **kwargs):
 def update_imagem(sender, instance, **kwargs):
     try:
         if not instance.pdf_miniatura:
-            save_dir = r'C:\Users\Anderson\Desktop\projeto\SME\gabarito\media\miniaturas'
-            #save_dir = r'/home/anderson/projeto/gabarito/media/miniaturas'
+            #save_dir = r'C:\Users\Anderson\Desktop\projeto\SME\gabarito\media\miniaturas'
+            save_dir = r'/home/anderson/projeto/gabarito/media/miniaturas'
             livro = instance.pdf.path
             images_from_path = convert_from_path(livro, output_folder=save_dir, fmt='.jpg',
                                                  first_page=0, last_page=1, size=(230, 390))
             blob = open(images_from_path[0].filename, 'rb')
             fi = blob.read()
             blob.close()
-            instance.pdf_miniatura.save(f'{instance.descricao}.jpeg', ContentFile(fi), save=False)
+            m2 = instance.descricao
+            processamento_2 = unicodedata.normalize("NFD", m2)
+            processamento_2 = processamento_2.encode("ascii", "ignore")
+            processamento_2 = processamento_2.decode("utf-8")
+            instance.pdf_miniatura.save(f'{processamento_2}.jpeg', ContentFile(fi), save=False)
             instance.save()
     except:
         print('Error de formato do livro')
