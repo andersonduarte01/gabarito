@@ -8,103 +8,92 @@
     {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
      class="img-radius" alt="Foto_Usuario">
 {% endblock %}
-{% block imagem2 %}
-<img src="{% if escola.imagem %}{{escola.logo_escola.thumbnail.url}}
-    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
-     class="img-radius" alt="Foto_Usuario">
-{% endblock %}
-{% block tema %}
-<h3 class="m-b-10">{{sala}} - {{sala.ano}} - {{sala.turno}}</h3>
-<p class="m-b-0">Lista de alunos</p>
-{% endblock %}
-{% block breadcrumbs %}
-{{block.super}}
-<li class="breadcrumb-item"><a href="#">Alunos</a></li>
-{% endblock %}
 {% block conteudo %}
 
 <div class="col-sm-12">
   <!-- Button trigger modal -->
   <div class="card">
-    <div class="card-block table-border-style">
-      <div class="table-responsive">
-        <table class="table table-hover">
-          <thead>
-          <tr>
-            <th>Nº</th>
-            <th>NOME</th>
-            <th></th>
-          </tr>
-          </thead>
-          {% for aluno in alunos %}
-          <tbody>
-          <tr>
-            <td>{{forloop.counter}}</td>
-            <td>{{aluno}}</td>
-            <td align="right">
-              <a href="{% url 'aluno:perfil' aluno.pk %}" class="primary">
-                <i class="fas fa-edit" style="color: #2c28e6;"></i>
+    <div class="card-header">
+      <h4 class="h4 text-uppercase font-weight-bold text-primary">{{sala}}</h4>
+      <div class="row">
+        <div class="h6 mb-1 col-6 col-md-4 text-secondary font-weight-bold">Ano: {{sala.ano}}</div>
+        <div class="h6 mb-1 col-6 col-md-4 text-secondary text-capitalize font-weight-bold">Turno: {{sala.turno}}</div>
+        <div class="h6 mb-1 col-6 col-md-4 text-secondary font-weight-bold">Total de Alunos: {{sala.total_alunos}}</div>
+      </div>
+      <div class="card-block table-border-style">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+            <tr class="text-primary">
+              <th class="font-weight-bold">Nº</th>
+              <th class="font-weight-bold">NOME</th>
+              <th class="font-weight-bold">DATA DE NASCIMENTO</th>
+              <th class="text-right font-weight-bold">AÇÕES</th>
+            </tr>
+            </thead>
+            {% for aluno in alunos %}
+            <tbody>
+            <tr>
+              <td class="text-primary font-weight-bold">{{forloop.counter}}</td>
+              <td>{{aluno}}</td>
+              <td>{{aluno.data_nascimento}}</td>
+              <td align="right">
+                <a href="{% url 'aluno:editar' pk=aluno.pk %}" class="primary">
+                  <i class="fas fa-edit" style="color: #2c28e6;"></i>
 
-                <a type="button" class="danger" data-toggle="modal" data-target="#{{aluno.id}}">
-                  <i class="far fa-trash-alt" style="color: #ed1d1d;"></i>
-                </a>
+                  <a type="button" class="danger" data-toggle="modal" data-target="#{{aluno.id}}">
+                    <i class="far fa-trash-alt" style="color: #ed1d1d;"></i>
+                  </a>
 
-                <div class="modal fade" id="{{aluno.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-                     aria-hidden="true">
-                  <div class="modal-dialog modal-notify modal-info" role="document">
-                    <!--Content-->
-                    <div class="modal-content text-center">
-                      <!--Header-->
-                      <div class="modal-header d-flex justify-content-center bg-danger">
-                        <h5 class="heading">Deletar Aluno</h5>
+                  <div class="modal fade" id="{{aluno.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+                       aria-hidden="true">
+                    <div class="modal-dialog modal-notify modal-info" role="document">
+                      <!--Content-->
+                      <div class="modal-content text-center">
+                        <!--Header-->
+                        <div class="modal-header d-flex justify-content-center">
+                          <h6 class="heading">Deletar Aluno</h6>
+                        </div>
+
+                        <!--Body-->
+                        <div class="modal-body">
+                          <h6>Tem certeza que deseja excluir</h6>
+                          <h6 class="text-danger">{{aluno.nome}}?</h6>
+                        </div>
+                        <!--Footer-->
+                        <div class="modal-footer flex-center">
+                          <form method="post" action="{% url 'aluno:deletar' aluno.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger">
+                              <i class="far fa-trash-alt"></i>
+                              Deletar
+                            </button>
+                            <button type="button" class="btn btn-outline-info" data-dismiss="modal">
+                              <i class="fas fa-times"></i>
+                              Cancelar
+                            </button>
+                          </form>
+                        </div>
                       </div>
-
-                      <!--Body-->
-                      <div class="modal-body">
-
-                        <i class="far fa-trash-alt fa-4x animated rotateIn mb-4" style="color: #ed1d1d;"></i>
-
-                        <h6>Tem certeza que deseja excluir</h6>
-                        <h6>{{aluno.nome}}?</h6>
-
-                      </div>
-
-                      <!--Footer-->
-                      <div class="modal-footer flex-center">
-                        <form method="post" action="{% url 'aluno:deletar' aluno.pk %}">
-                          {% csrf_token %}
-                          <button type="submit" class="btn btn-outline-danger">
-                            <i class="far fa-trash-alt"></i>
-                            Deletar
-                          </button>
-                          <button type="button" class="btn btn-outline-info" data-dismiss="modal">
-                            <i class="fas fa-times" style="color: #588adf;"></i>
-                            Cancelar
-                          </button>
-                        </form>
-                      </div>
+                      <!--/.Content-->
                     </div>
-                    <!--/.Content-->
                   </div>
-                </div>
-                <!--Modal: modalPush-->
-
-            </td>
-          </tr>
-          </tbody>
-          {% empty %}
-          <p>Nenhum aluno cadastrado</p>
-          {% endfor %}
-        </table>
-        <hr>
-        <button type="button" class="btn btn-primary btn-block" data-toggle="modal" data-target="#exampleModalCenter">
-          Cadastrar Aluno
-        </button>
-
+                  <!--Modal: modalPush-->
+              </td>
+            </tr>
+            </tbody>
+            {% empty %}
+            <p>Nenhum aluno cadastrado</p>
+            {% endfor %}
+          </table>
+          <hr>
+          <button type="button" class="btn btn-outline-primary btn-block" data-toggle="modal" data-target="#exampleModalCenter">
+            Cadastrar Aluno
+          </button>
+        </div>
       </div>
     </div>
   </div>
-
   <!-- Modal -->
   <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -119,17 +108,16 @@
           <form method="post">
             {% csrf_token %}
             {% bootstrap_form form %}
+            <div class="modal-footer">
+              {% buttons %}
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Sair</button>
+              <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i>Cadastrar</button>
+              {% endbuttons %}
+            </div>
+          </form>
         </div>
-        <div class="modal-footer">
-          {% buttons %}
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Sair</button>
-          <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i>Cadastrar</button>
-          {% endbuttons %}
-        </div>
-        </form>
       </div>
     </div>
   </div>
-
 </div>
 {% endblock %}

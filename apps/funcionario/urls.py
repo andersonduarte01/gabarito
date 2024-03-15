@@ -16,6 +16,7 @@ urlpatterns = [
     #####
     path('cadastrar/professor/', views.CadastrarProfessor.as_view(), name='adicionar_professor'),
     path('professores/', views.ListaProfessores.as_view(), name='lista_professores'),
+    path('<int:pk>/professores/', views.ListaProf.as_view(), name='lista_prof'),
     path('professor/<pk>/', views.EditarProfessor.as_view(), name='editar_professor'),
     path('deletar/<pk>/', views.DeletarProfessor.as_view(), name='deletar_professor'),
 ]

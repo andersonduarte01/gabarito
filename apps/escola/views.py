@@ -13,7 +13,7 @@ from ..aluno.models import Aluno
 from ..avaliacao.correcao import alunos_prova
 from ..avaliacao.models import Avaliacao, Gabarito
 from ..core.models import Usuario
-from ..frequencia.models import Frequencia, FrequenciaAluno
+from ..frequencia.models import Frequencia, FrequenciaAluno, Registro
 from ..funcionario.models import Professor
 from ..sala.models import Sala
 from .traduzir import converter
@@ -29,6 +29,11 @@ class Painel(LoginRequiredMixin, TemplateView):
             escolas = UnidadeEscolar.objects.all()
             context['escolas'] = escolas
             return context
+        elif self.request.user.is_professor:
+            professor = Professor.objects.get(usuario_ptr=self.request.user)
+            context['escola'] = UnidadeEscolar.objects.get(pk=professor.escola.pk)
+            context['professor'] = professor
+            return context
         else:
             escola = UnidadeEscolar.objects.get(pk=self.request.user)
             context['escola'] = escola
@@ -42,58 +47,43 @@ class PainelPlanilha(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         dia = self.request.GET.get("data")
         data = datetime.strptime(dia, '%d/%m/%Y')
-        escola = UnidadeEscolar.objects.get(pk=self.request.user)
-        manha = Sala.objects.filter(turno='manha', escola=escola)
-        tarde = Sala.objects.filter(turno='tarde', escola=escola)
-        integral = Sala.objects.filter(turno='integral', escola=escola)
+        professor = ''
+        escola = None
+        if self.request.user.is_professor:
+            professor = Professor.objects.get(usuario_ptr=self.request.user)
+            escola = UnidadeEscolar.objects.get(pk=professor.escola.pk)
+        else:
+            escola = UnidadeEscolar.objects.get(pk=self.request.user)
 
-        fre_manha = []
-        for sala in manha:
+        salas = Sala.objects.filter(escola=escola)
+
+        fre_registros = []
+        for sala in salas:
+            temporario = []
             alunos = Aluno.objects.filter(sala=sala)
             freq = FrequenciaAluno.objects.filter(data=data, aluno__in=alunos).order_by()
             try:
                 frequence = Frequencia.objects.get(sala=sala, data=data)
                 percentual(frequencias=freq, freq=frequence)
-                fre_manha.append(frequence)
+                temporario.append(frequence)
             except:
                 frequence = Frequencia.objects.create(sala=sala, data=data, presentes=0)
                 percentual(frequencias=freq, freq=frequence)
-                fre_manha.append(frequence)
+                temporario.append(frequence)
 
-        fre_tarde = []
-        for sala in tarde:
-            alunos = Aluno.objects.filter(sala=sala)
-            print(alunos)
-            freq = FrequenciaAluno.objects.filter(data=data, aluno__in=alunos).order_by()
             try:
-                frequence = Frequencia.objects.get(sala=sala, data=data)
-                percentual(frequencias=freq, freq=frequence)
-                fre_tarde.append(frequence)
+                registro = Registro.objects.get(sala=sala, data=data)
+                temporario.append(registro)
             except:
-                frequence = Frequencia.objects.create(sala=sala, data=data, presentes=0)
-                percentual(frequencias=freq, freq=frequence)
-                fre_tarde.append(frequence)
+                registro = None
+                temporario.append(registro)
 
-        fre_integral = []
-        for sala in integral:
-            alunos = Aluno.objects.filter(sala=sala)
-            print(alunos)
-            freq = FrequenciaAluno.objects.filter(data=data, aluno__in=alunos).order_by()
-            try:
-                frequence = Frequencia.objects.get(sala=sala, data=data)
-                percentual(frequencias=freq, freq=frequence)
-                fre_integral.append(frequence)
-            except:
-                frequence = Frequencia.objects.create(sala=sala, data=data, presentes=0)
-                percentual(frequencias=freq, freq=frequence)
-                fre_integral.append(frequence)
+            fre_registros.append(temporario)
 
-        context['escola'] = escola
-        context['manha'] = fre_manha
-        context['tarde'] = fre_tarde
-        context['integral'] = fre_integral
+        context['salas'] = fre_registros
         context['data'] = data.date()
         context['escola'] = escola
+        context['professor'] = professor
         return context
 
 
@@ -105,55 +95,41 @@ class PainelPlanilha00(LoginRequiredMixin, TemplateView):
         dia = self.kwargs['data']
         x = dia.replace("-", "/")
         data_e = datetime.strptime(x, '%Y/%m/%d')
-        escola = UnidadeEscolar.objects.get(pk=self.request.user)
-        manha = Sala.objects.filter(turno='manha', escola=escola)
-        tarde = Sala.objects.filter(turno='tarde', escola=escola)
-        integral = Sala.objects.filter(turno='integral', escola=escola)
-        fre_manha = []
-
-        for sala in manha:
+        escola = None
+        professor = None
+        if self.request.user.is_professor:
+            professor = Professor.objects.get(usuario_ptr=self.request.user)
+            escola = UnidadeEscolar.objects.get(pk=professor.escola.pk)
+        else:
+            escola = UnidadeEscolar.objects.get(pk=self.request.user)
+        salas = Sala.objects.filter(escola=escola)
+        fre_registros = []
+        for sala in salas:
+            temporario = []
             alunos = Aluno.objects.filter(sala=sala)
+            freq = FrequenciaAluno.objects.filter(data=data_e, aluno__in=alunos).order_by()
             try:
-                freq = FrequenciaAluno.objects.filter(data=data_e, aluno__in=alunos).order_by()
                 frequence = Frequencia.objects.get(sala=sala, data=data_e)
                 percentual(frequencias=freq, freq=frequence)
-                fre_manha.append(frequence)
+                temporario.append(frequence)
             except:
                 frequence = Frequencia.objects.create(sala=sala, data=data_e, presentes=0)
                 percentual(frequencias=freq, freq=frequence)
-                fre_manha.append(frequence)
+                temporario.append(frequence)
 
-        fre_tarde = []
-        for sala in tarde:
-            alunos = Aluno.objects.filter(sala=sala)
             try:
-                freq = FrequenciaAluno.objects.filter(data=data_e, aluno__in=alunos).order_by()
-                frequence = Frequencia.objects.get(sala=sala, data=data_e)
-                percentual(frequencias=freq, freq=frequence)
-                fre_tarde.append(frequence)
+                registro = Registro.objects.get(sala=sala, data=data_e)
+                temporario.append(registro)
             except:
-                frequence = Frequencia.objects.create(sala=sala, data=data_e, presentes=0)
-                percentual(frequencias=freq, freq=frequence)
-                fre_tarde.append(frequence)
+                registro = None
+                temporario.append(registro)
 
-        fre_integral = []
-        for sala in integral:
-            alunos = Aluno.objects.filter(sala=sala)
-            try:
-                freq = FrequenciaAluno.objects.filter(data=data_e, aluno__in=alunos).order_by()
-                frequence = Frequencia.objects.get(sala=sala, data=data_e)
-                percentual(frequencias=freq, freq=frequence)
-                fre_integral.append(frequence)
-            except:
-                frequence = Frequencia.objects.create(sala=sala, data=data_e, presentes=0)
-                percentual(frequencias=freq, freq=frequence)
-                fre_integral.append(frequence)
+            fre_registros.append(temporario)
+
         context['escola'] = escola
-        context['manha'] = fre_manha
-        context['tarde'] = fre_tarde
-        context['integral'] = fre_integral
+        context['salas'] = fre_registros
         context['data'] = data_e.date()
-        context['escola'] = escola
+        context['professor'] = professor
         return context
 
 
@@ -342,3 +318,5 @@ class EscolaAvaliacaoAlunos(LoginRequiredMixin, ListView):
         context['questoes'] = questoes
         context['gabaritos'] = gabaritos
         return context
+
+### Professor ####

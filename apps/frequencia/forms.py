@@ -1,7 +1,7 @@
 from django import forms
-from django.forms import CheckboxInput, TextInput
+from django.forms import TextInput, Textarea, DateInput, Select
 
-from .models import FrequenciaAluno
+from .models import FrequenciaAluno, Registro, Relatorio
 
 
 class FrequenciaAlunoForm(forms.ModelForm):
@@ -23,6 +23,29 @@ class FrequenciaAlunoForm(forms.ModelForm):
             self.fields['observacao'].initial = instance.observacao
 
 
+class RegistroForm(forms.ModelForm):
+    class Meta:
+        model = Registro
+        fields = ('data', 'pratica', 'campo', 'objeto')
+        widgets = {
+            'pratica': Textarea(attrs={'rows': 4}),
+            'campo': Textarea(attrs={'rows': 4}),
+            'objeto': Textarea(attrs={'rows': 4}),
+        }
 
 
+class RegistroUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Registro
+        fields = ('data', 'pratica', 'campo', 'objeto')
+        widgets = {
+            'pratica': Textarea(attrs={'rows': 4}),
+            'campo': Textarea(attrs={'rows': 4}),
+            'objeto': Textarea(attrs={'rows': 4}),
+        }
 
+
+class RelatorioForm(forms.ModelForm):
+    class Meta:
+        model = Relatorio
+        fields = ('relatorio', )

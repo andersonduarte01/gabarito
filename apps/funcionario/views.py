@@ -248,3 +248,21 @@ class DeletarProfessor(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
     def get_object(self, queryset=None):
         return Professor.objects.get(pk=self.kwargs['pk'])
 
+
+class ListaProf(LoginRequiredMixin, ListView):
+    model = Professor
+    template_name = 'funcionario/lista_prof.html'
+
+    def get_queryset(self):
+        professor = Professor.objects.get(usuario_ptr=self.request.user)
+        escola = UnidadeEscolar.objects.get(pk=professor.escola.pk)
+        return Professor.objects.filter(escola=escola)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        professor = Professor.objects.get(usuario_ptr=self.request.user)
+        escola = UnidadeEscolar.objects.get(pk=professor.escola.pk)
+        context['escola'] = escola
+        context['professor'] = professor
+        return context
+

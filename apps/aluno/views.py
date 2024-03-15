@@ -4,11 +4,11 @@ from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse_lazy, reverse
-from django.views.generic import DeleteView, ListView, CreateView, TemplateView
+from django.views.generic import DeleteView, ListView, CreateView, TemplateView, UpdateView
 
 from ..aluno.models import Aluno
 from ..avaliacao.models import Gabarito, Resposta
-from .forms import AlunoForm, EditarAlunoForm, PessoaForm, EnderecoForm
+from .forms import AlunoForm, EditarAlunoForm, PessoaForm, EnderecoForm, EditarAlunoForm01
 from ..escola.models import UnidadeEscolar
 from ..perfil.models import Pessoa, Endereco
 from ..sala.models import Sala
@@ -59,6 +59,16 @@ def editar_aluno(request, pk):
     context = {'form': form, 'form1': form1, 'form2': form2, 'escola': escola, 'aluno': aluno, }
     return render(request, "aluno/editar_aluno.html", context)
 
+
+class EditarAluno(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = Aluno
+    form_class = EditarAlunoForm01
+    template_name = 'aluno/edicao_aluno.html'
+    success_message = 'Aluno atualizado com sucesso.'
+
+    def get_success_url(self):
+        print(self.object.sala.pk)
+        return reverse_lazy('salas:alunos', kwargs={'pk': self.object.sala.pk})
 
 class DeletarAluno(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
     model = Aluno

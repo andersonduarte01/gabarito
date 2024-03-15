@@ -37,6 +37,13 @@ class EditarAlunoForm(forms.ModelForm):
             self.fields['sala'].queryset = Sala.objects.filter(escola=instance.sala.escola)
 
 
+class EditarAlunoForm01(forms.ModelForm):
+    class Meta:
+        model = Aluno
+        fields = ('nome', 'data_nascimento', 'sexo')
+
+
+
 class PessoaForm(forms.ModelForm):
     data_nascimento = forms.DateTimeField(input_formats=settings.DATE_INPUT_FORMATS)
     class Meta:

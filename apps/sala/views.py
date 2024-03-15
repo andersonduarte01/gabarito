@@ -8,6 +8,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from ..aluno.models import Aluno
 from ..avaliacao.models import Avaliacao
 from ..escola.models import UnidadeEscolar
+from ..funcionario.models import Professor
 from ..sala.models import Sala
 
 
@@ -16,7 +17,7 @@ class AdicionarSala(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     fields = ('descricao', 'turno', 'ano')
     template_name = 'sala/adicionar_sala.html'
     success_message = 'Sala cadastrada com sucesso.'
-    success_url = reverse_lazy('escola:painel_escola')
+    success_url = reverse_lazy('salas:salas')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -64,9 +65,10 @@ class ListaAvaliacoes(LoginRequiredMixin, ListView):
         return context
 
 
-class EditarSala(LoginRequiredMixin, UpdateView):
+class EditarSala(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Sala
     fields = ('descricao', 'turno', 'ano')
+    success_message = 'Sala atualizada com sucesso.'
     template_name = 'sala/editar_sala.html'
 
     def get_success_url(self):
@@ -121,7 +123,7 @@ class ListaAvaliacoes(LoginRequiredMixin, ListView):
 
 class ListarAlunos(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Aluno
-    fields = ('nome', 'data_nascimento', 'sexo', 'portador_deficiencia', 'situacao', 'responsavel_legal')
+    fields = ('nome', 'data_nascimento', 'sexo')
     success_message = 'Aluno cadastrado com sucesso.'
     template_name = 'sala/alunos.html'
 
@@ -148,6 +150,23 @@ class ListarAlunos(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         return reverse('salas:alunos', kwargs={'pk': self.get_context_data()['sala'].pk})
 
 
+class ListarAlunosProfessor(LoginRequiredMixin, ListView):
+    model = Aluno
+    template_name = 'sala/alunos_professor.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        sala = Sala.objects.get(pk=self.kwargs['pk'])
+        alunos = Aluno.objects.filter(sala=sala).order_by('nome')
+        professor = Professor.objects.get(usuario_ptr=self.request.user)
+        escola = UnidadeEscolar.objects.get(pk=professor.escola.pk)
+        context['sala'] = sala
+        context['alunos'] = alunos
+        context['escola'] = escola
+        context['professor'] = professor
+        return context
+
+
 class AlunosAvaliacao(LoginRequiredMixin, ListView):
     model = Aluno
     template_name = 'sala/alunos_avaliacao.html'
@@ -162,4 +181,23 @@ class AlunosAvaliacao(LoginRequiredMixin, ListView):
         sala = Sala.objects.get(pk=self.kwargs['pk'])
         context['sala'] = sala
         context['escola'] = escola
+        return context
+
+
+class ListaSalasProf(LoginRequiredMixin, ListView):
+    model = Sala
+    template_name = 'sala/salas-prof.html'
+    context_object_name = 'salas'
+
+    def get_queryset(self):
+        professor = Professor.objects.get(usuario_ptr=self.request.user)
+        escola = UnidadeEscolar.objects.get(pk=professor.escola.pk)
+        return Sala.objects.filter(escola=escola).order_by('ano')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        professor = Professor.objects.get(usuario_ptr=self.request.user)
+        escola = UnidadeEscolar.objects.get(pk=professor.escola.pk)
+        context['escola'] = escola
+        context['professor'] = professor
         return context

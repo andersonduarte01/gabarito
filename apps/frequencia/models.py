@@ -1,9 +1,7 @@
 from django.db import models
 from ..aluno.models import Aluno
+from ..funcionario.models import Professor
 from ..sala.models import Sala
-
-
-# Create your models here.
 
 
 class Frequencia(models.Model):
@@ -25,4 +23,28 @@ class FrequenciaAluno(models.Model):
     def __str__(self):
         return f'{self.aluno} - {self.data}'
 
+
+class Registro(models.Model):
+    sala = models.ForeignKey(Sala, on_delete=models.CASCADE, verbose_name='Sala')
+    data = models.DateField()
+    pratica = models.TextField(verbose_name='PRÁTICAS QUE POSSIBILITAM:')
+    campo = models.TextField(verbose_name='CAMPOS DE EXPERIÊNCIAS:')
+    objeto = models.TextField(verbose_name='OBJETOS DE APRENDIZAGEM:')
+    professor =models.ForeignKey(Professor, verbose_name='Professor', on_delete=models.DO_NOTHING)
+
+
+class Periodo(models.Model):
+    periodo = models.CharField(verbose_name='Período', max_length=100)
+
+    def __str__(self):
+        return self.periodo
+
+
+class Relatorio(models.Model):
+    periodo = models.ForeignKey(Periodo, on_delete=models.DO_NOTHING)
+    aluno = models.ForeignKey(Aluno, on_delete=models.DO_NOTHING, related_name='relatorio_aluno')
+    relatorio = models.TextField(verbose_name='Relatório')
+    professor = models.ForeignKey(Professor, on_delete=models.DO_NOTHING)
+    data_relatorio = models.DateTimeField(auto_now_add=True)
+    atualiza_relatorio = models.DateTimeField(auto_now=True)
 

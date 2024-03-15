@@ -1,0 +1,172 @@
+{% extends 'temp_base/adm.html' %}
+{% load static %}
+{% load bootstrap4 %}
+{% block titulo %}Registros{% endblock %}
+{% block imagem_pro %}
+<img src="{% if escola.imagem %}
+    {{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block conteudo_pro %}
+<div class="col-sm-12">
+    <div class="card">
+        <div class="card-header">
+            <h4 class="h4 text-uppercase font-weight-bold text-primary">Registro de Atividades</h4>
+            <div class="row">
+                <div class="h6 mt-2 mb-1 col-12 col-md-12 text-secondary font-weight-bold">Escola: {{sala.escola}}</div>
+                <div class="h6 mb-1 col-6 col-md-6 text-secondary font-weight-bold">Sala: {{sala}}</div>
+                <div class="h6 mb-1 col-6 col-md-6 text-secondary font-weight-bold">Ano: {{sala.ano}}</div>
+                <div class="h6 mb-1 col-6 col-md-6 text-secondary text-capitalize font-weight-bold">Turno: {{sala.turno}}</div>
+                <div class="h6 mb-1 col-6 col-md-6 text-secondary font-weight-bold">Total de Alunos: {{sala.total_alunos}}</div>
+            </div>
+        </div>
+        <div class="card-block table-border-style">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th scope="col" style="width: 10%;" class="font-weight-bold text-center"></th>
+                        <th scope="col" style="width: 30%;" class="font-weight-bold text-center"></th>
+                        <th scope="col" class="font-weight-bold"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for registro in mes %}
+                    <tr>
+                        <td rowspan="4" class="bg-primary align-middle text-center font-weight-bold">{{registro.data}}</td>
+                        <td class="font-italic">PRÁTICAS QUE POSSIBILITAM:</td>
+                        <td>{{registro.pratica}}</td>
+                    </tr>
+                    <tr>
+                        <td class="font-italic">CAMPOS DE EXPERIÊNCIAS:</td>
+                        <td>{{registro.campo}}</td>
+                    </tr>
+                    <tr>
+                        <td class="font-italic">OBJETOS DE APRENDIZAGEM:</td>
+                        <td>{{registro.objeto}}</td>
+                    </tr>
+                    <tr>
+                        <td class="font-italic">PROFESSOR(A): </td>
+                        <td>{{registro.professor}}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">
+                            <div class="col-6 col-md-6 float-left">
+                                <a href="{% url 'frequencia:registro_up' pk=registro.pk data=registro.data %}" class="btn btn-outline-primary btn-block">Editar</a>
+                            </div>
+                            <div class="col-6 col-md-6 float-right">
+                                <a href="#" class="btn btn-outline-danger btn-block"
+                                   data-toggle="modal" data-target="#exampleModalCenter{{registro.id}}">
+                                    Excluir
+                                </a>
+                            </div>
+                        </td>
+                        <!-- Button trigger modal -->
+                        <!-- Modal -->
+                        <div class="modal fade" id="exampleModalCenter{{registro.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle{{registro.id}}" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLongTitle{{registro.id}}">{{registro.data}}</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body text-danger">
+                                        Deseja excluir esse Registro de Atividades?
+                                    </div>
+                                    <div class="modal-footer">
+                                      <form method="post" action="{% url 'frequencia:registro_del' registro.pk %}">
+                                      {% csrf_token %}
+                                      <button type="submit" class="btn btn-outline-danger">
+                                        <i class="far fa-trash-alt"></i>
+                                        Deletar
+                                      </button>
+                                      <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">
+                                        <i class="fas fa-times"></i>
+                                        Cancelar
+                                      </button>
+                                    </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </tr>
+                    {% empty %}
+                    <p class="text-danger">Sem registros...</p>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script_pro %}
+{% endblock %}
+
+<!-- Escola -->
+{% block imagem %}
+<img src="{% if escola.imagem %}
+    {{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block conteudo %}
+<div class="col-sm-12">
+    <div class="card">
+        <div class="card-header">
+            <h4 class="h4 text-uppercase font-weight-bold text-primary">Registro de Atividades</h4>
+            <div class="row">
+                <div class="h6 mb-1 col-6 col-md-6 text-secondary font-weight-bold">Sala: {{sala}}</div>
+                <div class="h6 mb-1 col-6 col-md-6 text-secondary font-weight-bold">Ano: {{sala.ano}}</div>
+                <div class="h6 mb-1 col-6 col-md-6 text-secondary text-capitalize font-weight-bold">Turno: {{sala.turno}}</div>
+                <div class="h6 mb-1 col-6 col-md-6 text-secondary font-weight-bold">Total de Alunos: {{sala.total_alunos}}</div>
+            </div>
+        </div>
+        <div class="card-block table-border-style">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th scope="col" style="width: 10%;" class="font-weight-bold text-center"></th>
+                        <th scope="col" style="width: 30%;" class="font-weight-bold text-center"></th>
+                        <th scope="col" class="font-weight-bold"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for registro in mes %}
+                    <tr>
+                        <td rowspan="4" class="bg-primary align-middle text-center font-weight-bold">{{registro.data}}</td>
+                        <td class="font-italic">PRÁTICAS QUE POSSIBILITAM:</td>
+                        <td>{{registro.pratica}}</td>
+                    </tr>
+                    <tr>
+                        <td class="font-italic">CAMPOS DE EXPERIÊNCIAS:</td>
+                        <td>{{registro.campo}}</td>
+                    </tr>
+                    <tr>
+                        <td class="font-italic">OBJETOS DE APRENDIZAGEM:</td>
+                        <td>{{registro.objeto}}</td>
+                    </tr>
+                    <tr>
+                        <td class="font-italic">PROFESSOR(A): </td>
+                        <td>{{registro.professor}}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <p class="text-danger">Sem registros...</p>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script%}
+{% endblock %}

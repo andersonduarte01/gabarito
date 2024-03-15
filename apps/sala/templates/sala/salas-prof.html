@@ -1,0 +1,58 @@
+{% extends 'temp_base/adm.html' %}
+{% load static %}
+{% block titulo %}Lista de Salas{% endblock %}
+{% block estatico %}
+<style>
+.table td,
+.table th {
+	padding: 0.5rem 0rem 0.5rem 1rem;
+}
+</style>
+{% endblock %}
+{% block imagem_pro %}
+<img src="{% if escola.imagem %}
+    {{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block conteudo_pro %}
+<div class="col-sm-12">
+  <div class="card">
+    <div class="card-header">
+        <h5 class="h5 text-uppercase text-primary font-weight-bold">Salas</h5>
+    </div>
+  <div class="card-block table-border-style">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+        <tr>
+          <th class="font-weight-bold text-primary">Nº</th>
+          <th class="font-weight-bold text-primary">SALA</th>
+          <th class="font-weight-bold text-primary">ANO</th>
+          <th class="font-weight-bold text-primary">TURNO</th>
+          <th class="font-weight-bold text-primary">QTD ALUNOS</th>
+        </tr>
+        </thead>
+          <tbody>
+{% for sala in salas %}
+        <tr>
+          <td class="font-weight-bold text-primary">{{forloop.counter}}</td>
+          <td>
+             <a href="{% url 'salas:alunos_professor' sala.pk %}">{{sala}}</a>
+          </td>
+          <td>{{sala.ano}}</td>
+          <td>{{sala.turno}}</td>
+          <td>{{sala.total_alunos}}</td>
+        </tr>
+    {% empty %}
+    <tr>
+        <td colspan="5">Nenhuma sala cadastrada</td>
+    </tr>
+    {% endfor %}
+          </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+{% endblock %}

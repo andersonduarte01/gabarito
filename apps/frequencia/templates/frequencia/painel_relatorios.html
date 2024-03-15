@@ -1,0 +1,145 @@
+{% extends 'temp_base/adm.html' %}
+{% load static %}
+{% block titulo %}Painel Relatorios {% endblock %}
+{% block imagem1 %}
+<img src="{% if escola.imagem %}
+    {{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block conteudo %}
+<div class="col-12 col-md-12">
+    <div class="card">
+        <div class="card-header">
+            <h4 class="h4 font-weight-bold text-uppercase text-center">Relatórios de observações do desenvolvimento da criança</h4>
+            <h6 class="h6 font-weight-bold text-uppercase text-center">{{texto_bimestre}}</h6>
+        </div>
+    </div>
+</div>
+
+{% for sala, relatorio in salas %}
+<div class="col-md-4">
+    <div class="card">
+        <div class="card-header text-center">
+            <a href="#" class="h6 text-uppercase font-weight-bold text-primary">{{sala}}</a>
+        </div>
+        <div class="card-body">
+            <blockquote class="blockquote mb-0">
+                <p class="text-capitalize" style="font-size: 75%">{{sala.ano}} - {{sala.turno}}</p>
+                <footer class="blockquote-footer">
+                    Relatorios concluídos:
+                    <span class="text-primary"> {{relatorio}}/{{ sala.total_alunos }}</span>
+                    <br>
+                    <br>
+                    <div class="row mt-3">
+                        <div class="col-12 col-md-12">
+                            {% if relatorio == 0 and sala.total_alunos == 0 %}
+                                <button class="btn btn-sm btn-outline-secondary btn-block text-uppercase" disabled>
+                                    Adicionar Relatório
+                                </button>
+                            {% elif relatorio == sala.total_alunos %}
+                                <button class="btn btn-sm btn-outline-info btn-block text-uppercase" disabled>
+                                    Editar Relatório
+                                </button>
+                             {% else %}
+                                <button class="btn btn-sm btn-outline-info btn-block text-uppercase" disabled>
+                                    Adicionar Relatório
+                                </button>
+                             {% endif %}
+
+                        </div>
+<!--                        <div class="mt-2 col-12 col-md-12">-->
+<!--                            {% if registro != None %}-->
+<!--                            <a class="btn btn-sm btn-outline-info btn-block text-uppercase"-->
+<!--                               href="#">-->
+<!--                                Editar Registro de Atividades-->
+<!--                            </a>-->
+<!--                            {% else %}-->
+<!--                            <a class="btn btn-sm btn-outline-secondary btn-block text-uppercase"-->
+<!--                               href="#">-->
+<!--                                Adicionar Registro de Atividades-->
+<!--                            </a>-->
+<!--                            {% endif %}-->
+<!--                        </div>-->
+                    </div>
+                </footer>
+            </blockquote>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+
+<!-- PROFESSOR -->
+
+{% block imagem_pro %}
+<img src="{% if escola.imagem %}
+    {{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block conteudo_pro %}
+<div class="col-12 col-md-12">
+    <div class="card">
+        <div class="card-header">
+            <h4 class="h4 font-weight-bold text-uppercase text-center">Relatórios de observações do desenvolvimento da criança</h4>
+            <h6 class="h6 font-weight-bold text-uppercase text-center">{{texto_bimestre}}</h6>
+        </div>
+    </div>
+</div>
+
+{% for sala, relatorio in salas %}
+<div class="col-md-4">
+    <div class="card">
+        <div class="card-header text-center">
+            <a href="#" class="h6 text-uppercase font-weight-bold text-primary">{{sala}}</a>
+        </div>
+        <div class="card-body">
+            <blockquote class="blockquote mb-0">
+                <p class="text-capitalize" style="font-size: 75%">{{sala.ano}} - {{sala.turno}}</p>
+                <footer class="blockquote-footer">
+                    Relatorios concluídos:
+                    <span class="text-primary"> {{relatorio}}/{{ sala.total_alunos }}</span>
+                    <br>
+                    <br>
+                    <div class="row mt-3">
+                        <div class="col-12 col-md-12">
+                            {% if relatorio == 0 and sala.total_alunos == 0 %}
+                                <button class="btn btn-sm btn-outline-secondary btn-block text-uppercase" disabled>
+                                    Adicionar Relatório
+                                </button>
+                            {% elif relatorio == sala.total_alunos %}
+                                <a class="btn btn-sm btn-outline-info btn-block text-uppercase"
+                                   href="#">
+                                    Editar Relatório
+                                </a>
+                             {% else %}
+                                <a class="btn btn-sm btn-outline-info btn-block text-uppercase"
+                                   href="{% url 'frequencia:alunos_relatorios' pk=sala.pk bimestre=bimestre %}">
+                                    Adicionar Relatório
+                                </a>
+                             {% endif %}
+
+                        </div>
+<!--                        <div class="mt-2 col-12 col-md-12">-->
+<!--                            {% if registro != None %}-->
+<!--                            <a class="btn btn-sm btn-outline-info btn-block text-uppercase"-->
+<!--                               href="#">-->
+<!--                                Editar Registro de Atividades-->
+<!--                            </a>-->
+<!--                            {% else %}-->
+<!--                            <a class="btn btn-sm btn-outline-secondary btn-block text-uppercase"-->
+<!--                               href="#">-->
+<!--                                Adicionar Registro de Atividades-->
+<!--                            </a>-->
+<!--                            {% endif %}-->
+<!--                        </div>-->
+                    </div>
+                </footer>
+            </blockquote>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

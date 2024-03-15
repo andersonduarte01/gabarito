@@ -11,7 +11,7 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
     path('', include('apps.core.urls', namespace='core')),
     path('escola/', include('apps.escola.urls', namespace='escola')),
-    path('funcionario/', include('apps.funcionario.urls', namespace='funcionario')),
+    path('professor/', include('apps.funcionario.urls', namespace='funcionario')),
     path('perfil/', include('apps.perfil.urls', namespace='perfil')),
     path('funcao/', include('apps.funcao.urls', namespace='funcao')),
     path('avaliacao/', include('apps.avaliacao.urls', namespace='avaliacao')),

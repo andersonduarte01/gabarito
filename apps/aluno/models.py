@@ -24,19 +24,24 @@ SITUACAO = [
 SEXO = [
     ('M', 'Masculino'),
     ('F', 'Feminino'),
-    ('O', 'Outro'),
 ]
 
 
 class Aluno(models.Model):
     nome = models.CharField(verbose_name='Nome', max_length=255)
-    data_nascimento = models.CharField(verbose_name='Data de Nascimento', null=True, blank=True, max_length=15)
-    sexo = models.CharField(verbose_name='Sexo', choices=SEXO, default='Outro', max_length=100)
-    portador_deficiencia = models.CharField(verbose_name='Portador de deficiência?', choices=PORT_DEF, default='nao', max_length=255)
-    responsavel_legal = models.CharField(verbose_name='Responsável Legal', max_length=120)
+    data_nascimento = models.CharField(verbose_name='Data de Nascimento', null=True, blank=True,
+                                       max_length=15)
+    sexo = models.CharField(verbose_name='Sexo', choices=SEXO, default='Selecione', max_length=100)
+    portador_deficiencia = models.CharField(verbose_name='Portador de deficiência?',
+                                            choices=PORT_DEF, default='nao', max_length=255,
+                                            blank=True, null=True)
+    responsavel_legal = models.CharField(verbose_name='Responsável Legal', max_length=120,
+                                         blank=True, null=True)
     situacao = models.CharField(verbose_name='Situação', max_length=120, choices=SITUACAO, default='1')
-    perfil = models.ForeignKey(Pessoa, verbose_name='Perfil', on_delete=models.CASCADE, blank=True, null=True)
-    endereco = models.ForeignKey(Endereco, verbose_name='Endereço', on_delete=models.CASCADE, blank=True, null=True)
+    perfil = models.ForeignKey(Pessoa, verbose_name='Perfil', on_delete=models.CASCADE,
+                               blank=True, null=True)
+    endereco = models.ForeignKey(Endereco, verbose_name='Endereço', on_delete=models.CASCADE,
+                                 blank=True, null=True)
     sala = models.ForeignKey(Sala, verbose_name='Sala', on_delete=models.DO_NOTHING)
 
     def get_success_url(self):

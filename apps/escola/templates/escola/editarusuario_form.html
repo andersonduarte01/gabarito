@@ -8,19 +8,6 @@
     {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
      class="img-radius" alt="Foto_Usuario">
 {% endblock %}
-{% block imagem2 %}
-<img src="{% if escola.imagem %}{{escola.logo_escola.thumbnail.url}}
-    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
-     class="img-radius" alt="Foto_Usuario">
-{% endblock %}
-{% block tema %}
-<h3 class="m-b-10">Informações de Login</h3>
-<p class="m-b-0">Atualizar login </p>
-{% endblock %}
-{% block breadcrumbs %}
-{{block.super}}
-<li class="breadcrumb-item"><a href="#">Login</a></li>
-{% endblock %}
 {% block conteudo %}
 
 <div class="col-sm-12">
@@ -34,9 +21,15 @@
                 {% csrf_token %}
                 {% bootstrap_form form layout='inline'%}
                 {% buttons %}
-                <button type="submit" class="btn btn-outline-primary"><i class="fas fa-save"></i></i> Alterar</button>
+                <button type="submit" class="btn btn-outline-primary">
+                    <i class="fa fa-pencil-square-o"></i>
+                    Alterar
+                </button>
                 <a href="{% url 'escola:painel_escola' %}">
-                    <button type="button" class="btn btn-outline-danger"><i class="fas fa-undo"></i>Cancelar</button>
+                    <button type="button" class="btn btn-outline-danger">
+                        <i class="fas fa-undo"></i>
+                        Cancelar
+                    </button>
                 </a>
                 {% endbuttons %}
             </form>

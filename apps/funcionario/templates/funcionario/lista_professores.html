@@ -8,11 +8,6 @@
     {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
      class="img-radius" alt="Foto_Usuario">
 {% endblock %}
-{% block imagem2 %}
-<img src="{% if escola.imagem %}{{escola.logo_escola.thumbnail.url}}
-    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
-     class="img-radius" alt="Foto_Usuario">
-{% endblock %}
 {% block tema %}
 <h5 class="m-b-10">Lista de Professores</h5>
 {% endblock %}
@@ -22,111 +17,84 @@
 {% endblock %}
 {% block conteudo %}
 <div class="col-sm-12">
-<div class="card">
-    <div class="card-block table-border-style">
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                <tr>
-                    <th>Nº</th>
-                    <th>NOME</th>
-                    <th>EMAIL</th>
-                    <th>ENDEREÇO</th>
-                    <th>PERFIL</th>
-                    <th></th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for professor in object_list %}
-                <tr>
-                    <td>{{forloop.counter}}</td>
-                    <td>{{professor.professor_nome}}</td>
-                    <td>{{professor.email}}</td>
-                    <td><a href="#" class="btn btn-outline-success btn-sm disabled">Desabilitado</a></td>
-                    <td><a href="#" class="btn btn-outline-secondary btn-sm disabled">Desabilitado</a></td>
-                    <td>
-                        <a href="{% url 'funcionario:editar_professor' professor.pk %}" class="primary">
-                            <i class="fas fa-edit" style="color: #2c28e6;"></i>
-                        </a>
-                        <!-- Button trigger modal -->
-                        <a type="button" class="danger" data-toggle="modal" data-target="#{{professor.id}}">
-                            <i class="far fa-trash-alt" style="color: #ed1d1d;"></i>
-                        </a>
+    <div class="card">
+        <div class="card-header">
+            <h4>Professores</h4>
+        </div>
+        <div class="card-block table-border-style">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>Nº</th>
+                        <th>NOME</th>
+                        <th>EMAIL</th>
+                        <th>ENDEREÇO</th>
+                        <th>PERFIL</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for professor in object_list %}
+                    <tr>
+                        <td>{{forloop.counter}}</td>
+                        <td>{{professor.professor_nome}}</td>
+                        <td>{{professor.email}}</td>
+                        <td><a href="#" class="btn btn-outline-success btn-sm disabled">Desabilitado</a></td>
+                        <td><a href="#" class="btn btn-outline-secondary btn-sm disabled">Desabilitado</a></td>
+                        <td>
+                            <a href="{% url 'funcionario:editar_professor' professor.pk %}" class="primary">
+                                <i class="fas fa-edit text-primary"></i>
+                            </a>
+                            <!-- Button trigger modal -->
+                            <a type="button" class="danger" data-toggle="modal" data-target="#{{professor.id}}">
+                                <i class="far fa-trash-alt" style="color: #ed1d1d;"></i>
+                            </a>
+                            <div class="modal fade" id="{{professor.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+                                 aria-hidden="true">
+                                <div class="modal-dialog modal-notify modal-info" role="document">
+                                    <!--Content-->
+                                    <div class="modal-content text-center">
+                                        <!--Header-->
+                                        <div class="modal-header d-flex justify-content-center bg-danger">
+                                            <h5 class="heading">Remover Professor</h5>
+                                        </div>
 
-                       <div class="modal fade" id="{{professor.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-                     aria-hidden="true">
-                  <div class="modal-dialog modal-notify modal-info" role="document">
-                    <!--Content-->
-                    <div class="modal-content text-center">
-                      <!--Header-->
-                      <div class="modal-header d-flex justify-content-center bg-danger">
-                        <h5 class="heading">Remover Professor</h5>
-                      </div>
+                                        <!--Body-->
+                                        <div class="modal-body">
+                                            <h6>Tem certeza que deseja remover</h6>
+                                            <h6>{{professor}}?</h6>
+                                        </div>
 
-                      <!--Body-->
-                      <div class="modal-body">
+                                        <!--Footer-->
+                                        <div class="modal-footer flex-center">
+                                            <form method="post" action="{% url 'funcionario:deletar_professor' professor.pk %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-outline-danger">
+                                                    <i class="far fa-trash-alt"></i>
+                                                    Deletar
+                                                </button>
+                                                <button type="button" class="btn btn-outline-info" data-dismiss="modal">
+                                                    <i class="fas fa-times"></i>
+                                                    Cancelar
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    <!--/.Content-->
+                                </div>
+                            </div>
+                        </td>
 
-                        <i class="far fa-trash-alt fa-4x animated rotateIn mb-4" style="color: #ed1d1d;"></i>
-
-                        <h6>Tem certeza que deseja remover</h6>
-                        <h6>{{professor}}?</h6>
-
-                      </div>
-
-                      <!--Footer-->
-                      <div class="modal-footer flex-center">
-                        <form method="post" action="{% url 'funcionario:deletar_professor' professor.pk %}">
-                          {% csrf_token %}
-                          <button type="submit" class="btn btn-outline-danger">
-                            <i class="far fa-trash-alt"></i>
-                            Deletar
-                          </button>
-                          <button type="button" class="btn btn-outline-info" data-dismiss="modal">
-                            <i class="fas fa-times" style="color: #588adf;"></i>
-                            Cancelar
-                          </button>
-                        </form>
-                      </div>
-                    </div>
-                    <!--/.Content-->
-                  </div>
-                </div>
-
-
-                        <!-- Modal -->
-<!--                        <div class="modal fade" id="{{professor.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">-->
-<!--                            <div class="modal-dialog modal-dialog-centered" role="document">-->
-<!--                                <div class="modal-content">-->
-<!--                                    <div class="modal-header">-->
-<!--                                        <h5 class="modal-title" id="exampleModalLongTitle">Deletar {{pofessor.professor_nome}}</h5>-->
-<!--                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">-->
-<!--                                            <span aria-hidden="true">&times;</span>-->
-<!--                                        </button>-->
-<!--                                    </div>-->
-<!--                                    <div class="modal-body">-->
-<!--                                        <h6>Tem certeza que vai excluir {{professor.professor_nome}}?</h6>-->
-<!--                                    </div>-->
-<!--                                    <div class="modal-footer">-->
-<!--                                        <form method="post" action="{% url 'funcionario:deletar_professor' professor.pk %}">-->
-<!--                                            {% csrf_token %}-->
-<!--                                            <button type="submit" class="btn btn-danger">Deletar</button>-->
-<!--                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Sair</button>-->
-<!--                                        </form>-->
-<!--                                    </div>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                        </div>-->
-                    </td>
-
-                </tr>
-                {% empty %}
-                <p>Não há nada</p>
-                {% endfor %}
-                </tbody>
-            </table>
+                    </tr>
+                    {% empty %}
+                    <p>Não há nada</p>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-</div>
 </div>
 {% endblock %}

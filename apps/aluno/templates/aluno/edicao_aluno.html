@@ -1,7 +1,7 @@
 {% extends 'temp_base/adm.html' %}
 {% load static %}
 {% load bootstrap4 %}
-{% block titulo %}Editar Escola{% endblock %}
+{% block titulo %}Editar Aluno{% endblock %}
 {% block imagem1 %}
 <img src="{% if escola.imagem %}
     {{escola.logo_escola.thumbnail.url}}
@@ -13,7 +13,7 @@
     <!-- Basic Form Inputs card start -->
     <div class="card">
         <div class="card-header">
-            <h4>Atualizar Escola</h4>
+            <h4>Editar Aluno</h4>
         </div>
         <div class="card-block">
             <form method="post" enctype="multipart/form-data">
@@ -24,9 +24,6 @@
                     <i class="fa fa-pencil-square-o"></i>
                     Atualizar
                 </button>
-                <a href="{% url 'escola:painel_escola' %}">
-                    <button type="button" class="btn btn-outline-danger"><i class="fas fa-undo"></i>Cancelar</button>
-                </a>
                 {% endbuttons %}
             </form>
         </div>
