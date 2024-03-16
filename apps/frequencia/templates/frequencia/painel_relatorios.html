@@ -48,19 +48,6 @@
                              {% endif %}
 
                         </div>
-<!--                        <div class="mt-2 col-12 col-md-12">-->
-<!--                            {% if registro != None %}-->
-<!--                            <a class="btn btn-sm btn-outline-info btn-block text-uppercase"-->
-<!--                               href="#">-->
-<!--                                Editar Registro de Atividades-->
-<!--                            </a>-->
-<!--                            {% else %}-->
-<!--                            <a class="btn btn-sm btn-outline-secondary btn-block text-uppercase"-->
-<!--                               href="#">-->
-<!--                                Adicionar Registro de Atividades-->
-<!--                            </a>-->
-<!--                            {% endif %}-->
-<!--                        </div>-->
                     </div>
                 </footer>
             </blockquote>
@@ -105,22 +92,10 @@
                     <br>
                     <div class="row mt-3">
                         <div class="col-12 col-md-12">
-                            {% if relatorio == 0 and sala.total_alunos == 0 %}
-                                <button class="btn btn-sm btn-outline-secondary btn-block text-uppercase" disabled>
-                                    Adicionar Relatório
-                                </button>
-                            {% elif relatorio == sala.total_alunos %}
-                                <a class="btn btn-sm btn-outline-info btn-block text-uppercase"
-                                   href="#">
-                                    Editar Relatório
-                                </a>
-                             {% else %}
                                 <a class="btn btn-sm btn-outline-info btn-block text-uppercase"
                                    href="{% url 'frequencia:alunos_relatorios' pk=sala.pk bimestre=bimestre %}">
-                                    Adicionar Relatório
+                                    Relatórios
                                 </a>
-                             {% endif %}
-
                         </div>
 <!--                        <div class="mt-2 col-12 col-md-12">-->
 <!--                            {% if registro != None %}-->

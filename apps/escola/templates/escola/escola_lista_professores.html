@@ -8,19 +8,6 @@
     {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
      class="img-radius" alt="Foto_Usuario">
 {% endblock %}
-{% block imagem2_adm %}
-<img src="{% if escola.imagem %}{{escola.logo_escola.thumbnail.url}}
-    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
-     class="img-radius" alt="Foto_Usuario">
-{% endblock %}
-{% block tema_adm %}
-<h5 class="m-b-10">{{escola}}</h5>
-<p>Lista de professores</p>
-{% endblock %}
-{% block breadcrumbs_adm %}
-{{block.super}}
-<li class="breadcrumb-item"><a href="#">Professores</a></li>
-{% endblock %}
 {% block painel_adm %}
 <ul class="pcoded-item pcoded-left-item">
     <li class="pcoded-hasmenu">
@@ -54,32 +41,6 @@
 <ul class="pcoded-item pcoded-left-item">
     <li class="pcoded-hasmenu">
         <a href="javascript:void(0)" class="waves-effect waves-dark">
-            <span class="pcoded-micon"><i class="ti-bookmark-alt"></i><b>BC</b></span>
-            <span class="pcoded-mtext">Avaliação</span>
-            <span class="pcoded-mcaret"></span>
-        </a>
-        <ul class="pcoded-submenu">
-            <li class=" ">
-                <a href="{% url 'escola:avaliacoes_escola' escola.slug %}" class="waves-effect waves-dark">
-                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-                    <span class="pcoded-mtext">Avaliações</span>
-                    <span class="pcoded-mcaret"></span>
-                </a>
-            </li>
-            <li class=" ">
-                <a href="#" class="waves-effect waves-dark">
-                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-                    <span class="pcoded-mtext">Notas</span>
-                    <span class="pcoded-mcaret"></span>
-                </a>
-            </li>
-        </ul>
-    </li>
-</ul>
-
-<ul class="pcoded-item pcoded-left-item">
-    <li class="pcoded-hasmenu">
-        <a href="javascript:void(0)" class="waves-effect waves-dark">
             <span class="pcoded-micon"><i class="ti-user"></i><b>BC</b></span>
             <span class="pcoded-mtext">Professores</span>
             <span class="pcoded-mcaret"></span>
@@ -95,26 +56,87 @@
         </ul>
     </li>
 </ul>
+
+<ul class="pcoded-item pcoded-left-item">
+    <li class="pcoded-hasmenu">
+        <a href="javascript:void(0)" class="waves-effect waves-dark">
+            <span class="pcoded-micon"><i class="ti-ruler-pencil"></i><b>BC</b></span>
+            <span class="pcoded-mtext">Registros</span>
+            <span class="pcoded-mcaret"></span>
+        </a>
+        <ul class="pcoded-submenu">
+            <li class=" ">
+                <a href="{% url 'escola:escola_registro_meses' slug=escola.slug %}" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">Registros</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+        </ul>
+    </li>
+</ul>
+
+<ul class="pcoded-item pcoded-left-item">
+    <li class="pcoded-hasmenu">
+        <a href="javascript:void(0)" class="waves-effect waves-dark">
+            <span class="pcoded-micon"><i class="ti-write"></i><b>BC</b></span>
+            <span class="pcoded-mtext">Relatórios</span>
+            <span class="pcoded-mcaret"></span>
+        </a>
+        <ul class="pcoded-submenu">
+            <li class=" ">
+                <a href="#" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">Relatórios</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+            <li class=" ">
+                <a href="{% url 'escola:escola_painel_relatorios' bimestre='1º_Bimestre' slug=escola.slug %}" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">1º Bimestre</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+            <li class=" ">
+                <a href="{% url 'escola:escola_painel_relatorios' bimestre='2º_Bimestre' slug=escola.slug %}" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">2º Bimestre</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+        </ul>
+    </li>
+</ul>
+
+{% endblock %}
+{% block trilha %}
+   <h4 class="h4 mb-0 text-secondary font-weight-bold text-uppercase">{{escola}}</h4>
 {% endblock %}
 {% block conteudo_adm %}
 <div class="col-sm-12">
 <div class="card">
+    <div class="card-header ">
+      <h5 class="h5 text-uppercase font-weight-bold text-center text-secondary">
+          Professores Cadastrados
+      </h5>
+    </div>
     <div class="card-block table-border-style">
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead>
-                <tr>
-                    <th>Nº</th>
-                    <th>NOME</th>
-                    <th>EMAIL</th>
-                    <th>ENDEREÇO</th>
-                    <th>PERFIL</th>
+                <tr class="text-primary">
+                    <th class="font-weight-bold">Nº</th>
+                    <th class="font-weight-bold">NOME</th>
+                    <th class="font-weight-bold">EMAIL</th>
+                    <th class="font-weight-bold">ENDEREÇO</th>
+                    <th class="font-weight-bold">PERFIL</th>
                 </tr>
                 </thead>
                 <tbody>
                 {% for professor in professores %}
                 <tr>
-                    <td>{{forloop.counter}}</td>
+                    <td class="font-weight-bold text-primary">{{forloop.counter}}</td>
                     <td>{{professor.professor_nome}}</td>
                     <td>{{professor.email}}</td>
                     <td><a href="#" class="btn btn-outline-success btn-sm disabled">Desabilitado</a></td>

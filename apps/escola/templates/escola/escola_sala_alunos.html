@@ -8,20 +8,6 @@
     {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
      class="img-radius" alt="Foto_Usuario">
 {% endblock %}
-{% block imagem2_adm %}
-<img src="{% if escola.imagem %}{{escola.logo_escola.thumbnail.url}}
-    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
-     class="img-radius" alt="Foto_Usuario">
-{% endblock %}
-{% block tema_adm %}
-<h3 class="m-b-10">{{escola}}</h3>
-<p class="m-b-0">{{sala}} - {{sala.ano}} - {{sala.turno}}</p>
-{% endblock %}
-{% block breadcrumbs_adm %}
-{{block.super}}
-<li class="breadcrumb-item"><a href="#">Sala</a></li>
-<li class="breadcrumb-item"><a href="#">Alunos</a></li>
-{% endblock %}
 {% block painel_adm %}
 <ul class="pcoded-item pcoded-left-item">
     <li class="pcoded-hasmenu">
@@ -102,19 +88,28 @@
 <div class="col-sm-12">
   <!-- Button trigger modal -->
   <div class="card">
+    <div class="card-header">
+      <h4 class="h4 text-uppercase font-weight-bold text-primary">{{sala}}</h4>
+      <div class="row">
+        <div class="h6 mb-1 col-6 col-md-4 text-secondary font-weight-bold">Ano: {{sala.ano}}</div>
+        <div class="h6 mb-1 col-6 col-md-4 text-secondary text-capitalize font-weight-bold">Turno: {{sala.turno}}</div>
+        <div class="h6 mb-1 col-6 col-md-4 text-secondary text-capitalize font-weight-bold"></div>
+        <div class="h6 mb-1 col-6 col-md-4 text-secondary font-weight-bold">Total de Alunos: {{sala.total_alunos}}</div>
+      </div>
+      </div>
     <div class="card-block table-border-style">
       <div class="table-responsive">
         <table class="table table-hover">
           <thead>
-          <tr>
-            <th>Nº</th>
-            <th>NOME</th>
+          <tr class="text-primary">
+            <th class="font-weight-bold">Nº</th>
+            <th class="font-weight-bold">NOME</th>
           </tr>
           </thead>
           {% for aluno in alunos %}
           <tbody>
           <tr>
-            <td>{{forloop.counter}}</td>
+            <td class="font-weight-bold text-primary">{{forloop.counter}}</td>
             <td>{{aluno}}</td>
           </tr>
           </tbody>

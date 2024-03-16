@@ -1,7 +1,8 @@
 {% extends 'temp_base/adm.html' %}
 {% load static %}
-{% block titulo %}Painel Escola{% endblock %}
-{% block imagem1_adm %}
+{% load bootstrap4 %}
+{% block titulo %}Aluno Relatorio {% endblock %}
+{% block imagem_adm %}
 <img src="{% if escola.imagem %}
     {{escola.logo_escola.thumbnail.url}}
     {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
@@ -110,19 +111,29 @@
 </ul>
 
 {% endblock %}
-{% block relatorios %}
-<li class=" ">
-    <a href="{% url 'relatorios:relatorio_escola' escola.slug %}" class="waves-effect waves-dark">
-        <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-        <span class="pcoded-mtext">Escola</span>
-        <span class="pcoded-mcaret"></span>
-    </a>
-</li>
-{% endblock %}
 {% block trilha %}
-<h4 class="h4 mb-0 text-primary font-weight-bold text-uppercase">Painel Escola</h4>
+<h4 class="h4 mb-0 text-secondary font-weight-bold text-uppercase">{{aluno}}</h4>
 {% endblock %}
 {% block conteudo_adm %}
 <div class="col-sm-12">
+    <!-- Basic Form Inputs card start -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="h5 text-uppercase font-weight-bold text-primary mb-2">{{bimestre}}</h5>
+            <div class="row">
+                <div class="mb-2 col-xl-3 col-md-3 col-sm-12 text-secondary font-weight-bold">D Nasc: {{aluno.data_nascimento}}</div>
+                <div class="mb-2 col-xl-3 col-md-3 col-sm-12 text-secondary font-weight-bold">Ano: {{aluno.sala.ano}}</div>
+                <div class="col-xl-3 col-md-3 col-sm-12"></div>
+                <div class="col-xl-3 col-md-3 col-sm-12"></div>
+                <div class="mb-2 col-xl-3 col-md-3 col-sm-12 text-secondary font-weight-bold">Sala: {{aluno.sala}}</div>
+                <div class="mb-2 col-xl-3 col-md-3 col-sm-12 text-capitalize text-secondary font-weight-bold">Turno: {{aluno.sala.turno}}</div>
+            </div>
+        </div>
+        <div class="card-block">
+            <h5 class="h5 font-weight-bold text-primary">Relatório</h5><br>
+            <p class="title">{{relatorio.relatorio}}</p>
+        </div>
+    </div>
+    <!-- Basic Form Inputs card end -->
 </div>
 {% endblock %}

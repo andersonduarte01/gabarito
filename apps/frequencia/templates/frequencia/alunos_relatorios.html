@@ -46,18 +46,18 @@
           </tr>
           </thead>
           <tbody>
-          {% for aluno in alunos %}
+          {% for aluno, relatorio in alunos %}
 
           <tr>
             <td class="font-weight-bold text-primary">{{forloop.counter}}</td>
             <td>{{aluno}}</td>
             <td class="text-center">
-                {% if aluno.relatorio_aluno.all.exists == False  %}
+                {% if relatorio == None  %}
                   <a href="{% url 'frequencia:relatorio_aluno' pk=aluno.pk bimestre=bimestre %}" class="text-success">
                       <i class="fa fa-plus fa-lg"></i>
                   </a>
                 {% else %}
-                <a href="{% url 'frequencia:relatorio_aluno' pk=aluno.pk bimestre=bimestre %}" class="text-primary">
+                <a href="{% url 'frequencia:relatorio_aluno_up' pk=relatorio.pk %}" class="text-primary">
                       <i class="fa fa-check-square-o fa-lg"></i>
                   </a>
                 {% endif %}

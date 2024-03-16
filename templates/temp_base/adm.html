@@ -96,14 +96,6 @@
                         <div class="sidebar_toggle"><a href="#"><i class="icon-close icons"></i></a></div>
                         <div class="pcoded-inner-navbar main-menu">
                             <div class="">
-                                <div class="main-menu-header">
-                                    {% block imagem2_adm %}
-                                    <img class="img-80 img-radius" src="{% static 'adm/assets/images/user.jpg' %}" alt="Foto_Perfil">
-                                    {% endblock %}
-                                    <div class="user-details">
-                                        <span id="more-details">{{user.nome}}<i class="fa fa-caret-down"></i></span>
-                                    </div>
-                                </div>
                                 <div class="main-menu-content">
                                     <ul>
                                         <li class="more-details">
@@ -114,7 +106,7 @@
                                     </ul>
                                 </div>
                             </div>
-                            <ul class="pcoded-item pcoded-left-item">
+                            <ul class="pcoded-item pcoded-left-item mt-5">
                                 <li class="active">
                                     <a href="{% url 'escola:painel_escola' %}" class="waves-effect waves-dark">
                                         <span class="pcoded-micon"><i class="ti-home"></i><b>D</b></span>
@@ -274,30 +266,6 @@
                     </nav>
                     <div class="pcoded-content">
                         <!-- Page-header start -->
-                        <div class="page-header">
-                            <div class="page-block">
-                                <div class="row align-items-center">
-                                    <div class="col-md-8">
-                                        <div class="page-header-title">
-                                            {% block tema_adm %}
-                                            <h5 class="m-b-10">Painel Padrão</h5>
-                                            <p class="m-b-0">Bem Vindo ao painel padrão!</p>
-                                            {% endblock %}
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <ul class="breadcrumb">
-                                            <li class="breadcrumb-item">
-                                                <a href="#"> <i class="fa fa-home"></i> </a>
-                                            </li>
-                                            {% block breadcrumbs_adm %}
-                                            <li class="breadcrumb-item"><a href="#">Painel</a></li>
-                                            {% endblock %}
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                         <!-- Page-header end -->
                         <div class="pcoded-inner-content">
                             <!-- Main-body start -->
@@ -305,6 +273,16 @@
                                 <div class="page-wrapper">
                                     <!-- Page-body start -->
                                     <div class="page-body">
+                                        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                                            {% block trilha %}
+                                            <h3 class="h3 mb-0 text-gray-800">Blank Page</h3>
+                                            <ol class="breadcrumb">
+                                              <li class="breadcrumb-item"><a href="./">Home</a></li>
+                                              <li class="breadcrumb-item">Pages</li>
+                                              <li class="breadcrumb-item active" aria-current="page">Blank Page</li>
+                                            </ol>
+                                            {% endblock %}
+                                          </div>
                                         <div class="row">
                                             {% for message in messages %}
                                             <div class="col-sm-12">

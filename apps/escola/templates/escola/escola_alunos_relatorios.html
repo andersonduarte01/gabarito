@@ -1,7 +1,16 @@
 {% extends 'temp_base/adm.html' %}
+{% load bootstrap4 %}
 {% load static %}
-{% block titulo %}Painel Escola{% endblock %}
-{% block imagem1_adm %}
+{% block titulo %}Relatórios por Aluno{% endblock %}
+{% block estatico %}
+<style>
+.table td,
+.table th {
+	padding: 0.5rem 0rem 0.5rem 1rem;
+}
+</style>
+{% endblock %}
+{% block imagem_adm %}
 <img src="{% if escola.imagem %}
     {{escola.logo_escola.thumbnail.url}}
     {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
@@ -110,19 +119,64 @@
 </ul>
 
 {% endblock %}
-{% block relatorios %}
-<li class=" ">
-    <a href="{% url 'relatorios:relatorio_escola' escola.slug %}" class="waves-effect waves-dark">
-        <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-        <span class="pcoded-mtext">Escola</span>
-        <span class="pcoded-mcaret"></span>
-    </a>
-</li>
-{% endblock %}
 {% block trilha %}
-<h4 class="h4 mb-0 text-primary font-weight-bold text-uppercase">Painel Escola</h4>
+<h4 class="h4 mb-0 text-secondary font-weight-bold text-uppercase">Relatórios de observações</h4>
 {% endblock %}
 {% block conteudo_adm %}
 <div class="col-sm-12">
+  <!-- Button trigger modal -->
+  <div class="card">
+    <div class="card-header">
+            <h5 class="mb-3 h5 text-uppercase font-weight-bold text-secondary">{{bimestre}}</h5>
+            <div class="row">
+                <div class="mt-2 col-2 col-md-2 text-secondary font-weight-bold">Sala: {{sala}}</div>
+                <div class="mt-2 col-2 col-md-2 text-secondary font-weight-bold">Ano: {{sala.ano}}</div>
+                <div class="mt-2 col-2 col-md-2 text-secondary"></div>
+                <div class="mt-2 col-2 col-md-2 text-secondary"></div>
+                <div class="mt-2 col-2 col-md-2 text-secondary"></div>
+                <div class="mt-2 col-2 col-md-2 text-secondary"></div>
+
+                <div class="col-2 col-md-2 text-capitalize text-secondary font-weight-bold">Turno: {{sala.turno}}</div>
+                <div class="col-2 col-md-2 text-secondary font-weight-bold">Total: {{sala.total_alunos}} alunos</div>
+            </div>
+        </div>
+    <div class="card-block table-border-style">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+          <tr>
+            <th class="font-weight-bold text-primary">Nº</th>
+            <th class="font-weight-bold text-primary">NOME</th>
+            <th class="font-weight-bold text-primary text-center">RELATÓRIO</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for aluno, relatorio in alunos %}
+
+          <tr>
+            <td class="font-weight-bold text-primary">{{forloop.counter}}</td>
+            <td>{{aluno}}</td>
+            <td class="text-center">
+                {% if relatorio == None  %}
+                  <div class="text-secondary">
+                      <i class="fa fa-plus fa-lg"></i>
+                  </div>
+                {% else %}
+                <a href="{% url 'escola:escola_relatorio_aluno' pk=relatorio.aluno.pk bimestre=bimestre %}" class="text-primary">
+                      <i class="fa fa-check-square-o fa-lg"></i>
+                  </a>
+                {% endif %}
+            </td>
+          </tr>
+
+          {% empty %}
+          <td colspan="5">Nenhum aluno cadastrado</td>
+          {% endfor %}
+          </tbody>
+        </table>
+        <hr>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

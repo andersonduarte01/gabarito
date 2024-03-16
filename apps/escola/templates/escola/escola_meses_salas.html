@@ -1,7 +1,8 @@
 {% extends 'temp_base/adm.html' %}
 {% load static %}
-{% block titulo %}Painel Escola{% endblock %}
-{% block imagem1_adm %}
+{% load bootstrap4 %}
+{% block titulo %}Registro por meses{% endblock %}
+{% block imagem_adm %}
 <img src="{% if escola.imagem %}
     {{escola.logo_escola.thumbnail.url}}
     {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
@@ -110,19 +111,67 @@
 </ul>
 
 {% endblock %}
-{% block relatorios %}
-<li class=" ">
-    <a href="{% url 'relatorios:relatorio_escola' escola.slug %}" class="waves-effect waves-dark">
-        <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
-        <span class="pcoded-mtext">Escola</span>
-        <span class="pcoded-mcaret"></span>
-    </a>
-</li>
-{% endblock %}
 {% block trilha %}
-<h4 class="h4 mb-0 text-primary font-weight-bold text-uppercase">Painel Escola</h4>
+<h4 class="h4 mb-0 text-secondary font-weight-bold text-uppercase">Registro de Atividades</h4>
 {% endblock %}
 {% block conteudo_adm %}
 <div class="col-sm-12">
+    <div class="card">
+        <div class="card-header">
+            <h5 class="h5 text-uppercase text-secondary font-weight-bold text-center">Mensal</h5>
+        </div>
+    </div>
+
+    <div class="accordion">
+        <div class="row">
+        {% for numero_mes, mes  in meses %}
+        <div class="col-4 col-md-4">
+            <div class="card">
+            <div class="card-header" id="headingTwo{{mes}}">
+                <h3 class="mb-0 d-flex justify-content-between align-items-center">
+                    <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo{{mes}}" aria-expanded="false" aria-controls="collapseTwo{{mes}}">
+                        <h5 class="h5 mb-0 text-uppercase">{{mes}}</h5>
+                    </button>
+                    <span class="icon">
+                <i class="fas fa-chevron-down text-primary"></i> <!-- Adicionei a classe 'text-primary' para colorir o ícone -->
+            </span>
+                </h3>
+            </div>
+            <div id="collapseTwo{{mes}}" class="collapse" aria-labelledby="headingTwo{{mes}}" data-parent="#accordion">
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% for sala in salas %}
+                        <li class="list-group-item">
+                            <a href="{% url 'escola:escola_registro_mes' pk=sala.pk mes=numero_mes slug=escola.slug %}" class="font-weight-bold font-italic text-capitalize">{{sala}} - {{sala.ano}} - {{sala.turno}}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        </div>
+        {% endfor %}
+        </div>
+    </div>
 </div>
 {% endblock %}
+{% block script_adm %}
+<script>
+    // JavaScript para converter e preencher o campo de data com a data recebida em kwargs
+    document.addEventListener('DOMContentLoaded', function() {
+        var dataRecebida = '{{ data }}'; // Supondo que o valor seja passado como uma string formatada (exemplo: '2024-03-12')
+        var campoData = document.getElementById('id_data'); // Substitua 'id_data' pelo ID real do campo de data
+
+        // Converte a data para o formato dia/mês/ano
+        if (dataRecebida) {
+            var partesData = dataRecebida.split('-');
+            if (partesData.length === 3) {
+                var dataFormatada = partesData[2] + '/' + partesData[1] + '/' + partesData[0];
+                campoData.value = dataFormatada;
+                document.getElementById("dataset").innerHTML = dataFormatada;
+            }
+        }
+    });
+</script>
+{% endblock %}
+

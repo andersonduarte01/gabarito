@@ -2,18 +2,17 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from datetime import date
 from datetime import datetime
-
+from django.db.models.functions import ExtractMonth
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView, UpdateView, ListView
-from .traduzir import converter
 from .models import UnidadeEscolar, EnderecoEscolar
 from ..aluno.models import Aluno
 from ..avaliacao.correcao import alunos_prova
 from ..avaliacao.models import Avaliacao, Gabarito
 from ..core.models import Usuario
-from ..frequencia.models import Frequencia, FrequenciaAluno, Registro
+from ..frequencia.models import Frequencia, FrequenciaAluno, Registro, Periodo, Relatorio
 from ..funcionario.models import Professor
 from ..sala.models import Sala
 from .traduzir import converter
@@ -319,4 +318,135 @@ class EscolaAvaliacaoAlunos(LoginRequiredMixin, ListView):
         context['gabaritos'] = gabaritos
         return context
 
-### Professor ####
+### outros ####
+
+
+class EscolaRegistroMesesSalas(LoginRequiredMixin, ListView):
+    template_name = 'escola/escola_meses_salas.html'
+    context_object_name = 'meses'
+
+    def get_queryset(self):
+        nome_meses = {1: 'Janeiro', 2: 'Fevereiro', 3: 'Março',
+            4: 'Abril', 5: 'Maio',  6: 'Junho', 7: 'Julho',
+            8: 'Agosto', 9: 'Setembro', 10: 'Outubro',
+            11: 'Novembro', 12: 'Dezembro'
+        }
+
+        registros_com_mes = Registro.objects.annotate(mes_registro=ExtractMonth('data'))
+        meses_unicos = registros_com_mes.values_list('mes_registro', flat=True).distinct()
+        nomes_e_numeros_meses = [(mes, nome_meses[mes]) for mes in meses_unicos]
+        nomes_e_numeros_meses = sorted(nomes_e_numeros_meses, key=lambda x: x[0])
+        return nomes_e_numeros_meses
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        escola = get_object_or_404(UnidadeEscolar, slug=self.kwargs['slug'])
+
+        salas = Sala.objects.filter(escola=escola)
+
+        contexto['escola'] = escola
+        contexto['salas'] = salas
+        return contexto
+
+
+class EscolaRegistroMesSala(LoginRequiredMixin, ListView):
+    template_name = 'escola/escola_mes_sala.html'
+    context_object_name = 'mes'
+
+    def get_queryset(self):
+        sala = Sala.objects.get(pk=self.kwargs['pk'])
+        return Registro.objects.filter(data__month=self.kwargs['mes'], sala=sala).order_by('data')
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        professor = 'vazio'
+        escola = get_object_or_404(UnidadeEscolar, slug=self.kwargs['slug'])
+
+        sala = Sala.objects.get(pk=self.kwargs['pk'])
+
+        contexto['escola'] = escola
+        contexto['professor'] = professor
+        contexto['sala'] = sala
+        return contexto
+
+
+class EscolaPainelRelatorios(LoginRequiredMixin, TemplateView):
+    template_name = 'escola/escola_painel_relatorios.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        escola = get_object_or_404(UnidadeEscolar, slug=self.kwargs['slug'])
+
+        salas = Sala.objects.filter(escola=escola)
+
+        salas_relatorios = []
+        for sala in salas:
+
+            sala_relatorio = []
+
+            sala_relatorio.append(sala)
+            try:
+                periodo = Periodo.objects.get(periodo=self.kwargs['bimestre'])
+                relatorios = Relatorio.objects.filter(aluno__sala=sala, periodo=periodo).count()
+                sala_relatorio.append(relatorios)
+            except:
+                relatorios = 0
+                sala_relatorio.append(relatorios)
+
+            salas_relatorios.append(sala_relatorio)
+
+        context['salas'] = salas_relatorios
+        context['texto_bimestre'] = self.kwargs['bimestre'].replace('_', ' ')
+        context['bimestre'] = self.kwargs['bimestre']
+        context['escola'] = escola
+        return context
+
+
+class EscolaListaAlunosrelatorios(LoginRequiredMixin, ListView):
+    model = Aluno
+    template_name = 'escola/escola_alunos_relatorios.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        sala = Sala.objects.get(pk=self.kwargs['pk'])
+        alunos = Aluno.objects.filter(sala=sala).order_by('nome')
+        periodo = get_object_or_404(Periodo,periodo=self.kwargs['bimestre'])
+        escola = get_object_or_404(UnidadeEscolar, slug=self.kwargs['slug'])
+
+        alunos_relatorios = []
+        for aluno in alunos:
+            aluno_relatorio = []
+            aluno_relatorio.append(aluno)
+            try:
+                periodo = Periodo.objects.get(periodo=self.kwargs['bimestre'])
+                relatorio = Relatorio.objects.get(aluno=aluno, periodo=periodo)
+                aluno_relatorio.append(relatorio)
+            except:
+                relatorio = None
+                aluno_relatorio.append(relatorio)
+
+            alunos_relatorios.append(aluno_relatorio)
+
+        context['bimestre'] = self.kwargs['bimestre']
+        context['sala'] = sala
+        context['alunos'] = alunos_relatorios
+        context['escola'] = escola
+        return context
+
+
+class EscolaRelatorio(LoginRequiredMixin, ListView):
+    model = Relatorio
+    template_name = 'escola/escola_relatorio.html'
+
+    def get_context_data(self, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        aluno = Aluno.objects.get(pk=self.kwargs['pk'])
+        periodo = get_object_or_404(Periodo, periodo=self.kwargs['bimestre'])
+        relatorio = get_object_or_404(Relatorio, aluno=aluno, periodo=periodo)
+        escola = UnidadeEscolar.objects.get(pk=aluno.sala.escola.pk)
+
+        contexto['escola'] = escola
+        contexto['aluno'] = aluno
+        contexto['relatorio'] = relatorio
+        contexto['bimestre'] = self.kwargs['bimestre']
+        return contexto

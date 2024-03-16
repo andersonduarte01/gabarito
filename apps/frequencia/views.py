@@ -241,6 +241,32 @@ class RelatorioAdd(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         return contexto
 
 
+class RelatorioUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = Relatorio
+    form_class = RelatorioForm
+    success_message = 'Relatório alterado com sucesso!'
+    template_name = 'frequencia/relatorio_up.html'
+    context_object_name = 'relatorio'
+
+    def get_success_url(self):
+        return reverse('frequencia:alunos_relatorios',
+                       kwargs={'pk': self.object.aluno.sala.pk, 'bimestre': self.object.periodo})
+
+    def get_context_data(self, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        if self.request.user.is_professor:
+            professor = Professor.objects.get(usuario_ptr=self.request.user)
+            escola = UnidadeEscolar.objects.get(pk=professor.escola.pk)
+        else:
+            escola = UnidadeEscolar.objects.get(pk=self.request.user)
+
+        sala = Sala.objects.get(pk=self.object.aluno.sala.pk)
+        contexto['professor'] = professor
+        contexto['escola'] = escola
+        contexto['sala'] = sala
+        return contexto
+
+
 class PainelRelatorios(LoginRequiredMixin, TemplateView):
     template_name = 'frequencia/painel_relatorios.html'
 
@@ -290,6 +316,20 @@ class ListaAlunosrelatorios(LoginRequiredMixin, ListView):
         alunos = Aluno.objects.filter(sala=sala).order_by('nome')
         professor = ''
 
+        alunos_relatorios = []
+        for aluno in alunos:
+            aluno_relatorio = []
+            aluno_relatorio.append(aluno)
+            try:
+                periodo = Periodo.objects.get(periodo=self.kwargs['bimestre'])
+                relatorio = Relatorio.objects.get(aluno=aluno, periodo=periodo)
+                aluno_relatorio.append(relatorio)
+            except:
+                relatorio = None
+                aluno_relatorio.append(relatorio)
+
+            alunos_relatorios.append(aluno_relatorio)
+
         if self.request.user.is_professor:
             professor = Professor.objects.get(usuario_ptr=self.request.user)
             escola = UnidadeEscolar.objects.get(pk=professor.escola.pk)
@@ -298,7 +338,7 @@ class ListaAlunosrelatorios(LoginRequiredMixin, ListView):
 
         context['bimestre'] = self.kwargs['bimestre']
         context['sala'] = sala
-        context['alunos'] = alunos
+        context['alunos'] = alunos_relatorios
         context['escola'] = escola
         context['professor'] = professor
 

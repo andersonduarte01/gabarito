@@ -11,6 +11,7 @@ urlpatterns = [
     path('alterar/registro/<int:pk>/<str:data>/', views.RegistroUpdate.as_view(), name='registro_up'),
     path('deletar/registro/<int:pk>/', views.DeletarRegistro.as_view(), name='registro_del'),
     path('relatorio/observacao/<int:pk>/<str:bimestre>/', views.RelatorioAdd.as_view(), name='relatorio_aluno'),
+    path('atualizar/relatorio/<int:pk>/', views.RelatorioUpdate.as_view(), name='relatorio_aluno_up'),
     path('painel/relatorios/<str:bimestre>/', views.PainelRelatorios.as_view(), name='painel_relatorios'),
     path('alunos/relatorios/<int:pk>/<str:bimestre>/', views.ListaAlunosrelatorios.as_view(), name='alunos_relatorios'),
     path('meses/registros/atividades/', views.RegistroMesesSalas.as_view(), name='relatorio_meses'),
