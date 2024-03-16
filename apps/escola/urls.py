@@ -24,7 +24,7 @@ urlpatterns = [
     path('<slug:slug>/<int:mes>/<int:pk>/mes/registros/atividades/', views.EscolaRegistroMesSala.as_view(), name='escola_registro_mes'),
     path('<slug:slug>/painel/relatorios/<str:bimestre>/', views.EscolaPainelRelatorios.as_view(), name='escola_painel_relatorios'),
     path('<slug:slug>/alunos/relatorios/<int:pk>/<str:bimestre>/', views.EscolaListaAlunosrelatorios.as_view(), name='escola_alunos_relatorios'),
-    path('/relatorio/observacao/<int:pk>/<str:bimestre>/', views.EscolaRelatorio.as_view(), name='escola_relatorio_aluno'),
+    path('relatorio/observacao/<int:pk>/<str:bimestre>/', views.EscolaRelatorio.as_view(), name='escola_relatorio_aluno'),
 
 ]
 
