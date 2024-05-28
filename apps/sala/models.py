@@ -10,6 +10,7 @@ ANO = [
     ('Pré-Escola', 'Pré-Escola'),
     ('4 Anos', '4 Anos'),
     ('5 Anos', '5 Anos'),
+    ('Turma Unificada', 'Turma Unificada'),
     ('1º Ano', '1° Ano'),
     ('1º Ano', '1° Ano'),
     ('2º Ano', '2° Ano'),
