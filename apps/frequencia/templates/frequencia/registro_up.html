@@ -13,14 +13,14 @@
     <!-- Basic Form Inputs card start -->
     <div class="card">
         <div class="card-header">
-           <h4 class="h4 text-primary font-weight-bold text-uppercase text-center">Registro de atividades</h4>
+           <h4 class="h4 text-primary font-weight-bold text-uppercase text-center">Atualizar Registro de atividades</h4>
            <h6 class="h6 text-primary font-weight-bold text-uppercase text-center">{{sala}} - {{sala.ano}}</h6>
            <h6 class="h6 text-primary font-weight-bold text-uppercase text-center"><div id="dataset"></div></h6>
         </div>
         <div class="card-block">
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
-                {% bootstrap_form form layout='inline'%}
+                {% bootstrap_form form %}
                 {% buttons %}
                 <button type="submit" class="btn btn-outline-primary btn-block"><i class="fas fa-edit"></i>Atualizar</button>
                 {% endbuttons %}

@@ -23,26 +23,40 @@ class FrequenciaAlunoForm(forms.ModelForm):
             self.fields['observacao'].initial = instance.observacao
 
 
+class DateInput(forms.DateInput):
+    input_type = 'date'
+
 class RegistroForm(forms.ModelForm):
     class Meta:
         model = Registro
-        fields = ('data', 'pratica', 'campo', 'objeto')
+        fields = ('data', 'data_fim', 'pratica', 'campo', 'objeto')
         widgets = {
-            'pratica': Textarea(attrs={'rows': 4}),
-            'campo': Textarea(attrs={'rows': 4}),
-            'objeto': Textarea(attrs={'rows': 4}),
+            'data': DateInput(attrs={'class': 'form-control'}),
+            'data_fim': DateInput(attrs={'class': 'form-control'}),
+            'pratica': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
+            'campo': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
+            'objeto': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
+        }
+
+
+class RegistroForm(forms.ModelForm):
+    class Meta:
+        model = Registro
+        fields = ('data', 'data_fim', 'pratica', 'campo', 'objeto')
+        widgets = {
+            'data': DateInput(attrs={'class': 'form-control'}),
+            'data_fim': DateInput(attrs={'class': 'form-control'}),
+            'pratica': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
+            'campo': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
+            'objeto': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
         }
 
 
 class RegistroUpdateForm(forms.ModelForm):
     class Meta:
         model = Registro
-        fields = ('data', 'pratica', 'campo', 'objeto')
-        widgets = {
-            'pratica': Textarea(attrs={'rows': 4}),
-            'campo': Textarea(attrs={'rows': 4}),
-            'objeto': Textarea(attrs={'rows': 4}),
-        }
+        fields = ('data', 'data_fim', 'pratica', 'campo', 'objeto')
+
 
 
 class RelatorioForm(forms.ModelForm):

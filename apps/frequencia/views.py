@@ -13,7 +13,7 @@ from . import models
 from .gerarPlanilha import criarFrequenciaDiaria
 from django.views.generic import UpdateView, CreateView, ListView, DeleteView, TemplateView
 from datetime import datetime
-from .forms import FrequenciaAlunoForm, RegistroForm, RelatorioForm
+from .forms import FrequenciaAlunoForm, RegistroForm, RelatorioForm, RegistroUpdateForm
 
 from ..aluno.models import Aluno
 from ..escola.models import UnidadeEscolar
@@ -77,18 +77,16 @@ class RegistroAdd(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     template_name = 'frequencia/registro_add.html'
 
     def get_success_url(self):
-        professor = get_object_or_404(Professor, usuario_ptr=self.request.user)
-        data = self.kwargs['data']
-        return reverse_lazy('escola:painel_planilha_00', kwargs={'slug': professor.escola.slug, 'data': data})
+        return reverse_lazy('escola:painel_escola')
 
     def form_valid(self, form):
         registro = form.save(commit=False)
         sala = Sala.objects.get(pk=self.kwargs['pk'])
-        registro.sala = sala
         professor = Professor.objects.get(usuario_ptr=self.request.user)
         registro.professor = professor
+        registro.sala = sala
         registro.save()
-        return HttpResponseRedirect(self.get_success_url())
+        return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
         contexto = super().get_context_data(**kwargs)
@@ -101,21 +99,39 @@ class RegistroAdd(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         sala = Sala.objects.get(pk=self.kwargs['pk'])
         contexto['professor'] = professor
         contexto['escola'] = escola
-        contexto['data'] = self.kwargs['data']
         contexto['sala'] = sala
         return contexto
 
 
+class RegistroSemanal(LoginRequiredMixin, TemplateView):
+    template_name = 'frequencia/registro_semanal.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        professor = ''
+        escola = None
+        if self.request.user.is_professor:
+            professor = Professor.objects.get(usuario_ptr=self.request.user)
+            escola = UnidadeEscolar.objects.get(pk=professor.escola.pk)
+        else:
+            escola = UnidadeEscolar.objects.get(pk=self.request.user)
+
+        salas = Sala.objects.filter(escola=escola)
+
+        context['salas'] = salas
+        context['escola'] = escola
+        context['professor'] = professor
+        return context
+
+
 class RegistroUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Registro
-    form_class = RegistroForm
+    form_class = RegistroUpdateForm
     success_message = 'Registro alterado com sucesso!'
     template_name = 'frequencia/registro_up.html'
 
     def get_success_url(self):
-        professor = get_object_or_404(Professor, usuario_ptr=self.request.user)
-        data = self.kwargs['data']
-        return reverse_lazy('escola:painel_planilha_00', kwargs={'slug': professor.escola.slug, 'data': data})
+        return reverse_lazy('escola:painel_escola')
 
     def get_context_data(self, **kwargs):
         contexto = super().get_context_data(**kwargs)
@@ -126,9 +142,9 @@ class RegistroUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
             escola = UnidadeEscolar.objects.get(pk=self.request.user)
 
         sala = Sala.objects.get(pk=self.object.sala.pk)
+
         contexto['professor'] = professor
         contexto['escola'] = escola
-        contexto['data'] = self.kwargs['data']
         contexto['sala'] = sala
         return contexto
 

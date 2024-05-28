@@ -8,6 +8,27 @@
     {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
      class="img-radius" alt="Foto_Usuario">
 {% endblock %}
+{% block estatico %}
+<style>
+    .accordion-item {
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    .accordion-header {
+      background-color: #448aff;
+      padding: 10px;
+      cursor: pointer;
+    }
+    .accordion-body {
+      padding: 10px;
+      display: none;
+    }
+    .accordion-body.show {
+      display: block;
+    }
+  </style>
+{% endblock %}
 {% block conteudo_pro %}
 <div class="col-sm-12">
     <div class="card">
@@ -22,88 +43,77 @@
             </div>
         </div>
         <div class="card-block table-border-style">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                    <tr>
-                        <th scope="col" style="width: 10%;" class="font-weight-bold text-center"></th>
-                        <th scope="col" style="width: 30%;" class="font-weight-bold text-center"></th>
-                        <th scope="col" class="font-weight-bold"></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for registro in mes %}
-                    <tr>
-                        <td rowspan="4" class="bg-primary align-middle text-center font-weight-bold">{{registro.data}}</td>
-                        <td class="font-italic">PRÁTICAS QUE POSSIBILITAM:</td>
-                        <td>{{registro.pratica}}</td>
-                    </tr>
-                    <tr>
-                        <td class="font-italic">CAMPOS DE EXPERIÊNCIAS:</td>
-                        <td>{{registro.campo}}</td>
-                    </tr>
-                    <tr>
-                        <td class="font-italic">OBJETOS DE APRENDIZAGEM:</td>
-                        <td>{{registro.objeto}}</td>
-                    </tr>
-                    <tr>
-                        <td class="font-italic">PROFESSOR(A): </td>
-                        <td>{{registro.professor}}</td>
-                    </tr>
-                    <tr>
-                        <td colspan="3">
-                            <div class="col-6 col-md-6 float-left">
-                                <a href="{% url 'frequencia:registro_up' pk=registro.pk data=registro.data %}" class="btn btn-outline-primary btn-block">Editar</a>
-                            </div>
-                            <div class="col-6 col-md-6 float-right">
-                                <a href="#" class="btn btn-outline-danger btn-block"
-                                   data-toggle="modal" data-target="#exampleModalCenter{{registro.id}}">
-                                    Excluir
-                                </a>
-                            </div>
-                        </td>
-                        <!-- Button trigger modal -->
-                        <!-- Modal -->
-                        <div class="modal fade" id="exampleModalCenter{{registro.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle{{registro.id}}" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered" role="document">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="exampleModalLongTitle{{registro.id}}">{{registro.data}}</h5>
-                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                    <div class="modal-body text-danger">
-                                        Deseja excluir esse Registro de Atividades?
-                                    </div>
-                                    <div class="modal-footer">
-                                      <form method="post" action="{% url 'frequencia:registro_del' registro.pk %}">
-                                      {% csrf_token %}
-                                      <button type="submit" class="btn btn-outline-danger">
-                                        <i class="far fa-trash-alt"></i>
-                                        Deletar
-                                      </button>
-                                      <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">
-                                        <i class="fas fa-times"></i>
-                                        Cancelar
-                                      </button>
-                                    </form>
-                                    </div>
-                                </div>
-                            </div>
+            <div class="accordion" id="accordionExample">
+                {% for registro in mes %}
+                <div class="accordion-item">
+                  <div class="accordion-header" id="headingOne{{registro.id}}">
+                    <h2 class="mb-0 text-center">
+                        <button class="btn btn-link text-white font-weight-bold d-flex justify-content-between align-items-center w-100" type="button" aria-expanded="true" aria-controls="collapseOne{{registro.id}}">
+                            <span>{{registro.data|date:"d/m/Y"}} <span class="text-lowercase">à</span> {{registro.data_fim|date:"d/m/Y"}}</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </h2>
+                  </div>
+                  <div id="collapseOne{{registro.id}}" class="accordion-body" aria-labelledby="headingOne{{registro.id}}" data-parent="#accordionExample">
+                       <div class="d-flex justify-content-between align-items-center">
+                            <h6>Professor: {{registro.professor}}</h6>
+                            <a href="{% url 'frequencia:registro_up' pk=registro.pk %}" class="btn btn-link ml-auto">
+                                <i class="far fa-edit"></i>
+                            </a>
                         </div>
-                    </tr>
-                    {% empty %}
-                    <p class="text-danger">Sem registros...</p>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                      <div class="list-group">
+                          <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                              <h5 class="mb-1">PRÁTICAS QUE POSSIBILITAM</h5>
+                            </div>
+                            <p class="mb-1">{{registro.pratica}}</p>
+                          </a>
+                          <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                              <h5 class="mb-1">CAMPOS DE EXPERIÊNCIAS</h5>
+                            </div>
+                            <p class="mb-1">{{registro.campo}}</p>
+                          </a>
+                          <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                              <h5 class="mb-1">OBJETOS DE APRENDIZAGEM</h5>
+                            </div>
+                            <p class="mb-1">{{registro.objeto}}</p>
+                          </a>
+                        </div>
+                  </div>
+                </div>
+                {% empty %}
+                <h6 class="text-danger">Sem registros...</h6>
+                {% endfor %}
+              </div>
         </div>
     </div>
 </div>
+
 {% endblock %}
+
 {% block script_pro %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+      var accordionHeaders = document.querySelectorAll(".accordion-header");
+
+      accordionHeaders.forEach(function(header) {
+        header.addEventListener("click", function() {
+          var body = this.nextElementSibling;
+          body.classList.toggle("show");
+
+          // Close other accordion bodies if only one should be open at a time
+          var allBodies = document.querySelectorAll(".accordion-body");
+          allBodies.forEach(function(otherBody) {
+            if (otherBody !== body) {
+              otherBody.classList.remove("show");
+            }
+          });
+        });
+      });
+    });
+  </script>
 {% endblock %}
 
 <!-- Escola -->
@@ -126,47 +136,68 @@
             </div>
         </div>
         <div class="card-block table-border-style">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                    <tr>
-                        <th scope="col" style="width: 10%;" class="font-weight-bold text-center"></th>
-                        <th scope="col" style="width: 30%;" class="font-weight-bold text-center"></th>
-                        <th scope="col" class="font-weight-bold"></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for registro in mes %}
-                    <tr>
-                        <td rowspan="4" class="bg-primary align-middle text-center font-weight-bold">{{registro.data}}</td>
-                        <td class="font-italic">PRÁTICAS QUE POSSIBILITAM:</td>
-                        <td>{{registro.pratica}}</td>
-                    </tr>
-                    <tr>
-                        <td class="font-italic">CAMPOS DE EXPERIÊNCIAS:</td>
-                        <td>{{registro.campo}}</td>
-                    </tr>
-                    <tr>
-                        <td class="font-italic">OBJETOS DE APRENDIZAGEM:</td>
-                        <td>{{registro.objeto}}</td>
-                    </tr>
-                    <tr>
-                        <td class="font-italic">PROFESSOR(A): </td>
-                        <td>{{registro.professor}}</td>
-                    </tr>
-                    <tr>
-                        <td colspan="3">
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <p class="text-danger">Sem registros...</p>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+            {% for registro in mes %}
+                <div class="accordion-item">
+                  <div class="accordion-header" id="headingOne{{registro.id}}">
+                    <h2 class="mb-0 text-center">
+                        <button class="btn btn-link text-white font-weight-bold d-flex justify-content-between align-items-center w-100" type="button" aria-expanded="true" aria-controls="collapseOne{{registro.id}}">
+                            <span>{{registro.data|date:"d/m/Y"}} <span class="text-lowercase">à</span> {{registro.data_fim|date:"d/m/Y"}}</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </h2>
+                  </div>
+                  <div id="collapseOne{{registro.id}}" class="accordion-body" aria-labelledby="headingOne{{registro.id}}" data-parent="#accordionExample">
+                       <div class="d-flex justify-content-between align-items-center">
+                            <h6>Professor: {{registro.professor}}</h6>
+                        </div>
+                      <div class="list-group">
+                          <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                              <h5 class="mb-1">PRÁTICAS QUE POSSIBILITAM</h5>
+                            </div>
+                            <p class="mb-1">{{registro.pratica}}</p>
+                          </a>
+                          <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                              <h5 class="mb-1">CAMPOS DE EXPERIÊNCIAS</h5>
+                            </div>
+                            <p class="mb-1">{{registro.campo}}</p>
+                          </a>
+                          <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                              <h5 class="mb-1">OBJETOS DE APRENDIZAGEM</h5>
+                            </div>
+                            <p class="mb-1">{{registro.objeto}}</p>
+                          </a>
+                        </div>
+                  </div>
+                </div>
+                {% empty %}
+                <h6 class="text-danger">Sem registros...</h6>
+                {% endfor %}
         </div>
     </div>
 </div>
 {% endblock %}
 {% block script%}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+      var accordionHeaders = document.querySelectorAll(".accordion-header");
+
+      accordionHeaders.forEach(function(header) {
+        header.addEventListener("click", function() {
+          var body = this.nextElementSibling;
+          body.classList.toggle("show");
+
+          // Close other accordion bodies if only one should be open at a time
+          var allBodies = document.querySelectorAll(".accordion-body");
+          allBodies.forEach(function(otherBody) {
+            if (otherBody !== body) {
+              otherBody.classList.remove("show");
+            }
+          });
+        });
+      });
+    });
+  </script>
 {% endblock %}

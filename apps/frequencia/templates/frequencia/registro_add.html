@@ -13,18 +13,43 @@
     <!-- Basic Form Inputs card start -->
     <div class="card">
         <div class="card-header">
-           <h4 class="h4 text-primary font-weight-bold text-uppercase text-center">Registro de atividades</h4>
-           <h6 class="h6 text-primary font-weight-bold text-uppercase text-center">{{sala}} - {{sala.ano}}</h6>
-           <h6 class="h6 text-primary font-weight-bold text-uppercase text-center"><div id="dataset"></div></h6>
+            <h4 class="h4 text-primary font-weight-bold text-uppercase text-center">Registro semanal de atividades</h4>
+            <h6 class="h6 text-primary font-weight-bold text-uppercase text-center">{{sala}} - {{sala.ano}}</h6>
+            <h6 class="h6 text-primary font-weight-bold text-uppercase text-center"><div id="dataset"></div></h6>
         </div>
         <div class="card-block">
-            <form method="post" enctype="multipart/form-data">
+            <form method="post">
                 {% csrf_token %}
-                {% bootstrap_form form layout='inline'%}
-                {% buttons %}
-                <button type="submit" class="btn btn-outline-primary btn-block"><i class="fas fa-save"></i>Salvar</button>
-                {% endbuttons %}
+                <div class="row">
+                    <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ form.data.id_for_label }}">Data</label>
+                        {{ form.data }}
+                    </div>
+                    </div>
+                    <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ form.data_fim.id_for_label }}">Data Fim</label>
+                        {{ form.data_fim }}
+                    </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.pratica.id_for_label }}">Prática</label>
+                    {{ form.pratica }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.campo.id_for_label }}">Campo</label>
+                    {{ form.campo }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.objeto.id_for_label }}">Objeto</label>
+                    {{ form.objeto }}
+                </div>
+                <hr>
+                <button type="submit" class="btn btn-outline-info btn-block">Salvar Registro</button>
             </form>
+
         </div>
     </div>
     <!-- Basic Form Inputs card end -->

@@ -26,7 +26,8 @@ class FrequenciaAluno(models.Model):
 
 class Registro(models.Model):
     sala = models.ForeignKey(Sala, on_delete=models.CASCADE, verbose_name='Sala')
-    data = models.DateField()
+    data = models.DateField(verbose_name='Semana Inicio')
+    data_fim = models.DateField(verbose_name='Semana Final', null=True, blank=True)
     pratica = models.TextField(verbose_name='PRÁTICAS QUE POSSIBILITAM:')
     campo = models.TextField(verbose_name='CAMPOS DE EXPERIÊNCIAS:')
     objeto = models.TextField(verbose_name='OBJETOS DE APRENDIZAGEM:')

@@ -58,26 +58,16 @@ class PainelPlanilha(LoginRequiredMixin, TemplateView):
 
         fre_registros = []
         for sala in salas:
-            temporario = []
             alunos = Aluno.objects.filter(sala=sala)
             freq = FrequenciaAluno.objects.filter(data=data, aluno__in=alunos).order_by()
             try:
                 frequence = Frequencia.objects.get(sala=sala, data=data)
                 percentual(frequencias=freq, freq=frequence)
-                temporario.append(frequence)
+                fre_registros.append(frequence)
             except:
                 frequence = Frequencia.objects.create(sala=sala, data=data, presentes=0)
                 percentual(frequencias=freq, freq=frequence)
-                temporario.append(frequence)
-
-            try:
-                registro = Registro.objects.get(sala=sala, data=data)
-                temporario.append(registro)
-            except:
-                registro = None
-                temporario.append(registro)
-
-            fre_registros.append(temporario)
+                fre_registros.append(frequence)
 
         context['salas'] = fre_registros
         context['data'] = data.date()
@@ -104,26 +94,16 @@ class PainelPlanilha00(LoginRequiredMixin, TemplateView):
         salas = Sala.objects.filter(escola=escola)
         fre_registros = []
         for sala in salas:
-            temporario = []
             alunos = Aluno.objects.filter(sala=sala)
             freq = FrequenciaAluno.objects.filter(data=data_e, aluno__in=alunos).order_by()
             try:
                 frequence = Frequencia.objects.get(sala=sala, data=data_e)
                 percentual(frequencias=freq, freq=frequence)
-                temporario.append(frequence)
+                fre_registros.append(frequence)
             except:
                 frequence = Frequencia.objects.create(sala=sala, data=data_e, presentes=0)
                 percentual(frequencias=freq, freq=frequence)
-                temporario.append(frequence)
-
-            try:
-                registro = Registro.objects.get(sala=sala, data=data_e)
-                temporario.append(registro)
-            except:
-                registro = None
-                temporario.append(registro)
-
-            fre_registros.append(temporario)
+                fre_registros.append(frequence)
 
         context['escola'] = escola
         context['salas'] = fre_registros
