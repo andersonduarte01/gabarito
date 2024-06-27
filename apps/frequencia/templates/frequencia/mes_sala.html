@@ -57,9 +57,54 @@
                   <div id="collapseOne{{registro.id}}" class="accordion-body" aria-labelledby="headingOne{{registro.id}}" data-parent="#accordionExample">
                        <div class="d-flex justify-content-between align-items-center">
                             <h6>Professor: {{registro.professor}}</h6>
-                            <a href="{% url 'frequencia:registro_up' pk=registro.pk %}" class="btn btn-link ml-auto">
+                           <div>
+                            <a href="{% url 'frequencia:registro_up' pk=registro.pk %}" class="btn btn-link p-0">
                                 <i class="far fa-edit"></i>
                             </a>
+                            <a type="button" class="danger" data-toggle="modal" data-target="#{{registro.id}}">
+                              <i class="far fa-trash-alt text-danger"></i>
+                            </a>
+
+                            <div class="modal fade" id="{{registro.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+                     aria-hidden="true">
+                  <div class="modal-dialog modal-notify modal-info" role="document">
+                    <!--Content-->
+                    <div class="modal-content text-center">
+                      <!--Header-->
+                      <div class="modal-header d-flex justify-content-center bg-danger">
+                        <h5 class="heading">Deletar Registro</h5>
+                      </div>
+
+                      <!--Body-->
+                      <div class="modal-body">
+
+                        <i class="far fa-trash-alt fa-4x animated rotateIn mb-4" style="color: #ed1d1d;"></i>
+
+                        <h6>Tem certeza que deseja excluir</h6>
+                        <h6>O período {{registro.data|date:"d/m/Y"}} até {{registro.data_fim|date:"d/m/Y"}}?</h6>
+
+                      </div>
+
+                      <!--Footer-->
+                      <div class="modal-footer flex-center">
+                        <form method="post" action="{% url 'frequencia:registro_del' registro.pk %}">
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-outline-danger">
+                            <i class="far fa-trash-alt"></i>
+                            Deletar
+                          </button>
+                          <button type="button" class="btn btn-outline-info" data-dismiss="modal">
+                            <i class="fas fa-times" style="color: #588adf;"></i>
+                            Cancelar
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                    <!--/.Content-->
+                  </div>
+                </div>
+
+                           </div>
                         </div>
                       <div class="list-group">
                           <a href="#" class="list-group-item list-group-item-action">
