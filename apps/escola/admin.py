@@ -1,11 +1,7 @@
-from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import UnidadeEscolar
-# Register your models here.
 from ..core.admin import UserAdmin
 
 from django.contrib import admin
-from .models import UnidadeEscolar, EnderecoEscolar
+from .models import UnidadeEscolar, EnderecoEscolar, AnoLetivo
 
 
 class EnderecoInline(admin.StackedInline):
@@ -29,4 +25,9 @@ class EscolaAdmin(UserAdmin):
     inlines = [EnderecoInline]
 
 
+class Letivo(admin.ModelAdmin):
+    list_display = ('id', 'ano', 'inicio', 'fim')
+
+
 admin.site.register(UnidadeEscolar, EscolaAdmin)
+admin.site.register(AnoLetivo, Letivo)

@@ -45,3 +45,25 @@ class EnderecoEscolar(models.Model):
     class Meta:
         verbose_name = 'Endereço'
         verbose_name_plural = 'Endereço'
+
+
+class AnoLetivo(models.Model):
+    ano = models.IntegerField(verbose_name='Ano Letivo', unique=True)
+    inicio = models.DateField(verbose_name='Início do Ano Letivo')
+    fim = models.DateField(verbose_name='Fim do Ano Letivo')
+    corrente = models.BooleanField(verbose_name='Ano Corrente', default=False)  # Indica se é o ano letivo atual
+    descricao = models.TextField(verbose_name='Descrição', blank=True, null=True)
+
+    def __str__(self):
+        return f'Ano Letivo {self.ano}'
+
+    def save(self, *args, **kwargs):
+        # Garante que apenas um Ano Letivo seja marcado como corrente
+        if self.corrente:
+            AnoLetivo.objects.filter(corrente=True).update(corrente=False)
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = 'Ano Letivo'
+        verbose_name_plural = 'Anos Letivos'
+
