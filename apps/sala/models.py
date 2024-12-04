@@ -43,7 +43,7 @@ class Sala(models.Model):
     escola = models.ForeignKey(UnidadeEscolar, on_delete=models.CASCADE)
     turno = models.CharField(max_length=30, choices=TURNO, default='selecione')
     ano = models.ForeignKey(Ano, on_delete=models.DO_NOTHING, null=True, blank=True)
-    #ano_letivo = models.ForeignKey(AnoLetivo, on_delete=models.CASCADE, verbose_name="Ano Letivo")
+    ano_letivo = models.ForeignKey(AnoLetivo, on_delete=models.CASCADE, verbose_name="Ano Letivo")
     total_alunos = models.IntegerField(verbose_name='Total Alunos', default=0)
 
     def __str__(self):
