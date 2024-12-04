@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     'apps.cadastro',
     'cpf_field',
     'ckeditor',
-    'django_social_share'
+    #'django_social_share'
 ]
 
 MIDDLEWARE = [
