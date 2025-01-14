@@ -26,7 +26,7 @@ class EscolaAdmin(UserAdmin):
 
 
 class Letivo(admin.ModelAdmin):
-    list_display = ('id', 'ano', 'inicio', 'fim')
+    list_display = ('id', 'ano', 'inicio', 'fim', 'corrente')
 
 
 admin.site.register(UnidadeEscolar, EscolaAdmin)

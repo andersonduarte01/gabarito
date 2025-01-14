@@ -14,7 +14,16 @@
   <!-- Button trigger modal -->
   <div class="card">
     <div class="card-header">
-      <h4 class="h4 text-uppercase font-weight-bold text-primary">{{sala}}</h4>
+      <h4 class="h4 text-uppercase font-weight-bold text-primary">
+        {{sala}}
+      {% for numero_mes, mes  in meses %}
+       <a href="{% url 'aluno:relatorio' pk=sala.pk mes=numero_mes %}">{{mes}}</a>
+      {% empty %}
+      <h3>Sem Cadastro</h3>
+      {% endfor %}
+
+      </h4>
+
       <div class="row">
         <div class="h6 mb-1 col-6 col-md-4 text-secondary font-weight-bold">Ano: {{sala.ano}}</div>
         <div class="h6 mb-1 col-6 col-md-4 text-secondary text-capitalize font-weight-bold">Turno: {{sala.turno}}</div>
@@ -29,6 +38,7 @@
               <th class="font-weight-bold">Nº</th>
               <th class="font-weight-bold">NOME</th>
               <th class="font-weight-bold">DATA DE NASCIMENTO</th>
+              <th class="font-weight-bold">RELATÓRIO</th>
               <th class="text-right font-weight-bold">AÇÕES</th>
             </tr>
             </thead>
@@ -38,6 +48,7 @@
               <td class="text-primary font-weight-bold">{{forloop.counter}}</td>
               <td>{{aluno}}</td>
               <td>{{aluno.data_nascimento}}</td>
+              <td><a href="#">Imprimir</a></td>
               <td align="right">
                 <a href="{% url 'aluno:editar' pk=aluno.pk %}" class="primary">
                   <i class="fas fa-edit" style="color: #2c28e6;"></i>
