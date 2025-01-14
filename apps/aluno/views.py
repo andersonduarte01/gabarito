@@ -229,7 +229,7 @@ def relatorioAluno(request, pk, mes):
         ('TEXTCOLOR', (0, 0), (-1, 0), (0, 0, 0)),  # Cor do texto para o cabeçalho
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),  # Alinhamento central para todas as células
         ('FONT', (0, 0), (-1, -1), 'Helvetica', 8),
-        ('GRID', (0, 0), (-1, -1), 1, (0.8, 0.8, 0.8)),  # Bordas da tabela
+        ('GRID', (0, 0), (-1, -1), 1, (0.8, 0.8, 0.8)),
     ])
 
     altura_padrao = adicionar_linha_paralela(c, ponto3, ponto4, intervalo=0)
@@ -258,18 +258,18 @@ def relatorioAluno(request, pk, mes):
         resultado.append(alunos_tag)
 
 
-    largura_disponivel = (29 * 28.35)
+    largura_disponivel = (27 * 28.35)
     percorrer = largura_disponivel
     larguras_colunas = [188.95]
 
-    while(percorrer > 0.1):
+    while(percorrer > 1):
         larguras_colunas.append(25)
         percorrer -= 25
 
     t = Table(resultado, colWidths=larguras_colunas)
-    largura_tabela, altura_tabela = t.wrapOn(None, largura_disponivel, 0)
+    largura_tabela, altura_tabela = t.wrapOn(None, largura_disponivel, 500)
     t.setStyle(style)
-    largura_tabela = 29 * 28.35
+    largura_tabela = 27 * 28.35
     posicao_horizontal_tabela = ponto4[0]
     t.wrapOn(c, largura_tabela, 500)
     t.drawOn(c, posicao_horizontal_tabela, altura_padrao - 200)
