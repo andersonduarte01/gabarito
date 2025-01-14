@@ -271,7 +271,7 @@ def relatorioAluno(request, pk, mes):
     t.setStyle(style)
     largura_tabela = 29 * 28.35
     posicao_horizontal_tabela = ponto4[0]
-    t.wrapOn(c, largura_tabela, 100)
+    t.wrapOn(c, largura_tabela, 500)
     t.drawOn(c, posicao_horizontal_tabela, altura_padrao - 200)
 
     c.save()
