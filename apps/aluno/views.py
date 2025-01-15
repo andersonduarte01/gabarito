@@ -266,12 +266,12 @@ def relatorioAluno(request, pk, mes):
         percorrer -= 25
 
     t = Table(resultado, colWidths=larguras_colunas)
-    largura_tabela, altura_tabela = t.wrapOn(None, largura_disponivel, 600)
+    largura_tabela, altura_tabela = t.wrapOn(None, largura_disponivel, 0)
     t.setStyle(style)
     largura_tabela = 27 * 28.35
     posicao_horizontal_tabela = ponto4[0]
-    t.wrapOn(c, largura_tabela, 500)
-    t.drawOn(c, 39, altura1 - 85)
+    t.wrapOn(c, largura_tabela, 100)
+    t.drawOn(c, ponto1[0] + (((27 * 28.35) - largura_tabela) / 2), altura1 - (altura_tabela))
 
     c.save()
     return response
