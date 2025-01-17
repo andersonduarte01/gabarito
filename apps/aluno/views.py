@@ -265,13 +265,39 @@ def relatorioAluno(request, pk, mes):
         larguras_colunas.append(25)
         percorrer -= 25
 
-    t = Table(resultado, colWidths=larguras_colunas)
-    largura_tabela, altura_tabela = t.wrapOn(None, largura_disponivel, 0)
-    t.setStyle(style)
-    largura_tabela = 27 * 28.35
-    posicao_horizontal_tabela = ponto4[0]
-    t.wrapOn(c, largura_tabela, 100)
-    t.drawOn(c, ponto1[0] + (((27 * 28.35) - largura_tabela) / 2), altura1 - (altura_tabela - 50))
+    if len(resultado) <= 26:
+        t = Table(resultado, colWidths=larguras_colunas)
+        largura_tabela, altura_tabela = t.wrapOn(None, largura_disponivel, 0)
+        t.setStyle(style)
+        largura_tabela = 27 * 28.35
+        t.wrapOn(c, largura_tabela, 100)
+        t.drawOn(c, ponto1[0] + (((27 * 28.35) - largura_tabela) / 2), altura1 - (altura_tabela - 50))
+    else:
+        pagina1 = resultado[:27]
+        t = Table(pagina1, colWidths=larguras_colunas)
+        largura_tabela, altura_tabela = t.wrapOn(None, largura_disponivel, 0)
+        t.setStyle(style)
+        largura_tabela = 27 * 28.35
+        t.wrapOn(c, largura_tabela, 100)
+        t.drawOn(c, ponto1[0] + (((27 * 28.35) - largura_tabela) / 2), altura1 - (altura_tabela - 50))
+
+        c.showPage()
+        ponto1, ponto2, ponto3, ponto4 = desenhar_retangulo(c)
+
+        pagina2 = []
+        pagina2.append(resultado[0])
+        pagina2.append(resultado[1])
+        p3 = resultado[27:]
+        for p in p3:
+            pagina2.append(p)
+
+        t = Table(pagina2, colWidths=larguras_colunas)
+        largura_tabela, altura_tabela = t.wrapOn(None, largura_disponivel, 0)
+        t.setStyle(style)
+        largura_tabela = 27 * 28.35
+        t.wrapOn(c, largura_tabela, 100)
+        t.drawOn(c, ponto1[0] + (((27 * 28.35) - largura_tabela) / 2), ponto4[1] - altura_tabela)
+
 
     c.save()
     return response
