@@ -32,16 +32,32 @@
 {% block conteudo_pro %}
 <div class="col-sm-12">
     <div class="card">
-        <div class="card-header">
-            <h4 class="h4 text-uppercase font-weight-bold text-primary">Registro de Atividades</h4>
-            <div class="row">
-                <div class="h6 mt-2 mb-1 col-12 col-md-12 text-secondary font-weight-bold">Escola: {{sala.escola}}</div>
-                <div class="h6 mb-1 col-6 col-md-6 text-secondary font-weight-bold">Sala: {{sala}}</div>
-                <div class="h6 mb-1 col-6 col-md-6 text-secondary font-weight-bold">Ano: {{sala.ano}}</div>
-                <div class="h6 mb-1 col-6 col-md-6 text-secondary text-capitalize font-weight-bold">Turno: {{sala.turno}}</div>
-                <div class="h6 mb-1 col-6 col-md-6 text-secondary font-weight-bold">Total de Alunos: {{sala.total_alunos}}</div>
-            </div>
+<div class="card-header text-white" style="background: linear-gradient(135deg, #007bff, #0056b3);">
+    <h4 class="h4 text-uppercase font-weight-bold">
+        <i class="bi bi-clipboard-check"></i> Registro de Atividades
+    </h4>
+    <hr class="border-light">
+    <div class="row">
+        <div class="col-md-12">
+            <span class="h6"><i class="fa fa-home" aria-hidden="true"></i> {{sala.escola}}</span>
         </div>
+        <div class="col-6">
+            <span class="h6"><i class="fa fa-share-square-o" aria-hidden="true"></i> {{sala}}</span>
+        </div>
+        <div class="col-6">
+            <span class="h6"><i class="fa fa-calendar" aria-hidden="true"></i> {{sala.ano}}</span>
+        </div>
+        <div class="col-6">
+            <span class="h6"><i class="fa fa-clock-o" aria-hidden="true"></i> {{sala.turno}}</span>
+        </div>
+        <div class="col-6">
+            <span class="h6"><i class="fa fa-users" aria-hidden="true"></i> {{sala.total_alunos}}</span>
+        </div>
+    </div>
+</div>
+
+
+
         <div class="card-block table-border-style">
             <div class="accordion" id="accordionExample">
                 {% for registro in mes %}

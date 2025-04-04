@@ -151,7 +151,7 @@ CKEDITOR_UPLOAD_PATH = "media/Noticias"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'core.Usuario'
 
-LOGIN_REDIRECT_URL = '/escola/'
+LOGIN_REDIRECT_URL = '/escola/redirecionamento/'
 LOGOUT_REDIRECT_URL = '/'
 
 

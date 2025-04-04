@@ -1,0 +1,189 @@
+{% extends 'temp_base/administrador.html' %}
+{% load static %}
+{% block titulo %}Alunos{% endblock %}
+{% block estatico %}
+<style>
+.table-sm td,
+.table-sm th {
+    padding: 0.1rem; /* Reduz o padding das células */
+    font-size: 0.85rem; /* Diminui o tamanho da fonte */
+    white-space: nowrap; /* Evita que o texto quebre em várias linhas */
+}
+.table-responsive {
+    overflow-x: auto; /* Garante que a tabela role horizontalmente se necessário */
+    max-height: 500px; /* Limita a altura para evitar rolagem excessiva */
+}
+
+</style>
+{% endblock %}
+{% block trilha %}
+{% endblock %}
+{% block imagem1_adm %}
+<img src="{% if escola.imagem %}
+    {{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block tema_adm %}
+<h5 class="m-b-10">{{user.nome}}</h5>
+{% endblock %}
+{% block breadcrumbs_adm %}
+{{block.super}}
+{% endblock %}
+{% block painel_adm %}
+<ul class="pcoded-item pcoded-left-item">
+    <li class="pcoded-hasmenu">
+        <a href="{% url 'core:inicio' %}" class="waves-effect waves-dark">
+            <span class="pcoded-micon"><i class="ti-back-left"></i><b>BC</b></span>
+            <span class="pcoded-mtext">Inicio</span>
+            <span class="pcoded-mcaret"></span>
+        </a>
+    </li>
+
+</ul>
+
+<ul class="pcoded-item pcoded-left-item">
+    <li class="pcoded-hasmenu">
+        <a href="javascript:void(0)" class="waves-effect waves-dark">
+            <span class="pcoded-micon"><i class="ti-layers-alt"></i><b>BC</b></span>
+            <span class="pcoded-mtext">Salas</span>
+            <span class="pcoded-mcaret"></span>
+        </a>
+        <ul class="pcoded-submenu">
+            <li class=" ">
+                <a href="{% url 'escola:painel_da_escola' escola.slug %}" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">Salas</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+        </ul>
+    </li>
+</ul>
+
+<ul class="pcoded-item pcoded-left-item">
+    <li class="pcoded-hasmenu">
+        <a href="javascript:void(0)" class="waves-effect waves-dark">
+            <span class="pcoded-micon"><i class="ti-user"></i><b>BC</b></span>
+            <span class="pcoded-mtext">Professores</span>
+            <span class="pcoded-mcaret"></span>
+        </a>
+        <ul class="pcoded-submenu">
+            <li class=" ">
+                <a href="{% url 'escola:escola_professores' escola.slug %}" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">Professores</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+        </ul>
+    </li>
+</ul>
+
+<ul class="pcoded-item pcoded-left-item">
+    <li class="pcoded-hasmenu">
+        <a href="javascript:void(0)" class="waves-effect waves-dark">
+            <span class="pcoded-micon"><i class="ti-ruler-pencil"></i><b>BC</b></span>
+            <span class="pcoded-mtext">Registros</span>
+            <span class="pcoded-mcaret"></span>
+        </a>
+        <ul class="pcoded-submenu">
+            <li class=" ">
+                <a href="{% url 'escola:escola_registro_meses' slug=escola.slug %}" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">Registros</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+        </ul>
+    </li>
+</ul>
+
+<ul class="pcoded-item pcoded-left-item">
+    <li class="pcoded-hasmenu">
+        <a href="javascript:void(0)" class="waves-effect waves-dark">
+            <span class="pcoded-micon"><i class="ti-write"></i><b>BC</b></span>
+            <span class="pcoded-mtext">Relatórios</span>
+            <span class="pcoded-mcaret"></span>
+        </a>
+        <ul class="pcoded-submenu">
+            <li class=" ">
+                <a href="#" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">Relatórios</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+            <li class=" ">
+                <a href="{% url 'escola:escola_painel_relatorios' bimestre='1º_Bimestre' slug=escola.slug %}" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">1º Bimestre</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+            <li class=" ">
+                <a href="{% url 'escola:escola_painel_relatorios' bimestre='2º_Bimestre' slug=escola.slug %}" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">2º Bimestre</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+        </ul>
+    </li>
+</ul>
+{% endblock %}
+{% block conteudo_adm %}
+<div class="col-sm-12">
+  <!-- Button trigger modal -->
+  <div class="card">
+    <div class="card-header text-white" style="background: linear-gradient(135deg, #007bff, #0056b3);">
+    <h4 class="h4 text-uppercase font-weight-bold">
+        <i class="bi bi-clipboard-check"></i> Alunos
+    </h4>
+    <hr class="border-light">
+    <div class="row">
+        <div class="col-md-12">
+            <span class="h6"><i class="fa fa-home" aria-hidden="true"></i> {{sala.escola}}</span>
+        </div>
+        <div class="col-6">
+            <span class="h6"><i class="fa fa-share-square-o" aria-hidden="true"></i> {{sala}}</span>
+        </div>
+        <div class="col-6">
+            <span class="h6"><i class="fa fa-calendar" aria-hidden="true"></i> {{sala.ano}}</span>
+        </div>
+        <div class="col-6">
+            <span class="h6"><i class="fa fa-clock-o" aria-hidden="true"></i> {{sala.turno}}</span>
+        </div>
+        <div class="col-6">
+            <span class="h6"><i class="fa fa-users" aria-hidden="true"></i> {{sala.total_alunos}}</span>
+        </div>
+    </div>
+</div>
+    <div class="card-block table-border-style">
+      <div class="table-responsive mt-2">
+        <table class="table table-hover table-sm">
+          <thead>
+          <tr class="text-primary">
+            <th class="font-weight-bold text-center">Nº</th>
+            <th class="font-weight-bold">NOME</th>
+            <th class="font-weight-bold text-center">DATA NASC.</th>
+          </tr>
+          </thead>
+          {% for aluno in alunos %}
+          <tbody>
+          <tr>
+            <td class="font-weight-bold text-primary text-center">{{forloop.counter}}</td>
+            <td>{{aluno}}</td>
+            <td class="text-center">{{aluno.data_nascimento}}</td>
+          </tr>
+          </tbody>
+          {% empty %}
+          <p>Nenhum aluno cadastrado</p>
+          {% endfor %}
+        </table>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

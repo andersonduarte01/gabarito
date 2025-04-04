@@ -22,7 +22,7 @@ class Funcionario(Usuario):
 
 class Professor(Usuario):
     professor_nome = models.CharField(verbose_name='Professor', max_length=255)
-    escola = models.ForeignKey(UnidadeEscolar, on_delete=models.CASCADE)
+    escola = models.ForeignKey(UnidadeEscolar, on_delete=models.DO_NOTHING)
     perfil = models.OneToOneField(Pessoa, on_delete=models.CASCADE, null=True, blank=True)
     endereco = models.ForeignKey(Endereco, on_delete=models.CASCADE, verbose_name='Endereço', null=True, blank=True)
 

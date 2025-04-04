@@ -1,13 +1,16 @@
+from collections import defaultdict
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from datetime import date
 from datetime import datetime
 from django.db.models.functions import ExtractMonth
 from django.db.models import Q
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, get_list_or_404
 from django.urls import reverse_lazy
-from django.views.generic import TemplateView, UpdateView, ListView
-from .models import UnidadeEscolar, EnderecoEscolar
+from django.utils.timezone import now
+from django.views.generic import TemplateView, UpdateView, ListView, RedirectView
+from .models import UnidadeEscolar, EnderecoEscolar, AnoLetivo
 from ..aluno.models import Aluno
 from ..avaliacao.correcao import alunos_prova
 from ..avaliacao.models import Avaliacao, Gabarito
@@ -18,6 +21,102 @@ from ..sala.models import Sala
 from .traduzir import converter
 from .gerarPlanilhaFrequencia import dias_mes, presentesDia, dias, percentual
 
+class Redireciona(LoginRequiredMixin, RedirectView):
+    def get_redirect_url(self, *args, **kwargs):
+
+        user = self.request.user
+        print(user)
+        if user.is_administrator:
+            print('Adm')
+            return reverse_lazy('escola:painel_adm')
+        elif user.is_professor:
+            print('Prof')
+            return reverse_lazy('funcionario:dash_professor')
+        elif user.is_aluno:
+            print('Aluno')
+            return reverse_lazy('aluno:dash_aluno')
+        elif user.is_funcionario:
+            print('func')
+            return reverse_lazy('funcionario:dash_funcionario')
+        print('Escola')
+        return reverse_lazy('escola:dash_escola')
+
+
+class DashAdm(LoginRequiredMixin, TemplateView):
+    template_name = 'escola/administrador_dash.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        escolas = UnidadeEscolar.objects.all()
+        context['escolas'] = escolas
+        return context
+
+
+class DashEscola(LoginRequiredMixin, TemplateView):
+    template_name = 'escola/escola_dash.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        escola = get_object_or_404 (UnidadeEscolar, pk=self.request.user)
+        context['escola'] = escola
+        return context
+
+
+class AdmUnidEscolar(LoginRequiredMixin, TemplateView):
+    template_name = 'escola/adm_unidade_dash.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        escola = get_object_or_404(UnidadeEscolar, slug=self.kwargs['slug'])
+        ano_corrente = AnoLetivo.objects.get(corrente=True)
+        salas = Sala.objects.filter(escola=escola, ano_letivo=ano_corrente).order_by('ano')
+        context['escola'] = escola
+        context['salas'] = salas
+        context['data'] = now()
+        return context
+
+
+class AdmUnidAlunos(LoginRequiredMixin, ListView):
+    model = Aluno
+    template_name = 'escola/adm_unidade_alunos.html'
+    context_object_name = 'alunos'
+
+    def get_queryset(self):
+        return Aluno.objects.filter(sala_id=self.kwargs['id'])
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        escola = get_object_or_404(UnidadeEscolar, slug=self.kwargs['slug'])
+        sala = get_object_or_404(Sala, id=self.kwargs['id'])
+        context['escola'] = escola
+        context['sala'] = sala
+        return context
+
+
+class AdmUnidREgistros(LoginRequiredMixin, ListView):
+    template_name = 'escola/adm_relatorios_dash.html'
+
+    def get_queryset(self):
+        return Registro.objects.filter(sala_id=self.kwargs['sala_id'], data__year=now().year).order_by('-data')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        escola = get_object_or_404(UnidadeEscolar, slug=self.kwargs['slug'])
+        sala = get_object_or_404(Sala, id=self.kwargs['sala_id'])
+        registros_por_mes = defaultdict(list)
+        for registro in self.get_queryset():
+            mes = registro.data.strftime('%B')  # Nome do mês em português
+            registros_por_mes[mes].append(registro)
+
+        context['escola'] = escola
+        context['sala'] = sala
+        context['registros_por_mes'] = dict(registros_por_mes)
+        return context
+    
+    
+
+
+##ANTIGOS##
 
 class Painel(LoginRequiredMixin, TemplateView):
     template_name = 'escola/painel_controle_escola.html'

@@ -1,7 +1,7 @@
 from django.db import models
 
 # Create your models here.
-from apps.escola.models import UnidadeEscolar
+from ..escola.models import UnidadeEscolar
 
 
 class Funcao(models.Model):

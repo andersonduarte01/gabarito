@@ -4,6 +4,8 @@ from . import views
 app_name = 'funcionario'
 
 urlpatterns = [
+    path('painel_dash/', views.DashProfessor.as_view(), name='dash_professor'),
+    path('dash/', views.DashFuncionario.as_view(), name='dash_funcionario'),
     path('adicionar/', views.CadastrarFuncionario.as_view(), name='adicionar_funcionario'),
     path('editar/perfil/<pk>/', views.EditarPerfil.as_view(), name='editar_perfil'),
     path('adicionar/perfil/<pk>/', views.PerfilAdicionar.as_view(), name='adicionar_perfil'),

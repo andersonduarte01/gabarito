@@ -1,0 +1,173 @@
+{% extends 'temp_base/administrador.html' %}
+{% load static %}
+{% block titulo %}Unidade Escolar{% endblock %}
+{% block estatico %}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.0/fullcalendar.min.css">
+{% endblock %}
+{% block trilha %}
+{% endblock %}
+{% block imagem1_adm %}
+<img src="{% if escola.imagem %}
+    {{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block tema_adm %}
+<h5 class="m-b-10">{{user.nome}}</h5>
+{% endblock %}
+{% block breadcrumbs_adm %}
+{{block.super}}
+{% endblock %}
+{% block painel_adm %}
+<ul class="pcoded-item pcoded-left-item">
+    <li class="pcoded-hasmenu">
+        <a href="{% url 'core:inicio' %}" class="waves-effect waves-dark">
+            <span class="pcoded-micon"><i class="ti-back-left"></i><b>BC</b></span>
+            <span class="pcoded-mtext">Inicio</span>
+            <span class="pcoded-mcaret"></span>
+        </a>
+    </li>
+
+</ul>
+
+<ul class="pcoded-item pcoded-left-item">
+    <li class="pcoded-hasmenu">
+        <a href="javascript:void(0)" class="waves-effect waves-dark">
+            <span class="pcoded-micon"><i class="ti-layers-alt"></i><b>BC</b></span>
+            <span class="pcoded-mtext">Salas</span>
+            <span class="pcoded-mcaret"></span>
+        </a>
+        <ul class="pcoded-submenu">
+            <li class=" ">
+                <a href="{% url 'escola:painel_da_escola' escola.slug %}" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">Salas</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+        </ul>
+    </li>
+</ul>
+
+<ul class="pcoded-item pcoded-left-item">
+    <li class="pcoded-hasmenu">
+        <a href="javascript:void(0)" class="waves-effect waves-dark">
+            <span class="pcoded-micon"><i class="ti-user"></i><b>BC</b></span>
+            <span class="pcoded-mtext">Professores</span>
+            <span class="pcoded-mcaret"></span>
+        </a>
+        <ul class="pcoded-submenu">
+            <li class=" ">
+                <a href="{% url 'escola:escola_professores' escola.slug %}" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">Professores</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+        </ul>
+    </li>
+</ul>
+
+<ul class="pcoded-item pcoded-left-item">
+    <li class="pcoded-hasmenu">
+        <a href="javascript:void(0)" class="waves-effect waves-dark">
+            <span class="pcoded-micon"><i class="ti-ruler-pencil"></i><b>BC</b></span>
+            <span class="pcoded-mtext">Registros</span>
+            <span class="pcoded-mcaret"></span>
+        </a>
+        <ul class="pcoded-submenu">
+            <li class=" ">
+                <a href="{% url 'escola:escola_registro_meses' slug=escola.slug %}" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">Registros</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+        </ul>
+    </li>
+</ul>
+
+<ul class="pcoded-item pcoded-left-item">
+    <li class="pcoded-hasmenu">
+        <a href="javascript:void(0)" class="waves-effect waves-dark">
+            <span class="pcoded-micon"><i class="ti-write"></i><b>BC</b></span>
+            <span class="pcoded-mtext">Relatórios</span>
+            <span class="pcoded-mcaret"></span>
+        </a>
+        <ul class="pcoded-submenu">
+            <li class=" ">
+                <a href="#" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">Relatórios</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+            <li class=" ">
+                <a href="{% url 'escola:escola_painel_relatorios' bimestre='1º_Bimestre' slug=escola.slug %}" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">1º Bimestre</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+            <li class=" ">
+                <a href="{% url 'escola:escola_painel_relatorios' bimestre='2º_Bimestre' slug=escola.slug %}" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">2º Bimestre</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+        </ul>
+    </li>
+</ul>
+{% endblock %}
+{% block conteudo_adm %}
+<div class="container">
+   <div class="row">
+        <select id="filtro-mes" class="form-control mb-3">
+    <option value="">Selecione um mês</option>
+    {% for mes in registros_por_mes.keys %}
+        <option value="{{ mes }}">{{ mes }}</option>
+    {% endfor %}
+</select>
+
+<div id="registros-container">
+    {% for mes, registros in registros_por_mes.items %}
+    <div class="mes-registros" data-mes="{{ mes }}">
+        <h3 class="mt-4">{{ mes }}</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Data Início</th>
+                    <th>Data Fim</th>
+                    <th>Professor</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for registro in registros %}
+                <tr>
+                    <td>{{ registro.data|date:"d/m/Y" }}</td>
+                    <td>{{ registro.data_fim|date:"d/m/Y" }}</td>
+                    <td>{{ registro.professor }}</td>
+                    <td><a href="{% url 'editar_registro' registro.id %}" class="btn btn-primary btn-sm">Editar</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endfor %}
+</div>
+   </div>
+   </div>
+{% endblock %}
+{% block script_adm %}
+<script>
+document.getElementById('filtro-mes').addEventListener('change', function() {
+    let mesSelecionado = this.value;
+    document.querySelectorAll('.mes-registros').forEach(div => {
+        div.style.display = (mesSelecionado === "" || div.getAttribute('data-mes') === mesSelecionado) ? 'block' : 'none';
+    });
+});
+</script>
+{% endblock %}

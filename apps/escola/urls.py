@@ -4,10 +4,20 @@ from . import views
 app_name = 'escola'
 
 urlpatterns = [
+    path('dashboard/', views.DashAdm.as_view(), name='painel_adm'),
+    path('painel/administrativo', views.DashEscola.as_view(), name='dash_escola'),
+    path('unidade/<slug:slug>/', views.AdmUnidEscolar.as_view(), name='painel_da_escola'),
+    path('redirecionamento/', views.Redireciona.as_view(), name='redirecionar'),
+    path('sala/<slug:slug>/alunos/<int:id>/', views.AdmUnidAlunos.as_view(), name='unidade_sala_alunos'),
+    path('<slug:slug>/<int:sala_id>/meses/registros/atividades/', views.EscolaRegistroMesesSalas.as_view(),
+         name='unidade_registro_meses'),
+
+    ###antigos####
     path('', views.Painel.as_view(), name='painel_escola'),
+
     path('<slug:slug>/presenca/', views.PainelPlanilha.as_view(), name='painel_planilha'),
     path('<slug:slug>/<str:data>/presenca/', views.PainelPlanilha00.as_view(), name='painel_planilha_00'),
-    path('<slug:slug>/', views.PainelEscola.as_view(), name='painel_da_escola'),
+
     path('atualizar/<pk>/', views.EditarEscola.as_view(), name='editar_escola'),
     path('<pk>/usuario/', views.EditarUsuario.as_view(), name='editar_usuario'),
     path('<pk>/endereco/', views.EditarEndereco.as_view(), name='editar_endereco'),

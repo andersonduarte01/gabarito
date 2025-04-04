@@ -1,10 +1,9 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.shortcuts import render
 
 # Create your views here.
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, ListView, UpdateView, DeleteView
+from django.views.generic import CreateView, ListView, UpdateView, DeleteView, TemplateView
 
 from .forms import UserCreationFuncionario, DesignarFuncaoForm, UserCreationProfessor
 from .models import Funcionario, Professor
@@ -12,6 +11,14 @@ from ..core.models import Usuario
 from ..escola.models import UnidadeEscolar
 from ..funcao.models import Funcao
 from ..perfil.models import Endereco, Pessoa
+
+
+class DashFuncionario(LoginRequiredMixin, TemplateView):
+    template_name = 'funcionario/funcionario_dash.html'
+
+
+class DashProfessor(LoginRequiredMixin, TemplateView):
+    template_name = 'funcionario/professor_dash.html'
 
 
 class CadastrarFuncionario(LoginRequiredMixin, SuccessMessageMixin, CreateView):
