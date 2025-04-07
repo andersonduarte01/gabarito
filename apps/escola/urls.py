@@ -9,8 +9,10 @@ urlpatterns = [
     path('unidade/<slug:slug>/', views.AdmUnidEscolar.as_view(), name='painel_da_escola'),
     path('redirecionamento/', views.Redireciona.as_view(), name='redirecionar'),
     path('sala/<slug:slug>/alunos/<int:id>/', views.AdmUnidAlunos.as_view(), name='unidade_sala_alunos'),
-    path('<slug:slug>/<int:sala_id>/meses/registros/atividades/', views.EscolaRegistroMesesSalas.as_view(),
+    path('<slug:slug>/<int:sala_id>/meses/registros/atividades/', views.RegistroPorMesView.as_view(),
          name='unidade_registro_meses'),
+
+
 
     ###antigos####
     path('', views.Painel.as_view(), name='painel_escola'),

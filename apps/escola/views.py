@@ -9,7 +9,9 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404, get_list_or_404
 from django.urls import reverse_lazy
 from django.utils.timezone import now
-from django.views.generic import TemplateView, UpdateView, ListView, RedirectView
+from django.views.generic import TemplateView, UpdateView, ListView, RedirectView, FormView
+
+from .forms import FiltroMesForm
 from .models import UnidadeEscolar, EnderecoEscolar, AnoLetivo
 from ..aluno.models import Aluno
 from ..avaliacao.correcao import alunos_prova
@@ -93,24 +95,27 @@ class AdmUnidAlunos(LoginRequiredMixin, ListView):
         return context
 
 
-class AdmUnidREgistros(LoginRequiredMixin, ListView):
+class RegistroPorMesView(FormView):
     template_name = 'escola/adm_relatorios_dash.html'
+    form_class = FiltroMesForm
 
-    def get_queryset(self):
-        return Registro.objects.filter(sala_id=self.kwargs['sala_id'], data__year=now().year).order_by('-data')
+    def form_valid(self, form):
+        mes = int(form.cleaned_data['mes'])
+
+        registros = Registro.objects.filter(
+            data__month=mes,
+            data__year=now().year
+        )
+        print(f'Registros: {registros}')
+        context = self.get_context_data(form=form, registros=registros)
+        return self.render_to_response(context)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         escola = get_object_or_404(UnidadeEscolar, slug=self.kwargs['slug'])
-        sala = get_object_or_404(Sala, id=self.kwargs['sala_id'])
-        registros_por_mes = defaultdict(list)
-        for registro in self.get_queryset():
-            mes = registro.data.strftime('%B')  # Nome do mês em português
-            registros_por_mes[mes].append(registro)
-
         context['escola'] = escola
-        context['sala'] = sala
-        context['registros_por_mes'] = dict(registros_por_mes)
+        context['form'] = context.get('form') or self.form_class(initial={'mes': now().month})
+        context['sala'] = get_object_or_404(Sala, id=self.kwargs['sala_id'])
         return context
     
     
