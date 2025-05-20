@@ -31,11 +31,12 @@ class Registro(models.Model):
     pratica = models.TextField(verbose_name='PRÁTICAS QUE POSSIBILITAM:')
     campo = models.TextField(verbose_name='CAMPOS DE EXPERIÊNCIAS:')
     objeto = models.TextField(verbose_name='OBJETOS DE APRENDIZAGEM:')
-    professor =models.ForeignKey(Professor, verbose_name='Professor', on_delete=models.DO_NOTHING)
+    professor =models.ForeignKey(Professor, verbose_name='Professor',  null=True, blank=True, on_delete=models.SET_NULL)
 
 
 class Periodo(models.Model):
     periodo = models.CharField(verbose_name='Período', max_length=100)
+
 
     def __str__(self):
         return self.periodo
@@ -45,7 +46,7 @@ class Relatorio(models.Model):
     periodo = models.ForeignKey(Periodo, on_delete=models.DO_NOTHING)
     aluno = models.ForeignKey(Aluno, on_delete=models.DO_NOTHING, related_name='relatorio_aluno')
     relatorio = models.TextField(verbose_name='Relatório')
-    professor = models.ForeignKey(Professor, on_delete=models.DO_NOTHING)
+    professor = models.ForeignKey(Professor,  null=True, blank=True, on_delete=models.SET_NULL)
     data_relatorio = models.DateTimeField(auto_now_add=True)
     atualiza_relatorio = models.DateTimeField(auto_now=True)
 

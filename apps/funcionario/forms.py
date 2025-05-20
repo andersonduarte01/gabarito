@@ -64,3 +64,9 @@ class UserCreationProfessor(forms.ModelForm):
         if commit:
             user.save()
         return user
+
+
+class ProfessorEditForm(forms.ModelForm):
+    class Meta:
+        model = Professor
+        fields = ('email', 'professor_nome')

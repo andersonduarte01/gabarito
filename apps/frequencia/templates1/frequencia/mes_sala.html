@@ -1,0 +1,264 @@
+{% extends 'temp_base/adm.html' %}
+{% load static %}
+{% load bootstrap4 %}
+{% block titulo %}Registros{% endblock %}
+{% block imagem_pro %}
+<img src="{% if escola.imagem %}
+    {{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block estatico %}
+<style>
+    .accordion-item {
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    .accordion-header {
+      background-color: #448aff;
+      padding: 10px;
+      cursor: pointer;
+    }
+    .accordion-body {
+      padding: 10px;
+      display: none;
+    }
+    .accordion-body.show {
+      display: block;
+    }
+  </style>
+{% endblock %}
+{% block conteudo_pro %}
+<div class="col-sm-12">
+    <div class="card">
+<div class="card-header text-white" style="background: linear-gradient(135deg, #007bff, #0056b3);">
+    <h4 class="h4 text-uppercase font-weight-bold">
+        <i class="bi bi-clipboard-check"></i> Registro de Atividades
+    </h4>
+    <hr class="border-light">
+    <div class="row">
+        <div class="col-md-12">
+            <span class="h6"><i class="fa fa-home" aria-hidden="true"></i> {{sala.escola}}</span>
+        </div>
+        <div class="col-6">
+            <span class="h6"><i class="fa fa-share-square-o" aria-hidden="true"></i> {{sala}}</span>
+        </div>
+        <div class="col-6">
+            <span class="h6"><i class="fa fa-calendar" aria-hidden="true"></i> {{sala.ano}}</span>
+        </div>
+        <div class="col-6">
+            <span class="h6"><i class="fa fa-clock-o" aria-hidden="true"></i> {{sala.turno}}</span>
+        </div>
+        <div class="col-6">
+            <span class="h6"><i class="fa fa-users" aria-hidden="true"></i> {{sala.total_alunos}}</span>
+        </div>
+    </div>
+</div>
+
+
+
+        <div class="card-block table-border-style">
+            <div class="accordion" id="accordionExample">
+                {% for registro in mes %}
+                <div class="accordion-item">
+                  <div class="accordion-header" id="headingOne{{registro.id}}">
+                    <h2 class="mb-0 text-center">
+                        <button class="btn btn-link text-white font-weight-bold d-flex justify-content-between align-items-center w-100" type="button" aria-expanded="true" aria-controls="collapseOne{{registro.id}}">
+                            <span>{{registro.data|date:"d/m/Y"}} <span class="text-lowercase">à</span> {{registro.data_fim|date:"d/m/Y"}}</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </h2>
+                  </div>
+                  <div id="collapseOne{{registro.id}}" class="accordion-body" aria-labelledby="headingOne{{registro.id}}" data-parent="#accordionExample">
+                       <div class="d-flex justify-content-between align-items-center">
+                            <h6>Professor: {{registro.professor}}</h6>
+                           <div>
+                            <a href="{% url 'frequencia:registro_up' pk=registro.pk %}" class="btn btn-link p-0">
+                                <i class="far fa-edit"></i>
+                            </a>
+                            <a type="button" class="danger" data-toggle="modal" data-target="#{{registro.id}}">
+                              <i class="far fa-trash-alt text-danger"></i>
+                            </a>
+
+                            <div class="modal fade" id="{{registro.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+                     aria-hidden="true">
+                  <div class="modal-dialog modal-notify modal-info" role="document">
+                    <!--Content-->
+                    <div class="modal-content text-center">
+                      <!--Header-->
+                      <div class="modal-header d-flex justify-content-center bg-danger">
+                        <h5 class="heading">Deletar Registro</h5>
+                      </div>
+
+                      <!--Body-->
+                      <div class="modal-body">
+
+                        <i class="far fa-trash-alt fa-4x animated rotateIn mb-4" style="color: #ed1d1d;"></i>
+
+                        <h6>Tem certeza que deseja excluir</h6>
+                        <h6>O período {{registro.data|date:"d/m/Y"}} até {{registro.data_fim|date:"d/m/Y"}}?</h6>
+
+                      </div>
+
+                      <!--Footer-->
+                      <div class="modal-footer flex-center">
+                        <form method="post" action="{% url 'frequencia:registro_del' registro.pk %}">
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-outline-danger">
+                            <i class="far fa-trash-alt"></i>
+                            Deletar
+                          </button>
+                          <button type="button" class="btn btn-outline-info" data-dismiss="modal">
+                            <i class="fas fa-times" style="color: #588adf;"></i>
+                            Cancelar
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                    <!--/.Content-->
+                  </div>
+                </div>
+
+                           </div>
+                        </div>
+                      <div class="list-group">
+                          <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                              <h5 class="mb-1">PRÁTICAS QUE POSSIBILITAM</h5>
+                            </div>
+                            <p class="mb-1">{{registro.pratica}}</p>
+                          </a>
+                          <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                              <h5 class="mb-1">CAMPOS DE EXPERIÊNCIAS</h5>
+                            </div>
+                            <p class="mb-1">{{registro.campo}}</p>
+                          </a>
+                          <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                              <h5 class="mb-1">OBJETOS DE APRENDIZAGEM</h5>
+                            </div>
+                            <p class="mb-1">{{registro.objeto}}</p>
+                          </a>
+                        </div>
+                  </div>
+                </div>
+                {% empty %}
+                <h6 class="text-danger">Sem registros...</h6>
+                {% endfor %}
+              </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block script_pro %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+      var accordionHeaders = document.querySelectorAll(".accordion-header");
+
+      accordionHeaders.forEach(function(header) {
+        header.addEventListener("click", function() {
+          var body = this.nextElementSibling;
+          body.classList.toggle("show");
+
+          // Close other accordion bodies if only one should be open at a time
+          var allBodies = document.querySelectorAll(".accordion-body");
+          allBodies.forEach(function(otherBody) {
+            if (otherBody !== body) {
+              otherBody.classList.remove("show");
+            }
+          });
+        });
+      });
+    });
+  </script>
+{% endblock %}
+
+<!-- Escola -->
+{% block imagem %}
+<img src="{% if escola.imagem %}
+    {{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block conteudo %}
+<div class="col-sm-12">
+    <div class="card">
+        <div class="card-header">
+            <h4 class="h4 text-uppercase font-weight-bold text-primary">Registro de Atividades</h4>
+            <div class="row">
+                <div class="h6 mb-1 col-6 col-md-6 text-secondary font-weight-bold">Sala: {{sala}}</div>
+                <div class="h6 mb-1 col-6 col-md-6 text-secondary font-weight-bold">Ano: {{sala.ano}}</div>
+                <div class="h6 mb-1 col-6 col-md-6 text-secondary text-capitalize font-weight-bold">Turno: {{sala.turno}}</div>
+                <div class="h6 mb-1 col-6 col-md-6 text-secondary font-weight-bold">Total de Alunos: {{sala.total_alunos}}</div>
+            </div>
+        </div>
+        <div class="card-block table-border-style">
+            {% for registro in mes %}
+                <div class="accordion-item">
+                  <div class="accordion-header" id="headingOne{{registro.id}}">
+                    <h2 class="mb-0 text-center">
+                        <button class="btn btn-link text-white font-weight-bold d-flex justify-content-between align-items-center w-100" type="button" aria-expanded="true" aria-controls="collapseOne{{registro.id}}">
+                            <span>{{registro.data|date:"d/m/Y"}} <span class="text-lowercase">à</span> {{registro.data_fim|date:"d/m/Y"}}</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </h2>
+                  </div>
+                  <div id="collapseOne{{registro.id}}" class="accordion-body" aria-labelledby="headingOne{{registro.id}}" data-parent="#accordionExample">
+                       <div class="d-flex justify-content-between align-items-center">
+                            <h6>Professor: {{registro.professor}}</h6>
+                        </div>
+                      <div class="list-group">
+                          <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                              <h5 class="mb-1">PRÁTICAS QUE POSSIBILITAM</h5>
+                            </div>
+                            <p class="mb-1">{{registro.pratica}}</p>
+                          </a>
+                          <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                              <h5 class="mb-1">CAMPOS DE EXPERIÊNCIAS</h5>
+                            </div>
+                            <p class="mb-1">{{registro.campo}}</p>
+                          </a>
+                          <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                              <h5 class="mb-1">OBJETOS DE APRENDIZAGEM</h5>
+                            </div>
+                            <p class="mb-1">{{registro.objeto}}</p>
+                          </a>
+                        </div>
+                  </div>
+                </div>
+                {% empty %}
+                <h6 class="text-danger">Sem registros...</h6>
+                {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script%}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+      var accordionHeaders = document.querySelectorAll(".accordion-header");
+
+      accordionHeaders.forEach(function(header) {
+        header.addEventListener("click", function() {
+          var body = this.nextElementSibling;
+          body.classList.toggle("show");
+
+          // Close other accordion bodies if only one should be open at a time
+          var allBodies = document.querySelectorAll(".accordion-body");
+          allBodies.forEach(function(otherBody) {
+            if (otherBody !== body) {
+              otherBody.classList.remove("show");
+            }
+          });
+        });
+      });
+    });
+  </script>
+{% endblock %}

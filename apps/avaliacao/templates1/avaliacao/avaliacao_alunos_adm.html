@@ -1,0 +1,86 @@
+{% extends 'temp_base/adm.html' %}
+{% load bootstrap4 %}
+{% load static %}
+{% block titulo %}Avaliação Alunos{% endblock %}
+{% block imagem1_adm %}
+<img src="{% if escola.imagem %}
+    {{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block imagem2_adm %}
+<img src="{% if escola.imagem %}{{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block tema_adm %}
+<h3 class="m-b-10">{{sala}} - {{sala.ano}}ºAno - {{sala.turno}}</h3>
+<h5 class="m-b-10">{{avaliacao}}</h5>
+{% endblock %}
+{% block breadcrumbs_adm %}
+{{block.super}}
+<li class="breadcrumb-item"><a href="#">Alunos</a></li>
+{% endblock %}
+{% block relatorios %}
+<li class=" ">
+    <a href="{% url 'relatorios:relatorio_avaliacao' id=sala.pk avaliacao_id=avaliacao.pk  slug=escola.slug %}" class="waves-effect waves-dark">
+        <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+        <span class="pcoded-mtext">Avaliação</span>
+        <span class="pcoded-mcaret"></span>
+    </a>
+</li>
+{% endblock %}
+{% block conteudo_adm %}
+<div class="col-sm-12">
+  <div class="card">
+  <div class="card-block table-border-style">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+        <tr>
+          <th>NOME</th>
+          <th>GABARITO</th>
+          <th>ACERTOS</th>
+          <th>CONCLUIDO</th>
+          <th>RELATÓRIO</th>
+        </tr>
+        </thead>
+{% for aluno in alunos %}
+        <tbody>
+        <tr>
+          <td>{{aluno}}</td>
+          <td>
+            <a href="{% url 'avaliacao:avalie_adm' aluno_id=aluno.pk avaliacao_id=avaliacao.pk  slug=escola.slug %}" class="btn btn-outline-success btn-sm">
+              <i class="fas fa-edit"></i>Avaliação
+            </a>
+          </td>
+            {% for nota in avaliacao.gabarito_set.all %}
+                {% if aluno.id == nota.aluno.id %}
+                <td>
+                    {{nota.qtd_acertos}}
+                </td>
+                <td class="success">{% if nota.concluido %} <i class="fa fa-check" aria-hidden="true">
+                    {% else %}Pendente{% endif %}</i>
+                </td>
+                <td>
+                    <a href="{% url 'relatorios:relatorio_aluno' aluno=aluno.pk avaliacao_aluno=avaliacao.pk  slug=escola.slug %}"
+                       class="btn btn-outline-info btn-sm">
+                      <i class="fa fa-file-text-o"></i>Gerar Relatório
+                    </a>
+                </td>
+                {% endif %}
+                {% empty %}
+                Sem nota
+                {% endfor %}
+
+
+        </tr>
+        </tbody>
+{% empty %}
+<p>Nenhum aluno cadastrado</p>
+{% endfor %}
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

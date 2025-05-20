@@ -1,0 +1,72 @@
+{% extends 'temp_base/indice.html' %}
+{% block titulo %}Notícias{% endblock %}
+{% load static %}
+{% block conteudo %}
+<div class="container-fluid bg-primary py-5 mb-5 page-header">
+    <div class="container py-5">
+        <div class="row justify-content-left">
+            <div class="col-lg-8 text-left">
+                <h1 class="display-3 text-white animated slideInDown">Notícias</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-left">
+                        <li class="breadcrumb-item"><a class="text-white" href="{% url 'core:inicio' %}">Inicio</a></li>
+                        <li class="breadcrumb-item text-white active" aria-current="page">Notícias</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="col-lg-4">
+                    <form action="{% url 'blog:noticias_pesquisadas' %}" method="get">
+                       <div class="row">
+                        <div class="col-8">
+                            <input class="form-control" name="q" type="text" placeholder="Pesquisar noticia...">
+                        </div>
+                        <div class="col-1">
+                        <button type="submit" class="btn btn-outline-primary text-white"><i class="fas fa-search"></i></button>
+                        </div>
+                        </div>
+                    </form>
+                </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <!-- Blog entries-->
+        {% for noticia in noticias %}
+        <div class="col-lg-6">
+            <!-- Featured blog post-->
+            <div class="card mb-4">
+                {% if noticia.imagem00 %}
+                <a href="#!"><img class="card-img-top" src="{{noticia.imagem.url}}" alt="..." /></a>
+                {% else %}
+                <a href="#!"><img class="card-img-top" src="https://dummyimage.com/850x350/dee2e6/6c757d.jpg" alt="..." /></a>
+                {% endif %}
+                <div class="card-body">
+                    <div class="small text-muted">{{noticia.data_atualizacao}}</div>
+                    <h4 class="card-title">{{noticia.titulo}}</h4>
+                    <p class="card-text">{{noticia.conteudo|safe|slice:":200"}}</p><hr>
+                    <a class="btn btn-primary" href="{% url 'blog:noticia' noticia.slug %}">Saiba Mais →</a>
+                </div>
+            </div>
+            <!-- Nested row for non-featured blog posts-->
+            <!-- Pagination-->
+        </div>
+        {% empty %}
+        <h3>Vazio</h3>
+        {% endfor %}
+        <nav aria-label="Pagination">
+                <hr class="my-0" />
+                <ul class="pagination justify-content-center my-4">
+                    <li class="page-item disabled"><a class="page-link" href="#" tabindex="-1" aria-disabled="true">Voltar</a></li>
+                    <li class="page-item active" aria-current="page"><a class="page-link" href="#!">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#!">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#!">3</a></li>
+                    <li class="page-item disabled"><a class="page-link" href="#!">...</a></li>
+                    <li class="page-item"><a class="page-link" href="#!">15</a></li>
+                    <li class="page-item"><a class="page-link" href="#!">Avançar</a></li>
+                </ul>
+            </nav>
+    </div>
+</div>
+{% endblock %}

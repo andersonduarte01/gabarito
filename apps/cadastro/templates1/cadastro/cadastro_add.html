@@ -1,0 +1,48 @@
+{% extends 'temp_base/base1.html' %}
+{% block titulo %}Cadastro{% endblock %}
+{% load static %}
+{% load django_bootstrap5 %}
+{% block estatico %}
+<link rel="stylesheet" href="{% static 'cards/card_file.css' %}">
+{% endblock %}
+{% block menu %}
+{% endblock %}
+{% block conteudo %}
+  <main id="main">
+    <section id="blog" class="blog">
+      <div class="container" data-aos="fade-up">
+
+        <div class="row">
+
+          <div class="col-lg-12 entries">
+
+            <article class="entry">
+
+              <h2 class="entry-title text-center">
+                <a href="#">Iniciar Inscrição</a>
+              </h2>
+              <p>
+                <span><code>* Os arquivos do Termo de posse e Diploma são obrigatórios.</code></span>
+              </p>
+
+              <div class="entry-content">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% bootstrap_form form %}
+                    <div class="progress">
+                      <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div><br>
+                    <button type="submit" class="btn btn-outline-primary">Salvar e Continuar</button>
+                    </form>
+              </div>
+
+            </article><!-- End blog entry -->
+
+          </div><!-- End blog entries list -->
+
+        </div>
+
+      </div>
+    </section>
+  </main>
+{% endblock %}

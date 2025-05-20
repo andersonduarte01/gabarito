@@ -1,0 +1,166 @@
+{% extends 'temp_base/indice.html' %}
+{% block titulo %}Vídeos{% endblock %}
+{% load static %}
+{% block estatico %}
+
+{% endblock %}
+{% block conteudo %}
+<div class="container-fluid bg-primary py-5 mb-5 page-header">
+	<div class="container py-5">
+		<div class="row justify-content-left">
+			<div class="col-lg-8">
+				<h1 class="display-3 text-white animated slideInDown">Vídeoaulas</h1>
+				<nav aria-label="breadcrumb">
+					<ol class="breadcrumb justify-content-left">
+						<li class="breadcrumb-item"><a class="text-white" href="{% url 'core:inicio' %}">Inicio</a></li>
+						<li class="breadcrumb-item text-white active" aria-current="page">Vídeos</li>
+					</ol>
+				</nav>
+			</div>
+			<div class="col-lg-4">
+                    <form action="{% url 'core:videos_pesquisados' %}" method="get">
+                       <div class="row">
+                        <div class="col-8">
+                            <input class="form-control" name="q" type="text" placeholder="Pesquisar...">
+                        </div>
+                        <div class="col-1">
+                        <button type="submit" class="btn btn-outline-primary text-white"><i class="fas fa-search"></i></button>
+                        </div>
+                        </div>
+                    </form>
+                </div>
+		</div>
+	</div>
+</div>
+<div class="container">
+	<div class="row row justify-content-between">
+		<div class="card col-md-3" style="margin-bottom: 8px; margin-left: 1px;">
+		  <img src="{% static 'images/logo0.png' %}" style="margin-top:10px;" class="card-img-top " alt="...">
+		  <div class="card-body">
+			<hr>
+			<h4 class="card-title text-center">Educação Infantil</h4>
+			<ul class="list-group list-group-flush">
+				<li class="list-group-item"><a href="{% url 'core:ano_materia' ano='0Ano' sigla='EI' %}">Vídeos</a></li>
+			  </ul>
+		  </div>
+		</div>
+
+
+		<div class="card col-md-3" style="margin-bottom: 8px; margin-left: 1px;">
+		  <img src="{% static 'images/logo0.png' %}" style="margin-top:10px;" class="card-img-top " alt="...">
+		  <div class="card-body">
+			<hr>
+			<h4 class="card-title text-center">1º Ano</h4>
+			<ul class="list-group list-group-flush">
+				<li class="list-group-item"><a href="{% url 'core:ano_materia' ano='1Ano' sigla='LP' %}">Língua Portuguesa</a></li>
+				<li class="list-group-item"><a href="{% url 'core:ano_materia' ano='1Ano' sigla='MT' %}">Matemática</a></li>
+			  </ul>
+		  </div>
+		</div>
+
+
+		<div class="card col-md-3" style="margin-bottom: 8px; margin-left: 1px;">
+		  <img src="{% static 'images/logo0.png' %}" style="margin-top:10px;" class="card-img-top " alt="...">
+		  <div class="card-body">
+			<hr>
+			<h4 class="card-title text-center">2º Ano</h4>
+			<ul class="list-group list-group-flush">
+				<li class="list-group-item"><a href="{% url 'core:ano_materia' ano='2Ano' sigla='LP' %}">Língua Portuguesa</a></li>
+
+				<li class="list-group-item"><a href="{% url 'core:ano_materia' ano='2Ano' sigla='MT' %}">Matemática</a></li>
+			</ul>
+		  </div>
+		</div>
+
+		<div class="card col-md-3" style="margin-bottom: 8px; margin-left: 1px;">
+		  <img src="{% static 'images/logo0.png' %}" style="margin-top:10px;" class="card-img-top " alt="...">
+		  <div class="card-body">
+			<hr>
+			<h4 class="card-title text-center">3º Ano</h4>
+			<ul class="list-group list-group-flush">
+				<li class="list-group-item"><a href="{% url 'core:ano_materia' ano='3Ano' sigla='LP' %}">Língua Portuguesa</a></li>
+
+				<li class="list-group-item"><a href="{% url 'core:ano_materia' ano='3Ano' sigla='MT' %}">Matemática</a></li>
+			  </ul>
+		  </div>
+		</div>
+
+		<div class="card col-md-3" style="margin-bottom: 8px; margin-left: 1px;">
+		  <img src="{% static 'images/logo0.png' %}" style="margin-top:10px;" class="card-img-top " alt="...">
+		  <div class="card-body">
+			<hr>
+			<h4 class="card-title text-center">4º Ano</h4>
+			<ul class="list-group list-group-flush">
+				<li class="list-group-item"><a href="{% url 'core:ano_materia' ano='4Ano' sigla='LP' %}">Língua Portuguesa</a></li>
+
+				<li class="list-group-item"><a href="{% url 'core:ano_materia' ano='4Ano' sigla='MT' %}">Matemática</a></li>
+			  </ul>
+		  </div>
+		</div>
+
+		<div class="card col-md-3" style="margin-bottom: 8px; margin-left: 1px;">
+		  <img src="{% static 'images/logo0.png' %}" style="margin-top:10px;" class="card-img-top " alt="...">
+		  <div class="card-body">
+			<hr>
+			<h4 class="card-title text-center">5º Ano</h4>
+			<ul class="list-group list-group-flush">
+				<li class="list-group-item"><a href="{% url 'core:ano_materia' ano='5Ano' sigla='LP' %}">Língua Portuguesa</a></li>
+
+				<li class="list-group-item"><a href="{% url 'core:ano_materia' ano='5Ano' sigla='MT' %}">Matemática</a></li>
+			</ul>
+		  </div>
+		</div>
+
+		<div class="card col-md-3" style="margin-bottom: 8px; margin-left: 1px;">
+		  <img src="{% static 'images/logo0.png' %}" style="margin-top:10px;" class="card-img-top " alt="...">
+		  <div class="card-body">
+			<hr>
+			<h4 class="card-title text-center">6º Ano</h4>
+			<ul class="list-group list-group-flush">
+				<li class="list-group-item"><a href="{% url 'core:ano_materia' ano='6Ano' sigla='LP' %}">Língua Portuguesa</a></li>
+				<li class="list-group-item"><a href="{% url 'core:ano_materia' ano='6Ano' sigla='MT' %}">Matemática</a></li>
+			  </ul>
+		  </div>
+		</div>
+
+		<div class="card col-md-3" style="margin-bottom: 8px; margin-left: 1px;">
+		  <img src="{% static 'images/logo0.png' %}" style="margin-top:10px;" class="card-img-top " alt="...">
+		  <div class="card-body">
+			<hr>
+			<h4 class="card-title text-center">7º Ano</h4>
+			<ul class="list-group list-group-flush">
+				<li class="list-group-item"><a href="{% url 'core:ano_materia' ano='7Ano' sigla='LP' %}">Língua Portuguesa</a></li>
+
+				<li class="list-group-item"><a href="{% url 'core:ano_materia' ano='7Ano' sigla='MT' %}">Matemática</a></li>
+			</ul>
+		  </div>
+		</div>
+
+		<div class="card col-md-3" style="margin-bottom: 8px; margin-left: 1px;">
+		  <img src="{% static 'images/logo0.png' %}" style="margin-top:10px;" class="card-img-top " alt="...">
+		  <div class="card-body">
+			<hr>
+			<h4 class="card-title text-center">8º Ano</h4>
+			<ul class="list-group list-group-flush">
+				<li class="list-group-item"><a href="{% url 'core:ano_materia' ano='8Ano' sigla='LP' %}">Língua Portuguesa</a></li>
+
+				<li class="list-group-item"><a href="{% url 'core:ano_materia' ano='8Ano' sigla='MT' %}">Matemática</a></li>
+			</ul>
+		  </div>
+		</div>
+
+		<div class="card col-md-3" style="margin-bottom: 8px; margin-left: 1px;">
+		  <img src="{% static 'images/logo0.png' %}" style="margin-top:10px;" class="card-img-top " alt="...">
+		  <div class="card-body">
+			<hr>
+			<h4 class="card-title text-center">9º Ano</h4>
+			<ul class="list-group list-group-flush">
+				<li class="list-group-item"><a href="{% url 'core:ano_materia' ano='9Ano' sigla='LP' %}">Língua Portuguesa</a></li>
+
+				<li class="list-group-item"><a href="{% url 'core:ano_materia' ano='9Ano' sigla='MT' %}">Matemática</a></li>
+			</ul>
+		  </div>
+		</div>
+	</div>
+</div>
+{% endblock %}

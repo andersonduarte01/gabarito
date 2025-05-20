@@ -1,0 +1,60 @@
+{% extends 'temp_base/adm.html' %}
+{% load static %}
+{% block titulo %}Lista de Salas{% endblock %}
+{% block imagem1 %}
+<img src="{% if escola.imagem %}
+    {{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block imagem2 %}
+<img src="{% if escola.imagem %}{{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block tema %}
+<h3 class="m-b-10">{{avaliacao}}</h3>
+<p class="m-b-0">Lista de salas para realizar avaliação</p>
+{% endblock %}
+{% block breadcrumbs_adm %}
+{{block.super}}
+<li class="breadcrumb-item"><a href="#">salas</a></li>
+{% endblock %}
+{% block conteudo %}
+<div class="col-sm-12">
+  <div class="card">
+  <div class="card-block table-border-style">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+        <tr>
+          <th>SALA</th>
+          <th>ANO</th>
+          <th>TURNO</th>
+          <th>QTD ALUNOS</th>
+          <th class="text-center">AVALIAÇÂO</th>
+        </tr>
+        </thead>
+{% for sala in salas %}
+        <tbody>
+        <tr>
+          <td>{{sala}}</td>
+          <td>{{sala.ano}}</td>
+          <td>{{sala.turno}}</td>
+          <td>{{sala.total_alunos}}</td>
+          <td class="text-center">
+            <a href="{% url 'avaliacao:avaliar_alunos' avaliacao_id=avaliacao.id sala_id=sala.id %}" class="info">
+              <i class="fas fa-eye" style="color:#5050F3;"></i>
+            </a>
+          </td>
+        </tr>
+        </tbody>
+{% empty %}
+<p>Nenhuma sala cadastrada</p>
+{% endfor %}
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+{% endblock %}

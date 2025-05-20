@@ -1,0 +1,20 @@
+{% extends 'temp_base/indice.html' %}
+{% block titulo %}Sobre{% endblock %}
+{% load static %}
+{% block conteudo %}
+<div class="container-fluid bg-primary py-5 mb-5 page-header">
+        <div class="container py-5">
+            <div class="row justify-content-left">
+                <div class="col-lg-10 text-left">
+                    <h1 class="display-3 text-white animated slideInDown">Sobre</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-left">
+                            <li class="breadcrumb-item"><a class="text-white" href="{% url 'core:inicio' %}">Inicio</a></li>
+                            <li class="breadcrumb-item text-white active" aria-current="page">Sobre</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

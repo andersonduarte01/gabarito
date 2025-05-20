@@ -1,0 +1,342 @@
+{% extends 'temp_base/indice.html' %}
+{% block titulo %}Biblioteca{% endblock %}
+{% load static %}
+{% block estatico %}
+<link rel="stylesheet" href="{% static 'cards/book_file.css' %}">
+{% endblock %}
+{% block conteudo %}
+<div class="container-fluid bg-primary py-5 mb-5 page-header">
+        <div class="container py-5">
+            <div class="row justify-content-left">
+                <div class="col-lg-8">
+                    <h1 class="display-3 text-white animated slideInDown">Biblioteca</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-left">
+                            <li class="breadcrumb-item"><a class="text-white" href="{% url 'core:inicio' %}">Inicio</a></li>
+                            <li class="breadcrumb-item text-white active" aria-current="page">Biblioteca</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="col-lg-4">
+                    <form action="{% url 'core:livros_pesquisados' %}" method="get">
+                       <div class="row">
+                        <div class="col-8">
+                            <input class="form-control" name="q" type="text" placeholder="Pesquisar...">
+                        </div>
+                        <div class="col-1">
+                        <button type="submit" class="btn btn-outline-primary text-white"><i class="fas fa-search"></i></button>
+                        </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<div class="container">
+  <ul class="nav nav-pills mb-3 nav-justified" id="pills-tab" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="pills-infantil-tab" data-bs-toggle="pill" data-bs-target="#pills-infantil" type="button" role="tab" aria-controls="pills-infantil" aria-selected="true">Ensino Infantil</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="pills-pre-tab" data-bs-toggle="pill" data-bs-target="#pills-pre"
+            type="button" role="tab" aria-controls="pills-pre" aria-selected="false">Pré-Escola</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="pills-ano1-tab" data-bs-toggle="pill" data-bs-target="#pills-ano1" type="button" role="tab" aria-controls="pills-ano1" aria-selected="false">1º Ano</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="pills-ano2-tab" data-bs-toggle="pill" data-bs-target="#pills-ano2"
+            type="button" role="tab" aria-controls="pills-ano2" aria-selected="false">2º Ano</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="pills-ano3-tab" data-bs-toggle="pill" data-bs-target="#pills-ano3"
+            type="button" role="tab" aria-controls="pills-ano3" aria-selected="false">3º Ano</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="pills-ano4-tab" data-bs-toggle="pill" data-bs-target="#pills-ano4"
+            type="button" role="tab" aria-controls="pills-ano4" aria-selected="false">4º Ano</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="pills-ano5-tab" data-bs-toggle="pill" data-bs-target="#pills-ano5"
+            type="button" role="tab" aria-controls="pills-ano5" aria-selected="false">5º Ano</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="pills-ano6-tab" data-bs-toggle="pill" data-bs-target="#pills-ano6"
+            type="button" role="tab" aria-controls="pills-ano6" aria-selected="false">6º Ano</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="pills-ano7-tab" data-bs-toggle="pill" data-bs-target="#pills-ano7"
+            type="button" role="tab" aria-controls="pills-ano7" aria-selected="false">7º Ano</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="pills-ano8-tab" data-bs-toggle="pill" data-bs-target="#pills-ano8"
+            type="button" role="tab" aria-controls="pills-ano8" aria-selected="false">8º Ano</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="pills-ano9-tab" data-bs-toggle="pill" data-bs-target="#pills-ano9"
+            type="button" role="tab" aria-controls="pills-ano9" aria-selected="false">9º Ano</button>
+  </li>
+</ul>
+<div class="tab-content" id="pills-tabContent">
+  <div class="tab-pane fade show active" id="pills-infantil" role="tabpanel" aria-labelledby="pills-infantil-tab">
+      <div class="row">
+      {% for livro in infantil %}
+        <div class="col-md-4">
+            <div class="book read">
+            <div class="cover">
+                {% if livro.pdf_miniatura %}
+                <img src="{{livro.pdf_miniatura.url}}"/>
+                {% else %}
+                <img src="{% static 'images/fila.png' %}"/>
+                {% endif %}
+            </div>
+            <div class="description">
+                <h6><a href="{{livro.pdf.url}}" target="_blank">{{livro}}</a><br>
+                    <span class="author">{{livro.editora}}</span></h6>
+            </div>
+        </div>
+        </div>
+      {% empty %}
+      <h3 class="text-center">Nenhum livro correnpondente</h3>
+      {% endfor %}
+      </div>
+  </div>
+  <div class="tab-pane fade" id="pills-pre" role="tabpanel" aria-labelledby="pills-pre-tab">
+      <div class="row">
+      {% for livro in pre %}
+        <div class="col-md-4">
+            <div class="book read">
+            <div class="cover">
+                {% if livro.pdf_miniatura %}
+                <img src="{{livro.pdf_miniatura.url}}"/>
+                {% else %}
+                <img src="{% static 'images/fila.png' %}"/>
+                {% endif %}
+            </div>
+            <div class="description">
+                <h6><a href="{{livro.pdf.url}}" target="_blank">{{livro}}</a><br>
+                    <span class="author">{{livro.editora}}</span></h6>
+            </div>
+        </div>
+        </div>
+      {% empty %}
+      <h3 class="text-center">Nenhum livro correnpondente</h3>
+      {% endfor %}
+      </div>
+  </div>
+  <div class="tab-pane fade" id="pills-ano1" role="tabpanel" aria-labelledby="pills-ano1-tab">
+      <div class="row">
+      {% for livro in ano1 %}
+        <div class="col-md-4">
+            <div class="book read">
+            <div class="cover">
+                {% if livro.pdf_miniatura %}
+                <img src="{{livro.pdf_miniatura.url}}"/>
+                {% else %}
+                <img src="{% static 'images/fila.png' %}"/>
+                {% endif %}
+            </div>
+            <div class="description">
+                <h6><a href="{{livro.pdf.url}}" target="_blank">{{livro}}</a><br>
+                    <span class="author">{{livro.editora}}</span></h6>
+            </div>
+        </div>
+        </div>
+      {% empty %}
+      <h3 class="text-center">Nenhum livro correnpondente</h3>
+      {% endfor %}
+      </div>
+  </div>
+  <div class="tab-pane fade" id="pills-ano2" role="tabpanel" aria-labelledby="pills-ano2-tab">
+      <div class="row">
+      {% for livro in ano2 %}
+        <div class="col-md-4">
+            <div class="book read">
+            <div class="cover">
+                {% if livro.pdf_miniatura %}
+                <img src="{{livro.pdf_miniatura.url}}"/>
+                {% else %}
+                <img src="{% static 'images/fila.png' %}"/>
+                {% endif %}
+            </div>
+            <div class="description">
+                <h6><a href="{{livro.pdf.url}}" target="_blank">{{livro}}</a><br>
+                    <span class="author">{{livro.editora}}</span></h6>
+            </div>
+        </div>
+        </div>
+      {% empty %}
+      <h3 class="text-center">Nenhum livro correnpondente</h3>
+      {% endfor %}
+      </div>
+  </div>
+  <div class="tab-pane fade" id="pills-ano3" role="tabpanel" aria-labelledby="pills-ano3-tab">
+      <div class="row">
+      {% for livro in ano3 %}
+        <div class="col-md-4">
+            <div class="book read">
+            <div class="cover">
+                {% if livro.pdf_miniatura %}
+                <img src="{{livro.pdf_miniatura.url}}"/>
+                {% else %}
+                <img src="{% static 'images/fila.png' %}"/>
+                {% endif %}
+            </div>
+            <div class="description">
+                <h6><a href="{{livro.pdf.url}}" target="_blank">{{livro}}</a><br>
+                    <span class="author">{{livro.editora}}</span></h6>
+            </div>
+        </div>
+        </div>
+      {% empty %}
+      <h3 class="text-center">Nenhum livro correnpondente</h3>
+      {% endfor %}
+      </div>
+  </div>
+  <div class="tab-pane fade" id="pills-ano4" role="tabpanel" aria-labelledby="pills-ano4-tab">
+      <div class="row">
+      {% for livro in ano4 %}
+        <div class="col-md-4">
+            <div class="book read">
+            <div class="cover">
+                {% if livro.pdf_miniatura %}
+                <img src="{{livro.pdf_miniatura.url}}"/>
+                {% else %}
+                <img src="{% static 'images/fila.png' %}"/>
+                {% endif %}
+            </div>
+            <div class="description">
+                <h6><a href="{{livro.pdf.url}}" target="_blank">{{livro}}</a><br>
+                    <span class="author">{{livro.editora}}</span></h6>
+            </div>
+        </div>
+        </div>
+      {% empty %}
+      <h3 class="text-center">Nenhum livro correnpondente</h3>
+      {% endfor %}
+      </div>
+  </div>
+  <div class="tab-pane fade" id="pills-ano5" role="tabpanel" aria-labelledby="pills-ano5-tab">
+      <div class="row">
+      {% for livro in ano5 %}
+        <div class="col-md-4">
+            <div class="book read">
+            <div class="cover">
+                {% if livro.pdf_miniatura %}
+                <img src="{{livro.pdf_miniatura.url}}"/>
+                {% else %}
+                <img src="{% static 'images/fila.png' %}"/>
+                {% endif %}
+            </div>
+            <div class="description">
+                <h6><a href="{{livro.pdf.url}}" target="_blank">{{livro}}</a><br>
+                    <span class="author">{{livro.editora}}</span></h6>
+            </div>
+        </div>
+        </div>
+      {% empty %}
+      <h3 class="text-center">Nenhum livro correnpondente</h3>
+      {% endfor %}
+      </div>
+  </div>
+  <div class="tab-pane fade" id="pills-ano6" role="tabpanel" aria-labelledby="pills-ano6-tab">
+      <div class="row">
+      {% for livro in ano6 %}
+        <div class="col-md-4">
+            <div class="book read">
+            <div class="cover">
+                {% if livro.pdf_miniatura %}
+                <img src="{{livro.pdf_miniatura.url}}"/>
+                {% else %}
+                <img src="{% static 'images/fila.png' %}"/>
+                {% endif %}
+            </div>
+            <div class="description">
+                <h6><a href="{{livro.pdf.url}}" target="_blank">{{livro}}</a><br>
+                    <span class="author">{{livro.editora}}</span></h6>
+            </div>
+        </div>
+        </div>
+      {% empty %}
+      <h3 class="text-center">Nenhum livro correnpondente</h3>
+      {% endfor %}
+      </div>
+  </div>
+  <div class="tab-pane fade" id="pills-ano7" role="tabpanel" aria-labelledby="pills-ano7-tab">
+      <div class="row">
+      {% for livro in ano7 %}
+        <div class="col-md-4">
+            <div class="book read">
+            <div class="cover">
+                {% if livro.pdf_miniatura %}
+                <img src="{{livro.pdf_miniatura.url}}"/>
+                {% else %}
+                <img src="{% static 'images/fila.png' %}"/>
+                {% endif %}
+            </div>
+            <div class="description">
+                <h6><a href="{{livro.pdf.url}}" target="_blank">{{livro}}</a><br>
+                    <span class="author">{{livro.editora}}</span></h6>
+            </div>
+        </div>
+        </div>
+      {% empty %}
+      <h3 class="text-center">Nenhum livro correnpondente</h3>
+      {% endfor %}
+      </div>
+  </div>
+  <div class="tab-pane fade" id="pills-ano8" role="tabpanel" aria-labelledby="pills-ano8-tab">
+      <div class="row">
+      {% for livro in ano8 %}
+        <div class="col-md-4">
+            <div class="book read">
+            <div class="cover">
+                {% if livro.pdf_miniatura %}
+                <img src="{{livro.pdf_miniatura.url}}"/>
+                {% else %}
+                <img src="{% static 'images/fila.png' %}"/>
+                {% endif %}
+            </div>
+            <div class="description">
+                <h6><a href="{{livro.pdf.url}}" target="_blank">{{livro}}</a><br>
+                    <span class="author">{{livro.editora}}</span></h6>
+            </div>
+        </div>
+        </div>
+      {% empty %}
+      <h3 class="text-center">Nenhum livro correnpondente</h3>
+      {% endfor %}
+      </div>
+  </div>
+  <div class="tab-pane fade" id="pills-ano9" role="tabpanel" aria-labelledby="pills-ano9-tab">
+      <div class="row">
+      {% for livro in ano9 %}
+        <div class="col-md-4">
+            <div class="book read">
+            <div class="cover">
+                {% if livro.pdf_miniatura %}
+                <img src="{{livro.pdf_miniatura.url}}"/>
+                {% else %}
+                <img src="{% static 'images/fila.png' %}"/>
+                {% endif %}
+            </div>
+            <div class="description">
+                <h6><a href="{{livro.pdf.url}}" target="_blank">{{livro}}</a><br>
+                    <span class="author">{{livro.editora}}</span></h6>
+            </div>
+        </div>
+        </div>
+      {% empty %}
+      <h3 class="text-center">Nenhum livro correnpondente</h3>
+      {% endfor %}
+      </div>
+  </div>
+</div>
+</div>
+
+{% endblock %}
+{% block script %}
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
+{% endblock %}

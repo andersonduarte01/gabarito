@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>PDF</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    .header {
+      color: #000;
+      padding: 10px;
+      text-align: center;
+      font-size: 16px;
+    }
+
+    .footer {
+      background-color: #0080FF;
+      color: #fff;
+      padding: 10px;
+      text-align: center;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      font-size: 12px;
+    }
+
+    .content {
+      margin-top: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+      font-size: 12px;
+    }
+
+    th {
+      background-color: #0080FF;
+      color: #fff;
+      font-size: 13px;
+    }
+
+    tr:nth-child(even) {
+      background-color: #0080FF;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>
+      {{resultado.0.0.avaliacao}}
+      <br>
+      <span style="font-size:14px;">{{resultado.0.0.avaliacao}} - {{resultado.0.0.avaliacao.ano}}</span>
+      <br>
+      <span style="font-size:13px;">Geral</span>
+      <hr>
+    </h1>
+  </div>
+
+  <div class="content">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:30px; text-align:center;">N°</th>
+          <th style="text-align:center">QUESTÃO</th>
+          <th style="width:80px; text-align:center">ACERTOS</th>
+          <th style="width:120px; text-align:center">PERCENTUAL</th>
+        </tr>
+      </thead>
+       <tbody>
+           {% for q in resultado %}
+            <tr>
+              <td style="text-align:center">{{forloop.counter}}</td>
+              <td>{{q.0}}</td>
+              <td style="text-align:center">{{q.2}}</td>
+              {% if q.1 >= 50.00 %}
+              <td style="text-align:center">{{q.1}}%</td>
+              {% else %}
+              <td style="text-align:center; color:red;">{{q.1}}%</td>
+              {% endif %}
+            </tr>
+            {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    <p>{{gabaritos.0.aluno.sala.escola}}</p>
+  </div>
+
+  <!-- Adicione mais conteúdo aqui para páginas adicionais -->
+
+</body>
+</html>
+

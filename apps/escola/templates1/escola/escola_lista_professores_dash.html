@@ -1,0 +1,101 @@
+{% extends 'temp_base/adm.html' %}
+{% load static %}
+{% load bootstrap4 %}
+{% block titulo %}Lista de Professores{% endblock %}
+{% block imagem1_adm %}
+<img src="{% if escola.imagem %}
+    {{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block painel_adm %}
+<ul class="pcoded-item pcoded-left-item">
+    <li class="pcoded-hasmenu">
+        <a href="{% url 'core:inicio' %}" class="waves-effect waves-dark">
+            <span class="pcoded-micon"><i class="ti-back-left"></i><b>BC</b></span>
+            <span class="pcoded-mtext">Inicio</span>
+            <span class="pcoded-mcaret"></span>
+        </a>
+    </li>
+</ul>
+
+<ul class="pcoded-item pcoded-left-item">
+    <li class="pcoded-hasmenu">
+        <a href="javascript:void(0)" class="waves-effect waves-dark">
+            <span class="pcoded-micon"><i class="ti-layers-alt"></i><b>BC</b></span>
+            <span class="pcoded-mtext">Salas</span>
+            <span class="pcoded-mcaret"></span>
+        </a>
+        <ul class="pcoded-submenu">
+            <li class=" ">
+                <a href="{% url 'escola:painel_da_escola' escola.slug %}" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">Salas</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+        </ul>
+    </li>
+</ul>
+
+<ul class="pcoded-item pcoded-left-item">
+    <li class="pcoded-hasmenu">
+        <a href="javascript:void(0)" class="waves-effect waves-dark">
+            <span class="pcoded-micon"><i class="ti-user"></i><b>BC</b></span>
+            <span class="pcoded-mtext">Professores</span>
+            <span class="pcoded-mcaret"></span>
+        </a>
+        <ul class="pcoded-submenu">
+            <li class=" ">
+                <a href="{% url 'escola:escola_professores' escola.slug %}" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">Professores</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+        </ul>
+    </li>
+</ul>
+
+{% endblock %}
+{% block trilha %}
+{% endblock %}
+{% block conteudo_adm %}
+<div class="col-sm-12">
+<div class="card">
+    <div class="card-header ">
+      <h5 class="h5 text-uppercase font-weight-bold text-center text-primary">
+          Professores Cadastrados
+      </h5>
+    </div>
+    <div class="card-block table-border-style">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                <tr class="text-primary">
+                    <th class="font-weight-bold">Nº</th>
+                    <th class="font-weight-bold">NOME</th>
+                    <th class="font-weight-bold">EMAIL</th>
+                    <th class="font-weight-bold">ENDEREÇO</th>
+                    <th class="font-weight-bold">PERFIL</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for professor in professores %}
+                <tr>
+                    <td class="font-weight-bold text-primary">{{forloop.counter}}</td>
+                    <td>{{professor.professor_nome}}</td>
+                    <td>{{professor.email}}</td>
+                    <td><a href="#" class="btn btn-outline-success btn-sm disabled">Desabilitado</a></td>
+                    <td><a href="#" class="btn btn-outline-secondary btn-sm disabled">Desabilitado</a></td>
+                </tr>
+                {% empty %}
+                <p>Não há nada</p>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,176 @@
+{% extends 'temp_base/professor_painel.html' %}
+{% load bootstrap4 %}
+{% load static %}
+{% block titulo %}Relatórios{% endblock %}
+{% block estatico %}
+<style>
+.table td,
+.table th {
+	padding: 0.5rem 0rem 0.5rem 1rem;
+}
+</style>
+{% endblock %}
+{% block imagem1_adm %}
+<img src="{% if escola.imagem %}
+    {{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block painel_adm %}
+<ul class="pcoded-item pcoded-left-item">
+    <li class="pcoded-hasmenu">
+        <a href="{% url 'core:inicio' %}" class="waves-effect waves-dark">
+            <span class="pcoded-micon"><i class="ti-back-left"></i><b>BC</b></span>
+            <span class="pcoded-mtext">Inicio</span>
+            <span class="pcoded-mcaret"></span>
+        </a>
+    </li>
+
+</ul>
+
+<ul class="pcoded-item pcoded-left-item">
+    <li class="pcoded-hasmenu">
+        <a href="javascript:void(0)" class="waves-effect waves-dark">
+            <span class="pcoded-micon"><i class="ti-layers-alt"></i><b>BC</b></span>
+            <span class="pcoded-mtext">Salas</span>
+            <span class="pcoded-mcaret"></span>
+        </a>
+        <ul class="pcoded-submenu">
+            <li class=" ">
+                <a href="{% url 'escola:painel_da_escola' escola.slug %}" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">Salas</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+        </ul>
+    </li>
+</ul>
+
+<ul class="pcoded-item pcoded-left-item">
+    <li class="pcoded-hasmenu">
+        <a href="javascript:void(0)" class="waves-effect waves-dark">
+            <span class="pcoded-micon"><i class="ti-user"></i><b>BC</b></span>
+            <span class="pcoded-mtext">Professores</span>
+            <span class="pcoded-mcaret"></span>
+        </a>
+        <ul class="pcoded-submenu">
+            <li class=" ">
+                <a href="{% url 'escola:escola_professores' escola.slug %}" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">Professores</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+        </ul>
+    </li>
+</ul>
+
+<ul class="pcoded-item pcoded-left-item">
+    <li class="pcoded-hasmenu">
+        <a href="javascript:void(0)" class="waves-effect waves-dark">
+            <span class="pcoded-micon"><i class="ti-write"></i><b>BC</b></span>
+            <span class="pcoded-mtext">Relatórios</span>
+            <span class="pcoded-mcaret"></span>
+        </a>
+        <ul class="pcoded-submenu">
+            <li class=" ">
+                <a href="#" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">Relatórios</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+            <li class=" ">
+                <a href="{% url 'escola:unidade_alunos_relatorios' slug=escola.slug  pk=sala.id bimestre='1º_Bimestre'%}" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">1º Bimestre</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+            <li class=" ">
+                <a href="{% url 'escola:unidade_alunos_relatorios' slug=escola.slug  pk=sala.id bimestre='2º_Bimestre'%}" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">2º Bimestre</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+            <li class=" ">
+                <a href="{% url 'escola:unidade_alunos_relatorios' slug=escola.slug  pk=sala.id bimestre='3º_Bimestre'%}" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">3º Bimestre</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+            <li class=" ">
+                <a href="{% url 'escola:unidade_alunos_relatorios' slug=escola.slug  pk=sala.id bimestre='4º_Bimestre'%}" class="waves-effect waves-dark">
+                    <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                    <span class="pcoded-mtext">4º Bimestre</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+        </ul>
+    </li>
+</ul>
+{% endblock %}
+{% block trilha %}
+{% endblock %}
+{% block conteudo_adm %}
+<div class="col-sm-12">
+  <!-- Button trigger modal -->
+  <div class="card">
+    <div class="card-header text-primary">
+    <h5 class="h5 text-primary text-uppercase font-weight-bold">
+        <i class="bi bi-clipboard-check"></i> Relatório Individual - {{bimestre}}
+    </h5>
+    <hr>
+    <div class="row">
+        <div class="col-4 font-weight-bold">
+            <p><i class="fa fa-clock-o" aria-hidden="true"></i> {{sala}}</p>
+        </div>
+        <div class="col-8 font-weight-bold">
+            <p><i class="fa fa-home" aria-hidden="true"></i> {{sala.escola}}</p>
+        </div>
+        <div class="col-4 font-weight-bold">
+            <p><i class="fa fa-calendar" aria-hidden="true"></i> {{sala.turno}}</p>
+        </div>
+
+    </div>
+</div>
+    <div class="card-block">
+          <table class="table table-hover table-bordered">
+          <thead>
+          <tr>
+            <th class="font-weight-bold text-primary text-center">Nº</th>
+            <th class="font-weight-bold text-primary">NOME</th>
+            <th class="font-weight-bold text-primary text-center">RELATÓRIO</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for aluno, relatorio in alunos %}
+
+          <tr>
+            <td class="font-weight-bold text-primary text-center">{{forloop.counter}}</td>
+            <td>{{aluno}}</td>
+            <td class="text-center">
+                {% if relatorio == None  %}
+                  <div class="text-secondary">
+                      <i class="fa fa-plus fa-lg"></i>
+                  </div>
+                {% else %}
+                <a href="#" class="text-primary">
+                      <i class="fa fa-check-square-o fa-lg"></i>
+                  </a>
+                {% endif %}
+            </td>
+          </tr>
+
+          {% empty %}
+          <td colspan="5">Nenhum aluno cadastrado</td>
+          {% endfor %}
+          </tbody>
+        </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

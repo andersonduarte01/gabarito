@@ -1,4 +1,4 @@
-{% extends 'temp_base/adm.html' %}
+{% extends 'temp_base/escola_painel.html' %}
 {% load static %}
 {% load bootstrap4 %}
 {% block titulo %}Editar Sala {% endblock %}
@@ -13,14 +13,14 @@
     <!-- Basic Form Inputs card start -->
     <div class="card">
         <div class="card-header">
-            <h4>Editar Sala</h4>
+            <h5 class="h5 text-uppercase text-primary">Editar Sala</h5>
         </div>
         <div class="card-block">
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 {% bootstrap_form form layout='inline'%}
                 {% buttons %}
-                <button type="submit" class="btn btn-outline-primary">
+                <button type="submit" class="btn btn-outline-primary btn-sm">
                     <i class="fa fa-pencil-square-o"></i>
                     Atualizar
                 </button>

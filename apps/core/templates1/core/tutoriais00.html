@@ -1,0 +1,83 @@
+{% extends 'temp_base/indice.html' %}
+{% block titulo %}Vídeos{% endblock %}
+{% load static %}
+{% block estatico %}
+<style>
+.video-container {
+  position: relative;
+  padding-bottom: 56.25%;
+}
+
+.video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+</style>
+{% endblock %}
+{% block conteudo %}
+<div class="container-fluid bg-primary py-5 mb-5 page-header">
+	<div class="container py-5">
+		<div class="row justify-content-left">
+			<div class="col-lg-8">
+				<h1 class="display-3 text-white animated slideInDown">{{videos.0.ano}}</h1>
+				<h3 class="display-6 text-white animated slideInDown">{{videos.0.materia}}</h3>
+			</div>
+			<div class="col-lg-4">
+                    <form action="{% url 'core:videos_pesquisados' %}" method="get">
+                       <div class="row">
+                        <div class="col-8">
+                            <input class="form-control" name="q" type="text" placeholder="Pesquisar...">
+                        </div>
+                        <div class="col-1">
+                        <button type="submit" class="btn btn-outline-primary text-white"><i class="fas fa-search"></i></button>
+                        </div>
+                        </div>
+                    </form>
+                </div>
+		</div>
+	</div>
+</div>
+
+<div class="container">
+	<hr>
+		{% for video in videos %}
+		<div class="row">
+		<div class="col-md-7">
+			<div class="video-container">
+				<iframe
+						src="https://www.youtube.com/embed/{{video.url_video}}"
+						frameborder="0"
+						allow="accelerometer; autoplay; encrypted-media; gyroscope;"
+						allowfullscreen></iframe>
+			</div>
+		</div>
+		<div class="col-md-5" style="margin-bottom:100px;">
+			<div class="ftco-animate">
+				<div class="card">
+				  <ul class="list-group">
+					<li class="list-group-item text-uppercase text-center fw-bold active">{{video.titulo}}</li>
+					<li class="list-group-item"></li>
+					  <li class="list-group-item list-group-item-action text-uppercase"><span class="fw-bold">Data:</span> {{video.numero}}</li>
+					<li class="list-group-item"></li>
+					  <li class="list-group-item list-group-item-action text-uppercase"><span class="fw-bold">Matéria: </span>{{video.materia}}</li>
+					<li class="list-group-item"></li>
+					  <li class="list-group-item list-group-item-action text-uppercase"><span class="fw-bold">Ano:</span> {{video.ano}}</li>
+					<li class="list-group-item"></li>
+					  <li class="list-group-item list-group-item-action text-uppercase"><span class="fw-bold">Prof(A):</span> {{video.professora}}</li>
+					<li class="list-group-item"></li>
+					<li class="list-group-item list-group-item-action"><span class="fw-bold text-uppercase">Duração:</span> {{video.tempo}} minutos</li>
+					<li class="list-group-item"></li>
+				  </ul>
+				</div>
+			</div>
+		</div>
+		</div>
+		<hr>
+		{% empty %}
+		<p>Nenhum video cadastrado</p>
+		{% endfor %}
+</div>
+{% endblock %}

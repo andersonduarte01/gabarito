@@ -1,0 +1,119 @@
+{% extends 'temp_base/indice.html' %}
+{% block titulo %}Notícia{% endblock %}
+{% load static %}
+{% load social_share %}
+{% block estatico %}
+<meta property="og:url"           content="https://smepedrabranca.com.br/blog/{{noticia.pk}}" />
+<meta property="og:type"          content="website" />
+<meta property="og:title"         content="{{noticia}}" />
+<meta property="og:description"   content="" />
+<meta property="og:image"         content="{{noticia.imagem.url}}" />
+{% endblock %}
+{% block conteudo %}
+<div class="container">
+    <div id="fb-root"></div>
+    <script async defer crossorigin="anonymous"
+            src="https://connect.facebook.net/pt_BR/sdk.js#xfbml=1&version=v14.0&appId=2624277097784962&autoLogAppEvents=1"
+            nonce="n4ZzO278"></script>
+</div>
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Post content-->
+            <article>
+                <!-- Post header-->
+                <header class="mb-4">
+                    <!-- Post title-->
+                    <h1 class="fw-bolder mb-1">{{noticia}}</h1>
+                    <!-- Post meta content-->
+                    <div class="text-muted fst-italic mb-2">Autor: {{noticia.autor.nome}}</div>
+                </header>
+                <!-- Preview image figure-->
+                {% if noticia.imagem00 %}
+                <figure class="mb-4"><img class="img-fluid rounded" src="{{noticia.imagem.url}}" alt="..." /></figure>
+                <div class="text-muted fst-italic">Publicado: {{noticia.data}}</div>
+                {% else %}
+                <figure class="mb-4"><img class="img-fluid rounded" src="https://dummyimage.com/900x400/ced4da/6c757d.jpg" alt="..." /></figure>
+                {% endif %}
+                <!-- Post content-->
+                <hr>
+                <div class="row">
+              <div class="col-md-2 col-4">
+                <div class="fb-share-button" data-href="https://smepedrabranca.com.br/blog/{{noticia.pk}}/"
+                     data-layout="button" data-size="large">
+                  <a target="_blank"
+                     href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fsmepedrabranca.com.br%2Fblog%2Flampadas-de-nicola-tesla%2F&amp;src=sdkpreparse"
+                     class="fb-xfbml-parse-ignore">Compartilhar</a>
+                </div>
+              </div>
+              <div class="col-md-3 col-5">
+                <button type="button" style="background-color: #4CAF50;
+                                            border: none;
+                                            color: white;
+                                            padding-left: 10px;
+                                            padding-right: 10px;
+                                            padding-top: 4px;
+                                            padding-bottom: 3px;
+                                            text-align: center;
+                                            text-decoration: none;
+                                            display: inline-block;
+                                            font-size: 14px;
+                                            margin: 0px 2px;
+                                            cursor: pointer;
+                                            font-family: Helvetica, Arial, sans-serif;
+                                            border-radius: 5px;">
+                {% post_to_whatsapp object_or_url "" %}
+                </button>
+              </div>
+            </div>
+                <hr>
+                <section class="mb-5">
+                    {{noticia.conteudo|safe}}
+                </section>
+            </article>
+            <!-- Comments section-->
+        </div>
+        <!-- Side widgets-->
+        <div class="col-lg-4">
+            <!-- Search widget-->
+            <div class="card mb-4">
+                <div class="card-header">Pesquisar</div>
+                <div class="card-body">
+                    <form action="{% url 'blog:noticias_pesquisadas' %}" method="get">
+                       <div class="row">
+                        <div class="col-8">
+                            <input class="form-control" name="q" type="text" placeholder="Pesquisar noticia...">
+                        </div>
+                        <div class="col-1">
+                        <button type="submit" class="btn btn-primary text-white"><i class="fas fa-search"></i></button>
+                        </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <!-- Categories widget-->
+            <div class="card mb-4">
+                <div class="card-header">Categorias</div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-10">
+                            <ul class="list-unstyled mb-0">
+                                {% for categoria in temas %}
+                                <li><a href="#!">{{categoria}}</a></li>
+                                {% empty %}
+                                <li><a href="#!">VAZIO</a></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Side widget-->
+            <div class="card mb-4">
+                <div class="card-header">Espaço vazio</div>
+                <div class="card-body">Em desenvolvimento</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

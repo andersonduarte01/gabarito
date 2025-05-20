@@ -1,0 +1,112 @@
+{% extends 'temp_base/indice.html' %}
+{% block titulo %}Arquivos Pesquisados{% endblock %}
+{% load static %}
+{% block estatico %}
+<link rel="stylesheet" href="{% static 'cards/card_file.css' %}">
+{% endblock %}
+{% block conteudo %}
+<div class="container-fluid bg-primary py-5 mb-5 page-header">
+    <div class="container py-5">
+        <div class="row justify-content-left">
+            <div class="col-lg-8">
+                <h1 class="display-3 text-left text-white animated slideInDown">Resultado da pesquisa</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-left">
+                        <li class="breadcrumb-item"><a class="text-white" href="{% url 'core:inicio' %}">Inicio</a></li>
+                        <li class="breadcrumb-item text-white active" aria-current="page">Resultado pesquisa</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="col-lg-4">
+                <form action="{% url 'core:arquivos_pesquisados' %}" method="get">
+                    <div class="row">
+                        <div class="col-8">
+                            <input class="form-control" name="q" type="text" placeholder="Nova pesquisa...">
+                        </div>
+                        <div class="col-1">
+                            <button type="submit" class="btn btn-outline-primary text-white"><i class="fas fa-search"></i></button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<section class="wrapper">
+    <div class="container-fostrap">
+        <div class="content">
+            <div class="container">
+                <div class="row">
+                    {% for arquivo in arquivos %}
+                    <div class="col-xs-12 col-sm-4">
+                        <div class="card">
+                            <a class="card" href="#">
+                                {% if arquivo.pdf_miniatura %}
+                                <img src="{{arquivo.pdf_miniatura.url}}"/>
+                                {% else %}
+                                <img src="{% static 'images/fila.png' %}"/>
+                                {% endif %}
+                            </a>
+                            <div class="card-content">
+                                <h6 class="card-title">
+                                    {{arquivo.titulo}}
+                                </h6>
+                                <p class="">
+                                    {{arquivo.descricao}}
+                                </p>
+                            </div>
+                            <div class="card-read-more">
+                                <p class="small text-left" style="margin:3%;">
+                                    Publicado: {{arquivo.data_modificacao|date:"d M Y"}}<br>
+                                    Autor: {{arquivo.escola}}
+                                </p>
+                                <div class="btn-group-sm" role="group" aria-label="Exenplo" style="margin-bottom: 3px;">
+                                    <a href="{{arquivo.pdf.url}}" class="btn btn-outline-info" target="_blank">Baixar</a>
+                                    {% if user.is_authenticated %}
+                                    <a href="{% url 'arquivos:editar_arquivo' arquivo.pk %}" class="btn btn-outline-success">Editar</a>
+                                    <a href="#" class="btn btn-outline-danger" data-toggle="modal" data-target="#{{arquivo.id}}">
+                                        <i class="far fa-trash-alt"></i> Deletar
+                                    </a>
+
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <td>
+
+                        <!-- Modal -->
+                        <div class="modal fade" id="{{arquivo.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLongTitle1">Deletar {{arquivo}}</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <h5>Tem certeza que deseja excluir?</h5>
+                                        <hr>
+                                        <h6>{{categoria}}</h6>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <form method="post" action="{% url 'arquivos:deletar_arquivo' arquivo.pk %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-outline-danger">Deletar</button>
+                                            <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Sair</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    {% empty %}
+                    <h3 class="text-center">Nenhum arquivo correspondente a pesquisa</h3>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

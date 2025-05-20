@@ -1,0 +1,82 @@
+{% extends 'temp_base/professor_painel.html' %}
+{% load static %}
+{% block titulo %}Alunos{% endblock %}
+{% block estatico %}
+<style>
+.table-sm td,
+.table-sm th {
+    padding: 0.1rem; /* Reduz o padding das células */
+    font-size: 0.85rem; /* Diminui o tamanho da fonte */
+    white-space: nowrap; /* Evita que o texto quebre em várias linhas */
+}
+.table-responsive {
+    overflow-x: auto; /* Garante que a tabela role horizontalmente se necessário */
+    max-height: 500px; /* Limita a altura para evitar rolagem excessiva */
+}
+
+</style>
+{% endblock %}
+{% block trilha %}
+{% endblock %}
+{% block imagem%}
+<img src="{% if escola.imagem %}
+    {{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block breadcrumbs %}
+{{block.super}}
+{% endblock %}
+{% block conteudo %}
+<div class="col-sm-12">
+  <!-- Button trigger modal -->
+  <div class="card">
+    <div class="card-header text-primary">
+    <h5 class="h5 text-primary text-uppercase font-weight-bold">
+        <i class="bi bi-clipboard-check"></i> {{sala}}
+    </h5>
+    <hr>
+    <div class="row">
+        <div class="col-4 font-weight-bold">
+            <p><i class="fa fa-users" aria-hidden="true"></i> {{sala.total_alunos}} alunos</p>
+        </div>
+        <div class="col-8 font-weight-bold">
+            <p><i class="fa fa-home" aria-hidden="true"></i> {{sala.escola}}</p>
+        </div>
+        <div class="col-4 font-weight-bold">
+            <p><i class="fa fa-share" aria-hidden="true"></i> {{sala.turno}}</p>
+        </div>
+        <div class="col-8 font-weight-bold">
+            <p><i class="fa fa-calendar" aria-hidden="true"></i> {{sala.ano}}</p>
+        </div>
+
+    </div>
+</div>
+    <div class="card-block table-border-style table-bordered">
+      <div class="table-responsive mt-2">
+        <table class="table table-hover table-sm">
+          <thead>
+          <tr class="text-primary">
+            <th class="font-weight-bold text-center">Nº</th>
+            <th class="font-weight-bold">NOME</th>
+            <th class="font-weight-bold text-center">DATA NASC.</th>
+          </tr>
+          </thead>
+          {% for aluno in alunos %}
+          <tbody>
+          <tr>
+            <td class="font-weight-bold text-primary text-center">{{forloop.counter}}</td>
+            <td>{{aluno}}</td>
+            <td class="text-center">{{aluno.data_nascimento}}</td>
+          </tr>
+          </tbody>
+          {% empty %}
+          <p>Nenhum aluno cadastrado</p>
+          {% endfor %}
+        </table>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

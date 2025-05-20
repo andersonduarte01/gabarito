@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Relatório Avaliação</title>
+<style>
+table {
+  margin-bottom: 24px;
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 4px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+</style>
+</head>
+<body>
+<section>
+<h1 style="text-align: center; font-size: 22px;" >{{data}}</h1>
+  <h1 style="text-align:center; font-size: 18px;">{{ sala.ano }}° ano - {{sala.turno}} - {{ sala }}</h1>
+    <table>
+      <tr>
+        <th colspan="2" style="text-align:center; font-size: 15px;">{{avaliacao}}</th>
+      </tr>
+      <tr>
+        <th style="text-align:center; font-size: 13px;">Nome</th>
+        <th style="text-align:center; font-size: 13px;">Acertos</th>
+      </tr>
+      {% for aluno in sala.aluno_set.all %}
+        {% for gabarito in aluno.gabarito_set.all %}
+          {% if gabarito.avaliacao == avaliacao %}
+      <tr>
+        <td>{{aluno}}</td>
+        <td style="text-align:center">{{gabarito.qtd_acertos}}</td>
+      </tr>
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+      </table>
+
+<!--<table>-->
+<!--  <tr>-->
+<!--    <th colspan="2">Nome</th>-->
+<!--  </tr>-->
+<!--  <tr>-->
+<!--    <th>Materia</th>-->
+<!--    <th>Acertos</th>-->
+<!--  </tr>-->
+<!--  <tr>-->
+<!--    <td>Alfreds Futterkiste</td>-->
+<!--    <td>Maria Anders</td>-->
+<!--  </tr>-->
+<!--</table>-->
+
+</section>
+</body>
+</html>

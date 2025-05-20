@@ -1,0 +1,44 @@
+{% extends 'temp_base/adm.html' %}
+{% load static %}
+{% load bootstrap4 %}
+{% block titulo %}Editar Questao {% endblock %}
+{% block imagem1_adm %}
+<img src="{% if escola.imagem %}
+    {{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block imagem2_adm %}
+<img src="{% if escola.imagem %}{{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block painel_adm %}
+{{block.super}}
+{% endblock %}
+{% block tema_adm %}
+<h3 class="m-b-10">Editar Avaliação</h3>
+{% endblock %}
+{% block breadcrumbs_adm %}
+{{block.super}}
+<li class="breadcrumb-item"><a href="#">Adicionar</a></li>
+{% endblock %}
+{% block conteudo_adm %}
+<div class="col-sm-12">
+    <div class="card">
+        <div class="card-header">
+            <h4>Questão</h4>
+        </div>
+        <div class="card-block">
+            <form method="post"  enctype="multipart/form-data">
+                {% csrf_token %}
+                {% bootstrap_form form layout='inline'%}
+                {% buttons %}
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i>Salvar Alteração</button>
+                {% endbuttons %}
+            </form>
+        </div>
+    </div>
+    <!-- Basic Form Inputs card end -->
+</div>
+{% endblock %}

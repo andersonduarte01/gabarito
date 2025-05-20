@@ -1,0 +1,54 @@
+{% extends 'temp_base/prova.html' %}
+{% load bootstrap4 %}
+{% load static %}
+{% block titulo %}Gabarito{% endblock %}
+{% block imagem1_adm %}
+<img src="{% if escola.imagem %}
+    {{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block imagem2_adm %}
+<img src="{% if escola.imagem %}{{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block tema_adm %}
+<h3 class="m-b-10">{{sala}} - {{sala.ano}}ºAno - {{sala.turno}}</h3>
+<h4 class="m-b-10">{{avaliacao}}</h4>
+{% endblock %}
+{% block breadcrumbs_adm %}
+{{block.super}}
+<li class="breadcrumb-item"><a href="#">Gabarito</a></li>
+{% endblock %}
+{% block prova %}
+    <!-- Basic table card start -->
+<div class="card">
+    <div class="card-header">
+        <h4>{{aluno}}</h4>
+        <span>{{avaliacao}} - {{avaliacao.ano}}</span>
+    </div>
+    <hr>
+    <div class="container">
+        <form method="post">
+            {% csrf_token %}
+            {{formset.management_form}}
+            <div class="row">
+                {% for form in formset %}
+                {% for hidden in form.hidden_fields %}
+                    {{ hidden }}
+                {% endfor %}
+                <span class="col-md-3" style="margin-bottom:15px;">
+                {{ forloop.counter }}
+                {% for field in form.visible_fields %}
+                  {{ field }}
+                </span>
+                {% endfor %}
+                {% endfor %}
+            </div>
+            <hr>
+            <button type="submit" class="btn btn-outline-primary">Finalizar</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

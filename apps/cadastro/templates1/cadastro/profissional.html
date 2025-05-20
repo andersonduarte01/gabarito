@@ -1,0 +1,57 @@
+{% extends 'temp_base/base1.html' %}
+{% block titulo %}Documentos{% endblock %}
+{% load static %}
+{% load django_bootstrap5 %}
+{% block estatico %}
+<link rel="stylesheet" href="{% static 'cards/card_file.css' %}">
+<style>
+    .lotado-select {
+        height: 150px; /* Limita a altura do campo */
+        overflow-y: auto; /* Adiciona rolagem vertical */
+    }
+</style>
+{% endblock %}
+{% block conteudo %}
+<main id="main">
+    <section id="blog" class="blog">
+        <div class="container" data-aos="fade-up">
+            <div class="row">
+                <div class="col-lg-12 entries">
+                    <article class="entry">
+                        <h2 class="entry-title text-center">
+                            <a href="#">Informações Profissionais</a>
+                        </h2>
+                        <div class="entry-content">
+                            <form method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                {% bootstrap_form form %}
+                                <hr>
+                                <button type="submit" class="btn btn-outline-primary">Salvar e Continuar</button>
+                            </form>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}
+
+{% block script %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Esconde o campo nomeacao inicialmente
+        $('#id_nomeacao').parent().hide();
+
+        // Verifica o valor do campo vinculo
+        $('#id_vinculo').change(function() {
+            if ($(this).val() === 'Concursado') {
+                $('#id_nomeacao').parent().show(); // Mostra o campo nomeacao
+            } else {
+                $('#id_nomeacao').parent().hide(); // Esconde o campo nomeacao
+            }
+        }).trigger('change'); // Aciona a mudança ao carregar a página
+    });
+</script>
+{% endblock %}
