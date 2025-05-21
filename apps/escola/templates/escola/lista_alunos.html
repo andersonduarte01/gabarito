@@ -64,6 +64,9 @@
             <th class="font-weight-bold text-center">Nº</th>
             <th class="font-weight-bold">NOME</th>
             <th class="font-weight-bold text-center">DATA NASC.</th>
+            <th class="font-weight-bold">RELATÓRIO</th>
+            <th class="text-right font-weight-bold">AÇÕES</th>
+
           </tr>
           </thead>
           {% for aluno in alunos %}
@@ -72,6 +75,50 @@
             <td class="font-weight-bold text-primary text-center">{{forloop.counter}}</td>
             <td>{{aluno}}</td>
             <td class="text-center">{{aluno.data_nascimento}}</td>
+            <td><a href="#">Imprimir</a></td>
+            <td align="right">
+                <a href="{% url 'aluno:editar' pk=aluno.pk %}" class="primary">
+                  <i class="fas fa-edit" style="color: #2c28e6;"></i>
+
+                  <a type="button" class="danger" data-toggle="modal" data-target="#{{aluno.id}}">
+                    <i class="far fa-trash-alt" style="color: #ed1d1d;"></i>
+                  </a>
+
+                  <div class="modal fade" id="{{aluno.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+                       aria-hidden="true">
+                    <div class="modal-dialog modal-notify modal-info" role="document">
+                      <!--Content-->
+                      <div class="modal-content text-center">
+                        <!--Header-->
+                        <div class="modal-header d-flex justify-content-center">
+                          <h6 class="heading">Deletar Aluno</h6>
+                        </div>
+
+                        <!--Body-->
+                        <div class="modal-body">
+                          <h6>Tem certeza que deseja excluir</h6>
+                          <h6 class="text-danger">{{aluno.nome}}?</h6>
+                        </div>
+                        <!--Footer-->
+                        <div class="modal-footer flex-center">
+                          <form method="post" action="{% url 'aluno:deletar' aluno.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger">
+                              <i class="far fa-trash-alt"></i>
+                              Deletar
+                            </button>
+                            <button type="button" class="btn btn-outline-info" data-dismiss="modal">
+                              <i class="fas fa-times"></i>
+                              Cancelar
+                            </button>
+                          </form>
+                        </div>
+                      </div>
+                      <!--/.Content-->
+                    </div>
+                  </div>
+                  <!--Modal: modalPush-->
+              </td>
           </tr>
           </tbody>
           {% empty %}

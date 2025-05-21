@@ -291,7 +291,7 @@ class ListaProf(LoginRequiredMixin, ListView):
 
 class ProUnidAlunos(LoginRequiredMixin, ListView):
     model = Aluno
-    template_name = 'funcionario/prof_unidade_alunos.html'
+    template_name = 'funcionario/prof_alunos.html'
     context_object_name = 'alunos'
 
     def get_queryset(self):

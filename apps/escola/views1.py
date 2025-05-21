@@ -138,7 +138,7 @@ class RegistroPorMesView(FormView):
     
 class AdmListaAlunosrelatorios(LoginRequiredMixin, ListView):
     model = Aluno
-    template_name = 'escola/adm_unidade_alunos_relatorios.html'
+    template_name = 'escola/alunos_relatorios.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

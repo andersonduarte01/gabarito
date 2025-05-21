@@ -70,3 +70,20 @@ class ProfessorEditForm(forms.ModelForm):
     class Meta:
         model = Professor
         fields = ('email', 'professor_nome')
+
+
+class RelatorioBimestreForm(forms.Form):
+    BIMESTRE = [
+        ('1º_Bimestre', '1º_Bimestre'),
+        ('2º_Bimestre', '2º_Bimestre'),
+        ('3º_Bimestre', '3º_Bimestre'),
+        ('4º_Bimestre', '4º_Bimestre'),
+    ]
+
+    bimestre = forms.ChoiceField(
+        choices=BIMESTRE,
+        initial='1º_Bimestre',
+        label='Selecione o mês',
+        required=True,
+        widget=forms.Select(attrs={'class': 'form-control w-100'})
+    )

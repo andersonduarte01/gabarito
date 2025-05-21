@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import get_object_or_404
@@ -5,16 +7,32 @@ from django.shortcuts import get_object_or_404
 # Create your views here.
 from django.urls import reverse_lazy
 from django.utils.timezone import now
-from django.views.generic import CreateView, ListView, UpdateView, DeleteView, TemplateView
+from django.views.generic import CreateView, ListView, UpdateView, DeleteView, TemplateView, FormView
 
-from .forms import UserCreationFuncionario, DesignarFuncaoForm, UserCreationProfessor, ProfessorEditForm
+from .forms import UserCreationFuncionario, DesignarFuncaoForm, UserCreationProfessor, ProfessorEditForm, \
+    RelatorioBimestreForm
 from .models import Funcionario, Professor
 from ..aluno.models import Aluno
 from ..core.models import Usuario
 from ..escola.models import UnidadeEscolar, AnoLetivo
+from ..frequencia.models import Periodo, Relatorio
 from ..funcao.models import Funcao
 from ..perfil.models import Endereco, Pessoa
 from ..sala.models import Sala
+
+class DashProfessor(LoginRequiredMixin, TemplateView):
+    template_name = 'funcionario/professor_dash.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        professor = get_object_or_404(Professor, pk=self.request.user)
+        escola = get_object_or_404(UnidadeEscolar, pk=professor.escola.pk)
+        ano_corrente = AnoLetivo.objects.get(corrente=True)
+        salas = Sala.objects.filter(escola=escola, ano_letivo=ano_corrente).order_by('ano')
+        context['escola'] = escola
+        context['salas'] = salas
+        context['data'] = now()
+        return context
 
 
 class CadastrarProfessor(LoginRequiredMixin, SuccessMessageMixin, CreateView):
@@ -67,3 +85,78 @@ class DeletarProfessor(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
 
     def get_object(self, queryset=None):
         return Professor.objects.get(pk=self.kwargs['pk'])
+
+
+class ProfAlunos(LoginRequiredMixin, ListView):
+    model = Aluno
+    template_name = 'funcionario/prof_alunos.html'
+    context_object_name = 'alunos'
+
+    def get_queryset(self):
+        return Aluno.objects.filter(sala_id=self.kwargs['id'])
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        professor = get_object_or_404(Professor, pk=self.request.user)
+        escola = get_object_or_404(UnidadeEscolar, pk=professor.escola.id)
+        sala = get_object_or_404(Sala, id=self.kwargs['id'])
+        context['escola'] = escola
+        context['sala'] = sala
+        return context
+
+
+class ListaAlunosrelatorios(LoginRequiredMixin, FormView):
+    form_class = RelatorioBimestreForm
+    template_name = 'funcionario/alunos_relatorios.html'
+    alunos_relatorios = []
+
+    def form_valid(self, form):
+        sala = get_object_or_404(Sala, pk=self.kwargs['pk'])
+        alunos = Aluno.objects.filter(sala=sala).order_by('nome')
+        bimestre = form.cleaned_data['bimestre']
+
+        for aluno in alunos:
+            aluno_relatorio = []
+            aluno_relatorio.append(aluno)
+            try:
+                periodo = Periodo.objects.get(periodo=bimestre)
+                relatorio = Relatorio.objects.filter(aluno=aluno, periodo=periodo, data_relatorio__year=datetime.now().year).firts()
+                aluno_relatorio.append(relatorio)
+            except:
+                relatorio = None
+                aluno_relatorio.append(relatorio)
+
+            self.alunos_relatorios.append(aluno_relatorio)
+
+        context = self.get_context_data(form=form, alunos=self.alunos_relatorios)
+        return self.render_to_response(context)
+
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        sala = get_object_or_404(Sala, pk=self.kwargs['pk'])
+        alunos = Aluno.objects.filter(sala=sala).order_by('nome')
+        escola = get_object_or_404(UnidadeEscolar, slug=self.kwargs['slug'])
+
+        if self.alunos_relatorios is not None:
+            context['alunos'] = self.alunos_relatorios
+        else:
+            for aluno in alunos:
+                aluno_relatorio = []
+                aluno_relatorio.append(aluno)
+                try:
+                    periodo = Periodo.objects.get(periodo=self.kwargs['bimestre'])
+                    relatorio = Relatorio.objects.filter(aluno=aluno, periodo=periodo, data_relatorio__year=datetime.now().year).firts()
+                    aluno_relatorio.append(relatorio)
+                except:
+                    relatorio = None
+                    aluno_relatorio.append(relatorio)
+
+                self.alunos_relatorios.append(aluno_relatorio)
+
+            context['alunos'] = self.alunos_relatorios
+
+        context['bimestre'] = self.kwargs['bimestre']
+        context['sala'] = sala
+        context['escola'] = escola
+        return context
