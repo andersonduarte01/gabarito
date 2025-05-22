@@ -27,22 +27,22 @@
         <i class="bi bi-clipboard-check"></i> Relatório Individual - {{bimestre}}
     </h5>
     <hr>
-            <h6><i class="fa fa-home" aria-hidden="true"></i> {{sala.escola}}</h6>
-            <h6><i class="fa fa-university" aria-hidden="true"></i> {{sala}}</h6>
-            <h6><i class="fa fa-clock-o" aria-hidden="true"></i>  {{sala.turno}}</h6>
-            <h6><i class="fa fa-book" aria-hidden="true"></i> {{sala.ano}}</h6>
+            <h6 class=" mt-1"><i class="fa fa-home" aria-hidden="true"></i> {{sala.escola}}</h6>
+            <h6 class=" mt-1"><i class="fa fa-university" aria-hidden="true"></i> {{sala}}</h6>
+            <h6 class=" mt-1"><i class="fa fa-clock-o" aria-hidden="true"></i>  {{sala.turno}}</h6>
+            <h6 class=" mt-1"><i class="fa fa-book" aria-hidden="true"></i> {{sala.ano}}</h6>
 </div>
     <div class="card-block">
-        <form method="post" class="form-inline align-items-center" action="{% url 'funcionario:alunos_relatorios' slug=escola.slug  pk=sala.id bimestre='1º_Bimestre'%}">
-            {% csrf_token %}
-            <div class="offset-md-3"></div>
-            <div class="form-group col-md-3 col-sm-7">
-                {{ form.bimestre }}
-            </div>
-            <button type="submit" class="btn btn-outline-primary col-md-2 col-sm-3">
-                <i class="fas fa-search"></i> Pesquisar
-            </button>
-        </form>
+        <div class="form-inline align-items-center justify-content-center mb-4">
+            <label for="bimestreSelect" class="mr-2 font-weight-bold text-primary">Bimestre:</label>
+            <select id="bimestreSelect" class="form-control w-auto">
+                <option value="1º_Bimestre" {% if bimestre == "1º_Bimestre" %}selected{% endif %}>1º Bimestre</option>
+                <option value="2º_Bimestre" {% if bimestre == "2º_Bimestre" %}selected{% endif %}>2º Bimestre</option>
+                <option value="3º_Bimestre" {% if bimestre == "3º_Bimestre" %}selected{% endif %}>3º Bimestre</option>
+                <option value="4º_Bimestre" {% if bimestre == "4º_Bimestre" %}selected{% endif %}>4º Bimestre</option>
+            </select>
+        </div>
+
           <table class="table table-hover table-bordered">
           <thead>
           <tr>
@@ -58,10 +58,10 @@
             <td class="font-weight-bold text-primary text-center">{{forloop.counter}}</td>
             <td>{{aluno}}</td>
             <td class="text-center">
-                {% if relatorio == None  %}
-                  <div class="text-secondary">
+                {% if not relatorio  %}
+                  <a href="{% url 'frequencia:relatorio_aluno' bimestre=bimestre pk=aluno.pk %}" class="text-success">
                       <i class="fa fa-plus fa-lg"></i>
-                  </div>
+                  </a>
                 {% else %}
                 <a href="#" class="text-primary">
                       <i class="fa fa-check-square-o fa-lg"></i>
@@ -78,4 +78,13 @@
     </div>
   </div>
 </div>
+{% endblock %}
+{% block script%}
+<script>
+    document.getElementById('bimestreSelect').addEventListener('change', function () {
+        const bimestre = this.value;
+        const url = "{% url 'funcionario:alunos_relatorios' slug=escola.slug pk=sala.pk bimestre='BIMESTRE_PLACEHOLDER' %}";
+        window.location.href = url.replace('BIMESTRE_PLACEHOLDER', encodeURIComponent(bimestre));
+    });
+</script>
 {% endblock %}

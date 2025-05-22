@@ -105,32 +105,9 @@ class ProfAlunos(LoginRequiredMixin, ListView):
         return context
 
 
-class ListaAlunosrelatorios(LoginRequiredMixin, FormView):
-    form_class = RelatorioBimestreForm
+class ListaAlunosrelatorios(LoginRequiredMixin, ListView):
+    model = Aluno
     template_name = 'funcionario/alunos_relatorios.html'
-    alunos_relatorios = []
-
-    def form_valid(self, form):
-        sala = get_object_or_404(Sala, pk=self.kwargs['pk'])
-        alunos = Aluno.objects.filter(sala=sala).order_by('nome')
-        bimestre = form.cleaned_data['bimestre']
-
-        for aluno in alunos:
-            aluno_relatorio = []
-            aluno_relatorio.append(aluno)
-            try:
-                periodo = Periodo.objects.get(periodo=bimestre)
-                relatorio = Relatorio.objects.filter(aluno=aluno, periodo=periodo, data_relatorio__year=datetime.now().year).firts()
-                aluno_relatorio.append(relatorio)
-            except:
-                relatorio = None
-                aluno_relatorio.append(relatorio)
-
-            self.alunos_relatorios.append(aluno_relatorio)
-
-        context = self.get_context_data(form=form, alunos=self.alunos_relatorios)
-        return self.render_to_response(context)
-
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -138,25 +115,22 @@ class ListaAlunosrelatorios(LoginRequiredMixin, FormView):
         alunos = Aluno.objects.filter(sala=sala).order_by('nome')
         escola = get_object_or_404(UnidadeEscolar, slug=self.kwargs['slug'])
 
-        if self.alunos_relatorios is not None:
-            context['alunos'] = self.alunos_relatorios
-        else:
-            for aluno in alunos:
-                aluno_relatorio = []
-                aluno_relatorio.append(aluno)
-                try:
-                    periodo = Periodo.objects.get(periodo=self.kwargs['bimestre'])
-                    relatorio = Relatorio.objects.filter(aluno=aluno, periodo=periodo, data_relatorio__year=datetime.now().year).firts()
-                    aluno_relatorio.append(relatorio)
-                except:
-                    relatorio = None
-                    aluno_relatorio.append(relatorio)
+        alunos_relatorios = []
+        for aluno in alunos:
+            aluno_relatorio = []
+            aluno_relatorio.append(aluno)
+            try:
+                periodo = Periodo.objects.get(periodo=self.kwargs['bimestre'])
+                relatorio = Relatorio.objects.filter(aluno=aluno, periodo=periodo, data_relatorio__year=datetime.now().year).first()
+                aluno_relatorio.append(relatorio)
+            except:
+                relatorio = None
+                aluno_relatorio.append(relatorio)
 
-                self.alunos_relatorios.append(aluno_relatorio)
-
-            context['alunos'] = self.alunos_relatorios
+            alunos_relatorios.append(aluno_relatorio)
 
         context['bimestre'] = self.kwargs['bimestre']
         context['sala'] = sala
+        context['alunos'] = alunos_relatorios
         context['escola'] = escola
         return context

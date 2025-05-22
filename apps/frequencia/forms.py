@@ -63,3 +63,6 @@ class RelatorioForm(forms.ModelForm):
     class Meta:
         model = Relatorio
         fields = ('relatorio', )
+        widgets = {
+            'relatorio': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
+        }

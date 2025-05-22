@@ -58,3 +58,41 @@ class RegistroMesesSalas(LoginRequiredMixin, FormView):
             context['registros'] = registros
 
         return context
+
+
+class RelatorioAdd(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+    model = Relatorio
+    form_class = RelatorioForm
+    success_message = 'Relatorio adicionado com sucesso!'
+    template_name = 'frequencia/relatorio_add.html'
+
+    def get_success_url(self):
+        return reverse('funcionario:alunos_relatorios',
+                       kwargs={'pk': self.object.aluno.sala.pk, 'bimestre': self.object.periodo, 'slug':self.object.aluno.sala.escola.slug})
+
+    def form_valid(self, form):
+        relatorio = form.save(commit=False)
+        aluno = Aluno.objects.get(pk=self.kwargs['pk'])
+        relatorio.aluno = aluno
+        professor = Professor.objects.get(usuario_ptr=self.request.user)
+        relatorio.professor = professor
+        periodo = Periodo.objects.get(periodo=self.kwargs['bimestre'])
+        relatorio.periodo = periodo
+        relatorio.save()
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        aluno = get_object_or_404(Aluno, pk=self.kwargs['pk'])
+
+        if self.request.user.is_professor:
+            professor = Professor.objects.get(usuario_ptr=self.request.user)
+            escola = UnidadeEscolar.objects.get(pk=professor.escola.pk)
+        else:
+            escola = UnidadeEscolar.objects.get(pk=self.request.user)
+
+        contexto['professor'] = professor
+        contexto['escola'] = escola
+        contexto['aluno'] = aluno
+        contexto['bimestre'] = self.kwargs['bimestre']
+        return contexto
