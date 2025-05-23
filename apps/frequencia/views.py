@@ -83,16 +83,102 @@ class RelatorioAdd(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         contexto = super().get_context_data(**kwargs)
-        aluno = get_object_or_404(Aluno, pk=self.kwargs['pk'])
 
+        professor = Professor.objects.get(usuario_ptr=self.request.user)
+        contexto['professor'] = professor
+        contexto['escola'] = get_object_or_404(UnidadeEscolar, pk=professor.escola.pk)
+        contexto['aluno'] = get_object_or_404(Aluno, pk=self.kwargs['pk'])
+        contexto['bimestre'] = self.kwargs['bimestre']
+        return contexto
+
+
+class RelatorioUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = Relatorio
+    form_class = RelatorioForm
+    success_message = 'Relatório alterado com sucesso!'
+    template_name = 'frequencia/relatorio_up.html'
+    context_object_name = 'relatorio'
+
+
+    def get_success_url(self):
+        return reverse('funcionario:alunos_relatorios',
+                       kwargs={'pk': self.object.aluno.sala.pk, 'bimestre': self.object.periodo,
+                               'slug': self.object.aluno.sala.escola.slug})
+
+    def get_context_data(self, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        professor = get_object_or_404(Professor, usuario_ptr=self.request.user)
+        contexto['professor'] = professor
+        contexto['escola'] = get_object_or_404(UnidadeEscolar, pk=professor.escola.pk)
+        contexto['sala'] = get_object_or_404(Sala, pk=self.object.aluno.sala.pk)
+        return contexto
+
+
+class ProfessorRegistroMesesSalas(LoginRequiredMixin, FormView):
+    template_name = 'frequencia/prof_meses_salas.html'
+    form_class = FiltroMesForm
+    registros_filtrados = None  # Adiciona um atributo para armazenar os registros
+
+    def form_valid(self, form):
+        mes = int(form.cleaned_data['mes'])
+        sala = get_object_or_404(Sala, id=self.kwargs['sala_id'])
+        self.registros_filtrados = Registro.objects.filter(
+            sala=sala,
+            data__month=mes,
+            data__year=now().year
+        )
+        context = self.get_context_data(form=form, registros=self.registros_filtrados)
+        return self.render_to_response(context)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        sala = get_object_or_404(Sala, id=self.kwargs['sala_id'])
+        escola = get_object_or_404(UnidadeEscolar, pk=sala.escola.pk)
+        context['escola'] = escola
+        context['form'] = context.get('form') or self.form_class(initial={'mes': now().month})
+        context['sala'] = sala
+
+        if self.registros_filtrados is not None:
+            context['registros'] = self.registros_filtrados
+        else:
+            registros = Registro.objects.filter(
+                sala=sala,
+                data__month=now().month,
+                data__year=now().year
+            ).order_by('data')
+            context['registros'] = registros
+
+        return context
+
+
+class RegistroAdd(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+    model = Registro
+    form_class = RegistroForm
+    success_message = 'Registro adicionado com sucesso!'
+    template_name = 'frequencia/registro_add.html'
+
+    def get_success_url(self):
+        return reverse('frequencia:prof_relatorio_meses', kwargs={'sala_id': self.kwargs['pk']})
+
+    def form_valid(self, form):
+        registro = form.save(commit=False)
+        sala = Sala.objects.get(pk=self.kwargs['pk'])
+        professor = Professor.objects.get(usuario_ptr=self.request.user)
+        registro.professor = professor
+        registro.sala = sala
+        registro.save()
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        contexto = super().get_context_data(**kwargs)
         if self.request.user.is_professor:
             professor = Professor.objects.get(usuario_ptr=self.request.user)
             escola = UnidadeEscolar.objects.get(pk=professor.escola.pk)
         else:
             escola = UnidadeEscolar.objects.get(pk=self.request.user)
 
+        sala = Sala.objects.get(pk=self.kwargs['pk'])
         contexto['professor'] = professor
         contexto['escola'] = escola
-        contexto['aluno'] = aluno
-        contexto['bimestre'] = self.kwargs['bimestre']
+        contexto['sala'] = sala
         return contexto

@@ -50,3 +50,7 @@ class Relatorio(models.Model):
     data_relatorio = models.DateTimeField(auto_now_add=True)
     atualiza_relatorio = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['aluno', 'periodo'], name='unique_relatorio_aluno_periodo')
+        ]

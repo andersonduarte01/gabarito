@@ -1,7 +1,7 @@
 {% extends 'temp_base/professor_painel.html' %}
 {% load static %}
 {% load bootstrap4 %}
-{% block titulo %}Adicionar Relatorio {% endblock %}
+{% block titulo %}Atualizar Relatorio {% endblock %}
 {% block imagem %}
 <img src="{% if escola.imagem %}
     {{escola.logo_escola.thumbnail.url}}
@@ -13,20 +13,21 @@
     <!-- Basic Form Inputs card start -->
     <div class="card">
         <div class="card-header text-primary">
-            <h5 class="h5 text-uppercase font-weight-bold text-primary">{{aluno}}</h5>
-            <hr>
-            <h6 class=" mt-1"> {{aluno.sala.escola}}</h6>
-            <h6 class=" mt-1"> {{bimestre}}</h6>
-            <h6 class=" mt-1"> {{aluno.sala}}</h6>
-            <h6 class=" mt-1"> {{aluno.sala.turno}}</h6>
-            <h6 class=" mt-1"> {{aluno.sala.ano}}</h6>
+            <h5 class="h5 text-uppercase font-weight-bold text-primary">{{relatorio.aluno}}</h5>
+
+                <h6 class="mt-1">{{relatorio.aluno.sala.escola}}</h6>
+                <h6 class="mb-1">{{relatorio.periodo}}</h6>
+                <h6 class="mb-1">{{relatorio.aluno.sala.ano}}</h6>
+                <h6 class="mb-1">{{relatorio.aluno.sala}}</h6>
+                <h6 class="mb-1">{{relatorio.aluno.sala.turno}}</h6>
+
         </div>
         <div class="card-block">
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 {% bootstrap_form form layout='inline'%}
                 {% buttons %}
-                <button type="submit" class="btn btn-outline-primary"><i class="fas fa-save"></i>Salvar</button>
+                <button type="submit" class="btn btn-outline-primary"><i class="fas fa-save"></i>Atualizar</button>
                 {% endbuttons %}
             </form>
         </div>

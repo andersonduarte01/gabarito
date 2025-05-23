@@ -1,4 +1,5 @@
 from django import forms
+from django.core.exceptions import ValidationError
 from django.forms import TextInput, Textarea, DateInput, Select
 
 from .models import FrequenciaAluno, Registro, Relatorio
@@ -46,10 +47,17 @@ class RegistroForm(forms.ModelForm):
         widgets = {
             'data': DateInput(attrs={'class': 'form-control'}),
             'data_fim': DateInput(attrs={'class': 'form-control'}),
-            'pratica': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
-            'campo': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
-            'objeto': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
+            'pratica': forms.Textarea(attrs={'rows': 6, 'class': 'form-control'}),
+            'campo': forms.Textarea(attrs={'rows': 6, 'class': 'form-control'}),
+            'objeto': forms.Textarea(attrs={'rows': 6, 'class': 'form-control'}),
         }
+    def clean(self):
+        cleaned_data = super().clean()
+        data_inicio = cleaned_data.get("data")
+        data_fim = cleaned_data.get("data_fim")
+
+        if data_inicio and data_fim and data_inicio > data_fim:
+            raise ValidationError("A data de início não pode ser maior que a data de fim.")
 
 
 class RegistroUpdateForm(forms.ModelForm):

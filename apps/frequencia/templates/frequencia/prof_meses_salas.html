@@ -1,0 +1,127 @@
+{% extends 'temp_base/professor_painel.html' %}
+{% load static %}
+{% load bootstrap4 %}
+{% block titulo %}Registro Mensal{% endblock %}
+{% block estatico %}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.0/fullcalendar.min.css">
+<style>
+    .accordion-item {
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    .accordion-header {
+      background-color: #448aff;
+      padding: 10px;
+      cursor: pointer;
+    }
+    .accordion-body {
+      padding: 10px;
+      display: none;
+    }
+    .accordion-body.show {
+      display: block;
+    }
+</style>
+{% endblock %}
+{% block imagem %}
+<img src="{% if escola.imagem %}
+    {{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block painel %}
+{{block.super}}
+<ul class="pcoded-item pcoded-left-item">
+    <li class="">
+        <a href="{% url 'frequencia:registro_semanal' pk=sala.pk %}" class="waves-effect waves-dark">
+            <span class="pcoded-micon"><i class="ti-save"></i><b>BC</b></span>
+            <span class="pcoded-mtext">Adicionar Registro</span>
+            <span class="pcoded-mcaret"></span>
+        </a>
+    </li>
+</ul>
+{% endblock %}
+{% block conteudo %}
+<div class="col-sm-12">
+    <div class="card">
+        <div class="card-header text-primary">
+            <h5 class="h5 text-primary text-uppercase font-weight-bold">
+                <i class="bi bi-clipboard-check"></i> Registro de Atividades
+            </h5>
+            <hr>
+            <h6 class="mt-1">{{sala}}</h6>
+            <h6 class="mt-1">{{sala.escola}}</h6>
+        </div>
+        <hr>
+    </div>
+    <div class="card">
+        <div class="justify-content-between">
+            <div class="col-md-12 border border-6 rounded p-3">
+                <div class="col-md-12 text-center text-primary mb-3">
+                    <div class="h6"><i class="fas fa-serach" aria-hidden="true"></i> Mês</div>
+                </div>
+                <form method="post" class="form-inline align-items-center">
+                    {% csrf_token %}
+                    <div class="offset-md-3"></div>
+                    <div class="form-group col-md-3 col-sm-7">
+                        {{ form.mes }}
+                    </div>
+                    <button type="submit" class="btn btn-outline-primary col-md-2 col-sm-3">
+                        <i class="fas fa-search"></i> Filtrar
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+        <div class="row">
+            {% for registro in registros %}
+            <div class="col-sm-6">
+                <div class="card mt-3">
+                    <div class="card-header text-white bg-primary text-center">
+                        {{registro.data|date:"d/m/Y"}} à {{registro.data_fim|date:"d/m/Y"}}
+                    </div>
+                    <div class="card-body">
+                        <h6 class="card-title text-primary">Práticas que possibilitam</h6>
+                        <p style="font-size: 0.7rem;">{{registro.pratica}}</p>
+                        <h6 class="card-title text-primary">Campos de experiência</h6>
+                        <p style="font-size: 0.7rem;">{{registro.campo}}</p>
+                        <h6 class="card-title text-primary">Objetos de aprendizagem</h6>
+                        <p style="font-size: 0.7rem;">{{registro.objeto}}</p>
+                    </div>
+                    <div class="card-footer border-top" style="background-color: #e9ecef;">
+                        <span class="small text-primary font-weight-bold">Professor: {{ registro.professor|default_if_none:"" }}</span>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <h6 class="text-danger">Sem registros...</h6>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+      var accordionHeaders = document.querySelectorAll(".accordion-header");
+
+      accordionHeaders.forEach(function(header) {
+        header.addEventListener("click", function() {
+          var body = this.nextElementSibling;
+          body.classList.toggle("show");
+
+          // Close other accordion bodies if only one should be open at a time
+          var allBodies = document.querySelectorAll(".accordion-body");
+          allBodies.forEach(function(otherBody) {
+            if (otherBody !== body) {
+              otherBody.classList.remove("show");
+            }
+          });
+        });
+      });
+    });
+</script>
+{% endblock %}

@@ -27,10 +27,10 @@
         <i class="bi bi-clipboard-check"></i> Relatório Individual - {{bimestre}}
     </h5>
     <hr>
-            <h6 class=" mt-1"><i class="fa fa-home" aria-hidden="true"></i> {{sala.escola}}</h6>
-            <h6 class=" mt-1"><i class="fa fa-university" aria-hidden="true"></i> {{sala}}</h6>
-            <h6 class=" mt-1"><i class="fa fa-clock-o" aria-hidden="true"></i>  {{sala.turno}}</h6>
-            <h6 class=" mt-1"><i class="fa fa-book" aria-hidden="true"></i> {{sala.ano}}</h6>
+            <h6 class=" mt-1"> {{sala.escola}}</h6>
+            <h6 class=" mt-1"> {{sala}}</h6>
+            <h6 class=" mt-1"> {{sala.turno}}</h6>
+            <h6 class=" mt-1"> {{sala.ano}}</h6>
 </div>
     <div class="card-block">
         <div class="form-inline align-items-center justify-content-center mb-4">
@@ -63,7 +63,7 @@
                       <i class="fa fa-plus fa-lg"></i>
                   </a>
                 {% else %}
-                <a href="#" class="text-primary">
+                <a href="{% url 'frequencia:relatorio_aluno_up' pk=relatorio.pk %}" class="text-primary">
                       <i class="fa fa-check-square-o fa-lg"></i>
                   </a>
                 {% endif %}
