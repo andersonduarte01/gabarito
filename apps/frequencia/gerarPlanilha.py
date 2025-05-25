@@ -36,20 +36,14 @@ def criarFrequencia(mes, sala):
 
 
 def criarFrequenciaDiaria(data, alunos):
-    freq_alunos = []
     freq_alunos_salve = []
+
     for aluno in alunos:
-        try:
-            frequencia = FrequenciaAluno.objects.get(aluno=aluno, data=data)
-            freq_alunos.append(frequencia)
-        except:
-            freq01 = FrequenciaAluno(aluno=aluno, data=data)
-            freq_alunos.append(freq01)
-            freq_alunos_salve.append(freq01)
+        if not FrequenciaAluno.objects.filter(aluno=aluno, data=data).exists():
+            freq_alunos_salve.append(FrequenciaAluno(aluno=aluno, data=data))
 
-    FrequenciaAluno.objects.bulk_create(freq_alunos_salve)
+    FrequenciaAluno.objects.bulk_create(freq_alunos_salve, ignore_conflicts=True)
 
-    return freq_alunos
 
 
 def percentual(frequencias, freq):

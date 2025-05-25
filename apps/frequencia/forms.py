@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
-from django.forms import TextInput, Textarea, DateInput, Select
-
+from django.forms import TextInput, Textarea, DateInput, Select, IntegerField, HiddenInput, CharField, BooleanField
+from django.forms import Form
 from .models import FrequenciaAluno, Registro, Relatorio
 
 
@@ -64,6 +64,13 @@ class RegistroUpdateForm(forms.ModelForm):
     class Meta:
         model = Registro
         fields = ('data', 'data_fim', 'pratica', 'campo', 'objeto')
+        widgets = {
+            'data': TextInput(attrs={'class': 'form-control'}),
+            'data_fim': TextInput(attrs={'class': 'form-control'}),
+            'pratica': forms.Textarea(attrs={'rows': 6, 'class': 'form-control'}),
+            'campo': forms.Textarea(attrs={'rows': 6, 'class': 'form-control'}),
+            'objeto': forms.Textarea(attrs={'rows': 6, 'class': 'form-control'}),
+        }
 
 
 
@@ -74,3 +81,15 @@ class RelatorioForm(forms.ModelForm):
         widgets = {
             'relatorio': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
         }
+
+
+class FrequenciaForm(Form):
+    aluno_id = IntegerField(widget=HiddenInput)
+    nome = CharField(widget=HiddenInput())
+    presente = BooleanField(required=False)
+    observacao = CharField(
+        required=False,
+        max_length=255,
+        widget=TextInput(attrs={'class': 'form-control'})
+    )
+

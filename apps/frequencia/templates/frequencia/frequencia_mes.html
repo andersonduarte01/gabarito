@@ -1,0 +1,203 @@
+{% extends 'temp_base/professor_painel.html' %}
+{% load static %}
+
+{% block titulo %}Frequência Mensal{% endblock %}
+
+{% block estatico %}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.6.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+  .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      margin-top: 20px;
+  }
+
+  .calendar .day-name {
+      text-align: center;
+      font-weight: bold;
+      background-color: #e9ecef;
+      padding: 6px 0;
+      font-size: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+  }
+
+  .calendar .day {
+      border: 1px solid #dee2e6;
+      background-color: #f8f9fa;
+      aspect-ratio: 1 / 1;
+      position: relative;
+      font-size: 11px;
+      padding: 2px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: flex-start;
+  }
+
+  .calendar .day.today {
+      background-color: #bdc3c7;
+      color: white;
+      font-weight: bold;
+  }
+
+  .day-number {
+      font-weight: bold;
+      font-size: 10px;
+  }
+
+  .day-action {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+  }
+
+  .day-action a {
+      font-size: 14px;
+      color: #007bff;
+      text-decoration: none;
+  }
+
+  .day-action a:hover {
+      color: #0056b3;
+  }
+
+  @media (max-width: 768px) {
+      .calendar {
+          gap: 3px;
+      }
+
+      .calendar .day,
+      .calendar .day-name {
+          font-size: 9px;
+      }
+
+      .day-action a {
+          font-size: 12px;
+      }
+  }
+</style>
+
+{% endblock %}
+
+{% block conteudo %}
+<div class="col-sm-12">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            {% with anterior_mes=mes|add:"-1" proximo_mes=mes|add:"1" %}
+                {% if anterior_mes < 1 %}
+                    {% with anterior_mes=12 anterior_ano=ano|add:"-1" %}
+                        <a href="?mes={{ anterior_mes }}&ano={{ anterior_ano }}" class="btn btn-outline-primary">← Anterior</a>
+                    {% endwith %}
+                {% else %}
+                    <a href="?mes={{ anterior_mes }}&ano={{ ano }}" class="btn btn-outline-primary">← Anterior</a>
+                {% endif %}
+
+                <h4 class="h4 m-0 text-primary font-weight-bold">{{ sala }} - Frequência - {{ mes_nome }} {{ ano }}</h4>
+
+                {% if proximo_mes > 12 %}
+                    {% with proximo_mes=1 proximo_ano=ano|add:"1" %}
+                        <a href="?mes={{ proximo_mes }}&ano={{ proximo_ano }}" class="btn btn-outline-primary">Próximo →</a>
+                    {% endwith %}
+                {% else %}
+                    <a href="?mes={{ proximo_mes }}&ano={{ ano }}" class="btn btn-outline-primary">Próximo →</a>
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <div class="card-block">
+            <div class="container d-flex justify-content-center">
+                <div class="calendar col-md-6 p-0" id="calendar-days">
+                    <div class="day-name">Dom</div>
+                    <div class="day-name">Seg</div>
+                    <div class="day-name">Ter</div>
+                    <div class="day-name">Qua</div>
+                    <div class="day-name">Qui</div>
+                    <div class="day-name">Sex</div>
+                    <div class="day-name">Sáb</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const container = document.getElementById("calendar-days");
+        const ano = {{ ano }};
+        const mes = {{ mes }} - 1;  // JavaScript usa 0-11
+        const hoje = new Date();
+
+        const frequencias = JSON.parse('{{ frequencias_json|escapejs }}');
+
+        const primeiroDia = new Date(ano, mes, 1);
+        const ultimoDia = new Date(ano, mes + 1, 0);
+        const diaSemanaInicio = primeiroDia.getDay();
+        const totalDias = ultimoDia.getDate();
+
+        // Preenche dias antes do início do mês
+        for (let i = 0; i < diaSemanaInicio; i++) {
+            const vazio = document.createElement("div");
+            vazio.classList.add("day");
+            vazio.style.visibility = "hidden";
+            container.appendChild(vazio);
+        }
+
+        // Gera os dias do mês
+        for (let dia = 1; dia <= totalDias; dia++) {
+            const dataAtual = new Date(ano, mes, dia);
+            const dayDiv = document.createElement("div");
+            dayDiv.classList.add("day");
+
+            if (
+                dataAtual.getDate() === hoje.getDate() &&
+                dataAtual.getMonth() === hoje.getMonth() &&
+                dataAtual.getFullYear() === hoje.getFullYear()
+            ) {
+                dayDiv.classList.add("today");
+            }
+
+            const dataFormatada = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+            const temFrequencia = frequencias[dataFormatada] === true;
+
+            const diaSemana = dataAtual.getDay();  // 0 = Domingo, 6 = Sábado
+
+            let linkHtml = '';
+
+            if (diaSemana === 0 || diaSemana === 6) {
+                // Fim de semana: mostrar ícone desativado
+                linkHtml = `
+                    <span title="Fim de semana" style="color: gray; cursor: not-allowed;">
+                        <i class="fa fa-ban" aria-hidden="true"></i>
+                    </span>
+                `;
+            } else {
+                if (temFrequencia) {
+                    linkHtml = `
+                        <a href="/frequencia/editar/{{sala.id}}/${dataFormatada}/up/" title="Editar frequência">
+                            <i class="fa fa-pencil text-success" aria-hidden="true"></i>
+                        </a>
+                    `;
+                } else {
+                    linkHtml = `
+                        <a href="/frequencia/cadastrar/${dataFormatada}/{{sala.id}}" title="Adicionar frequência">
+                            <i class="fa fa-plus" aria-hidden="true"></i>
+                        </a>
+                    `;
+                }
+            }
+
+            dayDiv.innerHTML = `
+                <div class="day-number">${dia}</div>
+                <div class="day-action">${linkHtml}</div>
+            `;
+
+            container.appendChild(dayDiv);
+        }
+    });
+</script>
+
+{% endblock %}

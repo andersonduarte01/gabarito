@@ -44,14 +44,9 @@ class FreqDiaria(UpdateView):
 def frequencia_diaria(request, cal, sala_id):
     x = cal.replace("-", "/")
     data = datetime.strptime(x, '%Y/%m/%d')
-    sala = Sala.objects.get(pk=sala_id)
-    escola = None
-    professor = ''
-    if request.user.is_professor:
-        professor = Professor.objects.get(usuario_ptr=request.user)
-        escola = UnidadeEscolar.objects.get(pk=professor.escola.pk)
-    else:
-        escola = UnidadeEscolar.objects.get(pk=sala.escola.pk)
+    sala = get_object_or_404(Sala, pk=sala_id)
+    professor = get_object_or_404(Professor, usuario_ptr=request.user)
+    escola = UnidadeEscolar.objects.get(pk=professor.escola.pk)
 
     alunos = Aluno.objects.filter(sala=sala)
     criarFrequenciaDiaria(alunos=alunos, data=data)

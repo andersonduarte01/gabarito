@@ -1,7 +1,7 @@
 {% extends 'temp_base/professor_painel.html' %}
 {% load static %}
 {% load bootstrap4 %}
-{% block titulo %}Adicionar Registro {% endblock %}
+{% block titulo %}Atualizar Registro {% endblock %}
 {% block imagem %}
 <img src="{% if escola.imagem %}
     {{escola.logo_escola.thumbnail.url}}
@@ -13,13 +13,11 @@
     <!-- Basic Form Inputs card start -->
     <div class="card">
         <div class="card-header">
-            <h5 class="h5 text-primary font-weight-bold text-uppercase text-center">Registro semanal de atividades</h5>
-            <h6 class="mt-1 text-primary text-uppercase">{{sala}}</h6>
-            <h6 class="mt-1 text-primary text-uppercase">{{sala.ano}}</h6>
+           <h5 class="h5 text-primary font-weight-bold text-uppercase">Atualizar Registro de atividades</h5>
+           <p class="text-primary text-uppercase">{{sala}} - {{sala.ano}}</p>
+           <p class="text-primary text-uppercase"><div id="dataset"></div></p>
         </div>
-        <h6 class=" mt-1 text-primary font-weight-bold text-uppercase"><div id="dataset"></div></h6>
-        <hr>
-        <div class="mt-0 card-block">
+        <div class="card-block">
             <form method="post">
                 {% csrf_token %}
                 {% if form.non_field_errors %}
@@ -64,14 +62,14 @@
                 </div>
                 </div>
                 <hr>
-                <button type="submit" class="btn btn-outline-primary btn-block">Salvar Registro</button>
+                <button type="submit" class="btn btn-outline-primary btn-block">Atualizar Registro</button>
             </form>
         </div>
     </div>
     <!-- Basic Form Inputs card end -->
 </div>
 {% endblock %}
-{% block script_pro %}
+{% block script %}
 <script>
     // JavaScript para converter e preencher o campo de data com a data recebida em kwargs
     document.addEventListener('DOMContentLoaded', function() {

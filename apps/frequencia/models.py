@@ -31,7 +31,7 @@ class Registro(models.Model):
     pratica = models.TextField(verbose_name='PRÁTICAS QUE POSSIBILITAM:')
     campo = models.TextField(verbose_name='CAMPOS DE EXPERIÊNCIAS:')
     objeto = models.TextField(verbose_name='OBJETOS DE APRENDIZAGEM:')
-    professor =models.ForeignKey(Professor, verbose_name='Professor',  null=True, blank=True, on_delete=models.SET_NULL)
+    professor = models.ForeignKey(Professor, verbose_name='Professor', null=True, blank=True, on_delete=models.SET_NULL)
 
 
 class Periodo(models.Model):
@@ -46,11 +46,7 @@ class Relatorio(models.Model):
     periodo = models.ForeignKey(Periodo, on_delete=models.DO_NOTHING)
     aluno = models.ForeignKey(Aluno, on_delete=models.DO_NOTHING, related_name='relatorio_aluno')
     relatorio = models.TextField(verbose_name='Relatório')
-    professor = models.ForeignKey(Professor,  null=True, blank=True, on_delete=models.SET_NULL)
+    professor = models.ForeignKey(Professor, null=True, blank=True, on_delete=models.SET_NULL)
     data_relatorio = models.DateTimeField(auto_now_add=True)
     atualiza_relatorio = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=['aluno', 'periodo'], name='unique_relatorio_aluno_periodo')
-        ]
