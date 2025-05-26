@@ -78,7 +78,7 @@ class RelatorioAdd(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         aluno = Aluno.objects.get(pk=self.kwargs['pk'])
         relatorio.aluno = aluno
         professor = Professor.objects.get(usuario_ptr=self.request.user)
-        relatorio.professor = professor
+        relatorio.professor = professor.professor_nome
         periodo = Periodo.objects.get(periodo=self.kwargs['bimestre'])
         relatorio.periodo = periodo
         relatorio.save()
@@ -107,6 +107,14 @@ class RelatorioUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return reverse('funcionario:alunos_relatorios',
                        kwargs={'pk': self.object.aluno.sala.pk, 'bimestre': self.object.periodo,
                                'slug': self.object.aluno.sala.escola.slug})
+
+    def form_valid(self, form):
+        relatorio = form.save(commit=False)
+        professor = Professor.objects.get(usuario_ptr=self.request.user)
+        relatorio.professor = professor.professor_nome
+        relatorio.save()
+        return super().form_valid(form)
+
 
     def get_context_data(self, **kwargs):
         contexto = super().get_context_data(**kwargs)
@@ -167,7 +175,7 @@ class RegistroAdd(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         registro = form.save(commit=False)
         sala = Sala.objects.get(pk=self.kwargs['pk'])
         professor = Professor.objects.get(usuario_ptr=self.request.user)
-        registro.professor = professor
+        registro.professor = professor.professor_nome
         registro.sala = sala
         registro.save()
         return super().form_valid(form)
@@ -195,6 +203,13 @@ class RegistroUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 
     def get_success_url(self):
         return reverse_lazy('frequencia:prof_relatorio_meses', kwargs={'sala_id': self.object.sala.pk})
+
+    def form_valid(self, form):
+        registro = form.save(commit=False)
+        professor = Professor.objects.get(usuario_ptr=self.request.user)
+        registro.professor = professor.professor_nome
+        registro.save()
+        return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
         contexto = super().get_context_data(**kwargs)

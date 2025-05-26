@@ -1,7 +1,7 @@
 from reportlab.lib.pagesizes import A4,landscape
 
 
-def desenhar_retangulo(c, largura_cm=27, altura_cm=19):
+def desenhar_retangulo(c, largura_cm=19, altura_cm=27):
     """
     Desenha um retângulo na página atual do Canvas e retorna os pontos do retângulo.
 
@@ -11,7 +11,7 @@ def desenhar_retangulo(c, largura_cm=27, altura_cm=19):
     :return: Uma tupla contendo os pontos (ponto1, ponto2, ponto3, ponto4) do retângulo
     """
     # Dimensões da página A4 em pontos
-    largura_pagina, altura_pagina = landscape(A4)
+    largura_pagina, altura_pagina = A4
 
     # Converter dimensões de cm para pontos
     largura_paralelogramo = largura_cm * 28.35  # 1 cm = 28.35 pontos

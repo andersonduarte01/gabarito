@@ -139,3 +139,15 @@ class ListAlunos(LoginRequiredMixin, CreateView):
         context['alunos'] = alunos
         context['escola'] = escola
         return context
+
+
+class FrequenciaRelatorios(LoginRequiredMixin, TemplateView):
+    template_name = 'escola/relatorio_frequencia.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        escola = get_object_or_404(UnidadeEscolar, pk=self.request.user)
+        sala = Sala.objects.get(pk=self.kwargs['pk'])
+        context['escola'] = escola
+        context['sala'] = sala
+        return context

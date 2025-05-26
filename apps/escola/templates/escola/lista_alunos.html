@@ -37,24 +37,12 @@
   <div class="card">
     <div class="card-header text-primary">
     <h5 class="h5 text-primary text-uppercase font-weight-bold">
-        <i class="bi bi-clipboard-check"></i> {{sala}}
+        {{sala}}
     </h5>
     <hr>
-    <div class="row">
-        <div class="col-4 font-weight-bold">
-            <p><i class="fa fa-users" aria-hidden="true"></i> {{sala.total_alunos}} alunos</p>
-        </div>
-        <div class="col-8 font-weight-bold">
-            <p><i class="fa fa-home" aria-hidden="true"></i> {{sala.escola}}</p>
-        </div>
-        <div class="col-4 font-weight-bold">
-            <p><i class="fa fa-share" aria-hidden="true"></i> {{sala.turno}}</p>
-        </div>
-        <div class="col-8 font-weight-bold">
-            <p><i class="fa fa-calendar" aria-hidden="true"></i> {{sala.ano}}</p>
-        </div>
-
-    </div>
+        <h6>{{sala.escola}}</h6>
+        <h6>{{sala.turno}}</h6>
+        <h6>{{sala.ano}}</h6>
 </div>
     <div class="card-block table-border-style table-bordered">
       <div class="table-responsive mt-2">
@@ -64,8 +52,8 @@
             <th class="font-weight-bold text-center">Nº</th>
             <th class="font-weight-bold">NOME</th>
             <th class="font-weight-bold text-center">DATA NASC.</th>
-            <th class="font-weight-bold">RELATÓRIO</th>
-            <th class="text-right font-weight-bold">AÇÕES</th>
+            <th class="font-weight-bold text-center">RELATÓRIO</th>
+            <th class="text-right font-weight-bold text-center">AÇÕES</th>
 
           </tr>
           </thead>
@@ -75,8 +63,8 @@
             <td class="font-weight-bold text-primary text-center">{{forloop.counter}}</td>
             <td>{{aluno}}</td>
             <td class="text-center">{{aluno.data_nascimento}}</td>
-            <td><a href="#">Imprimir</a></td>
-            <td align="right">
+            <td class="text-center"><a href="{% url 'aluno:relatorio-registro' pk=aluno.pk %}"><i class="far fa-file-pdf" style="color: #ed1d1d;"></i></a></td>
+            <td class="text-center">
                 <a href="{% url 'aluno:editar' pk=aluno.pk %}" class="primary">
                   <i class="fas fa-edit" style="color: #2c28e6;"></i>
 

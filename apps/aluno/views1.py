@@ -191,7 +191,7 @@ def relatorioAluno(request, pk, mes):
                    y=(ponto3[1] - 60), font="Helvetica", font_size=14,
                    color=(0, 0, 0))
 
-    mes_texto = c.stringWidth(f'{nome_meses[mes]} - 2024', "Helvetica", 14)
+    mes_texto = c.stringWidth(f'{nome_meses[mes]} - 2025', "Helvetica", 14)
 
 
     escrever_texto(c, texto=f'{nome_meses[mes]} - 2024',
@@ -203,7 +203,7 @@ def relatorioAluno(request, pk, mes):
 
     locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
 
-    ano = 2024
+    ano = 2025
     dias_mes = calendar.monthcalendar(ano, mes)
     resultado = []  # Cabeçalho da tabela
     resultado1 = ['']  # Cabeçalho da tabela
