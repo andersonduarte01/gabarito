@@ -15,7 +15,8 @@ from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 from reportlab.platypus import Table, TableStyle
 
-from .relatorio import desenhar_retangulo, adicionar_linha_paralela, adicionar_linha_vertical, escrever_texto
+from .relatorio import desenhar_retangulo, adicionar_linha_paralela, adicionar_linha_vertical, escrever_texto, \
+    desenhar_retangulo1
 from ..aluno.models import Aluno
 from ..avaliacao.models import Gabarito, Resposta
 from .forms import AlunoForm, EditarAlunoForm, PessoaForm, EnderecoForm, EditarAlunoForm01
@@ -213,7 +214,7 @@ def relatorioRegistro(request, pk):
 
 
     c = canvas.Canvas(response, pagesize=A4)
-    ponto1, ponto2, ponto3, ponto4 = desenhar_retangulo(c)
+    ponto1, ponto2, ponto3, ponto4 = desenhar_retangulo1(c)
     altura = adicionar_linha_paralela(c, ponto3, ponto4, intervalo=98.65)
 
 

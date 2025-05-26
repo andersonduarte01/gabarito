@@ -1,7 +1,7 @@
 from reportlab.lib.pagesizes import A4,landscape
 
 
-def desenhar_retangulo(c, largura_cm=19, altura_cm=27):
+def desenhar_retangulo1(c, largura_cm=19, altura_cm=27):
     """
     Desenha um retângulo na página atual do Canvas e retorna os pontos do retângulo.
 
@@ -12,6 +12,45 @@ def desenhar_retangulo(c, largura_cm=19, altura_cm=27):
     """
     # Dimensões da página A4 em pontos
     largura_pagina, altura_pagina = A4
+
+    # Converter dimensões de cm para pontos
+    largura_paralelogramo = largura_cm * 28.35  # 1 cm = 28.35 pontos
+    altura_paralelogramo = altura_cm * 28.35  # 1 cm = 28.35 pontos
+
+    # Calcular as coordenadas dos pontos para centralizar o retângulo
+    margem_esquerda = (largura_pagina - largura_paralelogramo) / 2
+    margem_superior = (altura_pagina - altura_paralelogramo) / 2
+
+    ponto1 = (margem_esquerda, margem_superior)
+    ponto2 = (ponto1[0] + largura_paralelogramo, margem_superior)
+    ponto3 = (ponto1[0] + largura_paralelogramo, ponto1[1] + altura_paralelogramo)
+    ponto4 = (ponto1[0], ponto1[1] + altura_paralelogramo)
+
+    # Configurar as bordas do retângulo
+    c.setStrokeColorRGB(0.8, 0.8, 0.8)  # Cinza claro
+    c.setLineWidth(2)  # Largura da linha
+
+    # Desenhar as linhas do retângulo
+    c.line(ponto1[0], ponto1[1], ponto2[0], ponto2[1])  # Linha superior
+    c.line(ponto2[0], ponto2[1], ponto3[0], ponto3[1])  # Linha direita
+    c.line(ponto3[0], ponto3[1], ponto4[0], ponto4[1])  # Linha inferior
+    c.line(ponto4[0], ponto4[1], ponto1[0], ponto1[1])  # Linha esquerda
+
+    # Retornar os pontos
+    return ponto1, ponto2, ponto3, ponto4
+
+
+def desenhar_retangulo(c, largura_cm=27, altura_cm=19):
+    """
+    Desenha um retângulo na página atual do Canvas e retorna os pontos do retângulo.
+
+    :param c: Canvas do ReportLab
+    :param largura_cm: Largura do retângulo em centímetros (padrão: 19 cm)
+    :param altura_cm: Altura do retângulo em centímetros (padrão: 27 cm)
+    :return: Uma tupla contendo os pontos (ponto1, ponto2, ponto3, ponto4) do retângulo
+    """
+    # Dimensões da página A4 em pontos
+    largura_pagina, altura_pagina = landscape(A4)
 
     # Converter dimensões de cm para pontos
     largura_paralelogramo = largura_cm * 28.35  # 1 cm = 28.35 pontos
