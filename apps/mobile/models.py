@@ -2,8 +2,14 @@ from django.db import models
 from ..core.models import Usuario
 from ..escola.models import UnidadeEscolar
 
+
+class MobileTecnico(Usuario):
+    is_tecnico = models.BooleanField(default=False)
+
+
 class MobileUsuario(Usuario):
-    escola = models.ForeignKey(UnidadeEscolar, on_delete=models.DO_NOTHING, null=True, blank=True)
+    escola = models.ForeignKey(UnidadeEscolar, on_delete=models.SET_NULL, null=True, blank=True)
+    tecnico = models.ForeignKey(MobileTecnico, on_delete=models.SET_NULL, null=True, blank=True)
 
 
 class Chamada(models.Model):

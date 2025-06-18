@@ -15,7 +15,13 @@ class UsuarioSerializer(serializers.ModelSerializer):
 class MobileUsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = MobileUsuario
-        fields = ['id', 'email', 'nome', 'escola']
+        fields = ['id', 'email', 'nome', 'escola', 'is_solicitante']
+
+
+class MobileUsuarioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MobileUsuario
+        fields = ['id', 'email', 'nome', 'is_tecnico']
 
 
 class ChamadaSerializer(serializers.ModelSerializer):

@@ -36,7 +36,6 @@ class Usuario(AbstractBaseUser):
     is_funcionario = models.BooleanField(default=False)
     is_administrator = models.BooleanField(default=False)
     is_professor = models.BooleanField(default=False)
-    is_tecnico = models.BooleanField(default=False)
     is_solicitante = models.BooleanField(default=False)
     is_aluno = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
