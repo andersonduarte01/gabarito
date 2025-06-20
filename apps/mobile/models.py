@@ -10,6 +10,7 @@ class MobileTecnico(Usuario):
 class MobileUsuario(Usuario):
     escola = models.ForeignKey(UnidadeEscolar, on_delete=models.SET_NULL, null=True, blank=True)
     tecnico = models.ForeignKey(MobileTecnico, on_delete=models.SET_NULL, null=True, blank=True)
+    is_solicitante = models.BooleanField(default=False)
 
 
 class Chamada(models.Model):

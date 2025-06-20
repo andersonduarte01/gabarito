@@ -228,6 +228,15 @@ CKEDITOR_CONFIGS = {
 EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
 EMAIL_FILE_PATH = str(BASE_DIR.joinpath('sent_emails'))
 
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=3650),  # 10 anos, por exemplo
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=3650),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': False,
+}
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
