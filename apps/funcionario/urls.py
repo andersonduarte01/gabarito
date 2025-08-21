@@ -1,7 +1,12 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+
 from . import views
 
 app_name = 'funcionario'
+
+router = DefaultRouter()
+router.register(r'professores', views.ProfessorViewSet, basename='professor')
 
 urlpatterns = [
     path('painel_dash/', views.DashProfessor.as_view(), name='dash_professor'),
@@ -12,4 +17,7 @@ urlpatterns = [
     path('<slug:slug>/sala/alunos/relatorios/<int:pk>/<str:bimestre>/', views.ListaAlunosrelatorios.as_view(),
          name='alunos_relatorios'),
     path('sala/alunos/<int:id>/', views.ProfAlunos.as_view(), name='prof_sala_alunos'),
+
+    ###### APIs ####
+    path('api/', include(router.urls)),
 ]

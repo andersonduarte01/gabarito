@@ -115,3 +115,5 @@ class ChamadaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Chamada
         fields = '__all__'
+
+

@@ -8,6 +8,9 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.utils.timezone import now
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView, TemplateView, FormView
+from rest_framework import viewsets, status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from .forms import UserCreationFuncionario, DesignarFuncaoForm, UserCreationProfessor, ProfessorEditForm, \
     RelatorioBimestreForm
@@ -19,6 +22,8 @@ from ..frequencia.models import Periodo, Relatorio
 from ..funcao.models import Funcao
 from ..perfil.models import Endereco, Pessoa
 from ..sala.models import Sala
+from .serializers import ProfessorSerializer
+
 
 class DashProfessor(LoginRequiredMixin, TemplateView):
     template_name = 'funcionario/professor_dash.html'
@@ -134,3 +139,41 @@ class ListaAlunosrelatorios(LoginRequiredMixin, ListView):
         context['alunos'] = alunos_relatorios
         context['escola'] = escola
         return context
+
+
+##### API professor ######
+class ProfessorViewSet(viewsets.ModelViewSet):
+    queryset = Professor.objects.all().order_by('professor_nome')
+    serializer_class = ProfessorSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        escola = UnidadeEscolar.objects.get(id=self.request.user.id)
+        return Professor.objects.filter(escola=escola).order_by('professor_nome')
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def perform_create(self, serializer):
+        serializer.save()
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        """
+        Remove o professor e o usuário associado
+        """
+        instance = self.get_object()
+        user = Usuario.objects.get(id=instance.id)
+        self.perform_destroy(instance)
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

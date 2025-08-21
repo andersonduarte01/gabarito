@@ -8,7 +8,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from ..core.models import Usuario
 from ..mobile.models import Chamada, MobileUsuario, MobileTecnico
 from ..mobile.serializers import ChamadaSerializer, MobileTecnicoSerializer, MobileUsuarioSerializer, \
-    ChamadaStatusUpdateSerializer, MyTokenObtainPairSerializer, UsuarioSerializer, UsuarioCreateSerializer
+    ChamadaStatusUpdateSerializer, MyTokenObtainPairSerializer, UsuarioSerializer, UsuarioCreateSerializer, \
+    MobileUsuarioResumoSerializer
 
 
 class MobileTecnicoViewSet(viewsets.ModelViewSet):
@@ -81,6 +82,11 @@ class UsuarioLogadoView(APIView):
             'nome': user.nome,
             'is_tecnico': is_tecnico,
             'is_solicitante': is_solicitante,
+            'is_professor': user.is_professor,
+            'is_administrator': user.is_administrator,
+            'is_funcionario': user.is_funcionario,
+            'is_aluno': user.is_aluno,
+            'is_active': user.is_active,
             'escola_id': escola_id,
             'escola_nome': escola_nome,
         })
@@ -96,8 +102,16 @@ class ChamadaFinalizadaTecnicoViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ChamadaSerializer
 
     def get_queryset(self):
-        return Chamada.objects.filter(status_chamado__in=['2', '3']).order_by('data')
+        # Pega o técnico logado
+        tecnico_logado = getattr(self.request.user, 'mobiletecnico', None)
+        if not tecnico_logado:
+            return Chamada.objects.none()  # Se não for técnico, retorna queryset vazio
 
+        # Filtra chamados finalizados/cancelados dos usuários vinculados ao técnico logado
+        return Chamada.objects.filter(
+            status_chamado__in=['2', '3'],
+            mobileusuario__tecnico=tecnico_logado
+        ).order_by('data')
 
 class ChamadaFinalizadaUsuarioViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated]
@@ -124,5 +138,42 @@ class ChamadaAguardandoTecnicoViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ChamadaSerializer
 
     def get_queryset(self):
-        return Chamada.objects.filter(status_chamado='1').order_by('data')
+        user = self.request.user
+        # Filtra apenas os chamados cujo usuário vinculado tem o tecnico igual ao logado
+        return Chamada.objects.filter(
+            status_chamado='1',
+            mobileusuario__tecnico=user
+        ).order_by('data')
 
+
+class ChamadaAguardandoDoSolicitanteViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = ChamadaSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Pega o MobileUsuario correspondente ao usuário logado
+        usuario_logado = MobileUsuario.objects.get(id=self.request.user.id)
+
+        # Se o usuário não tiver técnico vinculado, retorna queryset vazio
+        if not usuario_logado.tecnico:
+            return Chamada.objects.none()
+
+        # Retorna todas as chamadas aguardando do técnico vinculado
+        return Chamada.objects.filter(
+            status_chamado='1',
+            mobileusuario__tecnico=usuario_logado.tecnico
+        ).order_by('data')
+
+
+class UsuariosDoTecnicoViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = MobileUsuarioResumoSerializer
+
+    def get_queryset(self):
+        # Pega o técnico logado
+        tecnico_logado = getattr(self.request.user, 'mobiletecnico', None)
+        if not tecnico_logado:
+            return MobileUsuario.objects.none()
+
+        # Retorna apenas os usuários vinculados ao técnico logado
+        return MobileUsuario.objects.filter(tecnico=tecnico_logado).order_by('nome')

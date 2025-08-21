@@ -10,9 +10,14 @@ from django.shortcuts import get_object_or_404, get_list_or_404
 from django.urls import reverse_lazy, reverse
 from django.utils.timezone import now
 from django.views.generic import TemplateView, UpdateView, ListView, RedirectView, FormView, CreateView
+from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .forms import FiltroMesForm, EscolaForm, EnderecoForm1, UsuarioForm
 from .models import UnidadeEscolar, EnderecoEscolar, AnoLetivo
+from .serializers import UnidadeEscolarSerializer, EnderecoEscolarSerializer, UnidadeEscolarSerializerEdit
 from ..aluno.models import Aluno
 from ..avaliacao.correcao import alunos_prova
 from ..avaliacao.models import Avaliacao, Gabarito
@@ -151,3 +156,36 @@ class FrequenciaRelatorios(LoginRequiredMixin, TemplateView):
         context['escola'] = escola
         context['sala'] = sala
         return context
+
+
+#### API ####
+class EscolaLogadaView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        try:
+            escola = UnidadeEscolar.objects.get(id=user.id)  # ou outro filtro que faça sentido
+        except UnidadeEscolar.DoesNotExist:
+            return Response({'erro': 'Usuário não é uma escola.'}, status=403)
+
+        serializer = UnidadeEscolarSerializer(escola)
+        return Response(serializer.data)
+
+
+class UnidadeEscolarUpdateView(RetrieveUpdateAPIView):
+    serializer_class = UnidadeEscolarSerializerEdit
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return UnidadeEscolar.objects.get(pk=self.request.user.pk)
+
+
+class EnderecoEscolarUpdateView(RetrieveUpdateAPIView):
+    serializer_class = EnderecoEscolarSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        # request.user já é UnidadeEscolar
+        return EnderecoEscolar.objects.get(endereco=self.request.user)
+    

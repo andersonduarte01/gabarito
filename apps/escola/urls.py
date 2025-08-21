@@ -12,5 +12,9 @@ urlpatterns = [
     path('<pk>/atualizar/endereco/', views.EditarEndereco.as_view(), name='editar_endereco'),
     path('<pk>/usuario/atualizar/', views.EditarUsuario.as_view(), name='editar_usuario'),
     path('sala/<slug:slug>/alunos/<int:id>/', views.ListAlunos.as_view(), name='unidade_sala_alunos'),
+### API ###
+    path('api/minha-escola/', views.EscolaLogadaView.as_view(), name='minha-escola'),
+    path('api/editar/minha-escola/', views.UnidadeEscolarUpdateView.as_view(), name='minha-escola'),
+    path('api/meu-endereco/', views.EnderecoEscolarUpdateView.as_view(), name='meu-endereco'),
 ]
 
