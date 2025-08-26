@@ -13,6 +13,9 @@ class Frequencia(models.Model):
     def __str__(self):
         return f'{self.sala} - {self.data}'
 
+    class Meta:
+        unique_together = ('sala', 'data')
+
 
 class FrequenciaAluno(models.Model):
     aluno = models.ForeignKey(Aluno, related_name='freq_aluno', on_delete=models.CASCADE)
@@ -22,6 +25,9 @@ class FrequenciaAluno(models.Model):
 
     def __str__(self):
         return f'{self.aluno} - {self.data}'
+
+    class Meta:
+        unique_together = ('aluno', 'data')
 
 
 class Registro(models.Model):

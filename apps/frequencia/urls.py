@@ -1,5 +1,18 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+
 from . import views
+
+router = DefaultRouter()
+router.register(r'frequencias', views.FrequenciaViewSet, basename='frequencia')
+router.register(r'frequencias-alunos', views.FrequenciaAlunoViewSet, basename='frequencia-aluno')
+
+router1 = DefaultRouter()
+router1.register(
+    r'alunos-frequencia/(?P<sala_pk>\d+)',
+    views.AlunosSalaFrequenciaViewSet,
+    basename='alunos-frequencia'
+)
 
 app_name = 'frequencia'
 
@@ -15,4 +28,7 @@ urlpatterns = [
     path('cadastrar/<str:cal>/<int:sala_id>/', views.frequencia_diaria, name='cadastrar_frequencia'),
     path('alterar/registro/<int:pk>', views.RegistroUpdate.as_view(), name='registro_up'),
     path('deletar/registro/<int:pk>/', views.DeletarRegistro.as_view(), name='registro_del'),
+    #### APIs ####
+    path('api/', include(router.urls)),
+    path('api_alunos/', include(router1.urls)),
 ]

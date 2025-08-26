@@ -7,10 +7,14 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, get_object_or_404, get_list_or_404
 from django.urls import reverse_lazy, reverse
 from django.utils.timezone import now
-
+from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from ..sala.serializers import AlunoSerializer
+from .serializers import FrequenciaSerializer, FrequenciaAlunoSerializer, FrequenciaBlocoSerializer
 from ..escola.forms import FiltroMesForm
-from . import models
-from .gerarPlanilha import criarFrequenciaDiaria
 from django.views.generic import UpdateView, CreateView, ListView, DeleteView, TemplateView, FormView
 from datetime import datetime
 from .forms import FrequenciaAlunoForm, RegistroForm, RelatorioForm, RegistroUpdateForm, FrequenciaForm
@@ -334,8 +338,9 @@ def frequencia_diaria(request, cal, sala_id):
 
     if request.method == 'POST':
         formset = FrequenciaFormSet(request.POST)
-        print(f'Formset: {formset}')
         if formset.is_valid():
+            total_presentes = 0  # contador de alunos presentes
+
             for form in formset:
                 aluno_id = form.cleaned_data.get('aluno_id')
                 presente = form.cleaned_data.get('presente', False)
@@ -343,14 +348,28 @@ def frequencia_diaria(request, cal, sala_id):
 
                 aluno = get_object_or_404(Aluno, pk=aluno_id)
 
-                FrequenciaAluno.objects.update_or_create(
+                fa, created = FrequenciaAluno.objects.update_or_create(
                     aluno=aluno,
                     data=data,
                     defaults={'presente': presente, 'observacao': observacao}
                 )
+
+                if presente:
+                    total_presentes += 1
+
+            # Criar ou atualizar a Frequencia da sala
+            Frequencia.objects.update_or_create(
+                sala=sala,
+                data=data,
+                defaults={
+                    'presentes': total_presentes,
+                    'status': True  # ou False dependendo do seu critério
+                }
+            )
+
             return HttpResponseRedirect(reverse_lazy('frequencia:frequencia_mes', kwargs={'pk': sala.pk}))
     else:
-        # Prepare dados iniciais incluindo frequências já existentes para preencher formulário
+        # Prepare dados iniciais incluindo frequências já existentes
         initial_data = []
         for aluno in alunos:
             try:
@@ -376,3 +395,136 @@ def frequencia_diaria(request, cal, sala_id):
         'sala': sala,
         'data': data.date(),
     })
+
+
+
+#### APIs ####
+class FrequenciaViewSet(viewsets.ModelViewSet):
+    queryset = Frequencia.objects.all()
+    serializer_class = FrequenciaSerializer
+
+    # 1. Frequências de uma sala por mês
+    @action(detail=False, methods=['get'], url_path='sala/(?P<sala_id>[^/.]+)')
+    def frequencias_sala_mes(self, request, sala_id=None):
+        mes = request.query_params.get('mes')
+        if not mes:
+            return Response({"error": "Parâmetro 'mes' é obrigatório"}, status=400)
+        try:
+            ano, mes_int = map(int, mes.split('-'))
+        except ValueError:
+            return Response({"error": "Formato de 'mes' inválido"}, status=400)
+
+        frequencias = Frequencia.objects.filter(
+            sala_id=sala_id,
+            data__year=ano,
+            data__month=mes_int,
+            status=True
+        )
+        dias = [{"data": f.data.strftime('%Y-%m-%d'), "frequencia_registrada": f.status} for f in frequencias]
+        return Response(dias)
+
+    # 2. Criar ou atualizar bloco de frequência
+    @action(detail=False, methods=['post'])
+    def criar_bloco(self, request):
+        serializer = FrequenciaBlocoSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        sala_id = serializer.validated_data['sala_id']
+        data_frequencia = serializer.validated_data['data']
+        alunos_data = serializer.validated_data['frequencias_alunos']
+
+        # Cria ou atualiza frequência da sala
+        sala_frequencia, created = Frequencia.objects.get_or_create(
+            sala_id=sala_id,
+            data=data_frequencia,
+            defaults={
+                "presentes": sum(a['presente'] for a in alunos_data),
+                "status": True
+            }
+        )
+        if not created:
+            sala_frequencia.presentes = sum(a['presente'] for a in alunos_data)
+            sala_frequencia.status = True
+            sala_frequencia.save()
+
+        # Cria ou atualiza frequência de cada aluno
+        for aluno_data in alunos_data:
+            FrequenciaAluno.objects.update_or_create(
+                aluno_id=aluno_data['aluno'],
+                data=data_frequencia,
+                defaults={
+                    "presente": aluno_data['presente'],
+                    "observacao": aluno_data.get('observacao', '')
+                }
+            )
+
+        return Response({"success": True})
+
+    # 3. Atualizar frequência de um aluno específico
+    @action(detail=False, methods=['patch'], url_path='aluno/(?P<aluno_id>[^/.]+)/(?P<data>[^/.]+)')
+    def atualizar_aluno(self, request, aluno_id=None, data=None):
+        frequencia_aluno = get_object_or_404(FrequenciaAluno, aluno_id=aluno_id, data=data)
+        serializer = FrequenciaAlunoSerializer(frequencia_aluno, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    # 4. Buscar frequências de todos os alunos de uma sala em uma data específica
+    @action(detail=False, methods=['get'], url_path='aluno-frequencia/(?P<sala_id>[^/.]+)')
+    def frequencias_por_data(self, request, sala_id=None):
+        data_str = request.query_params.get('data')
+        if not data_str:
+            return Response({"error": "Parâmetro 'data' é obrigatório"}, status=400)
+        try:
+            from datetime import datetime
+            data_obj = datetime.strptime(data_str, "%Y-%m-%d").date()
+        except ValueError:
+            return Response({"error": "Formato de 'data' inválido, use YYYY-MM-DD"}, status=400)
+
+        frequencias = FrequenciaAluno.objects.filter(
+            aluno__sala_id=sala_id,
+            data=data_obj
+        )
+
+        resultado = [
+            {
+                "id": f.id,
+                "aluno": f.aluno.id,
+                "presente": f.presente,
+                "observacao": f.observacao
+            } for f in frequencias
+        ]
+        return Response(resultado)
+
+
+class FrequenciaAlunoViewSet(viewsets.ModelViewSet):
+    queryset = FrequenciaAluno.objects.all()
+    serializer_class = FrequenciaAlunoSerializer
+
+    @action(detail=False, methods=['patch'], url_path='aluno/(?P<aluno_id>[^/.]+)/(?P<data>[^/.]+)')
+    def atualizar_aluno(self, request, aluno_id=None, data=None):
+        """Atualiza a frequência de um aluno específico em uma data"""
+        frequencia_aluno = get_object_or_404(FrequenciaAluno, aluno_id=aluno_id, data=data)
+        serializer = self.get_serializer(frequencia_aluno, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+
+class AlunosSalaFrequenciaViewSet(viewsets.ModelViewSet):
+
+    serializer_class = AlunoSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        sala_id = self.kwargs.get("sala_pk")
+        if not sala_id:
+            raise ValidationError("ID da sala é obrigatório.")
+        return Aluno.objects.filter(sala_id=sala_id).order_by("nome")
+
+    def perform_create(self, serializer):
+        sala_id = self.kwargs.get("sala_pk")
+        try:
+            sala = Sala.objects.get(pk=sala_id)
+        except Sala.DoesNotExist:
+            raise ValidationError("Sala não encontrada.")
+        serializer.save(sala=sala)
