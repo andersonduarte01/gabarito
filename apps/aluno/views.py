@@ -10,10 +10,13 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse_lazy, reverse
 from django.views.generic import DeleteView, ListView, CreateView, TemplateView, UpdateView
+from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import cm
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
-from reportlab.platypus import Table, TableStyle
+from reportlab.platypus import Table, TableStyle, SimpleDocTemplate, Paragraph, Spacer
 
 from .relatorio import desenhar_retangulo, adicionar_linha_paralela, adicionar_linha_vertical, escrever_texto, \
     desenhar_retangulo1
@@ -57,151 +60,98 @@ def delete_view(request, pk):
 def relatorioFrequencia(request, pk, mes):
     sala = get_object_or_404(Sala, pk=pk)
     escola = get_object_or_404(UnidadeEscolar, pk=sala.escola.pk)
-    alunos = Aluno.objects.filter(sala=sala).order_by('nome')
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{sala.descricao}.pdf"'
-    # Dimensões da página e do paralelogramo
+    alunos = Aluno.objects.filter(sala=sala).order_by("nome")
 
-    nome_meses = {1: 'Janeiro', 2: 'Fevereiro', 3: 'Março',
-                  4: 'Abril', 5: 'Maio', 6: 'Junho', 7: 'Julho',
-                  8: 'Agosto', 9: 'Setembro', 10: 'Outubro',
-                  11: 'Novembro', 12: 'Dezembro'
-                  }
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="{sala.descricao}.pdf"'
 
-    c = canvas.Canvas(response, pagesize=landscape(A4))
-    ponto1, ponto2, ponto3, ponto4 = desenhar_retangulo(c)
-    altura = adicionar_linha_paralela(c, ponto3, ponto4, intervalo=98.65)
+    # Documento em modo paisagem
+    doc = SimpleDocTemplate(
+        response,
+        pagesize=landscape(A4),
+        rightMargin=1*cm,
+        leftMargin=1*cm,
+        topMargin=1*cm,
+        bottomMargin=1*cm
+    )
 
-    # Nomes cabeçalho
-    largura_texto = c.stringWidth(escola.nome_escola, "Helvetica-Bold", 14)  # Obter a largura do texto em pontos
+    elements = []
+    styles = getSampleStyleSheet()
 
-    escrever_texto(c, texto=escola.nome_escola,
-                   x=((ponto3[0] - largura_texto) / 2),
-                   y=(ponto3[1] - 20), font="Helvetica-Bold", font_size=14,
-                   color=(0, 0, 0))
+    # Cabeçalho
+    elements.append(Paragraph(f"<b>{escola.nome_escola}</b>", styles["Title"]))
+    elements.append(Paragraph(f"{sala.descricao}", styles["Heading2"]))
+    elements.append(Paragraph(f"{sala.ano} - {sala.turno}", styles["Normal"]))
 
-    sala_texto = c.stringWidth(sala.descricao, "Helvetica", 14)
+    nome_meses = {
+        1: 'Janeiro', 2: 'Fevereiro', 3: 'Março', 4: 'Abril',
+        5: 'Maio', 6: 'Junho', 7: 'Julho', 8: 'Agosto',
+        9: 'Setembro', 10: 'Outubro', 11: 'Novembro', 12: 'Dezembro'
+    }
 
-    escrever_texto(c, texto=sala.descricao,
-                   x=((ponto3[0] - sala_texto) / 2),
-                   y=(ponto3[1] - 40), font="Helvetica", font_size=14,
-                   color=(0, 0, 0))
+    elements.append(Paragraph(f"{nome_meses[mes]} - 2025", styles["Normal"]))
+    elements.append(Spacer(1, 12))
 
-    ano_texto = c.stringWidth(f'{sala.ano} - {sala.turno}', "Helvetica", 14)
-
-    escrever_texto(c, texto=f'{sala.ano} - {sala.turno}',
-                   x=((ponto3[0] - ano_texto) / 2),
-                   y=(ponto3[1] - 60), font="Helvetica", font_size=14,
-                   color=(0, 0, 0))
-
-    mes_texto = c.stringWidth(f'{nome_meses[mes]} - 2025', "Helvetica", 14)
-
-
-    escrever_texto(c, texto=f'{nome_meses[mes]} - 2025',
-                   x=((ponto3[0] - mes_texto) / 2),
-                   y=(ponto3[1] - 85), font="Helvetica", font_size=14,
-                   color=(0, 0, 0))
-
-    altura1 = adicionar_linha_paralela(c, ponto3, ponto4, intervalo=118.65)
-
-    locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
-
+    # Preparar tabela
+    locale.setlocale(locale.LC_TIME, "pt_BR.UTF-8")
     ano = 2025
     dias_mes = calendar.monthcalendar(ano, mes)
-    resultado = []  # Cabeçalho da tabela
-    resultado1 = ['']  # Cabeçalho da tabela
-    resultado2 = ['Alunos']  # Cabeçalho da tabela
-    resultado_conferir = []  # Cabeçalho da tabela
-    alunos_tag = []
 
-    # Percorre as semanas do mês
+    header_dias = ["Alunos"]
+    header_semana = [""]
+
     for semana in dias_mes:
         for dia in semana:
-            if dia != 0:  # Ignora os dias vazios no início ou fim do mês
+            if dia != 0:
                 data = datetime(ano, mes, dia)
-                if data.weekday() < 5:
-                    resultado2.append(data.strftime('%d'))
-                    resultado1.append(data.strftime('%a'))
-                    resultado_conferir.append(data.strftime('%Y-%m-%d'))
+                if data.weekday() < 5:  # dias úteis
+                    header_dias.append(data.strftime("%d"))
+                    header_semana.append(data.strftime("%a"))
 
-    resultado.append(resultado2)
-    resultado.append(resultado1)
-
-    style = TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), (0.8, 0.8, 0.8)),  # Cor de fundo para o cabeçalho
-        ('TEXTCOLOR', (0, 0), (-1, 0), (0, 0, 0)),  # Cor do texto para o cabeçalho
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),  # Alinhamento central para todas as células
-        ('FONT', (0, 0), (-1, -1), 'Helvetica', 8),
-        ('GRID', (0, 0), (-1, -1), 1, (0.8, 0.8, 0.8)),
-    ])
-
+    data_table = [header_dias, header_semana]
 
     for aluno in alunos:
-        alunos_tag = []
-        alunos_tag.append(aluno.nome)
-        contador = 0
+        linha = [aluno.nome]
         for semana in dias_mes:
             for dia in semana:
-                if dia != 0:  # Ignora os dias vazios no início ou fim do mês
+                if dia != 0:
                     data = datetime(ano, mes, dia)
                     if data.weekday() < 5:
                         try:
-                            frequencia = FrequenciaAluno.objects.get(data=data.date(), aluno=aluno)
-                            if frequencia.presente:
-                                alunos_tag.append('P')
-                            else:
-                                alunos_tag.append('F')
-
+                            freq = FrequenciaAluno.objects.get(data=data.date(), aluno=aluno)
+                            linha.append("P" if freq.presente else "F")
                         except:
-                            alunos_tag.append('.')
-            contador += 1
+                            linha.append(".")
+        data_table.append(linha)
 
-        resultado.append(alunos_tag)
+    # Largura dinâmica das colunas (paisagem A4)
+    total_width = 29.7*cm - 2*cm  # largura útil (paisagem menos margens)
+    nome_col_width = 6*cm
+    restantes = len(header_dias) - 1
+    col_widths = [nome_col_width] + [(total_width - nome_col_width) / restantes] * restantes
 
+    # Criar tabela
+    table = Table(data_table, colWidths=col_widths, repeatRows=2)
 
-    largura_disponivel = (27 * 28.35)
-    percorrer = largura_disponivel
-    larguras_colunas = [188.95]
+    # Estilos
+    style = TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+        ('BACKGROUND', (0, 1), (-1, 1), colors.whitesmoke),
+        ('TEXTCOLOR', (0, 0), (-1, 1), colors.black),
+        ('ALIGN', (1, 0), (-1, -1), 'CENTER'),
+        ('FONT', (0, 0), (-1, -1), 'Helvetica', 8),
+        ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
+    ])
 
-    while(percorrer > 1):
-        larguras_colunas.append(25)
-        percorrer -= 25
+    # Zebra striping
+    for row_num in range(2, len(data_table)):
+        bg_color = colors.whitesmoke if row_num % 2 == 0 else colors.white
+        style.add('BACKGROUND', (0, row_num), (-1, row_num), bg_color)
 
-    if len(resultado) <= 25:
-        t = Table(resultado, colWidths=larguras_colunas)
-        largura_tabela, altura_tabela = t.wrapOn(None, largura_disponivel, 0)
-        t.setStyle(style)
-        largura_tabela = 27 * 28.35
-        t.wrapOn(c, largura_tabela, 100)
-        t.drawOn(c, ponto1[0] + (((27 * 28.35) - largura_tabela) / 2), altura1 - (altura_tabela - 30))
-    else:
-        pagina1 = resultado[:26]
-        t = Table(pagina1, colWidths=larguras_colunas)
-        largura_tabela, altura_tabela = t.wrapOn(None, largura_disponivel, 0)
-        t.setStyle(style)
-        largura_tabela = 27 * 28.35
-        t.wrapOn(c, largura_tabela, 100)
-        t.drawOn(c, ponto1[0] + (((27 * 28.35) - largura_tabela) / 2), altura1 - (altura_tabela - 30))
+    table.setStyle(style)
+    elements.append(table)
 
-        c.showPage()
-        ponto1, ponto2, ponto3, ponto4 = desenhar_retangulo(c)
-
-        pagina2 = []
-        pagina2.append(resultado[0])
-        pagina2.append(resultado[1])
-        p3 = resultado[26:]
-        for p in p3:
-            pagina2.append(p)
-
-        t = Table(pagina2, colWidths=larguras_colunas)
-        largura_tabela, altura_tabela = t.wrapOn(None, largura_disponivel, 0)
-        t.setStyle(style)
-        largura_tabela = 27 * 28.35
-        t.wrapOn(c, largura_tabela, 100)
-        t.drawOn(c, ponto1[0] + (((27 * 28.35) - largura_tabela) / 2), ponto4[1] - altura_tabela)
-
-
-    c.save()
+    doc.build(elements)
     return response
 
 

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Frequencia, FrequenciaAluno
+from .models import Frequencia, FrequenciaAluno, Registro, Relatorio, Periodo
 
 class FrequenciaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -23,3 +23,21 @@ class FrequenciaBlocoSerializer(serializers.Serializer):
     sala_id = serializers.IntegerField()
     data = serializers.DateField(format='%Y-%m-%d', input_formats=['%Y-%m-%d'])
     frequencias_alunos = FrequenciaAlunoBlocoSerializer(many=True)
+
+
+class RegistroSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Registro
+        fields = "__all__"
+
+
+class RelatorioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Relatorio
+        fields = "__all__"
+
+
+class PeriodoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Periodo
+        fields = ['id', 'periodo']

@@ -6,6 +6,9 @@ from . import views
 router = DefaultRouter()
 router.register(r'frequencias', views.FrequenciaViewSet, basename='frequencia')
 router.register(r'frequencias-alunos', views.FrequenciaAlunoViewSet, basename='frequencia-aluno')
+router.register(r'registros', views.RegistroViewSet, basename='registro')
+router.register(r'relatorios', views.RelatorioViewSet, basename='relatorio')
+router.register(r'periodos', views.PeriodoViewSet, basename='periodo')
 
 router1 = DefaultRouter()
 router1.register(

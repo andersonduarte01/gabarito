@@ -6,14 +6,17 @@ from django.forms import modelformset_factory, formset_factory
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, get_object_or_404, get_list_or_404
 from django.urls import reverse_lazy, reverse
+from django.utils.dateparse import parse_date
 from django.utils.timezone import now
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from ..sala.serializers import AlunoSerializer
-from .serializers import FrequenciaSerializer, FrequenciaAlunoSerializer, FrequenciaBlocoSerializer
+from .serializers import FrequenciaSerializer, FrequenciaAlunoSerializer, FrequenciaBlocoSerializer, RegistroSerializer, \
+    RelatorioSerializer, PeriodoSerializer
 from ..escola.forms import FiltroMesForm
 from django.views.generic import UpdateView, CreateView, ListView, DeleteView, TemplateView, FormView
 from datetime import datetime
@@ -511,9 +514,9 @@ class FrequenciaAlunoViewSet(viewsets.ModelViewSet):
 
 
 class AlunosSalaFrequenciaViewSet(viewsets.ModelViewSet):
-
     serializer_class = AlunoSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None
 
     def get_queryset(self):
         sala_id = self.kwargs.get("sala_pk")
@@ -528,3 +531,62 @@ class AlunosSalaFrequenciaViewSet(viewsets.ModelViewSet):
         except Sala.DoesNotExist:
             raise ValidationError("Sala não encontrada.")
         serializer.save(sala=sala)
+
+
+class RegistroViewSet(viewsets.ModelViewSet):
+    queryset = Registro.objects.all().order_by("-data")
+    serializer_class = RegistroSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        sala_id = self.request.query_params.get("sala")
+        data_inicio = self.request.query_params.get("data__gte")
+        data_fim = self.request.query_params.get("data__lte")
+
+        if sala_id:
+            queryset = queryset.filter(sala_id=sala_id)
+
+        if data_inicio:
+            queryset = queryset.filter(data__gte=parse_date(data_inicio))
+        if data_fim:
+            queryset = queryset.filter(data__lte=parse_date(data_fim))
+
+        return queryset
+
+
+class LargePagination(PageNumberPagination):
+    page_size = 100
+
+
+class RelatorioViewSet(viewsets.ModelViewSet):
+    queryset = Relatorio.objects.all().order_by("-data_relatorio")
+    serializer_class = RelatorioSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = LargePagination
+
+    def perform_create(self, serializer):
+        periodo_id = self.request.data.get("periodo")
+        periodo = get_object_or_404(Periodo, id=periodo_id)
+        professor = Professor.objects.get(id=self.request.user.id)
+        serializer.save(professor=professor.professor_nome, periodo=periodo)
+
+    def update(self, request, *args, **kwargs):
+        relatorio_obj = self.get_object()
+        relatorio_texto = request.data.get("relatorio")
+
+        if relatorio_texto is not None:
+            relatorio_obj.relatorio = relatorio_texto
+            relatorio_obj.save()
+            serializer = self.get_serializer(relatorio_obj)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(
+                {"detail": "Campo 'relatorio' é obrigatório."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+class PeriodoViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Periodo.objects.all().order_by('periodo')
+    serializer_class = PeriodoSerializer
+    permission_classes = [IsAuthenticated]

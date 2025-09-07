@@ -129,6 +129,7 @@ class AnoViewSet(viewsets.ReadOnlyModelViewSet):
 class AlunoViewSet(viewsets.ModelViewSet):
     serializer_class = AlunoSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None
 
     def get_queryset(self):
         sala_id = self.kwargs.get('sala_pk')
