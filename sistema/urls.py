@@ -50,6 +50,7 @@ urlpatterns = [
     path('api/v1/', include(router_usuario.urls)),
     path('api/v1/', include(router_tecnico.urls)),
     path('api/', include('apps.mobile.urls')),
+    path('hijack/', include('hijack.urls')),
     path('api/token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

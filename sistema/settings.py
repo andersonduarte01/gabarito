@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'ckeditor',
     'rest_framework',
     'rest_framework_simplejwt',
+    'hijack',
 ]
 
 MIDDLEWARE = [
@@ -63,6 +64,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'hijack.middleware.HijackUserMiddleware',
 ]
 
 ROOT_URLCONF = 'sistema.urls'
@@ -155,7 +157,6 @@ AUTH_USER_MODEL = 'core.Usuario'
 
 LOGIN_REDIRECT_URL = '/escola/redirecionamento/'
 LOGOUT_REDIRECT_URL = '/'
-
 
 #CKEDITOR
 CKEDITOR_CONFIGS = {

@@ -1,3 +1,5 @@
+from hijack.contrib.admin import HijackUserAdminMixin
+
 from ..core.admin import UserAdmin
 
 from django.contrib import admin
@@ -9,25 +11,13 @@ class EnderecoInline(admin.StackedInline):
     extra = 1
 
 
-class EscolaAdmin(UserAdmin):
-    list_display = ('nome_escola', 'inep', 'email', 'cadastrado_em')
-    fieldsets = (
-        ('Dados Básicos', {'fields': ['nome_escola', 'slug', 'logo_escola', 'inep', 'cnpj']}),
-        ('Informações de Contato', {'fields': ['email', 'telefone', 'is_administrator']}),
-    )
-    add_fieldsets = (
-        ('Informações da Escola', {
-            'classes': ('wide',),
-            'fields': ('email', 'nome', 'password1', 'password2', 'is_administrator', 'nome_escola', 'slug', 'logo_escola', 'inep', 'cnpj', 'telefone'),
-        }),
-    )
-    prepopulated_fields = {'slug': ('nome_escola',)}
-    inlines = [EnderecoInline]
-
-
 class Letivo(admin.ModelAdmin):
     list_display = ('id', 'ano', 'inicio', 'fim', 'corrente')
 
+admin.register(UnidadeEscolar)
+class EscolaAdmin(HijackUserAdminMixin, admin.ModelAdmin):
+    def get_hijack_user(self, obj):
+        return obj
 
 admin.site.register(UnidadeEscolar, EscolaAdmin)
 admin.site.register(AnoLetivo, Letivo)

@@ -11,12 +11,13 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse_lazy, reverse
 from django.views.generic import DeleteView, ListView, CreateView, TemplateView, UpdateView
 from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import cm
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
-from reportlab.platypus import Table, TableStyle, SimpleDocTemplate, Paragraph, Spacer
+from reportlab.platypus import Table, TableStyle, SimpleDocTemplate, Paragraph, Spacer, PageBreak
 
 from .relatorio import desenhar_retangulo, adicionar_linha_paralela, adicionar_linha_vertical, escrever_texto, \
     desenhar_retangulo1
@@ -24,7 +25,7 @@ from ..aluno.models import Aluno
 from ..avaliacao.models import Gabarito, Resposta
 from .forms import AlunoForm, EditarAlunoForm, PessoaForm, EnderecoForm, EditarAlunoForm01
 from ..escola.models import UnidadeEscolar
-from ..frequencia.models import FrequenciaAluno
+from ..frequencia.models import FrequenciaAluno, Relatorio
 from ..perfil.models import Pessoa, Endereco
 from ..sala.models import Sala
 
@@ -57,7 +58,7 @@ def delete_view(request, pk):
     return HttpResponseRedirect(url)
 
 
-def relatorioFrequencia(request, pk, mes):
+def relatorioFrequencia(request, pk, mes, styles=None):
     sala = get_object_or_404(Sala, pk=pk)
     escola = get_object_or_404(UnidadeEscolar, pk=sala.escola.pk)
     alunos = Aluno.objects.filter(sala=sala).order_by("nome")
@@ -75,13 +76,26 @@ def relatorioFrequencia(request, pk, mes):
         bottomMargin=1*cm
     )
 
+    centered_heading = ParagraphStyle(
+        name="CenteredHeading2",
+        fontSize=14,
+        leading=18,
+        alignment=TA_CENTER
+    )
+
+    centered_heading1 = ParagraphStyle(
+        name="CenteredHeading2",
+        fontSize=12,
+        leading=18,
+        alignment=TA_CENTER
+    )
+
     elements = []
     styles = getSampleStyleSheet()
 
     # Cabeçalho
     elements.append(Paragraph(f"<b>{escola.nome_escola}</b>", styles["Title"]))
-    elements.append(Paragraph(f"{sala.descricao}", styles["Heading2"]))
-    elements.append(Paragraph(f"{sala.ano} - {sala.turno}", styles["Normal"]))
+    elements.append(Paragraph(f"{sala.descricao} - {sala.ano}", centered_heading))
 
     nome_meses = {
         1: 'Janeiro', 2: 'Fevereiro', 3: 'Março', 4: 'Abril',
@@ -89,7 +103,7 @@ def relatorioFrequencia(request, pk, mes):
         9: 'Setembro', 10: 'Outubro', 11: 'Novembro', 12: 'Dezembro'
     }
 
-    elements.append(Paragraph(f"{nome_meses[mes]} - 2025", styles["Normal"]))
+    elements.append(Paragraph(f"<b>{nome_meses[mes]} - {sala.ano_letivo.ano}</b>",centered_heading1))
     elements.append(Spacer(1, 12))
 
     # Preparar tabela
@@ -158,48 +172,67 @@ def relatorioFrequencia(request, pk, mes):
 def relatorioRegistro(request, pk):
     aluno = get_object_or_404(Aluno, pk=pk)
     escola = get_object_or_404(UnidadeEscolar, pk=aluno.sala.escola.pk)
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{aluno}.pdf"'
-    # Dimensões da página e do paralelogramo
 
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="relatorios_{aluno.nome}.pdf"'
 
-    c = canvas.Canvas(response, pagesize=A4)
-    ponto1, ponto2, ponto3, ponto4 = desenhar_retangulo1(c)
-    altura = adicionar_linha_paralela(c, ponto3, ponto4, intervalo=98.65)
+    # Documento no formato retrato
+    doc = SimpleDocTemplate(
+        response,
+        pagesize=A4,
+        rightMargin=2 * cm,
+        leftMargin=2 * cm,
+        topMargin=2 * cm,
+        bottomMargin=2 * cm
+    )
 
+    centered_heading = ParagraphStyle(
+        name="CenteredHeading2",
+        fontSize=14,
+        leading=18,
+        alignment=TA_CENTER
+    )
 
-    escrever_texto(c, texto=aluno.nome,
-                   x=(ponto1[0] + 5),
-                   y=(ponto3[1] - 20), font="Helvetica-Bold", font_size=14,
-                   color=(0, 0, 0))
+    centered_heading1 = ParagraphStyle(
+        name="CenteredHeading2",
+        fontSize=10,
+        leading=18,
+        alignment=TA_CENTER
+    )
 
+    elements = []
+    styles = getSampleStyleSheet()
 
-    escrever_texto(c, texto=aluno.sala.escola.nome_escola,
-                   x=(ponto1[0] + 5),
-                   y=(ponto3[1] - 40), font="Helvetica", font_size=12,
-                   color=(0, 0, 0))
+    # Cabeçalho do aluno
+    elements.append(Paragraph(f"<b>{aluno.nome}</b>", styles["Title"]))
+    elements.append(Paragraph(f"{escola.nome_escola}", centered_heading))
+    elements.append(Paragraph(f"Sala: {aluno.sala.descricao} | Turno: {aluno.sala.turno}", centered_heading1))
+    elements.append(Spacer(1, 12))
 
-    escrever_texto(c, texto=aluno.sala.descricao,
-                   x=(ponto1[0] + 5),
-                   y=(ponto3[1] - 60), font="Helvetica", font_size=12,
-                   color=(0, 0, 0))
+    # Buscar todos os relatórios do aluno
+    relatorios = Relatorio.objects.filter(aluno=aluno).select_related("periodo").order_by("periodo__id")
 
-    escrever_texto(c, texto=aluno.sala.turno,
-                   x=(ponto1[0] + 5),
-                   y=(ponto3[1] - 80), font="Helvetica", font_size=12,
-                   color=(0, 0, 0))
+    if not relatorios.exists():
+        elements.append(Paragraph("Nenhum relatório encontrado para este aluno.", styles["Normal"]))
+    else:
+        body_style = ParagraphStyle(
+            'body',
+            parent=styles['Normal'],
+            fontSize=10,
+            leading=14,
+            spaceAfter=12
+        )
 
+        for idx, rel in enumerate(relatorios, start=1):
+            elements.append(Paragraph(f"<b>Período:</b> {rel.periodo}", styles["Normal"]))
+            elements.append(Paragraph(f"<b>Professor:</b> {rel.professor or '---'}", styles["Normal"]))
+            elements.append(Paragraph(f"<b>Data:</b> {rel.data_relatorio.strftime('%d/%m/%Y')}", styles["Normal"]))
+            elements.append(Spacer(1, 6))
 
-    locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+            # Texto do relatório
+            elements.append(Paragraph(rel.relatorio.replace("\n", "<br/>"), body_style))
+            elements.append(Spacer(1, 18))  # espaçamento maior entre relatórios
 
-    style = TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), (0.8, 0.8, 0.8)),  # Cor de fundo para o cabeçalho
-        ('TEXTCOLOR', (0, 0), (-1, 0), (0, 0, 0)),  # Cor do texto para o cabeçalho
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),  # Alinhamento central para todas as células
-        ('FONT', (0, 0), (-1, -1), 'Helvetica', 8),
-        ('GRID', (0, 0), (-1, -1), 1, (0.8, 0.8, 0.8)),
-    ])
-
-
-    c.save()
+    # Montar o PDF (quebra de página será automática)
+    doc.build(elements)
     return response
