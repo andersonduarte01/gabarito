@@ -2,6 +2,7 @@ import calendar
 import datetime
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.db.models import OuterRef, Subquery
 from django.forms import modelformset_factory, formset_factory
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, get_object_or_404, get_list_or_404
@@ -522,6 +523,7 @@ class AlunosSalaFrequenciaViewSet(viewsets.ModelViewSet):
         sala_id = self.kwargs.get("sala_pk")
         if not sala_id:
             raise ValidationError("ID da sala é obrigatório.")
+
         return Aluno.objects.filter(sala_id=sala_id).order_by("nome")
 
     def perform_create(self, serializer):
@@ -563,6 +565,27 @@ class RelatorioViewSet(viewsets.ModelViewSet):
     serializer_class = RelatorioSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = LargePagination
+
+    def get_queryset(self):
+        periodo_id = self.request.query_params.get("periodo")
+        sala_id = self.request.query_params.get("sala")
+
+        base_qs = Relatorio.objects.all().order_by("-data_relatorio")
+
+        if periodo_id:
+            base_qs = base_qs.filter(periodo_id=periodo_id)
+        if sala_id:
+            base_qs = base_qs.filter(aluno__sala_id=sala_id)
+
+        # 👇 pega o id do primeiro relatório por aluno/periodo
+        subquery = Relatorio.objects.filter(
+            aluno_id=OuterRef("aluno_id"),
+            periodo_id=OuterRef("periodo_id")
+        ).order_by("-data_relatorio").values("id")[:1]
+
+        queryset = base_qs.filter(id=Subquery(subquery))
+
+        return queryset
 
     def perform_create(self, serializer):
         periodo_id = self.request.data.get("periodo")
