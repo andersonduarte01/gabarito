@@ -1,64 +1,121 @@
-from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.conf import settings
 from django.db import models
-
-# Create your models here.
+from django.urls import reverse
 
 
 class UsuarioManager(BaseUserManager):
-    def create_user(self, email, nome, password=None):
+    def create_user(self, email, password=None, **extra_fields):
         if not email:
-            raise ValueError('Digite um email válido.')
-
-        user = self.model(
-            email=self.normalize_email(email),
-            nome=nome,
-        )
-
+            raise ValueError('O email é obrigatório.')
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, nome, password=None):
-        user = self.create_user(
-            email,
-            password=password,
-            nome=nome,
-        )
-        user.is_admin = True
-        user.save(using=self._db)
-        return user
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        if not extra_fields.get('is_staff'):
+            raise ValueError('Superusuário deve ter is_staff=True.')
+        if not extra_fields.get('is_superuser'):
+            raise ValueError('Superusuário deve ter is_superuser=True.')
+        return self.create_user(email, password, **extra_fields)
 
 
-class Usuario(AbstractBaseUser):
-    email = models.EmailField(verbose_name='Email', max_length=255, unique=True)
-    nome = models.CharField(verbose_name='Nome Usuario', max_length=255)
-    is_active = models.BooleanField(default=True)
-    is_funcionario = models.BooleanField(default=False)
-    is_administrator = models.BooleanField(default=False)
-    is_professor = models.BooleanField(default=False)
-    is_aluno = models.BooleanField(default=False)
-    is_admin = models.BooleanField(default=False)
-    cadastrado_em = models.DateTimeField(auto_now_add=True)
-    atualizado_em = models.DateTimeField(auto_now=True)
+class Usuario(AbstractBaseUser, PermissionsMixin):
+    nome = models.CharField(verbose_name='Nome', max_length=150)
+    email = models.EmailField(verbose_name='Email', unique=True)
+    is_active = models.BooleanField(verbose_name='Ativo', default=True)
+    is_staff = models.BooleanField(verbose_name='Equipe', default=False)
+    data_criacao = models.DateTimeField(verbose_name='Criado em', auto_now_add=True)
+    data_atualizacao = models.DateTimeField(verbose_name='Atualizado em', auto_now=True)
+
+    escolas = models.ManyToManyField(
+        'escola.UnidadeEscolar',
+        through='UsuarioEscola',
+        related_name='usuarios',
+        blank=True,
+        verbose_name='Escolas',
+    )
 
     objects = UsuarioManager()
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['nome']
 
+    class Meta:
+        verbose_name = 'Usuário'
+        verbose_name_plural = 'Usuários'
+
     def __str__(self):
-        return self.email
+        return f'{self.nome} ({self.email})'
 
-    def has_perm(self, perm, obj=None):
-        return True
+    def get_dashboard_url(self, escola):
+        try:
+            vinculo = self.usuarioescola_set.get(escola=escola, ativo=True)
+            mapa = {
+                UsuarioEscola.ADMIN:       'escola:painel_adm',
+                UsuarioEscola.DIRETOR:     'escola:dash_escola',
+                UsuarioEscola.COLABORADOR: 'escola:dash_escola',
+                UsuarioEscola.PROFESSOR:   'escola:dash_escola',
+                UsuarioEscola.ALUNO:       'escola:dash_escola',
+                UsuarioEscola.RESPONSAVEL: 'escola:dash_escola',
+            }
+            url_name = mapa.get(vinculo.tipo_usuario, 'escola:selecionar')
+            return reverse(url_name)
+        except UsuarioEscola.DoesNotExist:
+            return reverse('accounts:login')
 
-    def has_module_perms(self, app_label):
-        return True
+    def remover_escola(self, escola):
+        self.usuarioescola_set.filter(escola=escola).update(ativo=False)
+        if not self.usuarioescola_set.filter(ativo=True).exists():
+            self.is_active = False
+            self.save(update_fields=['is_active'])
 
-    @property
-    def is_staff(self):
-        return self.is_admin
 
-    @property
-    def is_superuser(self):
-        return self.is_admin or self.is_professor
+class UsuarioEscola(models.Model):
+    ADMIN       = 'ADMIN'
+    DIRETOR     = 'DIR'
+    COLABORADOR = 'COLAB'
+    PROFESSOR   = 'PROF'
+    ALUNO       = 'ALUNO'
+    RESPONSAVEL = 'RESP'
+
+    TIPOS = [
+        (ADMIN,       'Administrador'),
+        (DIRETOR,     'Diretor'),
+        (COLABORADOR, 'Colaborador'),
+        (PROFESSOR,   'Professor'),
+        (ALUNO,       'Aluno'),
+        (RESPONSAVEL, 'Responsável'),
+    ]
+
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='usuarioescola_set',
+        verbose_name='Usuário',
+    )
+    escola = models.ForeignKey(
+        'escola.UnidadeEscolar',
+        on_delete=models.CASCADE,
+        related_name='vinculos',
+        verbose_name='Escola',
+    )
+    tipo_usuario = models.CharField(
+        verbose_name='Tipo de Usuário',
+        max_length=10,
+        choices=TIPOS,
+    )
+    ativo = models.BooleanField(verbose_name='Ativo', default=True)
+    data_vinculo = models.DateTimeField(verbose_name='Data do Vínculo', auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Vínculo Escola'
+        verbose_name_plural = 'Vínculos Escola'
+        unique_together = ('usuario', 'escola')
+
+    def __str__(self):
+        return f'{self.usuario.nome} — {self.escola} ({self.get_tipo_usuario_display()})'

@@ -1,72 +1,67 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.shortcuts import render
-
-# Create your views here.
+from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, ListView, UpdateView, DeleteView
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+
+from apps.core.models import UsuarioEscola
+from apps.core.permissao import PermissaoRequiredMixin
 from .models import Funcao
-from ..funcionario.models import Funcionario
-from ..escola.models import UnidadeEscolar
 
 
-class ListaFuncao(LoginRequiredMixin, ListView):
+_TIPOS_GESTAO = [UsuarioEscola.ADMIN, UsuarioEscola.DIRETOR]
+
+
+class ListaFuncao(PermissaoRequiredMixin, ListView):
     model = Funcao
-    template_name = 'funcao/lista_funcao.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        escola = UnidadeEscolar.objects.get(pk=self.request.user)
-        context['escola'] = escola
-        return context
+    template_name = 'funcao/lista_funcoes.html'
+    context_object_name = 'funcoes'
+    permissao_tipos = _TIPOS_GESTAO
 
     def get_queryset(self):
-        return Funcao.objects.filter(escola=self.request.user)
+        return Funcao.objects.filter(escola=self.request.escola).order_by('funcao')
 
 
-class AdicionarFuncao(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+class AdicionarFuncao(PermissaoRequiredMixin, SuccessMessageMixin, CreateView):
     model = Funcao
     fields = ('funcao', 'codigo')
-    template_name = 'funcao/adicionar_funcao.html'
-    success_message = 'Função adicionada com sucesso'
+    template_name = 'funcao/form_funcao.html'
+    success_message = 'Função adicionada com sucesso.'
     success_url = reverse_lazy('funcao:lista_funcoes')
+    permissao_tipos = _TIPOS_GESTAO
 
     def form_valid(self, form):
-        funcao = form.save(commit=False)
-        escola = UnidadeEscolar.objects.get(pk=self.request.user)
-        funcao.escola = escola
-        funcao.save()
+        form.instance.escola = self.request.escola
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        escola = UnidadeEscolar.objects.get(pk=self.request.user)
-        context['escola'] = escola
-        return context
+        ctx = super().get_context_data(**kwargs)
+        ctx['titulo'] = 'Adicionar Função'
+        return ctx
 
 
-class AtualizarFuncao(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class AtualizarFuncao(PermissaoRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Funcao
-    fields = ('codigo', 'funcao')
-    template_name = 'funcao/editar_funcao.html'
-    success_message = "Função atualizada com sucesso"
+    fields = ('funcao', 'codigo')
+    template_name = 'funcao/form_funcao.html'
+    success_message = 'Função atualizada com sucesso.'
     success_url = reverse_lazy('funcao:lista_funcoes')
+    permissao_tipos = _TIPOS_GESTAO
 
     def get_object(self, queryset=None):
-        return Funcao.objects.get(pk=self.kwargs['pk'])
+        return get_object_or_404(Funcao, pk=self.kwargs['pk'], escola=self.request.escola)
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        escola = UnidadeEscolar.objects.get(pk=self.request.user)
-        context['escola'] = escola
-        return context
+        ctx = super().get_context_data(**kwargs)
+        ctx['titulo'] = f'Editar — {self.object.funcao}'
+        return ctx
 
 
-class RemoverFuncao(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
+class RemoverFuncao(PermissaoRequiredMixin, SuccessMessageMixin, DeleteView):
     model = Funcao
-    success_message = 'Função removida com sucesso!'
+    template_name = 'funcao/confirmar_remocao.html'
+    success_message = 'Função removida com sucesso.'
     success_url = reverse_lazy('funcao:lista_funcoes')
+    permissao_tipos = _TIPOS_GESTAO
 
     def get_object(self, queryset=None):
-        funcao = Funcao.objects.get(pk=self.kwargs['pk'])
-        return funcao
+        return get_object_or_404(Funcao, pk=self.kwargs['pk'], escola=self.request.escola)

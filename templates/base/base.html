@@ -1,0 +1,515 @@
+```html
+<!DOCTYPE html>
+{% load static %}
+<html lang="pt-br" data-theme="light">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block titulo %}Gabarito{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/font-awesome.min.css' %}">
+
+    {% block estilo %}{% endblock %}
+
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+
+        /* Scrollbar */
+        .sidebar-scroll {
+            scrollbar-width: thin;
+            scrollbar-color: #94a3b8 transparent;
+        }
+
+        .sidebar-scroll::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .sidebar-scroll::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 999px;
+        }
+
+        /* Sidebar */
+        #sidebar {
+            transition: width .25s ease;
+            width: 18rem;
+            overflow: hidden;
+        }
+
+        body.sidebar-collapsed #sidebar {
+            width: 5rem;
+        }
+
+        body.sidebar-collapsed .sidebar-text,
+        body.sidebar-collapsed .sidebar-section,
+        body.sidebar-collapsed .sidebar-brand-text,
+        body.sidebar-collapsed .sidebar-school-info,
+        body.sidebar-collapsed .sidebar-chevron {
+            display: none !important;
+        }
+
+        body.sidebar-collapsed .sidebar-nav a,
+        body.sidebar-collapsed .sidebar-nav summary {
+            justify-content: center;
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        body.sidebar-collapsed .sidebar-footer-btn {
+            justify-content: center;
+        }
+
+        body.sidebar-collapsed .sidebar-icon {
+            margin: auto;
+        }
+
+        /* Remove marker */
+        .sidebar-nav summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .sidebar-nav summary::marker {
+            content: none;
+        }
+
+        /* Chevron */
+        .sidebar-nav .chevron {
+            transition: transform .2s ease;
+        }
+
+        .sidebar-nav details[open] .chevron {
+            transform: rotate(90deg);
+        }
+
+        /* Active feedback */
+        a:active,
+        button:active,
+        summary:active {
+            transform: scale(.98);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-slate-100 text-slate-800 antialiased">
+
+<div class="drawer lg:drawer-open">
+
+    <input id="menu-drawer" type="checkbox" class="drawer-toggle">
+
+    <!-- ========================= -->
+    <!-- CONTEÚDO -->
+    <!-- ========================= -->
+    <div class="drawer-content flex flex-col min-h-screen">
+
+        <!-- NAVBAR -->
+        <header class="navbar bg-white border-b border-slate-200 sticky top-0 z-40 px-4 shadow-sm">
+
+            <!-- Mobile -->
+            <div class="flex-none lg:hidden">
+                <label for="menu-drawer"
+                       class="btn btn-ghost btn-square text-slate-600 hover:bg-blue-100 hover:text-blue-800">
+                    <i class="fa fa-bars text-lg"></i>
+                </label>
+            </div>
+
+            <!-- Mobile brand -->
+            <div class="flex-1 lg:hidden">
+                <a href="#" class="text-xl font-black tracking-tight text-slate-800">
+                    Gaba<span class="text-blue-700">rito</span>
+                </a>
+            </div>
+
+            <!-- Desktop toggle -->
+            <button id="sidebar-toggle"
+                    onclick="toggleSidebar()"
+                    class="hidden lg:flex btn btn-ghost btn-square text-slate-600 hover:bg-blue-100 hover:text-blue-800">
+
+                <i id="sidebar-toggle-icon" class="fa fa-bars text-lg"></i>
+
+            </button>
+
+            <div class="flex-1"></div>
+
+            <!-- Actions -->
+            <div class="flex items-center gap-2">
+
+                {% if tem_multiplas_escolas %}
+                    <a href="{% url 'escola:selecionar' %}"
+                       class="hidden md:flex btn btn-sm bg-blue-700 hover:bg-blue-800 text-white border-0 rounded-xl">
+                        <i class="fa fa-exchange"></i>
+                        Trocar escola
+                    </a>
+                {% endif %}
+
+                <!-- User -->
+                <div class="dropdown dropdown-end">
+
+                    <label tabindex="0"
+                           class="btn btn-ghost h-auto px-2 py-1.5 rounded-2xl hover:bg-slate-100 border border-transparent hover:border-slate-200">
+
+                        <div class="flex items-center gap-3">
+
+                            <div class="avatar placeholder">
+                                <div class="bg-blue-700 text-white rounded-2xl w-10">
+                                    <span class="font-bold">
+                                        {% if usuario %}
+                                            {{ usuario.nome|first|upper }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="hidden sm:flex flex-col items-start leading-tight">
+                                <span class="text-sm font-bold text-slate-700 max-w-32 truncate">
+                                    {% if usuario %}
+                                        {{ usuario.nome }}
+                                    {% endif %}
+                                </span>
+
+                                <span class="text-xs text-slate-500">
+                                    {% if vinculo %}
+                                        {{ vinculo.get_tipo_usuario_display }}
+                                    {% endif %}
+                                </span>
+                            </div>
+
+                            <i class="fa fa-chevron-down text-xs text-slate-400 hidden sm:block"></i>
+
+                        </div>
+
+                    </label>
+
+                    <ul tabindex="0"
+                        class="dropdown-content menu menu-sm mt-2 z-[60]
+                               bg-white rounded-2xl shadow-2xl border border-slate-200
+                               w-64 p-2">
+
+                        <li>
+                            <a href="{% url 'accounts:password_change' %}"
+                               class="rounded-xl py-3 text-slate-700 hover:bg-blue-100 hover:text-blue-800">
+                                <i class="fa fa-lock text-blue-700"></i>
+                                Alterar senha
+                            </a>
+                        </li>
+
+                        {% if tem_multiplas_escolas %}
+                        <li class="md:hidden">
+                            <a href="{% url 'escola:selecionar' %}"
+                               class="rounded-xl py-3 text-slate-700 hover:bg-blue-100 hover:text-blue-800">
+                                <i class="fa fa-exchange text-blue-700"></i>
+                                Trocar escola
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        <div class="divider my-1"></div>
+
+                        <li>
+                            <form method="post" action="{% url 'accounts:logout' %}">
+                                {% csrf_token %}
+
+                                <button type="submit"
+                                        class="w-full rounded-xl py-3 text-left text-red-600 hover:bg-red-100 font-semibold">
+                                    <i class="fa fa-sign-out"></i>
+                                    Sair da conta
+                                </button>
+                            </form>
+                        </li>
+
+                    </ul>
+
+                </div>
+
+            </div>
+
+        </header>
+
+        <!-- ALERTAS -->
+        {% if messages %}
+            <div class="px-4 lg:px-6 pt-5 space-y-3">
+
+                {% for message in messages %}
+
+                    <div class="alert shadow-md rounded-2xl border
+                        {% if message.tags == 'success' %}
+                            alert-success border-green-300
+                        {% elif message.tags == 'error' %}
+                            alert-error border-red-300
+                        {% elif message.tags == 'warning' %}
+                            alert-warning border-amber-300
+                        {% else %}
+                            alert-info border-blue-300
+                        {% endif %}
+                    ">
+                        <span>{{ message }}</span>
+                    </div>
+
+                {% endfor %}
+
+            </div>
+        {% endif %}
+
+        <!-- MAIN -->
+        <main class="flex-1 p-4 lg:p-6">
+
+            <div class="bg-white border border-slate-200 rounded-3xl shadow-sm p-5 lg:p-6">
+
+                {% block conteudo %}
+                {% endblock %}
+
+            </div>
+
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="footer footer-center py-4 bg-white border-t border-slate-200">
+
+            <div class="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-slate-500">
+
+                <span class="flex items-center gap-1">
+                    <i class="fa fa-graduation-cap text-blue-700"></i>
+                    Gabarito
+                </span>
+
+                <span class="text-slate-300">|</span>
+
+                <span>
+                    Sistema de Gestão Escolar
+                </span>
+
+                <span class="text-slate-300">|</span>
+
+                <span>
+                    © 2026
+                </span>
+
+            </div>
+
+        </footer>
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- SIDEBAR -->
+    <!-- ========================= -->
+    <div class="drawer-side z-50">
+
+        <label for="menu-drawer" class="drawer-overlay"></label>
+
+        <aside id="sidebar"
+               class="bg-white border-r border-slate-200 min-h-full flex flex-col sidebar-scroll overflow-y-auto overflow-x-hidden">
+
+            <!-- BRAND -->
+            <div class="px-5 py-5 border-b border-slate-200 shrink-0">
+
+                <a href="#"
+                   class="flex items-center gap-3">
+
+                    <div class="sidebar-icon w-10 h-10 rounded-2xl
+                                bg-gradient-to-br from-blue-700 to-blue-900
+                                flex items-center justify-center
+                                shadow-lg shadow-blue-300/40 shrink-0">
+
+                        <i class="fa fa-graduation-cap text-white"></i>
+
+                    </div>
+
+                    <div class="sidebar-brand-text">
+
+                        <h1 class="text-xl font-black tracking-tight text-slate-800">
+                            Gaba<span class="text-blue-700">rito</span>
+                        </h1>
+
+                        <p class="text-xs text-slate-500">
+                            Sistema Escolar
+                        </p>
+
+                    </div>
+
+                </a>
+
+            </div>
+
+            <!-- School card -->
+            <div class="px-4 pt-4 shrink-0">
+
+                <div class="bg-blue-100 border border-blue-200 rounded-2xl p-3 flex items-center gap-3">
+
+                    <div class="w-11 h-11 rounded-xl bg-blue-700 flex items-center justify-center text-white shrink-0">
+                        <i class="fa fa-building"></i>
+                    </div>
+
+                    <div class="sidebar-school-info min-w-0">
+
+                        <p class="text-sm font-bold text-slate-700 truncate">
+                            {% if escola %}
+                                {{ escola.nome_escola }}
+                            {% else %}
+                                Escola
+                            {% endif %}
+                        </p>
+
+                        <div class="flex items-center gap-1 mt-1">
+                            <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                            <span class="text-xs text-slate-500">Sistema online</span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- NAV -->
+            <nav class="flex-1 px-3 py-4 sidebar-nav">
+
+                <ul class="space-y-1">
+
+                    <!-- Painel -->
+                    <li>
+                        <a href="{% url 'escola:dash_escola' %}"
+                           class="flex items-center gap-3 px-3 py-2.5 rounded-2xl
+                                  text-slate-700 hover:bg-blue-100 hover:text-blue-800 transition-all group">
+
+                            <div class="sidebar-icon w-9 h-9 rounded-xl bg-blue-200
+                                        flex items-center justify-center shrink-0
+                                        group-hover:bg-blue-300 transition-colors">
+
+                                <i class="fa fa-dashboard text-blue-700"></i>
+
+                            </div>
+
+                            <span class="sidebar-text text-sm font-semibold">
+                                Dashboard
+                            </span>
+
+                        </a>
+                    </li>
+
+                    <!-- Gestão -->
+                    <li class="sidebar-section px-3 pt-5 pb-2">
+                        <span class="text-xs font-black uppercase tracking-widest text-slate-400">
+                            Gestão Escolar
+                        </span>
+                    </li>
+
+                    <!-- Salas -->
+                    <li>
+                        <a href="{% url 'sala:lista_salas' %}"
+                           class="flex items-center gap-3 px-3 py-2.5 rounded-2xl
+                                  text-slate-700 hover:bg-blue-100 hover:text-blue-800 transition-all group">
+
+                            <div class="sidebar-icon w-9 h-9 rounded-xl bg-blue-200
+                                        flex items-center justify-center group-hover:bg-blue-300">
+
+                                <i class="fa fa-building text-blue-700"></i>
+
+                            </div>
+
+                            <span class="sidebar-text text-sm font-semibold">
+                                Salas
+                            </span>
+
+                        </a>
+                    </li>
+
+                    <!-- Alunos -->
+                    <li>
+                        <a href="{% url 'aluno:lista_alunos' %}"
+                           class="flex items-center gap-3 px-3 py-2.5 rounded-2xl
+                                  text-slate-700 hover:bg-blue-100 hover:text-blue-800 transition-all group">
+
+                            <div class="sidebar-icon w-9 h-9 rounded-xl bg-blue-200
+                                        flex items-center justify-center group-hover:bg-blue-300">
+
+                                <i class="fa fa-users text-blue-700"></i>
+
+                            </div>
+
+                            <span class="sidebar-text text-sm font-semibold">
+                                Alunos
+                            </span>
+
+                        </a>
+                    </li>
+
+                    <!-- Professores -->
+                    <li>
+                        <a href="{% url 'colaborador:lista_professores' %}"
+                           class="flex items-center gap-3 px-3 py-2.5 rounded-2xl
+                                  text-slate-700 hover:bg-blue-100 hover:text-blue-800 transition-all group">
+
+                            <div class="sidebar-icon w-9 h-9 rounded-xl bg-blue-200
+                                        flex items-center justify-center group-hover:bg-blue-300">
+
+                                <i class="fa fa-book text-blue-700"></i>
+
+                            </div>
+
+                            <span class="sidebar-text text-sm font-semibold">
+                                Professores
+                            </span>
+
+                        </a>
+                    </li>
+
+                </ul>
+
+            </nav>
+
+            <!-- FOOTER -->
+            <div class="px-4 py-4 border-t border-slate-200">
+
+                <form method="post" action="{% url 'accounts:logout' %}">
+                    {% csrf_token %}
+
+                    <button type="submit"
+                            class="sidebar-footer-btn w-full flex items-center justify-center gap-3
+                                   px-4 py-3 rounded-2xl
+                                   bg-red-100 hover:bg-red-200
+                                   text-red-700 font-semibold transition-all">
+
+                        <i class="fa fa-sign-out"></i>
+
+                        <span class="sidebar-text">
+                            Sair da conta
+                        </span>
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </aside>
+
+    </div>
+
+</div>
+
+<script>
+    function toggleSidebar() {
+        const collapsed = document.body.classList.toggle('sidebar-collapsed');
+
+        localStorage.setItem(
+            'gabarito_sidebar_collapsed',
+            collapsed ? '1' : '0'
+        );
+    }
+
+    (function () {
+        if (localStorage.getItem('gabarito_sidebar_collapsed') === '1') {
+            document.body.classList.add('sidebar-collapsed');
+        }
+    })();
+</script>
+
+{% block script %}{% endblock %}
+
+</body>
+</html>

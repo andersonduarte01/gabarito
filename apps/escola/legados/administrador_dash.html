@@ -1,0 +1,87 @@
+{% extends 'temp_base/administrador.html' %}
+{% load static %}
+{% block titulo %}Dashboard{% endblock %}
+{% block estatico %}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.0/fullcalendar.min.css">
+<style>
+        td.fc-day-top.fc-wed.fc-today {
+            background-color: #34a1eb;
+        }
+        td.fc-day-top.fc-wed.fc-today span.fc-day-number{
+            color: white;
+            font-weight: bold;
+        }
+        .fc-unthemed td.fc-today {
+            background: #d2e6f5;
+        }
+        .fc-toolbar .fc-center {
+            display: inline-block;
+            color: #34a1eb;
+        }
+        .fc-toolbar h2 {
+            margin: 0;
+            font-size:26px;
+        }
+    </style>
+{% endblock %}
+{% block trilha %}
+{% endblock %}
+{% block imagem1_adm %}
+<img src="{% if escola.imagem %}
+    {{escola.logo_escola.thumbnail.url}}
+    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
+     class="img-radius" alt="Foto_Usuario">
+{% endblock %}
+{% block tema_adm %}
+<h5 class="m-b-10">{{user.nome}}</h5>
+{% endblock %}
+{% block breadcrumbs_adm %}
+{{block.super}}
+{% endblock %}
+{% block conteudo_adm %}
+<div class="col-sm-12">
+    <div class="card">
+        <div class="card-header">
+            <form class="float-right" action="{% url 'escola:escolas_pesquisadas' %}" method="get">
+                <div class="row">
+                    <div class="col-8">
+                        <input class="form-control" name="q" type="search" placeholder="Pesquisar Escola">
+                    </div>
+                    <div class="col-1">
+                        <button type="submit" class="btn btn-primary text-white" ><i class="fas fa-search"></i></button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="card-block table-border-style">
+            <div class="table-responsive">
+                <table class="table table-hover table-sm">
+                    <thead>
+                    <tr>
+                        <th class="font-weight-bold text-primary">ESCOLA</th>
+                        <th class="font-weight-bold text-primary">INEP</th>
+                        <th class="font-weight-bold text-primary text-center">ENTRAR</th>
+                    </tr>
+                    </thead>
+                    {% for school in escolas %}
+                    <tbody>
+                    <tr>
+                        <td><a href="{% url 'escola:painel_da_escola' school.slug %}">{{school}}</a></td>
+                        <td>{{school.inep}}</td>
+                        <td class="text-center">
+                            <a href="{% url 'escola:painel_da_escola' slug=school.slug %}" class="primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    </tbody>
+                    {% empty %}
+                    <p>Nenhuma escola cadastrada</p>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

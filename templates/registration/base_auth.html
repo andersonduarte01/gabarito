@@ -1,0 +1,175 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="gabarito">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block titulo %}Gabarito{% endblock %} — Sistema Escolar</title>
+    <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}">
+</head>
+
+<body class="min-h-screen bg-base-200 antialiased">
+<div class="min-h-screen grid grid-cols-1 lg:grid-cols-[1fr_1.1fr]">
+
+    <!-- ─────────────────────────────────────────
+         PAINEL DA MARCA (oculto em mobile)
+    ───────────────────────────────────────── -->
+    <div class="hidden lg:flex flex-col justify-between bg-primary text-primary-content relative overflow-hidden p-12 min-h-screen">
+
+        <!-- Decoração de fundo -->
+        <div class="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-white/5 pointer-events-none"></div>
+        <div class="absolute top-1/2 -left-20 w-72 h-72 rounded-full bg-white/5 pointer-events-none"></div>
+        <div class="absolute -bottom-20 right-20 w-56 h-56 rounded-full bg-white/5 pointer-events-none"></div>
+        <div class="absolute bottom-32 -right-10 w-32 h-32 rounded-full bg-white/10 pointer-events-none"></div>
+
+        <!-- Logo / Marca -->
+        <div class="flex items-center gap-3 relative z-10">
+            <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-white/15 backdrop-blur-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M12 3L2 9l10 6 10-6-10-6zM2 15l10 6 10-6M2 12l10 6 10-6"/>
+                </svg>
+            </div>
+            <span class="text-xl font-bold tracking-tight">Gabarito</span>
+        </div>
+
+        <!-- Conteúdo principal da marca -->
+        <div class="space-y-8 relative z-10">
+            <div class="space-y-4">
+                <div class="inline-flex items-center gap-2 text-xs font-semibold tracking-widest uppercase
+                            bg-white/10 text-primary-content/80 px-3 py-1.5 rounded-full">
+                    <span class="w-1.5 h-1.5 rounded-full bg-primary-content/60 inline-block"></span>
+                    Gestão Escolar Inteligente
+                </div>
+                <h1 class="text-4xl font-bold leading-tight tracking-tight">
+                    Educação bem<br/>gerenciada começa<br/>
+                    <span class="text-primary-content/70">com o Gabarito.</span>
+                </h1>
+                <p class="text-primary-content/60 text-base leading-relaxed max-w-xs">
+                    Plataforma completa para diretores, colaboradores e professores.
+                </p>
+            </div>
+
+            <ul class="space-y-4">
+                <li class="flex items-start gap-3">
+                    <div class="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full bg-white/15 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                             stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </div>
+                    <span class="text-sm text-primary-content/80 leading-relaxed">
+                        Controle de frequência e registros em tempo real
+                    </span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <div class="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full bg-white/15 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                             stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </div>
+                    <span class="text-sm text-primary-content/80 leading-relaxed">
+                        Relatórios automáticos por turma e período
+                    </span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <div class="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full bg-white/15 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                             stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </div>
+                    <span class="text-sm text-primary-content/80 leading-relaxed">
+                        Múltiplas escolas, uma única plataforma
+                    </span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Rodapé da marca -->
+        <p class="text-xs text-primary-content/40 relative z-10">
+            &copy; {% now "Y" %} Gabarito. Todos os direitos reservados.
+        </p>
+    </div>
+
+    <!-- ─────────────────────────────────────────
+         PAINEL DO FORMULÁRIO
+    ───────────────────────────────────────── -->
+    <div class="flex flex-col justify-center min-h-screen bg-base-100 px-6 py-12 sm:px-10 lg:px-16 xl:px-20">
+
+        <!-- Logo mobile -->
+        <div class="lg:hidden flex items-center justify-center gap-3 mb-10">
+            <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary text-primary-content">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M12 3L2 9l10 6 10-6-10-6zM2 15l10 6 10-6M2 12l10 6 10-6"/>
+                </svg>
+            </div>
+            <span class="text-xl font-bold text-base-content">Gabarito</span>
+        </div>
+
+        <!-- Container do formulário -->
+        <div class="w-full max-w-sm mx-auto">
+
+            <!-- Cabeçalho do formulário -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-base-content tracking-tight">
+                    {% block tema %}Acesso{% endblock %}
+                </h2>
+                {% block subtitulo %}{% endblock %}
+            </div>
+
+            <!-- Mensagens do sistema -->
+            {% if messages %}
+                <div class="space-y-2 mb-6">
+                    {% for message in messages %}
+                        <div role="alert"
+                             class="alert text-sm py-3 {% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% elif message.tags == 'warning' %}alert-warning{% else %}alert-info{% endif %}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" fill="none"
+                                 viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Conteúdo principal -->
+            {% block conteudo %}{% endblock %}
+
+        </div>
+
+        <!-- Rodapé do painel de formulário -->
+        <p class="text-center text-xs text-base-content/30 mt-12 lg:hidden">
+            &copy; {% now "Y" %} Gabarito — Gestão Escolar
+        </p>
+    </div>
+
+</div>
+
+<!-- Script auxiliar: toggle de visibilidade de senha -->
+<script>
+function toggleSenha(btnEl) {
+    const wrapper = btnEl.closest('.campo-senha');
+    const input = wrapper.querySelector('input');
+    const iconShow = btnEl.querySelector('.icon-show');
+    const iconHide = btnEl.querySelector('.icon-hide');
+    if (input.type === 'password') {
+        input.type = 'text';
+        iconShow.classList.add('hidden');
+        iconHide.classList.remove('hidden');
+    } else {
+        input.type = 'password';
+        iconShow.classList.remove('hidden');
+        iconHide.classList.add('hidden');
+    }
+}
+</script>
+
+</body>
+</html>

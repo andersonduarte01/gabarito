@@ -1,389 +1,129 @@
-import locale
-from io import BytesIO
-import calendar
-from datetime import datetime
-import requests
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.messages.views import SuccessMessageMixin
-from django.db.models import Q
-from django.http import HttpResponseRedirect, HttpResponse
-from django.shortcuts import get_object_or_404, render
-from django.urls import reverse_lazy, reverse
-from django.views.generic import DeleteView, ListView, CreateView, TemplateView, UpdateView
-from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER
-from reportlab.lib.pagesizes import A4, landscape
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import cm
-from reportlab.lib.utils import ImageReader
-from reportlab.pdfgen import canvas
-from reportlab.platypus import Table, TableStyle, SimpleDocTemplate, Paragraph, Spacer, PageBreak
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from django.contrib import messages
+from django.shortcuts import redirect, get_object_or_404
+from django.views.generic import ListView, TemplateView, UpdateView
+from django.urls import reverse_lazy
 
-from .relatorio import desenhar_retangulo, adicionar_linha_paralela, adicionar_linha_vertical, escrever_texto, \
-    desenhar_retangulo1
-from ..aluno.models import Aluno
-from ..avaliacao.models import Gabarito, Resposta
-from .forms import AlunoForm, EditarAlunoForm, PessoaForm, EnderecoForm, EditarAlunoForm01
-from ..escola.models import UnidadeEscolar
-from ..frequencia.models import FrequenciaAluno, Relatorio
-from ..perfil.models import Pessoa, Endereco
-from ..sala.models import Sala
+from apps.core.models import UsuarioEscola
+from apps.core.permissao import PermissaoRequiredMixin
+from apps.core.services import AlunoService
+from .forms import AlunoCreateForm, AlunoEditForm
+from .models import Aluno
 
 
-class EditarAluno(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+_TIPOS_GESTAO = [UsuarioEscola.ADMIN, UsuarioEscola.DIRETOR, UsuarioEscola.COLABORADOR]
+
+
+class ListaAlunos(PermissaoRequiredMixin, ListView):
     model = Aluno
-    form_class = EditarAlunoForm01
-    template_name = 'aluno/edicao_aluno.html'
-    success_message = 'Aluno atualizado com sucesso.'
+    template_name = 'aluno/lista_alunos.html'
+    context_object_name = 'alunos'
+    permissao_tipos = _TIPOS_GESTAO
 
-    def get_success_url(self):
-        print(self.object.sala.pk)
-        return reverse_lazy('escola:unidade_sala_alunos', kwargs={'id': self.object.sala.id,
-                                                                  'slug': self.object.sala.escola.slug})
+    def get_queryset(self):
+        qs = (
+            Aluno.objects
+            .filter(escola=self.request.escola)
+            .select_related('usuario', 'sala', 'sala__ano')
+            .order_by('usuario__nome')
+        )
+        sala_id = self.request.GET.get('sala')
+        if sala_id:
+            qs = qs.filter(sala_id=sala_id)
+        return qs
 
-
-def delete_view(request, pk):
-    aluno = get_object_or_404(Aluno, pk=pk)
-    sala = get_object_or_404(Sala, id=aluno.sala.id)
-    if request.method == "POST":
-        aluno.delete()
-        sala.total_alunos -= 1
-        sala.save()
-        url = reverse('escola:unidade_sala_alunos', kwargs={'id': aluno.sala.id,
-                                                            'slug': aluno.sala.escola.slug})
-        return HttpResponseRedirect(url)
-
-    url = reverse('escola:unidade_sala_alunos', kwargs={'id': aluno.sala.id,
-                                                            'slug': aluno.sala.escola.slug})
-    return HttpResponseRedirect(url)
+    def get_context_data(self, **kwargs):
+        from apps.sala.models import Sala
+        ctx = super().get_context_data(**kwargs)
+        ctx['salas'] = Sala.objects.filter(escola=self.request.escola).order_by('descricao')
+        ctx['sala_selecionada'] = self.request.GET.get('sala', '')
+        return ctx
 
 
-def relatorioFrequencia(request, pk, mes, styles=None):
-    sala = get_object_or_404(Sala, pk=pk)
-    escola = get_object_or_404(UnidadeEscolar, pk=sala.escola.pk)
-    alunos = Aluno.objects.filter(sala=sala).order_by("nome")
+class CadastrarAluno(PermissaoRequiredMixin, TemplateView):
+    template_name = 'aluno/form_aluno.html'
+    permissao_tipos = _TIPOS_GESTAO
 
-    response = HttpResponse(content_type="application/pdf")
-    response["Content-Disposition"] = f'attachment; filename="{sala.descricao}.pdf"'
+    def get_context_data(self, form=None, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['form'] = form or AlunoCreateForm(escola=self.request.escola)
+        ctx['titulo'] = 'Cadastrar Aluno'
+        return ctx
 
-    # Documento em modo paisagem
-    doc = SimpleDocTemplate(
-        response,
-        pagesize=landscape(A4),
-        rightMargin=1*cm,
-        leftMargin=1*cm,
-        topMargin=1*cm,
-        bottomMargin=1*cm
-    )
+    def post(self, request, *args, **kwargs):
+        form = AlunoCreateForm(request.POST, escola=request.escola)
+        if not form.is_valid():
+            return self.render_to_response(self.get_context_data(form=form))
 
-    centered_heading = ParagraphStyle(
-        name="CenteredHeading2",
-        fontSize=14,
-        leading=18,
-        alignment=TA_CENTER
-    )
-
-    centered_heading1 = ParagraphStyle(
-        name="CenteredHeading2",
-        fontSize=12,
-        leading=18,
-        alignment=TA_CENTER
-    )
-
-    elements = []
-    styles = getSampleStyleSheet()
-
-    # Cabeçalho
-    elements.append(Paragraph(f"<b>{escola.nome_escola}</b>", styles["Title"]))
-    elements.append(Paragraph(f"{sala.descricao} - {sala.ano}", centered_heading))
-
-    nome_meses = {
-        1: 'Janeiro', 2: 'Fevereiro', 3: 'Março', 4: 'Abril',
-        5: 'Maio', 6: 'Junho', 7: 'Julho', 8: 'Agosto',
-        9: 'Setembro', 10: 'Outubro', 11: 'Novembro', 12: 'Dezembro'
-    }
-
-    elements.append(Paragraph(f"<b>{nome_meses[mes]} - {sala.ano_letivo.ano}</b>",centered_heading1))
-    elements.append(Spacer(1, 12))
-
-    # Preparar tabela
-    locale.setlocale(locale.LC_TIME, "pt_BR.UTF-8")
-    ano = 2025
-    dias_mes = calendar.monthcalendar(ano, mes)
-
-    header_dias = ["Alunos"]
-    header_semana = [""]
-
-    for semana in dias_mes:
-        for dia in semana:
-            if dia != 0:
-                data = datetime(ano, mes, dia)
-                if data.weekday() < 5:  # dias úteis
-                    header_dias.append(data.strftime("%d"))
-                    header_semana.append(data.strftime("%a"))
-
-    data_table = [header_dias, header_semana]
-
-    for aluno in alunos:
-        linha = [aluno.nome]
-        for semana in dias_mes:
-            for dia in semana:
-                if dia != 0:
-                    data = datetime(ano, mes, dia)
-                    if data.weekday() < 5:
-                        try:
-                            freq = FrequenciaAluno.objects.get(data=data.date(), aluno=aluno)
-                            linha.append("P" if freq.presente else "F")
-                        except:
-                            linha.append(".")
-        data_table.append(linha)
-
-    # Largura dinâmica das colunas (paisagem A4)
-    total_width = 29.7*cm - 2*cm  # largura útil (paisagem menos margens)
-    nome_col_width = 6*cm
-    restantes = len(header_dias) - 1
-    col_widths = [nome_col_width] + [(total_width - nome_col_width) / restantes] * restantes
-
-    # Criar tabela
-    table = Table(data_table, colWidths=col_widths, repeatRows=2)
-
-    # Estilos
-    style = TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
-        ('BACKGROUND', (0, 1), (-1, 1), colors.whitesmoke),
-        ('TEXTCOLOR', (0, 0), (-1, 1), colors.black),
-        ('ALIGN', (1, 0), (-1, -1), 'CENTER'),
-        ('FONT', (0, 0), (-1, -1), 'Helvetica', 8),
-        ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
-    ])
-
-    # Zebra striping
-    for row_num in range(2, len(data_table)):
-        bg_color = colors.whitesmoke if row_num % 2 == 0 else colors.white
-        style.add('BACKGROUND', (0, row_num), (-1, row_num), bg_color)
-
-    table.setStyle(style)
-    elements.append(table)
-
-    doc.build(elements)
-    return response
-
-
-def relatorioRegistro(request, pk):
-    aluno = get_object_or_404(Aluno, pk=pk)
-    escola = get_object_or_404(UnidadeEscolar, pk=aluno.sala.escola.pk)
-
-    response = HttpResponse(content_type="application/pdf")
-    response["Content-Disposition"] = f'attachment; filename="relatorios_{aluno.nome}.pdf"'
-
-    # Documento no formato retrato
-    doc = SimpleDocTemplate(
-        response,
-        pagesize=A4,
-        rightMargin=2 * cm,
-        leftMargin=2 * cm,
-        topMargin=2 * cm,
-        bottomMargin=2 * cm
-    )
-
-    centered_heading = ParagraphStyle(
-        name="CenteredHeading2",
-        fontSize=14,
-        leading=18,
-        alignment=TA_CENTER
-    )
-
-    centered_heading1 = ParagraphStyle(
-        name="CenteredHeading2",
-        fontSize=10,
-        leading=18,
-        alignment=TA_CENTER
-    )
-
-    elements = []
-    styles = getSampleStyleSheet()
-
-    # Cabeçalho do aluno
-    elements.append(Paragraph(f"<b>{aluno.nome}</b>", styles["Title"]))
-    elements.append(Paragraph(f"{escola.nome_escola}", centered_heading))
-    elements.append(Paragraph(f"Sala: {aluno.sala.descricao} | Turno: {aluno.sala.turno}", centered_heading1))
-    elements.append(Spacer(1, 12))
-
-    # Buscar todos os relatórios do aluno
-    relatorios = Relatorio.objects.filter(aluno=aluno).select_related("periodo").order_by("periodo__id")
-
-    if not relatorios.exists():
-        elements.append(Paragraph("Nenhum relatório encontrado para este aluno.", styles["Normal"]))
-    else:
-        body_style = ParagraphStyle(
-            'body',
-            parent=styles['Normal'],
-            fontSize=10,
-            leading=14,
-            spaceAfter=12
+        d = form.cleaned_data
+        service = AlunoService(request.escola)
+        result = service.criar_aluno(
+            nome=d['nome'],
+            cpf=d.get('cpf') or '',
+            data_nascimento=d.get('data_nascimento'),
+            sala=d.get('sala'),
+            tem_responsavel=d.get('tem_responsavel', True),
+            email=d.get('email'),
+            password=d.get('password'),
+            sexo=d.get('sexo', 'M'),
         )
 
-        for idx, rel in enumerate(relatorios, start=1):
-            elements.append(Paragraph(f"<b>Período:</b> {rel.periodo}", styles["Normal"]))
-            elements.append(Paragraph(f"<b>Professor:</b> {rel.professor or '---'}", styles["Normal"]))
-            elements.append(Paragraph(f"<b>Data:</b> {rel.data_relatorio.strftime('%d/%m/%Y')}", styles["Normal"]))
-            elements.append(Spacer(1, 6))
+        if result['status'] == 'error':
+            messages.error(request, result['message'])
+            return self.render_to_response(self.get_context_data(form=form))
 
-            # Texto do relatório
-            elements.append(Paragraph(rel.relatorio.replace("\n", "<br/>"), body_style))
-            elements.append(Spacer(1, 18))  # espaçamento maior entre relatórios
+        if result['status'] == 'exists':
+            messages.warning(request, result['message'])
+        else:
+            messages.success(request, 'Aluno cadastrado com sucesso.')
 
-    # Montar o PDF (quebra de página será automática)
-    doc.build(elements)
-    return response
+        aluno = result.get('aluno')
+        if aluno and d.get('responsavel_legal'):
+            aluno.responsavel_legal = d['responsavel_legal']
+            aluno.save(update_fields=['responsavel_legal'])
 
-
-###### APIs #####
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def api_relatorio_registro(request, pk):
-    aluno = get_object_or_404(Aluno, pk=pk)
-    escola = get_object_or_404(UnidadeEscolar, pk=aluno.sala.escola.pk)
-
-    response = HttpResponse(content_type="application/pdf")
-    response["Content-Disposition"] = f'attachment; filename="relatorios_{aluno.nome}.pdf"'
-
-    doc = SimpleDocTemplate(response, pagesize=A4, rightMargin=2*cm, leftMargin=2*cm, topMargin=2*cm, bottomMargin=2*cm)
-
-    elements = []
-    styles = getSampleStyleSheet()
-    centered_heading = ParagraphStyle(name="CenteredHeading2", fontSize=14, leading=18, alignment=TA_CENTER)
-    centered_heading1 = ParagraphStyle(name="CenteredHeading2", fontSize=10, leading=18, alignment=TA_CENTER)
-
-    # Cabeçalho
-    elements.append(Paragraph(f"<b>{aluno.nome}</b>", styles["Title"]))
-    elements.append(Paragraph(f"{escola.nome_escola}", centered_heading))
-    elements.append(Paragraph(f"Sala: {aluno.sala.descricao} | Turno: {aluno.sala.turno}", centered_heading1))
-    elements.append(Spacer(1, 12))
-
-    # Relatórios
-    relatorios = Relatorio.objects.filter(aluno=aluno).select_related("periodo").order_by("periodo__id")
-    body_style = ParagraphStyle('body', parent=styles['Normal'], fontSize=10, leading=14, spaceAfter=12)
-
-    if not relatorios.exists():
-        elements.append(Paragraph("Nenhum relatório encontrado para este aluno.", styles["Normal"]))
-    else:
-        for rel in relatorios:
-            elements.append(Paragraph(f"<b>Período:</b> {rel.periodo}", styles["Normal"]))
-            elements.append(Paragraph(f"<b>Professor:</b> {rel.professor or '---'}", styles["Normal"]))
-            elements.append(Paragraph(f"<b>Data:</b> {rel.data_relatorio.strftime('%d/%m/%Y')}", styles["Normal"]))
-            elements.append(Spacer(1,6))
-            elements.append(Paragraph(rel.relatorio.replace("\n","<br/>"), body_style))
-            elements.append(Spacer(1,18))
-
-    doc.build(elements)
-    return response
+        return redirect('aluno:lista_alunos')
 
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def api_relatorio_frequencia(request, pk, mes):
-    # Obter sala, escola e alunos
-    sala = get_object_or_404(Sala, pk=pk)
-    escola = get_object_or_404(UnidadeEscolar, pk=sala.escola.pk)
-    alunos = Aluno.objects.filter(sala=sala).order_by("nome")
+class EditarAluno(PermissaoRequiredMixin, UpdateView):
+    model = Aluno
+    form_class = AlunoEditForm
+    template_name = 'aluno/form_aluno.html'
+    context_object_name = 'aluno'
+    permissao_tipos = _TIPOS_GESTAO
+    success_url = reverse_lazy('aluno:lista_alunos')
 
-    # Criar resposta PDF
-    response = HttpResponse(content_type="application/pdf")
-    response["Content-Disposition"] = f'attachment; filename="{sala.descricao}.pdf"'
+    def get_object(self, queryset=None):
+        return get_object_or_404(Aluno, pk=self.kwargs['pk'], escola=self.request.escola)
 
-    # Documento paisagem
-    doc = SimpleDocTemplate(
-        response,
-        pagesize=landscape(A4),
-        rightMargin=1*cm,
-        leftMargin=1*cm,
-        topMargin=1*cm,
-        bottomMargin=1*cm
-    )
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['escola'] = self.request.escola
+        return kwargs
 
-    # Estilos
-    styles = getSampleStyleSheet()
-    centered_heading = ParagraphStyle(name="CenteredHeading2", fontSize=14, leading=18, alignment=TA_CENTER)
-    centered_heading1 = ParagraphStyle(name="CenteredHeading2", fontSize=12, leading=18, alignment=TA_CENTER)
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['titulo'] = f'Editar — {self.object.usuario.nome}'
+        return ctx
 
-    elements = []
+    def form_valid(self, form):
+        messages.success(self.request, 'Aluno atualizado com sucesso.')
+        return super().form_valid(form)
 
-    # Cabeçalho
-    elements.append(Paragraph(f"<b>{escola.nome_escola}</b>", styles["Title"]))
-    elements.append(Paragraph(f"{sala.descricao} - {sala.ano}", centered_heading))
 
-    nome_meses = {
-        1:'Janeiro',2:'Fevereiro',3:'Março',4:'Abril',5:'Maio',6:'Junho',
-        7:'Julho',8:'Agosto',9:'Setembro',10:'Outubro',11:'Novembro',12:'Dezembro'
-    }
-    elements.append(Paragraph(f"<b>{nome_meses[mes]} - {sala.ano_letivo.ano}</b>", centered_heading1))
-    elements.append(Spacer(1, 12))
+class DesativarAluno(PermissaoRequiredMixin, TemplateView):
+    template_name = 'aluno/confirmar_remocao.html'
+    permissao_tipos = _TIPOS_GESTAO
 
-    # Preparar tabela
-    locale.setlocale(locale.LC_TIME, "pt_BR.UTF-8")  # para nomes de dias em português
-    ano = sala.ano_letivo.ano
-    dias_mes = calendar.monthcalendar(ano, mes)
+    def get_object(self):
+        return get_object_or_404(Aluno, pk=self.kwargs['pk'], escola=self.request.escola)
 
-    # Cabeçalho da tabela
-    header_dias = ["Alunos"]
-    header_semana = [""]
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['objeto'] = self.get_object()
+        return ctx
 
-    for semana in dias_mes:
-        for dia in semana:
-            if dia != 0:
-                data = datetime(ano, mes, dia)
-                if data.weekday() < 5:  # dias úteis (segunda a sexta)
-                    header_dias.append(data.strftime("%d"))
-                    header_semana.append(data.strftime("%a"))
-
-    data_table = [header_dias, header_semana]
-
-    # Preencher linhas com frequência dos alunos
-    for aluno in alunos:
-        linha = [aluno.nome]
-        for semana in dias_mes:
-            for dia in semana:
-                if dia != 0:
-                    data = datetime(ano, mes, dia)
-                    if data.weekday() < 5:
-                        try:
-                            freq = FrequenciaAluno.objects.get(data=data.date(), aluno=aluno)
-                            linha.append("P" if freq.presente else "F")
-                        except FrequenciaAluno.DoesNotExist:
-                            linha.append(".")
-        data_table.append(linha)
-
-    # Definir largura das colunas
-    total_width = 29.7*cm - 2*cm  # largura paisagem menos margens
-    nome_col_width = 6*cm
-    restantes = len(header_dias) - 1
-    col_widths = [nome_col_width] + [(total_width - nome_col_width)/restantes]*restantes
-
-    # Criar tabela
-    table = Table(data_table, colWidths=col_widths, repeatRows=2)
-
-    # Estilo da tabela
-    style = TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
-        ('BACKGROUND', (0, 1), (-1, 1), colors.whitesmoke),
-        ('TEXTCOLOR', (0, 0), (-1, 1), colors.black),
-        ('ALIGN', (1, 0), (-1, -1), 'CENTER'),
-        ('FONT', (0, 0), (-1, -1), 'Helvetica', 8),
-        ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
-    ])
-
-    # Zebra striping
-    for row_num in range(2, len(data_table)):
-        bg_color = colors.whitesmoke if row_num % 2 == 0 else colors.white
-        style.add('BACKGROUND', (0, row_num), (-1, row_num), bg_color)
-
-    table.setStyle(style)
-    elements.append(table)
-
-    # Montar PDF
-    doc.build(elements)
-    return response
+    def post(self, request, *args, **kwargs):
+        aluno = self.get_object()
+        aluno.usuario.remover_escola(request.escola)
+        messages.success(request, f'{aluno.usuario.nome} foi desativado.')
+        return redirect('aluno:lista_alunos')

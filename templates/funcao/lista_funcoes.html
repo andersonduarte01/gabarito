@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Funções{% endblock %}
+{% block titulo_pagina %}Funções{% endblock %}
+
+{% block conteudo %}
+
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+    <div>
+        <h1 class="text-xl font-bold text-base-content">Funções</h1>
+        <p class="text-sm text-base-content/60 mt-0.5">Cargos e funções dos colaboradores</p>
+    </div>
+    <a href="{% url 'funcao:adicionar_funcao' %}" class="btn btn-primary btn-sm gap-1">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Adicionar
+    </a>
+</div>
+
+{% if funcoes %}
+    <div class="overflow-x-auto">
+        <table class="table table-zebra bg-base-100 shadow-sm rounded-xl">
+            <thead>
+                <tr class="text-xs uppercase text-base-content/50">
+                    <th>Função</th>
+                    <th>Código</th>
+                    <th>Colaboradores</th>
+                    <th class="text-right">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for funcao in funcoes %}
+                    <tr>
+                        <td class="font-medium text-sm">{{ funcao.funcao }}</td>
+                        <td class="text-sm text-base-content/70">{{ funcao.codigo }}</td>
+                        <td class="text-sm text-base-content/70">
+                            {{ funcao.colaboradores.count }}
+                        </td>
+                        <td class="text-right">
+                            <div class="flex justify-end gap-1">
+                                <a href="{% url 'funcao:atualizar_funcao' funcao.pk %}"
+                                   class="btn btn-ghost btn-xs">Editar</a>
+                                <a href="{% url 'funcao:remover_funcao' funcao.pk %}"
+                                   class="btn btn-ghost btn-xs text-error">Remover</a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="card bg-base-100 shadow-sm">
+        <div class="card-body items-center text-center py-12">
+            <p class="font-semibold text-base-content">Nenhuma função cadastrada</p>
+            <a href="{% url 'funcao:adicionar_funcao' %}" class="btn btn-primary btn-sm mt-4">
+                Adicionar primeira função
+            </a>
+        </div>
+    </div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Colaboradores{% endblock %}
+{% block titulo_pagina %}Colaboradores{% endblock %}
+
+{% block conteudo %}
+
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+    <div>
+        <h1 class="text-xl font-bold text-base-content">Colaboradores</h1>
+        <p class="text-sm text-base-content/60 mt-0.5">Funcionários não-docentes da escola</p>
+    </div>
+    {% if vinculo.tipo_usuario == 'DIR' or vinculo.tipo_usuario == 'ADMIN' %}
+        <a href="{% url 'colaborador:cadastrar_colaborador' %}" class="btn btn-primary btn-sm gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Cadastrar
+        </a>
+    {% endif %}
+</div>
+
+{% if colaboradores %}
+    <div class="overflow-x-auto">
+        <table class="table table-zebra bg-base-100 shadow-sm rounded-xl">
+            <thead>
+                <tr class="text-xs uppercase text-base-content/50">
+                    <th>Nome</th>
+                    <th>Função</th>
+                    <th>E-mail</th>
+                    <th>Telefone</th>
+                    <th class="text-right">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for colab in colaboradores %}
+                    <tr>
+                        <td>
+                            <div class="flex items-center gap-3">
+                                {% if colab.foto %}
+                                    <div class="avatar">
+                                        <div class="w-9 rounded-full">
+                                            <img src="{{ colab.foto.url }}" alt="{{ colab.usuario.nome }}" />
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="avatar placeholder">
+                                        <div class="bg-neutral text-neutral-content rounded-full w-9">
+                                            <span class="text-sm">{{ colab.usuario.nome|first|upper }}</span>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                <span class="font-medium text-sm">{{ colab.usuario.nome }}</span>
+                            </div>
+                        </td>
+                        <td class="text-sm text-base-content/70">
+                            {{ colab.funcao.funcao|default:"—" }}
+                        </td>
+                        <td class="text-sm text-base-content/70">{{ colab.usuario.email }}</td>
+                        <td class="text-sm text-base-content/70">{{ colab.telefone|default:"—" }}</td>
+                        <td class="text-right">
+                            {% if vinculo.tipo_usuario == 'DIR' or vinculo.tipo_usuario == 'ADMIN' %}
+                                <div class="flex justify-end gap-1">
+                                    <a href="{% url 'colaborador:editar_colaborador' colab.pk %}"
+                                       class="btn btn-ghost btn-xs">Editar</a>
+                                    <a href="{% url 'colaborador:desativar_colaborador' colab.pk %}"
+                                       class="btn btn-ghost btn-xs text-error">Remover</a>
+                                </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="card bg-base-100 shadow-sm">
+        <div class="card-body items-center text-center py-12">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-base-content/20 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            <p class="font-semibold text-base-content">Nenhum colaborador cadastrado</p>
+            {% if vinculo.tipo_usuario == 'DIR' or vinculo.tipo_usuario == 'ADMIN' %}
+                <a href="{% url 'colaborador:cadastrar_colaborador' %}" class="btn btn-primary btn-sm mt-4">
+                    Cadastrar primeiro colaborador
+                </a>
+            {% endif %}
+        </div>
+    </div>
+{% endif %}
+
+{% endblock %}

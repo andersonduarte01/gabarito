@@ -5,6 +5,7 @@ from .models import Funcao
 
 
 @admin.register(Funcao)
-class FuncaoADM(admin.ModelAdmin):
-    list_display = ('codigo','funcao', 'escola')
+class FuncaoAdmin(admin.ModelAdmin):
+    list_display = ('funcao', 'codigo', 'escola')
     list_filter = ('escola',)
+    search_fields = ('funcao', 'codigo')

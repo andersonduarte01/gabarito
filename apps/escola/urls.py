@@ -4,17 +4,24 @@ from . import views
 app_name = 'escola'
 
 urlpatterns = [
-    path('redirecionamento/', views.Redireciona.as_view(), name='redirecionar'),
-    path('administrador/', views.DashAdmin.as_view(), name='painel_adm'),
-    path('painel_escola/', views.DashEscola.as_view(), name='dash_escola'),
-    path('atualizar/<pk>/', views.EditarEscola.as_view(), name='editar_escola'),
-    path('frequencia/relatorios/<int:pk>/', views.FrequenciaRelatorios.as_view(), name='freq_relatorios'),
-    path('<pk>/atualizar/endereco/', views.EditarEndereco.as_view(), name='editar_endereco'),
-    path('<pk>/usuario/atualizar/', views.EditarUsuario.as_view(), name='editar_usuario'),
-    path('sala/<slug:slug>/alunos/<int:id>/', views.ListAlunos.as_view(), name='unidade_sala_alunos'),
-### API ###
-    path('api/minha-escola/', views.EscolaLogadaView.as_view(), name='minha-escola'),
-    path('api/editar/minha-escola/', views.UnidadeEscolarUpdateView.as_view(), name='minha-escola'),
-    path('api/meu-endereco/', views.EnderecoEscolarUpdateView.as_view(), name='meu-endereco'),
-]
+    # Roteamento e seleção
+    path('redirecionamento/', views.RedirecionarDashboard.as_view(), name='redirecionar'),
+    path('selecionar/',       views.SelecionarEscola.as_view(),      name='selecionar'),
 
+    # Dashboards
+    path('administrador/',   views.DashAdmin.as_view(),  name='painel_adm'),
+    path('painel/',          views.DashEscola.as_view(), name='dash_escola'),
+
+    # Edição
+    path('editar/',          views.EditarEscola.as_view(),   name='editar_escola'),
+    path('editar/endereco/', views.EditarEndereco.as_view(), name='editar_endereco'),
+
+    # Rotas comentadas — dependem de apps desativados temporariamente
+    # path('sala/<slug:slug>/alunos/<int:id>/', views.UnidAlunos.as_view(), name='unidade_sala_alunos'),
+    # path('frequencia/relatorios/<int:pk>/',   views.FrequenciaRelatorios.as_view(), name='freq_relatorios'),
+
+    # API mobile
+    path('api/minhas-escolas/',         views.MinhaEscolaView.as_view(),            name='api_minhas_escolas'),
+    path('api/escola/<int:pk>/',        views.EscolaDetalheUpdateView.as_view(),    name='api_escola_detalhe'),
+    path('api/escola/<int:pk>/endereco/', views.EnderecoEscolarUpdateView.as_view(), name='api_escola_endereco'),
+]

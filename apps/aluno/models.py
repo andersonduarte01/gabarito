@@ -1,55 +1,84 @@
-from enum import unique
-
 from django.db import models
-from django.urls import reverse
 
-from ..perfil.models import Pessoa, Endereco
-from ..sala.models import Sala
+from apps.core.validators import validate_cpf, normalizar_cpf
 
-
-PORT_DEF = [
-    ('nao', 'Não'),
-    ('TDAH', 'TDAH - Transtorno de déficit de atenção com hiperatividade'),
-    ('TEA', 'TEA - Transtorno do espectro autista'),
-    ('TOD', 'TOD - Transtorno opositivo desafiador'),
-    ('TDL', 'TDL - Transtorno do desenvolvimento da linguagem'),
-]
-
-SITUACAO = [
-    ('1', 'Matriculado(a)'),
-    ('2', 'Transferido(a)'),
-    ('3', 'Outro'),
-]
 
 SEXO = [
     ('M', 'Masculino'),
     ('F', 'Feminino'),
 ]
 
+SITUACAO = [
+    ('MATRIC',  'Matriculado(a)'),
+    ('TRANSF',  'Transferido(a)'),
+    ('EVADIDO', 'Evadido(a)'),
+    ('OUTRO',   'Outro'),
+]
+
 
 class Aluno(models.Model):
-    nome = models.CharField(verbose_name='Nome', max_length=255)
-    data_nascimento = models.CharField(verbose_name='Data de Nascimento', null=True, blank=True,
-                                       max_length=15)
-    sexo = models.CharField(verbose_name='Sexo', choices=SEXO, default='Selecione', max_length=100)
-    portador_deficiencia = models.CharField(verbose_name='Portador de deficiência?',
-                                            choices=PORT_DEF, default='nao', max_length=255,
-                                            blank=True, null=True)
-    responsavel_legal = models.CharField(verbose_name='Responsável Legal', max_length=120,
-                                         blank=True, null=True)
-    situacao = models.CharField(verbose_name='Situação', max_length=120, choices=SITUACAO, default='1')
-    perfil = models.ForeignKey(Pessoa, verbose_name='Perfil', on_delete=models.CASCADE,
-                               blank=True, null=True)
-    endereco = models.ForeignKey(Endereco, verbose_name='Endereço', on_delete=models.CASCADE,
-                                 blank=True, null=True)
-    sala = models.ForeignKey(Sala, verbose_name='Sala', on_delete=models.DO_NOTHING)
-
-    def get_success_url(self):
-            return reverse('salas:alunos', kwargs={'pk': self.get_context_data()['aluno'].sala.pk})
-
-    def __str__(self):
-        return self.nome
+    usuario = models.OneToOneField(
+        'core.Usuario',
+        on_delete=models.CASCADE,
+        related_name='aluno',
+        verbose_name='Usuário',
+    )
+    escola = models.ForeignKey(
+        'escola.UnidadeEscolar',
+        on_delete=models.CASCADE,
+        related_name='alunos',
+        verbose_name='Escola',
+    )
+    sala = models.ForeignKey(
+        'sala.Sala',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='alunos',
+        verbose_name='Sala',
+    )
+    cpf = models.CharField(
+        verbose_name='CPF',
+        max_length=11,
+        blank=True,
+        validators=[validate_cpf],
+    )
+    data_nascimento = models.DateField(
+        verbose_name='Data de Nascimento',
+        null=True,
+        blank=True,
+    )
+    sexo = models.CharField(
+        verbose_name='Sexo',
+        max_length=1,
+        choices=SEXO,
+        default='M',
+    )
+    responsavel_legal = models.CharField(
+        verbose_name='Responsável Legal',
+        max_length=150,
+        blank=True,
+    )
+    situacao = models.CharField(
+        verbose_name='Situação',
+        max_length=10,
+        choices=SITUACAO,
+        default='MATRIC',
+    )
 
     class Meta:
-        verbose_name='Aluno'
+        verbose_name = 'Aluno'
         verbose_name_plural = 'Alunos'
+        ordering = ['usuario__nome']
+
+    def __str__(self):
+        return self.usuario.nome
+
+    @property
+    def nome(self):
+        return self.usuario.nome
+
+    def save(self, *args, **kwargs):
+        if self.cpf:
+            self.cpf = normalizar_cpf(self.cpf)
+        super().save(*args, **kwargs)

@@ -1,191 +1,278 @@
-from collections import defaultdict
-
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from datetime import date
-from datetime import datetime
-from django.db.models.functions import ExtractMonth
-from django.db.models import Q
-from django.shortcuts import get_object_or_404, get_list_or_404
-from django.urls import reverse_lazy, reverse
-from django.utils.timezone import now
-from django.views.generic import TemplateView, UpdateView, ListView, RedirectView, FormView, CreateView
+from django.core.exceptions import PermissionDenied
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse_lazy
+from django.views.generic import TemplateView, UpdateView, RedirectView
+
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .forms import FiltroMesForm, EscolaForm, EnderecoForm1, UsuarioForm
-from .models import UnidadeEscolar, EnderecoEscolar, AnoLetivo
-from .serializers import UnidadeEscolarSerializer, EnderecoEscolarSerializer, UnidadeEscolarSerializerEdit
-from ..aluno.models import Aluno
-from ..avaliacao.correcao import alunos_prova
-from ..avaliacao.models import Avaliacao, Gabarito
-from ..core.models import Usuario
-from ..frequencia.models import Frequencia, FrequenciaAluno, Registro, Periodo, Relatorio
-from ..funcionario.models import Professor
-from ..sala.models import Sala
-from .traduzir import converter
-from .gerarPlanilhaFrequencia import dias_mes, presentesDia, dias, percentual
+from apps.core.models import UsuarioEscola
+from apps.core.permissao import PermissaoRequiredMixin
+from apps.core.views import BaseDashboardView
+from .forms import EscolaForm, EnderecoEscolarForm
+from .models import UnidadeEscolar, EnderecoEscolar
+from .serializers import (
+    UnidadeEscolarSerializer,
+    UnidadeEscolarSerializerEdit,
+    EnderecoEscolarSerializer,
+)
 
-class Redireciona(LoginRequiredMixin, RedirectView):
+
+# ---------------------------------------------------------------------------
+# Roteamento inicial
+# ---------------------------------------------------------------------------
+
+class RedirecionarDashboard(LoginRequiredMixin, RedirectView):
+    """
+    Ponto de entrada após o login.
+    Redireciona para o dashboard correto conforme o tipo de vínculo do usuário.
+    Se não houver escola na sessão, manda para a tela de seleção.
+    """
     def get_redirect_url(self, *args, **kwargs):
-
-        user = self.request.user
-        if user.is_administrator:
-            return reverse_lazy('escola:painel_adm')
-        elif user.is_professor:
-            return reverse_lazy('funcionario:dash_professor')
-        elif user.is_aluno:
-            return reverse_lazy('aluno:dash_aluno')
-        elif user.is_funcionario:
-            return reverse_lazy('funcionario:dash_funcionario')
-        return reverse_lazy('escola:dash_escola')
+        escola = getattr(self.request, 'escola', None)
+        if escola is None:
+            return reverse_lazy('escola:selecionar')
+        return self.request.user.get_dashboard_url(escola)
 
 
-class DashAdmin(LoginRequiredMixin, TemplateView):
+# ---------------------------------------------------------------------------
+# Seleção de escola (multi-tenant)
+# ---------------------------------------------------------------------------
+
+class SelecionarEscola(LoginRequiredMixin, TemplateView):
+    """
+    Exibe as escolas vinculadas ao usuário para ele escolher com qual deseja operar.
+    Chamada automaticamente pelo EscolaMiddleware quando o usuário tem múltiplos vínculos
+    ou quando escola_id não está na sessão.
+    """
+    template_name = 'escola/selecionar_escola.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['vinculos'] = (
+            UsuarioEscola.objects
+            .filter(usuario=self.request.user, ativo=True)
+            .select_related('escola')
+            .order_by('escola__nome_escola')
+        )
+        return context
+
+    def post(self, request, *args, **kwargs):
+        escola_id = request.POST.get('escola_id')
+        if not escola_id:
+            return redirect('escola:selecionar')
+
+        vinculo = (
+            UsuarioEscola.objects
+            .select_related('escola')
+            .filter(usuario=request.user, escola_id=escola_id, ativo=True)
+            .first()
+        )
+        if not vinculo:
+            return redirect('escola:selecionar')
+
+        request.session['escola_id'] = vinculo.escola.pk
+        return HttpResponseRedirect(request.user.get_dashboard_url(vinculo.escola))
+
+
+# ---------------------------------------------------------------------------
+# Dashboards
+# ---------------------------------------------------------------------------
+
+class DashAdmin(BaseDashboardView):
+    """
+    Painel do administrador — visão de todas as escolas do sistema.
+    Acesso: somente ADMIN.
+    """
     template_name = 'escola/administrador_dash.html'
+    tipo_permitido = [UsuarioEscola.ADMIN]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        escolas = UnidadeEscolar.objects.all()
-        context['escolas'] = escolas
+        context['escolas'] = (
+            UnidadeEscolar.objects
+            .filter(ativo=True)
+            .prefetch_related('anos_letivos', 'vinculos')
+            .order_by('nome_escola')
+        )
         return context
 
 
-class DashEscola(LoginRequiredMixin, TemplateView):
+class DashEscola(BaseDashboardView):
+    """
+    Painel da escola — visão do diretor e colaborador.
+    Exibe salas, ano letivo corrente e resumo da escola.
+    Acesso: DIRETOR, COLABORADOR.
+    """
     template_name = 'escola/escola_dash.html'
+    tipo_permitido = [UsuarioEscola.DIRETOR, UsuarioEscola.COLABORADOR]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        escola = get_object_or_404(UnidadeEscolar, pk=self.request.user)
-        ano_corrente = AnoLetivo.objects.get(corrente=True)
-        salas = Sala.objects.filter(escola=escola, ano_letivo=ano_corrente).order_by('ano')
-        context['escola'] = escola
-        context['salas'] = salas
-        context['data'] = now()
+        escola = self.request.escola
+        context['ano_corrente'] = escola.ano_letivo_corrente
+        # context['salas'] será adicionado quando apps.sala for reativado
         return context
 
 
-class EditarEscola(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
-    form_class = EscolaForm
+# ---------------------------------------------------------------------------
+# Edição da escola
+# ---------------------------------------------------------------------------
+
+class EditarEscola(PermissaoRequiredMixin, SuccessMessageMixin, UpdateView):
+    """
+    Edição dos dados cadastrais da escola.
+    Acesso: ADMIN, DIRETOR.
+    """
     model = UnidadeEscolar
-    success_message = 'Informações atualizadas com sucesso!'
-    template_name = 'escola/editarescolar_form.html'
+    form_class = EscolaForm
+    template_name = 'escola/editar_escola.html'
+    success_message = 'Dados da escola atualizados com sucesso.'
     success_url = reverse_lazy('escola:dash_escola')
     context_object_name = 'escola'
+    permissao_tipos = [UsuarioEscola.ADMIN, UsuarioEscola.DIRETOR]
 
     def get_object(self, queryset=None):
-        return get_object_or_404(UnidadeEscolar, pk=self.kwargs['pk'])
+        return get_object_or_404(UnidadeEscolar, pk=self.request.escola.pk)
 
 
-class EditarEndereco(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
-    form_class = EnderecoForm1
+class EditarEndereco(PermissaoRequiredMixin, SuccessMessageMixin, UpdateView):
+    """
+    Edição do endereço da escola.
+    Cria o endereço automaticamente se ainda não existir.
+    Acesso: ADMIN, DIRETOR.
+    """
     model = EnderecoEscolar
-    template_name = 'escola/editarendereco_form.html'
-    context_object_name = 'escola'
-    success_message = 'Endereço atualizado com sucesso!'
+    form_class = EnderecoEscolarForm
+    template_name = 'escola/editar_endereco.html'
+    success_message = 'Endereço atualizado com sucesso.'
     success_url = reverse_lazy('escola:dash_escola')
+    context_object_name = 'endereco'
+    permissao_tipos = [UsuarioEscola.ADMIN, UsuarioEscola.DIRETOR]
 
     def get_object(self, queryset=None):
-        return get_object_or_404(EnderecoEscolar, endereco=self.request.user)
+        endereco, _ = EnderecoEscolar.objects.get_or_create(
+            escola=self.request.escola,
+            defaults={
+                'rua': '', 'numero': '', 'bairro': '',
+                'cep': '', 'cidade': '', 'estado': '',
+            },
+        )
+        return endereco
 
 
-class EditarUsuario(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
-    form_class = UsuarioForm
-    model = Usuario
-    success_message = 'Informações atualizadas com sucesso!'
-    template_name = 'escola/editarusuario_form.html'
-    success_url = reverse_lazy('escola:dash_escola')
+# ---------------------------------------------------------------------------
+# Views comentadas — dependem de apps desativados temporariamente
+# ---------------------------------------------------------------------------
+
+# from apps.sala.models import Sala
+# from apps.aluno.models import Aluno
+# from apps.frequencia.models import Frequencia
+
+# class UnidAlunos(PermissaoRequiredMixin, ListView):
+#     model = Aluno
+#     template_name = 'escola/adm_unidade_alunos.html'
+#     context_object_name = 'alunos'
+#     permissao_tipos = [UsuarioEscola.ADMIN, UsuarioEscola.DIRETOR, UsuarioEscola.COLABORADOR]
+#
+#     def get_queryset(self):
+#         return Aluno.objects.filter(sala_id=self.kwargs['id']).order_by('nome')
+#
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context['escola'] = self.request.escola
+#         context['sala'] = get_object_or_404(Sala, id=self.kwargs['id'])
+#         return context
+
+# class FrequenciaRelatorios(PermissaoRequiredMixin, TemplateView):
+#     template_name = 'escola/relatorio_frequencia.html'
+#     permissao_tipos = [UsuarioEscola.ADMIN, UsuarioEscola.DIRETOR, UsuarioEscola.COLABORADOR]
+#
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context['sala'] = get_object_or_404(Sala, pk=self.kwargs['pk'])
+#         return context
 
 
-class UnidAlunos(LoginRequiredMixin, ListView):
-    model = Aluno
-    template_name = 'escola/adm_unidade_alunos.html'
-    context_object_name = 'alunos'
+# ---------------------------------------------------------------------------
+# API — mobile
+# ---------------------------------------------------------------------------
 
-    def get_queryset(self):
-        return Aluno.objects.filter(sala_id=self.kwargs['id'])
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        escola = get_object_or_404(UnidadeEscolar, slug=self.kwargs['slug'])
-        sala = get_object_or_404(Sala, id=self.kwargs['id'])
-        context['escola'] = escola
-        context['sala'] = sala
-        return context
-
-
-class ListAlunos(LoginRequiredMixin, CreateView):
-    model = Aluno
-    fields = ('nome', 'data_nascimento', 'sexo')
-    template_name = 'escola/lista_alunos.html'
-    context_object_name = 'alunos'
-
-    def form_valid(self, form):
-        aluno = form.save(commit=False)
-        sala = Sala.objects.get(id=self.kwargs['id'])
-        sala.total_alunos += 1
-        sala.save()
-        aluno.sala = sala
-        aluno.save()
-        return super(ListAlunos, self).form_valid(form)
-
-    def get_success_url(self):
-        return reverse('escola:unidade_sala_alunos', kwargs={'id': self.get_context_data()['sala'].id,
-                                                             'slug': self.get_context_data()['escola'].slug})
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        sala = Sala.objects.get(pk=self.kwargs['id'])
-        alunos = Aluno.objects.filter(sala=sala).order_by('nome')
-        escola = UnidadeEscolar.objects.get(pk=sala.escola.pk)
-        context['sala'] = sala
-        context['alunos'] = alunos
-        context['escola'] = escola
-        return context
-
-
-class FrequenciaRelatorios(LoginRequiredMixin, TemplateView):
-    template_name = 'escola/relatorio_frequencia.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        escola = get_object_or_404(UnidadeEscolar, pk=self.request.user)
-        sala = Sala.objects.get(pk=self.kwargs['pk'])
-        context['escola'] = escola
-        context['sala'] = sala
-        return context
-
-
-#### API ####
-class EscolaLogadaView(APIView):
+class MinhaEscolaView(APIView):
+    """
+    Retorna as escolas vinculadas ao usuário autenticado via JWT.
+    """
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user = request.user
-        try:
-            escola = UnidadeEscolar.objects.get(id=user.id)  # ou outro filtro que faça sentido
-        except UnidadeEscolar.DoesNotExist:
-            return Response({'erro': 'Usuário não é uma escola.'}, status=403)
+        vinculos = (
+            UsuarioEscola.objects
+            .filter(usuario=request.user, ativo=True)
+            .select_related('escola')
+        )
+        escolas = [v.escola for v in vinculos]
+        return Response(UnidadeEscolarSerializer(escolas, many=True).data)
 
-        serializer = UnidadeEscolarSerializer(escola)
-        return Response(serializer.data)
 
-
-class UnidadeEscolarUpdateView(RetrieveUpdateAPIView):
+class EscolaDetalheUpdateView(RetrieveUpdateAPIView):
+    """
+    Recupera ou atualiza dados de uma escola específica.
+    O usuário precisa ter vínculo ativo (ADMIN ou DIRETOR) com a escola.
+    """
     serializer_class = UnidadeEscolarSerializerEdit
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        return UnidadeEscolar.objects.get(pk=self.request.user.pk)
+        escola_id = self.kwargs.get('pk')
+        vinculo = (
+            UsuarioEscola.objects
+            .filter(
+                usuario=self.request.user,
+                escola_id=escola_id,
+                ativo=True,
+                tipo_usuario__in=[UsuarioEscola.ADMIN, UsuarioEscola.DIRETOR],
+            )
+            .select_related('escola')
+            .first()
+        )
+        if not vinculo:
+            raise PermissionDenied
+        return vinculo.escola
 
 
 class EnderecoEscolarUpdateView(RetrieveUpdateAPIView):
+    """
+    Recupera ou atualiza o endereço de uma escola.
+    O usuário precisa ter vínculo ativo (ADMIN ou DIRETOR) com a escola.
+    """
     serializer_class = EnderecoEscolarSerializer
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        # request.user já é UnidadeEscolar
-        return EnderecoEscolar.objects.get(endereco=self.request.user)
-    
+        escola_id = self.kwargs.get('pk')
+        vinculo = (
+            UsuarioEscola.objects
+            .filter(
+                usuario=self.request.user,
+                escola_id=escola_id,
+                ativo=True,
+                tipo_usuario__in=[UsuarioEscola.ADMIN, UsuarioEscola.DIRETOR],
+            )
+            .select_related('escola')
+            .first()
+        )
+        if not vinculo:
+            raise PermissionDenied
+        endereco, _ = EnderecoEscolar.objects.get_or_create(
+            escola=vinculo.escola,
+            defaults={
+                'rua': '', 'numero': '', 'bairro': '',
+                'cep': '', 'cidade': '', 'estado': '',
+            },
+        )
+        return endereco

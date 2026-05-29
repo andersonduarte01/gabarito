@@ -1,426 +1,182 @@
-{% extends 'temp_base/escola_painel.html' %}
-{% load static %}
-{% block titulo %}Escola Dashboard{% endblock %}
-{% block estatico %}
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.0/fullcalendar.min.css">
-<style>
-    .card-margin {
-        margin-top: 1rem;
-        margin-bottom: 1.875rem;
-    }
+{% extends 'base/base.html' %}
 
-    .card {
-        border: 0;
-        box-shadow: 0px 0px 10px 0px rgba(82, 63, 105, 0.1);
-        -webkit-box-shadow: 0px 0px 10px 0px rgba(82, 63, 105, 0.1);
-        -moz-box-shadow: 0px 0px 10px 0px rgba(82, 63, 105, 0.1);
-        -ms-box-shadow: 0px 0px 10px 0px rgba(82, 63, 105, 0.1);
-    }
-    .card {
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        min-width: 0;
-        word-wrap: break-word;
-        background-color: #ffffff;
-        background-clip: border-box;
-        border: 1px solid #e6e4e9;
-        border-radius: 8px;
-    }
-
-    .card .card-header.no-border {
-        border: 0;
-    }
-    .card .card-header {
-        background: none;
-        padding: 0 0.9375rem;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        min-height: 50px;
-    }
-    .card-header:first-child {
-        border-radius: calc(8px - 1px) calc(8px - 1px) 0 0;
-    }
-
-    .widget-49 .widget-49-title-wrapper {
-      display: flex;
-      align-items: center;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-date-primary {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      background-color: #edf1fc;
-      width: 4rem;
-      height: 4rem;
-      border-radius: 50%;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-date-primary .widget-49-date-day {
-      color: #4e73e5;
-      font-weight: 500;
-      font-size: 1.5rem;
-      line-height: 1;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-date-primary .widget-49-date-month {
-      color: #4e73e5;
-      line-height: 1;
-      font-size: 1rem;
-      text-transform: uppercase;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-date-secondary {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      background-color: #fcfcfd;
-      width: 4rem;
-      height: 4rem;
-      border-radius: 50%;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-date-secondary .widget-49-date-day {
-      color: #dde1e9;
-      font-weight: 500;
-      font-size: 1.5rem;
-      line-height: 1;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-date-secondary .widget-49-date-month {
-      color: #dde1e9;
-      line-height: 1;
-      font-size: 1rem;
-      text-transform: uppercase;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-date-success {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      background-color: #e8faf8;
-      width: 4rem;
-      height: 4rem;
-      border-radius: 50%;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-date-success .widget-49-date-day {
-      color: #17d1bd;
-      font-weight: 500;
-      font-size: 1.5rem;
-      line-height: 1;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-date-success .widget-49-date-month {
-      color: #17d1bd;
-      line-height: 1;
-      font-size: 1rem;
-      text-transform: uppercase;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-date-info {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      background-color: #ebf7ff;
-      width: 4rem;
-      height: 4rem;
-      border-radius: 50%;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-date-info .widget-49-date-day {
-      color: #36afff;
-      font-weight: 500;
-      font-size: 1.5rem;
-      line-height: 1;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-date-info .widget-49-date-month {
-      color: #36afff;
-      line-height: 1;
-      font-size: 1rem;
-      text-transform: uppercase;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-date-warning {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      background-color: floralwhite;
-      width: 4rem;
-      height: 4rem;
-      border-radius: 50%;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-date-warning .widget-49-date-day {
-      color: #FFC868;
-      font-weight: 500;
-      font-size: 1.5rem;
-      line-height: 1;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-date-warning .widget-49-date-month {
-      color: #FFC868;
-      line-height: 1;
-      font-size: 1rem;
-      text-transform: uppercase;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-date-danger {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      background-color: #feeeef;
-      width: 4rem;
-      height: 4rem;
-      border-radius: 50%;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-date-danger .widget-49-date-day {
-      color: #F95062;
-      font-weight: 500;
-      font-size: 1.5rem;
-      line-height: 1;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-date-danger .widget-49-date-month {
-      color: #F95062;
-      line-height: 1;
-      font-size: 1rem;
-      text-transform: uppercase;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-date-light {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      background-color: #fefeff;
-      width: 4rem;
-      height: 4rem;
-      border-radius: 50%;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-date-light .widget-49-date-day {
-      color: #f7f9fa;
-      font-weight: 500;
-      font-size: 1.5rem;
-      line-height: 1;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-date-light .widget-49-date-month {
-      color: #f7f9fa;
-      line-height: 1;
-      font-size: 1rem;
-      text-transform: uppercase;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-date-dark {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      background-color: #ebedee;
-      width: 4rem;
-      height: 4rem;
-      border-radius: 50%;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-date-dark .widget-49-date-day {
-      color: #394856;
-      font-weight: 500;
-      font-size: 1.5rem;
-      line-height: 1;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-date-dark .widget-49-date-month {
-      color: #394856;
-      line-height: 1;
-      font-size: 1rem;
-      text-transform: uppercase;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-date-base {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      background-color: #f0fafb;
-      width: 4rem;
-      height: 4rem;
-      border-radius: 50%;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-date-base .widget-49-date-day {
-      color: #68CBD7;
-      font-weight: 500;
-      font-size: 1.5rem;
-      line-height: 1;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-date-base .widget-49-date-month {
-      color: #68CBD7;
-      line-height: 1;
-      font-size: 1rem;
-      text-transform: uppercase;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-meeting-info {
-      display: flex;
-      flex-direction: column;
-      margin-left: 1rem;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-meeting-info .widget-49-pro-title {
-      color: #3c4142;
-      font-size: 14px;
-    }
-
-    .widget-49 .widget-49-title-wrapper .widget-49-meeting-info .widget-49-meeting-time {
-      color: #B1BAC5;
-      font-size: 13px;
-    }
-
-    .widget-49 .widget-49-meeting-points {
-      font-weight: 400;
-      font-size: 13px;
-      margin-top: .5rem;
-    }
-
-    .widget-49 .widget-49-meeting-points .widget-49-meeting-item {
-      display: list-item;
-      color: #727686;
-    }
-
-    .widget-49 .widget-49-meeting-points .widget-49-meeting-item span {
-      margin-left: .5rem;
-    }
-
-    .widget-49 .widget-49-meeting-action {
-      text-align: right;
-    }
-
-    .widget-49 .widget-49-meeting-action a {
-      text-transform: uppercase;
-    }
-</style>
+{% block titulo %}Painel da Escola{% endblock %}
+{% block titulo_pagina %}{{ escola.nome_escola }}{% endblock %}
+{% block subtitulo_pagina %}
+    <span class="text-xs text-base-content/50 ml-2 hidden sm:inline">
+        {{ vinculo.get_tipo_usuario_display }}
+    </span>
 {% endblock %}
-{% block imagem1 %}
-<img src="{% if escola.imagem %}
-    {{escola.logo_escola.thumbnail.url}}
-    {% else %}{% static 'adm/assets/images/user.jpg' %}{% endif %}"
-     class="img-radius" alt="Foto_Usuario">
-{% endblock %}
-{% block tema %}
-<h5 class="m-b-10">{{escola}}</h5>
-{% endblock %}
-{% block breadcrumbs %}
-{{block.super}}
-{% endblock %}
+
+{% block active_dash_escola %}active bg-primary/10 text-primary font-medium{% endblock %}
+
 {% block conteudo %}
-<div class="container">
-    <div class="row">
-        {% for sala in salas %}
-        <div class="col-lg-4">
-            <div class="card card-margin">
-                <div class="card-header no-border d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mmb-0 text-primary">{{sala}}</h5>
-                    <div>
-                        <a href="{% url 'salas:edit_sala' sala.pk %}" class="primary">
-                            <i class="fas fa-edit" style="color: #2c28e6;"></i>
-                        </a>
-                        <a type="button" class="danger" data-toggle="modal" data-target="#{{sala.id}}">
-                            <i class="far fa-trash-alt text-danger"></i>
-                        </a>
 
-                        <div class="modal fade" id="{{sala.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-                             aria-hidden="true">
-                            <div class="modal-dialog modal-notify modal-info" role="document">
-                                <!--Content-->
-                                <div class="modal-content text-center">
-                                    <!--Header-->
-                                    <div class="modal-header d-flex justify-content-center bg-danger">
-                                        <h5 class="text-white">Deletar Sala</h5>
-                                    </div>
+<!-- Cabeçalho -->
+<div class="flex flex-col sm:flex-row sm:items-start gap-4 mb-6">
 
-                                    <!--Body-->
-                                    <div class="modal-body">
+    <!-- Logo e nome -->
+    <div class="flex items-center gap-4 flex-1">
+        <div class="shrink-0 flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 text-primary">
+            {% if escola.logo_escola %}
+                <img src="{{ escola.logo_escola.url }}"
+                     alt="Logo {{ escola.nome_escola }}"
+                     class="w-14 h-14 object-contain rounded-xl" />
+            {% else %}
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                </svg>
+            {% endif %}
+        </div>
+        <div>
+            <h1 class="text-xl font-bold text-base-content leading-tight">{{ escola.nome_escola }}</h1>
+            <div class="flex flex-wrap items-center gap-2 mt-1">
+                <span class="badge badge-ghost badge-sm">{{ escola.get_tipo_display }}</span>
+                {% if escola.inep %}
+                    <span class="text-xs text-base-content/50">INEP: {{ escola.inep }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 
-                                        <i class="far fa-trash-alt fa-4x animated rotateIn mb-4" style="color: #ed1d1d;"></i>
+    <!-- Ações rápidas -->
+    {% if vinculo.tipo_usuario == 'DIR' or vinculo.tipo_usuario == 'ADMIN' %}
+        <div class="flex gap-2 shrink-0">
+            <a href="{% url 'escola:editar_escola' %}" class="btn btn-ghost btn-sm gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+                Editar
+            </a>
+        </div>
+    {% endif %}
+</div>
 
-                                        <h6>Tem certeza que deseja excluir</h6>
-                                        <h6>{{sala}} - {{sala.ano}} - {{sala.turno}}?</h6>
+<!-- Cards de informações -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
 
-                                    </div>
-
-                                    <!--Footer-->
-                                    <div class="modal-footer flex-center">
-                                        <form method="post" action="{% url 'salas:deletar_sala' sala.pk %}">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-outline-danger">
-                                                <i class="far fa-trash-alt"></i>
-                                                Deletar
-                                            </button>
-                                            <button type="button" class="btn btn-outline-info" data-dismiss="modal">
-                                                <i class="fas fa-times"></i>
-                                                Cancelar
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-                                <!--/.Content-->
-                            </div>
-                        </div>
-
-                    </div>
+    <!-- Ano letivo corrente -->
+    <div class="card bg-base-100 shadow-sm">
+        <div class="card-body p-5">
+            <div class="flex items-center gap-3">
+                <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-info/15 text-info shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
                 </div>
-                <div class="card-body pt-1">
-                    <div class="widget-49">
-                        <div class="widget-49-title-wrapper">
-                            <div class="widget-49-date-primary">
-                                <span class="widget-49-date-day">{{ data|date:"d" }}</span>
-                                <span class="widget-49-date-month">{{ data|date:"M"|lower }}</span>
-                            </div>
-                            <div class="widget-49-meeting-info">
-                                <span class="widget-49-pro-title">{{sala.ano}}</span>
-                                <span class="widget-49-pro-title">{{sala.turno}}</span>
-                                <span class="widget-49-meeting-time">{{sala.total_alunos}} Alunos</span>
-                            </div>
-                        </div>
-                        <ul class="widget-49-meeting-points">
-                            <li class="widget-49-meeting-item"></li>
-                            <li class="widget-49-meeting-item">
-                                <i class="fa fa-calendar" aria-hidden="true"></i>
-                                <a href="{% url 'escola:freq_relatorios' pk=sala.pk %}" class="btn btn-outline-light btn-sm text-dark">Frequência</a>
-                            </li>
-                            <li class="widget-49-meeting-item">
-                                <i class="fa fa-book" aria-hidden="true"></i>
-                                <a href="{% url 'frequencia:relatorio_meses' sala_id=sala.id %}" class="btn btn-outline-light btn-sm text-dark">Registros</a>
-                            </li>
-                            <li class="widget-49-meeting-item">
-                                <i class="fa fa-pencil" aria-hidden="true"></i>
-                                <a href="#" class="text-dark btn btn-outline-light btn-sm" aria-disabled="true">Relatórios</a>
-                            </li>
-                        </ul>
-                        <div class="widget-49-meeting-action">
-                            <a href="{% url 'escola:unidade_sala_alunos' id=sala.id slug=escola.slug %}" class="btn btn-sm btn-flash-border-primary">Alunos</a>
-                        </div>
-                    </div>
+                <div>
+                    <p class="text-xs text-base-content/50 font-medium uppercase tracking-wide">Ano Letivo</p>
+                    {% if ano_corrente %}
+                        <p class="text-2xl font-bold text-base-content leading-tight">{{ ano_corrente.ano }}</p>
+                        <p class="text-xs text-base-content/50 mt-0.5">
+                            {{ ano_corrente.inicio|date:"d/m" }} – {{ ano_corrente.fim|date:"d/m/Y" }}
+                        </p>
+                    {% else %}
+                        <p class="text-sm text-base-content/50 mt-0.5">Não definido</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
-        {% empty %}
-        <p>Nenhuma sala cadastrada</p>
-        {% endfor %}
     </div>
+
+    <!-- Contato -->
+    <div class="card bg-base-100 shadow-sm">
+        <div class="card-body p-5">
+            <p class="text-xs text-base-content/50 font-medium uppercase tracking-wide mb-3">Contato</p>
+            <div class="space-y-1.5">
+                {% if escola.telefone %}
+                    <p class="flex items-center gap-2 text-sm text-base-content/80">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 shrink-0 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                        </svg>
+                        {{ escola.telefone }}
+                    </p>
+                {% endif %}
+                {% if escola.email %}
+                    <p class="flex items-center gap-2 text-sm text-base-content/80 truncate">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 shrink-0 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                        <span class="truncate">{{ escola.email }}</span>
+                    </p>
+                {% endif %}
+                {% if not escola.telefone and not escola.email %}
+                    <p class="text-sm text-base-content/40 italic">Não informado</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Endereço -->
+    <div class="card bg-base-100 shadow-sm">
+        <div class="card-body p-5">
+            <div class="flex items-start justify-between mb-2">
+                <p class="text-xs text-base-content/50 font-medium uppercase tracking-wide">Endereço</p>
+                {% if vinculo.tipo_usuario == 'DIR' or vinculo.tipo_usuario == 'ADMIN' %}
+                    <a href="{% url 'escola:editar_endereco' %}"
+                       class="text-xs text-primary hover:underline">Editar</a>
+                {% endif %}
+            </div>
+            {% with escola.endereco as end %}
+                {% if end and end.rua %}
+                    <div class="text-sm text-base-content/80 space-y-0.5">
+                        <p>{{ end.rua }}{% if end.numero %}, {{ end.numero }}{% endif %}</p>
+                        {% if end.complemento %}<p class="text-xs text-base-content/50">{{ end.complemento }}</p>{% endif %}
+                        <p>{{ end.bairro }}</p>
+                        <p>{{ end.cidade }}/{{ end.estado }}</p>
+                        {% if end.cep %}<p class="text-xs text-base-content/50">CEP {{ end.cep }}</p>{% endif %}
+                    </div>
+                {% else %}
+                    <p class="text-sm text-base-content/40 italic">Endereço não cadastrado</p>
+                {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+
 </div>
+
+<!-- Seções em branco para futuras funcionalidades -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+    <!-- Salas (placeholder) -->
+    <div class="card bg-base-100 shadow-sm">
+        <div class="card-body p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="font-semibold text-base-content text-sm">Salas</h2>
+                <span class="badge badge-ghost badge-sm">Em breve</span>
+            </div>
+            <div class="flex flex-col items-center py-6 text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-base-content/20 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                </svg>
+                <p class="text-xs text-base-content/40">Módulo de salas em desenvolvimento</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alunos (placeholder) -->
+    <div class="card bg-base-100 shadow-sm">
+        <div class="card-body p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="font-semibold text-base-content text-sm">Alunos</h2>
+                <span class="badge badge-ghost badge-sm">Em breve</span>
+            </div>
+            <div class="flex flex-col items-center py-6 text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-base-content/20 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+                <p class="text-xs text-base-content/40">Módulo de alunos em desenvolvimento</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
 {% endblock %}

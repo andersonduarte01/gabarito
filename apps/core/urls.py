@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .views_media import serve_media_protegida
 
 app_name = 'core'
 
@@ -7,11 +8,13 @@ urlpatterns = [
     path('', views.Index.as_view(), name='inicio'),
     path('contato/', views.Contato.as_view(), name='contato'),
     path('sobre/', views.Sobre.as_view(), name='sobre'),
-    path('videosaulas/', views.Eventos.as_view(), name='videos'),
-    path('biblioteca/', views.Biblioteca.as_view(), name='biblioteca'),
-    path('arquivos/', views.Arquivos.as_view(), name='arquivos'),
-    path('resultado_pesquisa/arquivos/', views.PesquisarArquivo.as_view(), name='arquivos_pesquisados'),
-    path('biblioteca/livros/', views.PesquisarLivro.as_view(), name='livros_pesquisados'),
-    path('videos/resultado/', views.PesquisarVideo.as_view(), name='videos_pesquisados'),
-    path('videos/<str:ano>/<str:sigla>/', views.AnoMateria.as_view(), name='ano_materia'),
+    path('media/<path:path>', serve_media_protegida, name='media_protegida'),
+    # Rotas abaixo dependem de apps desativados temporariamente
+    # path('videosaulas/', views.Eventos.as_view(), name='videos'),
+    # path('biblioteca/', views.Biblioteca.as_view(), name='biblioteca'),
+    # path('arquivos/', views.Arquivos.as_view(), name='arquivos'),
+    # path('resultado_pesquisa/arquivos/', views.PesquisarArquivo.as_view(), name='arquivos_pesquisados'),
+    # path('biblioteca/livros/', views.PesquisarLivro.as_view(), name='livros_pesquisados'),
+    # path('videos/resultado/', views.PesquisarVideo.as_view(), name='videos_pesquisados'),
+    # path('videos/<str:ano>/<str:sigla>/', views.AnoMateria.as_view(), name='ano_materia'),
 ]

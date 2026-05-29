@@ -27,33 +27,34 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'tailwind',
+    'theme',
     #Baixados
-    'bootstrap4',
-    'django_bootstrap5',
-    'stdimage',
-    'tinymce',
+    # 'bootstrap4',
+    # 'django_bootstrap5',
+    # 'stdimage',
+    # 'tinymce',
     #APPS
     'apps.core',
-    'apps.erros',
     'apps.accounts',
     'apps.escola',
-    'apps.funcionario',
-    'apps.perfil',
     'apps.funcao',
-    'apps.avaliacao',
-    'apps.aluno',
     'apps.sala',
-    'apps.mobile',
-    'apps.frequencia',
-    'apps.blog',
-    'apps.relatorios',
-    'apps.arquivos',
-    'apps.cadastro',
-    'cpf_field',
-    'ckeditor',
+    'apps.colaborador',
+    'apps.aluno',
+    # 'apps.erros',
+    # 'apps.funcionario',  # substituído por apps.colaborador
+    # 'apps.perfil',       # campos migrados para modelos de perfil
+    # 'apps.avaliacao',
+    # 'apps.mobile',
+    # 'apps.frequencia',
+    # 'apps.blog',
+    # 'apps.relatorios',
+    # 'apps.arquivos',
+    # 'apps.cadastro',
     'rest_framework',
     'rest_framework_simplejwt',
-    'hijack',
+    # 'hijack',
 ]
 
 MIDDLEWARE = [
@@ -64,7 +65,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'hijack.middleware.HijackUserMiddleware',
+    'apps.core.middleware.EscolaMiddleware',
+    # 'hijack.middleware.HijackUserMiddleware',
 ]
 
 ROOT_URLCONF = 'sistema.urls'
@@ -155,8 +157,9 @@ CKEDITOR_UPLOAD_PATH = "media/Noticias"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'core.Usuario'
 
+LOGIN_URL          = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/escola/redirecionamento/'
-LOGOUT_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/accounts/login/'
 
 #CKEDITOR
 CKEDITOR_CONFIGS = {
@@ -248,3 +251,6 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
 }
+TAILWIND_APP_NAME = 'theme'
+if os.name == 'nt':
+    NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"

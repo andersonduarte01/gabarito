@@ -1,13 +1,15 @@
 from django.contrib import admin
-
-# Register your models here.
-from ..sala.models import Ano, Sala
+from .models import Ano, Sala
 
 
+@admin.register(Sala)
 class SalaAdmin(admin.ModelAdmin):
-    model = Sala
-    list_display = ['descricao', 'escola', 'ano']
+    list_display = ('descricao', 'escola', 'ano', 'turno', 'ano_letivo')
+    list_filter = ('escola', 'turno', 'ano')
+    search_fields = ('descricao',)
 
 
-admin.site.register(Sala, SalaAdmin)
-admin.site.register(Ano)
+@admin.register(Ano)
+class AnoAdmin(admin.ModelAdmin):
+    list_display = ('descricao',)
+    search_fields = ('descricao',)

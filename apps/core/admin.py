@@ -1,31 +1,49 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-# Register your models here.
-from apps.core.forms import UserChangeForm, UserCreationForm
-from apps.core.models import Usuario
+from .forms import UserCreationForm, UserChangeForm
+from .models import Usuario, UsuarioEscola
 
 
-class UserAdmin(BaseUserAdmin):
+class UsuarioEscolaInline(admin.TabularInline):
+    model = UsuarioEscola
+    extra = 0
+    fields = ('escola', 'tipo_usuario', 'ativo', 'data_vinculo')
+    readonly_fields = ('data_vinculo',)
+
+
+@admin.register(Usuario)
+class UsuarioAdmin(BaseUserAdmin):
     form = UserChangeForm
     add_form = UserCreationForm
-    list_display = ('email', 'nome', 'is_admin', 'is_administrator')
-    list_filter = ('is_admin',)
+
+    list_display = ('email', 'nome', 'is_staff', 'is_active')
+    list_filter = ('is_staff', 'is_active')
+    search_fields = ('email', 'nome')
+    ordering = ('email',)
+    filter_horizontal = ('groups', 'user_permissions')
+
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        ('Personal info', {'fields': ('nome',)}),
-        ('Permissions', {'fields': ('is_admin', 'is_active', 'is_administrator')}),
+        ('Informações Pessoais', {'fields': ('nome',)}),
+        ('Permissões', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Datas', {'fields': ('data_criacao', 'data_atualizacao')}),
     )
+    readonly_fields = ('data_criacao', 'data_atualizacao')
+
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
             'fields': ('email', 'nome', 'password1', 'password2'),
         }),
     )
-    search_fields = ('email',)
-    ordering = ('email',)
-    filter_horizontal = ()
+
+    inlines = [UsuarioEscolaInline]
 
 
-# Now register the new UserAdmin...
-admin.site.register(Usuario, UserAdmin)
+@admin.register(UsuarioEscola)
+class UsuarioEscolaAdmin(admin.ModelAdmin):
+    list_display = ('usuario', 'escola', 'tipo_usuario', 'ativo', 'data_vinculo')
+    list_filter = ('tipo_usuario', 'ativo', 'escola')
+    search_fields = ('usuario__email', 'usuario__nome')
+    readonly_fields = ('data_vinculo',)
