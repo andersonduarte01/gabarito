@@ -1,0 +1,52 @@
+{% extends 'base/base.html' %}
+
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block titulo_pagina %}{{ titulo }}{% endblock %}
+
+{% block conteudo %}
+
+<div class="max-w-lg">
+
+    <div class="text-sm breadcrumbs text-base-content/50 mb-4">
+        <ul>
+            <li><a href="{% url 'escola:dash_escola' %}">Painel</a></li>
+            <li><a href="{% url 'colaborador:lista_professores' %}">Professores</a></li>
+            <li>{{ titulo }}</li>
+        </ul>
+    </div>
+
+    <div class="card bg-base-100 shadow-sm">
+        <div class="card-body p-6">
+
+            <h1 class="text-lg font-bold text-base-content mb-5">{{ titulo }}</h1>
+
+            <form method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div role="alert" class="alert alert-error text-sm mb-4">
+                        {% for erro in form.non_field_errors %}<span>{{ erro }}</span>{% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="space-y-4">
+                    {% for field in form %}
+                        {% include 'base/_form_field.html' %}
+                    {% endfor %}
+                </div>
+
+                <div class="flex flex-col-reverse sm:flex-row gap-3 mt-8">
+                    <a href="{% url 'colaborador:lista_professores' %}" class="btn btn-ghost w-full sm:w-auto">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary w-full sm:w-auto sm:ml-auto">
+                        Salvar
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

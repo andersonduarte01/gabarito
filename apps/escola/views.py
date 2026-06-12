@@ -14,6 +14,8 @@ from rest_framework.views import APIView
 from apps.core.models import UsuarioEscola
 from apps.core.permissao import PermissaoRequiredMixin
 from apps.core.views import BaseDashboardView
+from apps.aluno.models import Aluno
+from apps.sala.models import Sala
 from .forms import EscolaForm, EnderecoEscolarForm
 from .models import UnidadeEscolar, EnderecoEscolar
 from .serializers import (
@@ -105,18 +107,41 @@ class DashAdmin(BaseDashboardView):
 
 class DashEscola(BaseDashboardView):
     """
-    Painel da escola — visão do diretor e colaborador.
-    Exibe salas, ano letivo corrente e resumo da escola.
-    Acesso: DIRETOR, COLABORADOR.
+    Painel da escola.
+    Acesso: DIRETOR, COLABORADOR, PROFESSOR, ALUNO, RESPONSAVEL.
     """
     template_name = 'escola/escola_dash.html'
-    tipo_permitido = [UsuarioEscola.DIRETOR, UsuarioEscola.COLABORADOR]
+    tipo_permitido = [
+        UsuarioEscola.ADMIN,
+        UsuarioEscola.DIRETOR,
+        UsuarioEscola.COLABORADOR,
+        UsuarioEscola.PROFESSOR,
+        UsuarioEscola.ALUNO,
+        UsuarioEscola.RESPONSAVEL,
+    ]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         escola = self.request.escola
-        context['ano_corrente'] = escola.ano_letivo_corrente
-        # context['salas'] será adicionado quando apps.sala for reativado
+        ano = escola.ano_letivo_corrente
+        context['ano_corrente'] = ano
+
+        salas_qs = (
+            Sala.objects
+            .filter(escola=escola)
+            .select_related('ano', 'ano_letivo')
+            .order_by('descricao')
+        )
+        if ano:
+            salas_qs = salas_qs.filter(ano_letivo=ano)
+
+        context['salas'] = salas_qs
+        context['total_salas'] = salas_qs.count()
+        context['total_alunos'] = (
+            Aluno.objects
+            .filter(escola=escola, situacao='MATRIC')
+            .count()
+        )
         return context
 
 
@@ -166,37 +191,6 @@ class EditarEndereco(PermissaoRequiredMixin, SuccessMessageMixin, UpdateView):
         return endereco
 
 
-# ---------------------------------------------------------------------------
-# Views comentadas — dependem de apps desativados temporariamente
-# ---------------------------------------------------------------------------
-
-# from apps.sala.models import Sala
-# from apps.aluno.models import Aluno
-# from apps.frequencia.models import Frequencia
-
-# class UnidAlunos(PermissaoRequiredMixin, ListView):
-#     model = Aluno
-#     template_name = 'escola/adm_unidade_alunos.html'
-#     context_object_name = 'alunos'
-#     permissao_tipos = [UsuarioEscola.ADMIN, UsuarioEscola.DIRETOR, UsuarioEscola.COLABORADOR]
-#
-#     def get_queryset(self):
-#         return Aluno.objects.filter(sala_id=self.kwargs['id']).order_by('nome')
-#
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         context['escola'] = self.request.escola
-#         context['sala'] = get_object_or_404(Sala, id=self.kwargs['id'])
-#         return context
-
-# class FrequenciaRelatorios(PermissaoRequiredMixin, TemplateView):
-#     template_name = 'escola/relatorio_frequencia.html'
-#     permissao_tipos = [UsuarioEscola.ADMIN, UsuarioEscola.DIRETOR, UsuarioEscola.COLABORADOR]
-#
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         context['sala'] = get_object_or_404(Sala, pk=self.kwargs['pk'])
-#         return context
 
 
 # ---------------------------------------------------------------------------

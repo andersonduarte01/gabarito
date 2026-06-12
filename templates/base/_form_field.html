@@ -1,0 +1,20 @@
+{# Renders a single Django form field. Use in a loop: {% for field in form %}{% include 'base/_form_field.html' %}{% endfor %} #}
+<div class="form-control w-full">
+    <label class="label pb-1" for="{{ field.id_for_label }}">
+        <span class="label-text font-medium">
+            {{ field.label }}
+            {% if field.field.required %}<span class="text-error ml-0.5">*</span>{% endif %}
+        </span>
+    </label>
+    {{ field }}
+    {% if field.help_text %}
+        <div class="label pt-1">
+            <span class="label-text-alt text-base-content/50">{{ field.help_text }}</span>
+        </div>
+    {% endif %}
+    {% for erro in field.errors %}
+        <div class="label pt-1">
+            <span class="label-text-alt text-error">{{ erro }}</span>
+        </div>
+    {% endfor %}
+</div>
