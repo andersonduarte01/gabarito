@@ -14,8 +14,10 @@ class EnderecoInline(admin.StackedInline):
 class Letivo(admin.ModelAdmin):
     list_display = ('id', 'ano', 'inicio', 'fim', 'corrente')
 
-admin.register(UnidadeEscolar)
 class EscolaAdmin(HijackUserAdminMixin, admin.ModelAdmin):
+    prepopulated_fields = {'slug': ('nome_escola',)}
+    list_display = ('nome_escola', 'slug', 'ativa')
+
     def get_hijack_user(self, obj):
         return obj
 

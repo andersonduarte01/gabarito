@@ -1,0 +1,105 @@
+{% extends 'temp_base/base_public.html' %}
+{% load static %}
+{% block titulo %}Videoaulas{% endblock %}
+
+{% block conteudo %}
+<section class="bg-gradient-to-br from-primary to-primary/80 text-primary-content py-10 px-4">
+  <div class="max-w-7xl mx-auto">
+    <nav class="text-sm mb-4 opacity-70" aria-label="Breadcrumb">
+      <ol class="flex items-center gap-1.5">
+        <li><a href="{% url 'core:inicio' %}" class="hover:opacity-100 transition-opacity">Início</a></li>
+        <li><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></li>
+        <li class="font-medium opacity-100">Videoaulas</li>
+      </ol>
+    </nav>
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
+      <h1 class="text-3xl font-bold">Videoaulas</h1>
+      <form action="{% url 'core:videos_pesquisados' %}" method="get" class="join w-full sm:w-72">
+        <input class="input input-sm join-item bg-white/15 border-white/25 text-primary-content placeholder:text-primary-content/60 w-full" name="q" type="search" placeholder="Pesquisar videoaula…" value="{{ query }}" autocomplete="off">
+        <button type="submit" class="btn btn-sm join-item bg-white/20 border-white/25 text-primary-content hover:bg-white/30" aria-label="Buscar">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
+        </button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section class="max-w-7xl mx-auto px-4 py-10">
+
+  {% if query %}
+    <!-- Resultado de busca -->
+    {% if videos %}
+      <div class="space-y-5">
+        {% for video in videos %}
+        <div class="card bg-base-100 border border-base-300 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+          <div class="flex flex-col sm:flex-row">
+            <div class="sm:w-72 shrink-0 aspect-video bg-base-200">
+              <iframe src="https://www.youtube.com/embed/{{ video.url_video }}" class="w-full h-full border-0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy" title="{{ video.titulo }}"></iframe>
+            </div>
+            <div class="card-body p-4">
+              <h3 class="font-semibold text-base leading-snug">{{ video.titulo }}</h3>
+              <div class="flex flex-wrap gap-2 mt-1">
+                {% if video.ano %}<span class="badge badge-ghost badge-sm">{{ video.ano }}</span>{% endif %}
+                {% if video.materia %}<span class="badge badge-secondary badge-sm">{{ video.materia }}</span>{% endif %}
+              </div>
+              <p class="text-xs text-base-content/50 mt-auto">
+                {% if video.professora %}Prof. {{ video.professora }}{% endif %}
+                {% if video.tempo %} &bull; {{ video.tempo }} min{% endif %}
+              </p>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="flex flex-col items-center justify-center py-24 text-center">
+        <div class="rounded-full bg-base-200 p-6 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-base-content/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z"/></svg>
+        </div>
+        <h2 class="text-lg font-semibold text-base-content/70">Nenhum resultado para "{{ query }}"</h2>
+        <a href="{% url 'core:videos' %}" class="btn btn-primary btn-sm mt-4">Ver todas as videoaulas</a>
+      </div>
+    {% endif %}
+
+  {% else %}
+    <!-- Grade por ano -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+
+      <!-- Educação Infantil -->
+      <div class="card bg-base-100 border border-base-300 shadow-sm">
+        <div class="card-body p-5">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="rounded-xl bg-secondary/10 p-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.627 48.627 0 0 1 12 20.904a48.627 48.627 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.57 50.57 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5"/></svg>
+            </div>
+            <h3 class="font-semibold">Educação Infantil</h3>
+          </div>
+          <ul class="space-y-1.5">
+            <li><a href="{% url 'core:ano_materia' ano='0Ano' sigla='EI' %}" class="text-sm text-base-content/70 hover:text-primary transition-colors flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>Vídeos</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 1º ao 9º Ano -->
+      {% for ano_info in anos %}
+      <div class="card bg-base-100 border border-base-300 shadow-sm">
+        <div class="card-body p-5">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="rounded-xl bg-primary/10 p-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.627 48.627 0 0 1 12 20.904a48.627 48.627 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.57 50.57 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5"/></svg>
+            </div>
+            <h3 class="font-semibold">{{ ano_info.label }}</h3>
+          </div>
+          <ul class="space-y-1.5">
+            <li><a href="{% url 'core:ano_materia' ano=ano_info.slug sigla='LP' %}" class="text-sm text-base-content/70 hover:text-primary transition-colors flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>Língua Portuguesa</a></li>
+            <li><a href="{% url 'core:ano_materia' ano=ano_info.slug sigla='MT' %}" class="text-sm text-base-content/70 hover:text-primary transition-colors flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>Matemática</a></li>
+          </ul>
+        </div>
+      </div>
+      {% endfor %}
+
+    </div>
+  {% endif %}
+
+</section>
+{% endblock %}

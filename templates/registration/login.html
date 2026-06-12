@@ -1,22 +1,77 @@
 {% extends 'temp_base/base_log.html' %}
-{% load bootstrap4 %}
-{% block formulario %}
-<form method="post">
-    {% csrf_token %}
-    {% bootstrap_form form %}
-    {% buttons %}
-    <button type="submit" class="btn btn-primary">Entrar</button>
-    {% endbuttons %}
-    <div class="row m-t-25 text-left">
-        <div class="col-12">
-            <div class="checkbox-fade fade-in-primary d-">
-                <a href="#" class="text-inverse">Esqueceu Email?</a>
-            </div>
-            <div class="forgot-phone text-right f-right">
-                <a href="{% url 'password_reset' %}" class="text-right f-w-600"> Esqueceu a Senha?</a>
-<!--                <a href="#" class="text-right f-w-600"> Esqueceu a Senha?</a>-->
-            </div>
-        </div>
+{% block titulo %}Entrar{% endblock %}
+{% block tema %}Entrar na sua conta{% endblock %}
+{% block subtitulo %}Bem-vindo ao EduCore{% endblock %}
+
+{% block erros_globais %}
+  {% if bloqueado %}
+    <div role="alert" class="alert alert-error mb-6 py-3 text-sm">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"/></svg>
+      <span>Acesso bloqueado temporariamente após múltiplas tentativas incorretas. Aguarde {{ lockout_minutos }} minuto(s) e tente novamente.</span>
     </div>
+  {% elif form.non_field_errors %}
+    <div role="alert" class="alert alert-error mb-6 py-3 text-sm">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/></svg>
+      <div>
+        <span>{{ form.non_field_errors|join:" " }}</span>
+        {% if tentativas_restantes <= 2 and tentativas_restantes > 0 %}
+          <p class="mt-1 text-error/80">Atenção: {{ tentativas_restantes }} tentativa(s) restante(s) antes do bloqueio.</p>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block formulario %}
+<form method="post" class="auth-form space-y-5" {% if bloqueado %}inert{% endif %}>
+  {% csrf_token %}
+
+  <div class="form-control">
+    <label class="label pb-1" for="{{ form.username.id_for_label }}">
+      <span class="label-text font-medium">E-mail</span>
+    </label>
+    {{ form.username }}
+    {% if form.username.errors %}
+      <div class="label pt-1"><span class="label-text-alt text-error">{{ form.username.errors|join:" " }}</span></div>
+    {% endif %}
+  </div>
+
+  <div class="form-control">
+    <div class="label pb-1">
+      <label class="label-text font-medium" for="{{ form.password.id_for_label }}">Senha</label>
+      <a href="{% url 'password_reset' %}" class="label-text-alt text-primary hover:underline">Esqueceu a senha?</a>
+    </div>
+    {{ form.password }}
+    {% if form.password.errors %}
+      <div class="label pt-1"><span class="label-text-alt text-error">{{ form.password.errors|join:" " }}</span></div>
+    {% endif %}
+  </div>
+
+  <div class="flex items-center gap-2">
+    <input
+      type="checkbox"
+      id="{{ form.remember_me.id_for_label }}"
+      name="{{ form.remember_me.html_name }}"
+      class="checkbox checkbox-primary checkbox-sm"
+      {% if form.remember_me.value %}checked{% endif %}
+    >
+    <label for="{{ form.remember_me.id_for_label }}" class="text-sm text-base-content/60 cursor-pointer select-none">
+      {{ form.remember_me.label }}
+    </label>
+  </div>
+
+  <button type="submit" class="btn btn-primary w-full" {% if bloqueado %}disabled{% endif %}>
+    {% if bloqueado %}
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"/></svg>
+      Bloqueado
+    {% else %}
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75"/></svg>
+      Entrar
+    {% endif %}
+  </button>
 </form>
+
+<p class="text-center text-xs text-base-content/40 mt-8">
+  <a href="{% url 'core:inicio' %}" class="hover:text-primary transition-colors">← Voltar ao início</a>
+</p>
 {% endblock %}

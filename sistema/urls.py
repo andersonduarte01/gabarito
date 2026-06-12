@@ -30,7 +30,7 @@ router_tecnico.register(r'chamados-tecnico-aguardando', ChamadaAguardandoTecnico
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('accounts/', include('django.contrib.auth.urls')),
+    path('accounts/', include('apps.accounts.urls')),
     path('', include('apps.core.urls', namespace='core')),
     path('escola/', include('apps.escola.urls', namespace='escola')),
     path('professor/', include('apps.funcionario.urls', namespace='funcionario')),
@@ -43,7 +43,6 @@ urlpatterns = [
     path('blog/', include('apps.blog.urls', namespace='blog')),
     path('pdf/', include('apps.arquivos.urls', namespace='arquivos')),
     path('frequencia/', include('apps.frequencia.urls', namespace='frequencia')),
-    path('cadastro/', include('apps.cadastro.urls', namespace='cadastro')),
     path('tinymce/', include('tinymce.urls')),
     path('ckeditor/upload/', login_required(ckeditor_views.upload), name='ckeditor_upload'),
     path('ckeditor/browse/', never_cache(login_required(ckeditor_views.browse)), name='ckeditor_browse'),

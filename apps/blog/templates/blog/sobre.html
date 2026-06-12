@@ -1,0 +1,32 @@
+{% extends 'temp_base/base_public.html' %}
+{% load static %}
+{% block titulo %}Sobre{% endblock %}
+
+{% block conteudo %}
+<section class="bg-gradient-to-br from-primary to-primary/80 text-primary-content py-10 px-4">
+  <div class="max-w-7xl mx-auto">
+    <nav class="text-sm mb-4 opacity-70" aria-label="Breadcrumb">
+      <ol class="flex items-center gap-1.5">
+        <li><a href="{% url 'core:inicio' %}" class="hover:opacity-100 transition-opacity">Início</a></li>
+        <li><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg></li>
+        <li class="font-medium opacity-100">Sobre</li>
+      </ol>
+    </nav>
+    <h1 class="text-3xl font-bold">Sobre o EduCore</h1>
+  </div>
+</section>
+
+<section class="max-w-4xl mx-auto px-4 py-12">
+  <div class="space-y-5 text-base-content/70 leading-relaxed">
+    <p class="text-lg">
+      O <strong class="text-base-content">EduCore</strong> é uma plataforma educacional integrada desenvolvida para simplificar a gestão escolar e aproximar escolas, professores, alunos e famílias num único ambiente digital.
+    </p>
+    <p>
+      Com o EduCore, instituições de ensino têm acesso a módulos completos de notícias, biblioteca digital, repositório de arquivos, videoaulas, diário de classe, boletins e comunicação — tudo pensado para reduzir burocracia e ampliar o foco no que realmente importa: o aprendizado.
+    </p>
+    <p>
+      Nossa missão é democratizar o acesso a ferramentas de qualidade para redes públicas e privadas, independentemente do porte da instituição.
+    </p>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,179 @@
+{% extends 'temp_base/administrador.html' %}
+{% load static %}
+
+{% block titulo %}Usuários — {{ request.escola.nome_escola }}{% endblock %}
+
+{% block trilha %}
+<h3 class="h3 mb-0 text-gray-800">Usuários da Escola</h3>
+<ol class="breadcrumb">
+  <li class="breadcrumb-item"><a href="{% url 'escola:painel_adm' %}">Painel</a></li>
+  <li class="breadcrumb-item active">Usuários</li>
+</ol>
+{% endblock %}
+
+{% block conteudo_adm %}
+
+{# ── Mensagens ─────────────────────────────────────────────────────────── #}
+{% for message in messages %}
+<div class="col-sm-12 mb-3">
+  <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show">
+    {{ message }}
+    <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+  </div>
+</div>
+{% endfor %}
+
+{# ── Formulário de cadastro ────────────────────────────────────────────── #}
+<div class="col-sm-12 col-xl-5 mb-4">
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">
+        <i class="ti-user mr-2"></i>Cadastrar novo usuário
+      </h5>
+      <small class="text-muted">O usuário receberá acesso à escola <strong>{{ request.escola.nome_escola }}</strong>.</small>
+    </div>
+    <div class="card-block p-4">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        <div class="form-group">
+          <label for="{{ form.nome.id_for_label }}">{{ form.nome.label }}</label>
+          {{ form.nome }}
+          {% if form.nome.errors %}
+            <small class="text-danger">{{ form.nome.errors|join:" " }}</small>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+          {{ form.email }}
+          {% if form.email.errors %}
+            <small class="text-danger">{{ form.email.errors|join:" " }}</small>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.tipo.id_for_label }}">{{ form.tipo.label }}</label>
+          {{ form.tipo }}
+          {% if form.tipo.errors %}
+            <small class="text-danger">{{ form.tipo.errors|join:" " }}</small>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.senha.id_for_label }}">{{ form.senha.label }}</label>
+          {{ form.senha }}
+          {% if form.senha.errors %}
+            <small class="text-danger">{{ form.senha.errors|join:" " }}</small>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.confirmar_senha.id_for_label }}">{{ form.confirmar_senha.label }}</label>
+          {{ form.confirmar_senha }}
+          {% if form.confirmar_senha.errors %}
+            <small class="text-danger">{{ form.confirmar_senha.errors|join:" " }}</small>
+          {% endif %}
+        </div>
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger py-2">{{ form.non_field_errors|join:" " }}</div>
+        {% endif %}
+
+        <button type="submit" class="btn btn-primary btn-block mt-3">
+          <i class="ti-user mr-1"></i> Cadastrar usuário
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+{# ── Lista de usuários ─────────────────────────────────────────────────── #}
+<div class="col-sm-12 col-xl-7">
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">
+        <i class="ti-agenda mr-2"></i>Usuários vinculados
+        <span class="badge badge-primary ml-2">{{ vinculos|length }}</span>
+      </h5>
+    </div>
+    <div class="card-block">
+      <div class="table-responsive">
+        <table class="table table-hover table-sm">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>E-mail</th>
+              <th>Perfil</th>
+              <th class="text-center">Status</th>
+              <th class="text-center">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for vinculo in vinculos %}
+            <tr class="{% if not vinculo.ativo %}text-muted{% endif %}">
+              <td>
+                {{ vinculo.usuario.nome }}
+                {% if vinculo.usuario == request.user %}
+                  <span class="badge badge-secondary ml-1">você</span>
+                {% endif %}
+              </td>
+              <td class="small">{{ vinculo.usuario.email }}</td>
+              <td>
+                <span class="badge
+                  {% if vinculo.tipo == 'ADM' %}badge-primary
+                  {% elif vinculo.tipo == 'PROF' %}badge-info
+                  {% elif vinculo.tipo == 'FUNC' %}badge-warning
+                  {% else %}badge-light{% endif %}
+                ">
+                  {{ vinculo.get_tipo_display }}
+                </span>
+              </td>
+              <td class="text-center">
+                {% if vinculo.ativo %}
+                  <span class="badge badge-success">Ativo</span>
+                {% else %}
+                  <span class="badge badge-secondary">Inativo</span>
+                {% endif %}
+              </td>
+              <td class="text-center">
+                {% if vinculo.usuario != request.user %}
+                  {# Toggle ativo #}
+                  <form method="post" action="{% url 'escola:toggle_usuario' vinculo.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit"
+                      class="btn btn-sm {% if vinculo.ativo %}btn-outline-warning{% else %}btn-outline-success{% endif %}"
+                      title="{% if vinculo.ativo %}Desativar{% else %}Ativar{% endif %}">
+                      <i class="ti-{% if vinculo.ativo %}lock{% else %}unlock{% endif %}"></i>
+                    </button>
+                  </form>
+
+                  {# Remover vínculo #}
+                  <form method="post" action="{% url 'escola:remover_vinculo' vinculo.pk %}" class="d-inline"
+                        onsubmit="return confirm('Remover o acesso de {{ vinculo.usuario.nome }} desta escola?')">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Remover vínculo">
+                      <i class="ti-trash"></i>
+                    </button>
+                  </form>
+                {% else %}
+                  <span class="text-muted small">—</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="text-center text-muted py-4">
+                <i class="ti-user" style="font-size:2rem; opacity:.3;"></i>
+                <p class="mt-2 mb-0">Nenhum usuário vinculado ainda.</p>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

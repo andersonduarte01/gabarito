@@ -1,119 +1,210 @@
-{% extends 'temp_base/indice.html' %}
-{% block titulo %}Notícia{% endblock %}
+{% extends 'temp_base/base_public.html' %}
 {% load static %}
-{% load social_share %}
-{% block estatico %}
-<meta property="og:url"           content="https://smepedrabranca.com.br/blog/{{noticia.pk}}" />
-<meta property="og:type"          content="website" />
-<meta property="og:title"         content="{{noticia}}" />
-<meta property="og:description"   content="" />
-<meta property="og:image"         content="{{noticia.imagem.url}}" />
-{% endblock %}
+{% block titulo %}{{ noticia.titulo }}{% endblock %}
+{% block meta_description %}{{ noticia.titulo }} — EduCore{% endblock %}
+
 {% block conteudo %}
-<div class="container">
-    <div id="fb-root"></div>
-    <script async defer crossorigin="anonymous"
-            src="https://connect.facebook.net/pt_BR/sdk.js#xfbml=1&version=v14.0&appId=2624277097784962&autoLogAppEvents=1"
-            nonce="n4ZzO278"></script>
-</div>
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-lg-8">
-            <!-- Post content-->
-            <article>
-                <!-- Post header-->
-                <header class="mb-4">
-                    <!-- Post title-->
-                    <h1 class="fw-bolder mb-1">{{noticia}}</h1>
-                    <!-- Post meta content-->
-                    <div class="text-muted fst-italic mb-2">Autor: {{noticia.autor.nome}}</div>
-                </header>
-                <!-- Preview image figure-->
-                {% if noticia.imagem00 %}
-                <figure class="mb-4"><img class="img-fluid rounded" src="{{noticia.imagem.url}}" alt="..." /></figure>
-                <div class="text-muted fst-italic">Publicado: {{noticia.data}}</div>
-                {% else %}
-                <figure class="mb-4"><img class="img-fluid rounded" src="https://dummyimage.com/900x400/ced4da/6c757d.jpg" alt="..." /></figure>
-                {% endif %}
-                <!-- Post content-->
-                <hr>
-                <div class="row">
-              <div class="col-md-2 col-4">
-                <div class="fb-share-button" data-href="https://smepedrabranca.com.br/blog/{{noticia.pk}}/"
-                     data-layout="button" data-size="large">
-                  <a target="_blank"
-                     href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fsmepedrabranca.com.br%2Fblog%2Flampadas-de-nicola-tesla%2F&amp;src=sdkpreparse"
-                     class="fb-xfbml-parse-ignore">Compartilhar</a>
-                </div>
-              </div>
-              <div class="col-md-3 col-5">
-                <button type="button" style="background-color: #4CAF50;
-                                            border: none;
-                                            color: white;
-                                            padding-left: 10px;
-                                            padding-right: 10px;
-                                            padding-top: 4px;
-                                            padding-bottom: 3px;
-                                            text-align: center;
-                                            text-decoration: none;
-                                            display: inline-block;
-                                            font-size: 14px;
-                                            margin: 0px 2px;
-                                            cursor: pointer;
-                                            font-family: Helvetica, Arial, sans-serif;
-                                            border-radius: 5px;">
-                {% post_to_whatsapp object_or_url "" %}
-                </button>
-              </div>
-            </div>
-                <hr>
-                <section class="mb-5">
-                    {{noticia.conteudo|safe}}
-                </section>
-            </article>
-            <!-- Comments section-->
-        </div>
-        <!-- Side widgets-->
-        <div class="col-lg-4">
-            <!-- Search widget-->
-            <div class="card mb-4">
-                <div class="card-header">Pesquisar</div>
-                <div class="card-body">
-                    <form action="{% url 'blog:noticias_pesquisadas' %}" method="get">
-                       <div class="row">
-                        <div class="col-8">
-                            <input class="form-control" name="q" type="text" placeholder="Pesquisar noticia...">
-                        </div>
-                        <div class="col-1">
-                        <button type="submit" class="btn btn-primary text-white"><i class="fas fa-search"></i></button>
-                        </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            <!-- Categories widget-->
-            <div class="card mb-4">
-                <div class="card-header">Categorias</div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-sm-10">
-                            <ul class="list-unstyled mb-0">
-                                {% for categoria in temas %}
-                                <li><a href="#!">{{categoria}}</a></li>
-                                {% empty %}
-                                <li><a href="#!">VAZIO</a></li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Side widget-->
-            <div class="card mb-4">
-                <div class="card-header">Espaço vazio</div>
-                <div class="card-body">Em desenvolvimento</div>
-            </div>
-        </div>
+
+<!-- Hero -->
+<section class="bg-gradient-to-br from-primary to-primary/80 text-primary-content py-10 px-4">
+  <div class="max-w-7xl mx-auto">
+    <nav class="text-sm mb-4 opacity-70" aria-label="Breadcrumb">
+      <ol class="flex items-center gap-1.5 flex-wrap">
+        <li><a href="{% url 'core:inicio' %}" class="hover:opacity-100 transition-opacity">Início</a></li>
+        <li>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/>
+          </svg>
+        </li>
+        <li><a href="{% url 'blog:noticias' %}" class="hover:opacity-100 transition-opacity">Notícias</a></li>
+        <li>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/>
+          </svg>
+        </li>
+        <li class="font-medium opacity-100 truncate max-w-xs">{{ noticia.titulo }}</li>
+      </ol>
+    </nav>
+
+    <span class="badge badge-secondary mb-3">{{ noticia.categoria }}</span>
+    <h1 class="text-2xl sm:text-3xl font-bold leading-tight max-w-3xl">{{ noticia.titulo }}</h1>
+
+    <div class="flex flex-wrap items-center gap-4 mt-4 text-sm opacity-70">
+      <span class="flex items-center gap-1.5">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/>
+        </svg>
+        {{ noticia.autor.nome }}
+      </span>
+      <span class="flex items-center gap-1.5">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 9v7.5"/>
+        </svg>
+        Publicado em {{ noticia.data|date:"d \d\e F \d\e Y" }}
+      </span>
+      {% if noticia.data_atualizacao != noticia.data %}
+      <span class="flex items-center gap-1.5">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
+        </svg>
+        Atualizado em {{ noticia.data_atualizacao|date:"d/m/Y" }}
+      </span>
+      {% endif %}
     </div>
-</div>
+  </div>
+</section>
+
+<!-- Article body -->
+<section class="max-w-7xl mx-auto px-4 py-10">
+  <div class="lg:grid lg:grid-cols-[1fr_300px] lg:gap-10">
+
+    <!-- Main article -->
+    <article>
+
+      <!-- Cover image -->
+      {% if noticia.imagem %}
+        <figure class="rounded-xl overflow-hidden mb-8 aspect-video bg-base-200">
+          <img
+            src="{{ noticia.imagem.url }}"
+            alt="{{ noticia.titulo }}"
+            class="w-full h-full object-cover"
+          >
+        </figure>
+      {% else %}
+        <div class="rounded-xl bg-primary/6 flex flex-col items-center justify-center py-16 mb-8 border border-base-300">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-primary/20 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 1-2.25 2.25M16.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 0 0 2.25 2.25h13.5M6 7.5h3v3H6v-3Z"/>
+          </svg>
+          <span class="text-xs text-base-content/30">Sem imagem de capa</span>
+        </div>
+      {% endif %}
+
+      <!-- Share bar -->
+      <div class="flex items-center gap-2 mb-6 pb-6 border-b border-base-300">
+        <span class="text-sm text-base-content/50 font-medium mr-1">Compartilhar:</span>
+        <a
+          href="https://wa.me/?text={{ noticia.titulo|urlencode }}%20{% url 'blog:noticia' noticia.slug %}"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn-xs btn-outline gap-1"
+          aria-label="Compartilhar no WhatsApp"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+          WhatsApp
+        </a>
+        <button
+          onclick="navigator.clipboard.writeText(window.location.href).then(()=>this.textContent='Copiado!')"
+          class="btn btn-xs btn-outline gap-1"
+          aria-label="Copiar link"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"/>
+          </svg>
+          Copiar link
+        </button>
+      </div>
+
+      <!-- Content -->
+      <div class="prose prose-base max-w-none prose-headings:font-semibold prose-a:text-primary prose-img:rounded-lg">
+        {{ noticia.conteudo|safe }}
+      </div>
+
+      <!-- Back link -->
+      <div class="mt-10 pt-6 border-t border-base-300">
+        <a href="{% url 'blog:noticias' %}" class="btn btn-ghost btn-sm gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/>
+          </svg>
+          Todas as notícias
+        </a>
+      </div>
+    </article>
+
+    <!-- Sidebar -->
+    <aside class="mt-10 lg:mt-0 space-y-6">
+
+      <!-- Search -->
+      <div class="card bg-base-100 border border-base-300 shadow-sm">
+        <div class="card-body p-4">
+          <h2 class="font-semibold text-sm text-base-content/70 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
+            </svg>
+            Pesquisar
+          </h2>
+          <form action="{% url 'blog:noticias' %}" method="get" class="join w-full">
+            <input class="input input-sm join-item input-bordered w-full" name="q" type="search" placeholder="Buscar notícias…" autocomplete="off">
+            <button type="submit" class="btn btn-primary btn-sm join-item" aria-label="Buscar">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
+              </svg>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Categories -->
+      {% if temas %}
+      <div class="card bg-base-100 border border-base-300 shadow-sm">
+        <div class="card-body p-4">
+          <h2 class="font-semibold text-sm text-base-content/70 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6Z"/>
+            </svg>
+            Categorias
+          </h2>
+          <ul class="space-y-1">
+            {% for categoria in temas %}
+            <li>
+              <a href="{% url 'blog:noticias' %}?categoria={{ categoria.slug }}" class="flex items-center gap-2 text-sm py-1 px-2 rounded-lg hover:bg-base-200 transition-colors text-base-content/70 hover:text-base-content">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/>
+                </svg>
+                {{ categoria }}
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Recent posts -->
+      {% if recentes %}
+      <div class="card bg-base-100 border border-base-300 shadow-sm">
+        <div class="card-body p-4">
+          <h2 class="font-semibold text-sm text-base-content/70 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+            </svg>
+            Recentes
+          </h2>
+          <ul class="space-y-3">
+            {% for recente in recentes %}
+            <li class="flex gap-3 items-start">
+              {% if recente.imagem %}
+                <img src="{{ recente.imagem.url }}" alt="{{ recente.titulo }}" class="w-14 h-10 object-cover rounded-lg shrink-0 bg-base-200">
+              {% else %}
+                <div class="w-14 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 1-2.25 2.25M16.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 0 0 2.25 2.25h13.5M6 7.5h3v3H6v-3Z"/>
+                  </svg>
+                </div>
+              {% endif %}
+              <div class="min-w-0">
+                <a href="{% url 'blog:noticia' recente.slug %}" class="text-sm font-medium line-clamp-2 hover:text-primary transition-colors leading-snug">{{ recente.titulo }}</a>
+                <p class="text-xs text-base-content/40 mt-0.5">{{ recente.data|date:"d/m/Y" }}</p>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      {% endif %}
+
+    </aside>
+  </div>
+</section>
+
 {% endblock %}

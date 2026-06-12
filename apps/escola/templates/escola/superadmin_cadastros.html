@@ -1,0 +1,154 @@
+{% extends 'temp_base/administrador.html' %}
+{% load static %}
+
+{% block titulo %}Cadastros — Superadmin{% endblock %}
+
+{% block trilha %}
+<h3 class="h3 mb-0 text-gray-800">Cadastros</h3>
+<ol class="breadcrumb">
+  <li class="breadcrumb-item"><a href="{% url 'escola:painel_adm' %}">Painel</a></li>
+  <li class="breadcrumb-item active">Cadastros</li>
+</ol>
+{% endblock %}
+
+{% block conteudo_adm %}
+
+{# ── Mensagens ─────────────────────────────────────────────────────────── #}
+{% for message in messages %}
+<div class="col-sm-12 mb-3">
+  <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show">
+    {{ message }}
+    <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+  </div>
+</div>
+{% endfor %}
+
+{# ── Formulários: Nova Escola / Novo Administrador ─────────────────────── #}
+<div class="col-sm-12 col-xl-6 mb-4">
+
+  {# ── Criar escola ──────────────────────────────────────────────────────── #}
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0"><i class="ti-home mr-2"></i>Cadastrar nova escola</h5>
+    </div>
+    <div class="card-block p-4">
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="acao" value="escola">
+
+        {% for field in form_escola %}
+        <div class="form-group">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}
+            <small class="text-danger">{{ field.errors|join:" " }}</small>
+          {% endif %}
+        </div>
+        {% endfor %}
+
+        {% if form_escola.non_field_errors %}
+          <div class="alert alert-danger py-2">{{ form_escola.non_field_errors|join:" " }}</div>
+        {% endif %}
+
+        <button type="submit" class="btn btn-primary btn-block mt-2">
+          <i class="ti-plus mr-1"></i> Cadastrar escola
+        </button>
+      </form>
+    </div>
+  </div>
+
+  {# ── Criar administrador ───────────────────────────────────────────────── #}
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0"><i class="ti-user mr-2"></i>Cadastrar administrador de escola</h5>
+      <small class="text-muted">O usuário receberá perfil de <strong>Administrador</strong> na escola selecionada.</small>
+    </div>
+    <div class="card-block p-4">
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="acao" value="admin">
+
+        {% for field in form_admin %}
+        <div class="form-group">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}
+            <small class="text-danger">{{ field.errors|join:" " }}</small>
+          {% endif %}
+        </div>
+        {% endfor %}
+
+        {% if form_admin.non_field_errors %}
+          <div class="alert alert-danger py-2">{{ form_admin.non_field_errors|join:" " }}</div>
+        {% endif %}
+
+        <button type="submit" class="btn btn-success btn-block mt-2">
+          <i class="ti-user mr-1"></i> Cadastrar administrador
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+{# ── Lista de escolas e admins ─────────────────────────────────────────── #}
+<div class="col-sm-12 col-xl-6">
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">
+        <i class="ti-agenda mr-2"></i>Escolas cadastradas
+        <span class="badge badge-primary ml-2">{{ escolas|length }}</span>
+      </h5>
+    </div>
+    <div class="card-block">
+      <div class="table-responsive">
+        <table class="table table-hover table-sm">
+          <thead>
+            <tr>
+              <th>Escola</th>
+              <th>INEP</th>
+              <th>Administradores</th>
+              <th class="text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for escola in escolas %}
+            <tr>
+              <td>
+                <strong>{{ escola.nome_escola }}</strong>
+              </td>
+              <td class="small text-muted">{{ escola.inep|default:"—" }}</td>
+              <td>
+                {% with admins=escola.vinculos.all %}
+                  {% for v in admins %}
+                    {% if v.tipo == 'ADM' %}
+                      <span class="badge badge-primary mr-1">{{ v.usuario.nome }}</span>
+                    {% endif %}
+                  {% empty %}
+                    <span class="text-muted small">Sem administrador</span>
+                  {% endfor %}
+                {% endwith %}
+              </td>
+              <td class="text-center">
+                {% if escola.ativa %}
+                  <span class="badge badge-success">Ativa</span>
+                {% else %}
+                  <span class="badge badge-secondary">Inativa</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="text-center text-muted py-4">
+                <i class="ti-home" style="font-size:2rem;opacity:.3;"></i>
+                <p class="mt-2 mb-0">Nenhuma escola cadastrada ainda.</p>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -48,7 +48,6 @@ INSTALLED_APPS = [
     'apps.blog',
     'apps.relatorios',
     'apps.arquivos',
-    'apps.cadastro',
     'cpf_field',
     'ckeditor',
     'rest_framework',
@@ -62,6 +61,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'apps.core.middleware.EscolaMiddleware',          # tenant context
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'hijack.middleware.HijackUserMiddleware',
@@ -154,6 +154,32 @@ CKEDITOR_UPLOAD_PATH = "media/Noticias"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'core.Usuario'
+
+# ── Segurança de sessão ────────────────────────────────────────────────────
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_AGE = 28800  # 8 horas (sessão padrão sem "lembrar-me")
+
+# ── Proteção CSRF ──────────────────────────────────────────────────────────
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+# ── Headers de segurança ──────────────────────────────────────────────────
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# ── Cache (rate limiting de login) ────────────────────────────────────────
+# Em produção substitua por Redis: django.core.cache.backends.redis.RedisCache
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'educore-cache',
+    }
+}
+
+# ── Configurações de autenticação ─────────────────────────────────────────
+AUTH_MAX_FAILED_ATTEMPTS = 5          # tentativas antes do bloqueio
+AUTH_LOCKOUT_DURATION = 300           # segundos de bloqueio por IP (5 min)
+AUTH_SESSION_REMEMBER_AGE = 2592000   # 30 dias em segundos ("lembrar-me")
 
 LOGIN_REDIRECT_URL = '/escola/redirecionamento/'
 LOGOUT_REDIRECT_URL = '/'

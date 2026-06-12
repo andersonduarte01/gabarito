@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+{% load static %}
+{% load tz %}
+<html lang="pt-br" data-theme="escola">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block titulo %}EduCore{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}EduCore — Plataforma educacional integrada para escolas{% endblock %}">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4/dist/full.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    [data-theme="escola"] {
+      --color-primary: oklch(47.7% 0.213 264.1);
+      --color-primary-content: oklch(98% 0 0);
+      --color-secondary: oklch(59.7% 0.145 163.2);
+      --color-secondary-content: oklch(98% 0 0);
+      --color-accent: oklch(72% 0.17 55);
+      --color-accent-content: oklch(20% 0.02 55);
+      --color-neutral: oklch(18.9% 0.005 56.4);
+      --color-neutral-content: oklch(92% 0.005 56.4);
+      --color-base-100: oklch(98.3% 0.001 56.4);
+      --color-base-200: oklch(96.2% 0.002 56.5);
+      --color-base-300: oklch(92.4% 0.003 56.5);
+      --color-base-content: oklch(18.9% 0.005 56.4);
+      --color-info: oklch(65% 0.2 250);
+      --color-info-content: oklch(98% 0 0);
+      --color-success: oklch(65% 0.19 156);
+      --color-success-content: oklch(98% 0 0);
+      --color-warning: oklch(79% 0.18 70);
+      --color-warning-content: oklch(20% 0.02 70);
+      --color-error: oklch(62% 0.24 30);
+      --color-error-content: oklch(98% 0 0);
+      --rounded-box: 0.75rem;
+      --rounded-btn: 0.5rem;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+  </style>
+
+  {% block head_extra %}{% endblock %}
+</head>
+
+<body class="bg-base-100 text-base-content min-h-screen flex flex-col">
+
+  <!-- Navbar -->
+  <header class="sticky top-0 z-50 bg-base-100 border-b border-base-300 shadow-sm">
+    <div class="navbar max-w-7xl mx-auto px-4">
+
+      <!-- Mobile hamburger -->
+      <div class="navbar-start">
+        <div class="dropdown">
+          <label tabindex="0" class="btn btn-ghost btn-sm lg:hidden" aria-label="Menu">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+            </svg>
+          </label>
+          <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow-lg bg-base-100 rounded-xl w-56 border border-base-300">
+            <li><a href="{% url 'core:inicio' %}">Início</a></li>
+            <li><a href="{% url 'blog:noticias' %}">Notícias</a></li>
+            <li><a href="{% url 'core:arquivos' %}">Arquivos</a></li>
+            <li><a href="{% url 'core:biblioteca' %}">Biblioteca</a></li>
+            <li><a href="{% url 'core:videos' %}">Videoaulas</a></li>
+            <li><a href="{% url 'core:sobre' %}">Sobre</a></li>
+            <li><a href="{% url 'core:contato' %}">Contato</a></li>
+            <li class="divider"></li>
+            {% if user.is_authenticated %}
+              <li><a href="{% url 'escola:redirecionar' %}">Painel</a></li>
+              <li><a href="{% url 'logout' %}">Sair</a></li>
+            {% else %}
+              <li><a href="{% url 'login' %}">Entrar</a></li>
+            {% endif %}
+          </ul>
+        </div>
+
+        <!-- Logo -->
+        <a href="{% url 'core:inicio' %}" class="flex items-center gap-2 ml-1">
+          <span class="text-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.627 48.627 0 0 1 12 20.904a48.627 48.627 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.57 50.57 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5"/>
+            </svg>
+          </span>
+          <span class="font-bold text-base-content hidden sm:inline">EduCore</span>
+        </a>
+      </div>
+
+      <!-- Desktop nav -->
+      <nav class="navbar-center hidden lg:flex">
+        <ul class="menu menu-horizontal px-1 gap-0.5 text-sm font-medium">
+          <li><a href="{% url 'core:inicio' %}" class="rounded-lg hover:bg-base-200">Início</a></li>
+          <li><a href="{% url 'blog:noticias' %}" class="rounded-lg hover:bg-base-200">Notícias</a></li>
+          <li><a href="{% url 'core:arquivos' %}" class="rounded-lg hover:bg-base-200">Arquivos</a></li>
+          <li><a href="{% url 'core:biblioteca' %}" class="rounded-lg hover:bg-base-200">Biblioteca</a></li>
+          <li><a href="{% url 'core:videos' %}" class="rounded-lg hover:bg-base-200">Videoaulas</a></li>
+          <li><a href="{% url 'core:sobre' %}" class="rounded-lg hover:bg-base-200">Sobre</a></li>
+          <li><a href="{% url 'core:contato' %}" class="rounded-lg hover:bg-base-200">Contato</a></li>
+        </ul>
+      </nav>
+
+      <!-- Auth -->
+      <div class="navbar-end gap-2">
+        {% if user.is_authenticated %}
+          <a href="{% url 'escola:redirecionar' %}" class="btn btn-ghost btn-sm hidden sm:flex">Painel</a>
+          <a href="{% url 'logout' %}" class="btn btn-outline btn-sm">Sair</a>
+        {% else %}
+          <a href="{% url 'login' %}" class="btn btn-primary btn-sm">Entrar</a>
+        {% endif %}
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main content -->
+  <main class="flex-1">
+    {% block conteudo %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-base-300 bg-base-100 mt-16">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <p class="text-xs text-base-content/60">&copy; {% now "Y" %} EduCore. Todos os direitos reservados.</p>
+      <p class="text-xs text-base-content/50">
+        Desenvolvido por
+        <a href="https://www.instagram.com/anderson.duarte.961/" target="_blank" rel="noopener noreferrer" class="text-primary hover:text-primary/80 transition-colors">Anderson Duarte</a>
+      </p>
+    </div>
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

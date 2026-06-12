@@ -1,72 +1,188 @@
-{% extends 'temp_base/indice.html' %}
-{% block titulo %}Notícias{% endblock %}
+{% extends 'temp_base/base_public.html' %}
 {% load static %}
-{% block conteudo %}
-<div class="container-fluid bg-primary py-5 mb-5 page-header">
-    <div class="container py-5">
-        <div class="row justify-content-left">
-            <div class="col-lg-8 text-left">
-                <h1 class="display-3 text-white animated slideInDown">Notícias</h1>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb justify-content-left">
-                        <li class="breadcrumb-item"><a class="text-white" href="{% url 'core:inicio' %}">Inicio</a></li>
-                        <li class="breadcrumb-item text-white active" aria-current="page">Notícias</li>
-                    </ol>
-                </nav>
-            </div>
-            <div class="col-lg-4">
-                    <form action="{% url 'blog:noticias_pesquisadas' %}" method="get">
-                       <div class="row">
-                        <div class="col-8">
-                            <input class="form-control" name="q" type="text" placeholder="Pesquisar noticia...">
-                        </div>
-                        <div class="col-1">
-                        <button type="submit" class="btn btn-outline-primary text-white"><i class="fas fa-search"></i></button>
-                        </div>
-                        </div>
-                    </form>
-                </div>
-        </div>
-    </div>
-</div>
+{% block titulo %}Notícias{% endblock %}
 
-<div class="container">
-    <div class="row">
-        <!-- Blog entries-->
-        {% for noticia in noticias %}
-        <div class="col-lg-6">
-            <!-- Featured blog post-->
-            <div class="card mb-4">
-                {% if noticia.imagem00 %}
-                <a href="#!"><img class="card-img-top" src="{{noticia.imagem.url}}" alt="..." /></a>
-                {% else %}
-                <a href="#!"><img class="card-img-top" src="https://dummyimage.com/850x350/dee2e6/6c757d.jpg" alt="..." /></a>
-                {% endif %}
-                <div class="card-body">
-                    <div class="small text-muted">{{noticia.data_atualizacao}}</div>
-                    <h4 class="card-title">{{noticia.titulo}}</h4>
-                    <p class="card-text">{{noticia.conteudo|safe|slice:":200"}}</p><hr>
-                    <a class="btn btn-primary" href="{% url 'blog:noticia' noticia.slug %}">Saiba Mais →</a>
-                </div>
-            </div>
-            <!-- Nested row for non-featured blog posts-->
-            <!-- Pagination-->
-        </div>
-        {% empty %}
-        <h3>Vazio</h3>
-        {% endfor %}
-        <nav aria-label="Pagination">
-                <hr class="my-0" />
-                <ul class="pagination justify-content-center my-4">
-                    <li class="page-item disabled"><a class="page-link" href="#" tabindex="-1" aria-disabled="true">Voltar</a></li>
-                    <li class="page-item active" aria-current="page"><a class="page-link" href="#!">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#!">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#!">3</a></li>
-                    <li class="page-item disabled"><a class="page-link" href="#!">...</a></li>
-                    <li class="page-item"><a class="page-link" href="#!">15</a></li>
-                    <li class="page-item"><a class="page-link" href="#!">Avançar</a></li>
-                </ul>
-            </nav>
+{% block conteudo %}
+
+<!-- Hero -->
+<section class="bg-gradient-to-br from-primary to-primary/80 text-primary-content py-12 px-4">
+  <div class="max-w-7xl mx-auto">
+    <nav class="text-sm mb-4 opacity-70" aria-label="Breadcrumb">
+      <ol class="flex items-center gap-1.5">
+        <li><a href="{% url 'core:inicio' %}" class="hover:opacity-100 transition-opacity">Início</a></li>
+        <li>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/>
+          </svg>
+        </li>
+        <li class="font-medium opacity-100">Notícias</li>
+      </ol>
+    </nav>
+
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
+      <div>
+        <h1 class="text-3xl sm:text-4xl font-bold tracking-tight">
+          {% if query %}Resultado para "{{ query }}"{% else %}Notícias{% endif %}
+        </h1>
+        {% if query %}
+          <p class="mt-1 opacity-70 text-sm">
+            {{ noticias.paginator.count }} resultado{{ noticias.paginator.count|pluralize }} encontrado{{ noticias.paginator.count|pluralize }}
+          </p>
+        {% endif %}
+      </div>
+
+      <!-- Search -->
+      <form action="{% url 'blog:noticias' %}" method="get" class="join w-full sm:w-72">
+        <input
+          class="input input-sm join-item bg-white/15 border-white/25 text-primary-content placeholder:text-primary-content/60 focus:bg-white/25 w-full"
+          name="q"
+          type="search"
+          placeholder="Pesquisar notícias…"
+          value="{{ query }}"
+          autocomplete="off"
+        >
+        <button type="submit" class="btn btn-sm join-item bg-white/20 border-white/25 text-primary-content hover:bg-white/30" aria-label="Buscar">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
+          </svg>
+        </button>
+      </form>
     </div>
-</div>
+  </div>
+</section>
+
+<!-- Content -->
+<section class="max-w-7xl mx-auto px-4 py-10">
+
+  {% if noticias %}
+    <!-- Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {% for noticia in noticias %}
+      <article class="card bg-base-100 border border-base-300 shadow-sm hover:shadow-md transition-shadow overflow-hidden group">
+
+        <!-- Cover -->
+        <a href="{% url 'blog:noticia' noticia.slug %}" class="block" tabindex="-1" aria-hidden="true">
+          {% if noticia.imagem %}
+            <div class="aspect-video overflow-hidden bg-base-200">
+              <img
+                src="{{ noticia.imagem.url }}"
+                alt="{{ noticia.titulo }}"
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                loading="lazy"
+              >
+            </div>
+          {% else %}
+            <div class="aspect-video bg-primary/8 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-primary/25" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 1-2.25 2.25M16.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 0 0 2.25 2.25h13.5M6 7.5h3v3H6v-3Z"/>
+              </svg>
+            </div>
+          {% endif %}
+        </a>
+
+        <div class="card-body p-4 gap-2">
+          <!-- Category badge -->
+          <div>
+            <span class="badge badge-secondary badge-sm">{{ noticia.categoria }}</span>
+          </div>
+
+          <!-- Title -->
+          <h2 class="font-semibold text-base leading-snug line-clamp-2">
+            <a href="{% url 'blog:noticia' noticia.slug %}" class="hover:text-primary transition-colors focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-1 rounded">
+              {{ noticia.titulo }}
+            </a>
+          </h2>
+
+          <!-- Meta -->
+          <div class="flex items-center gap-3 text-xs text-base-content/50 mt-auto pt-2 border-t border-base-200">
+            <span class="flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 9v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z"/>
+              </svg>
+              {{ noticia.data|date:"d/m/Y" }}
+            </span>
+            <span class="flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/>
+              </svg>
+              {{ noticia.autor.nome }}
+            </span>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <nav class="flex justify-center mt-10" aria-label="Paginação">
+      <div class="join">
+        {% if page_obj.has_previous %}
+          <a href="?{% if query %}q={{ query }}&{% endif %}page={{ page_obj.previous_page_number }}"
+             class="join-item btn btn-sm btn-outline" aria-label="Página anterior">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/>
+            </svg>
+          </a>
+        {% else %}
+          <span class="join-item btn btn-sm btn-outline btn-disabled" aria-disabled="true">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/>
+            </svg>
+          </span>
+        {% endif %}
+
+        {% for num in paginator.page_range %}
+          {% if page_obj.number == num %}
+            <span class="join-item btn btn-sm btn-primary" aria-current="page">{{ num }}</span>
+          {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a href="?{% if query %}q={{ query }}&{% endif %}page={{ num }}" class="join-item btn btn-sm btn-outline">{{ num }}</a>
+          {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+          <a href="?{% if query %}q={{ query }}&{% endif %}page={{ page_obj.next_page_number }}"
+             class="join-item btn btn-sm btn-outline" aria-label="Próxima página">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/>
+            </svg>
+          </a>
+        {% else %}
+          <span class="join-item btn btn-sm btn-outline btn-disabled" aria-disabled="true">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/>
+            </svg>
+          </span>
+        {% endif %}
+      </div>
+    </nav>
+    <p class="text-center text-xs text-base-content/40 mt-3">
+      Página {{ page_obj.number }} de {{ paginator.num_pages }}
+    </p>
+    {% endif %}
+
+  {% else %}
+    <!-- Empty state -->
+    <div class="flex flex-col items-center justify-center py-24 text-center">
+      <div class="rounded-full bg-base-200 p-6 mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-base-content/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 1-2.25 2.25M16.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 0 0 2.25 2.25h13.5M6 7.5h3v3H6v-3Z"/>
+        </svg>
+      </div>
+      {% if query %}
+        <h2 class="text-lg font-semibold text-base-content/70">Nenhum resultado para "{{ query }}"</h2>
+        <p class="text-sm text-base-content/40 mt-1 mb-4">Tente outros termos de busca</p>
+        <a href="{% url 'blog:noticias' %}" class="btn btn-primary btn-sm">Ver todas as notícias</a>
+      {% else %}
+        <h2 class="text-lg font-semibold text-base-content/70">Nenhuma notícia publicada ainda</h2>
+        <p class="text-sm text-base-content/40 mt-1 mb-4">As publicações aparecerão aqui</p>
+        {% if user.is_authenticated %}
+          <a href="{% url 'blog:add_noticia' %}" class="btn btn-primary btn-sm">Publicar notícia</a>
+        {% endif %}
+      {% endif %}
+    </div>
+  {% endif %}
+
+</section>
+
 {% endblock %}
