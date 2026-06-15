@@ -1,0 +1,280 @@
+{% extends 'base/base.html' %}
+
+{% block titulo %}Gerenciar Notícias{% endblock %}
+{% block titulo_pagina %}Notícias{% endblock %}
+{% block subtitulo_pagina %}
+    <span class="badge badge-ghost badge-sm">{{ total_publicados }} publicada{{ total_publicados|pluralize }}</span>
+    <span class="badge badge-ghost badge-sm">{{ total_rascunhos }} rascunho{{ total_rascunhos|pluralize }}</span>
+{% endblock %}
+
+{% block conteudo %}
+
+{# Cabeçalho + ação principal #}
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+    <div>
+        <h1 class="text-xl font-bold text-base-content">Notícias</h1>
+        <p class="text-sm text-base-content/50 mt-0.5">Gerencie as publicações do blog</p>
+    </div>
+    <a href="{% url 'blog:add_noticia' %}" class="btn btn-primary btn-sm gap-1.5">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+             stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+        </svg>
+        Nova notícia
+    </a>
+</div>
+
+{# Filtros por status #}
+<div class="flex items-center gap-2 mb-6 flex-wrap">
+    <a href="{% url 'blog:gerenciar' %}"
+       class="btn btn-sm {% if not status_ativo %}btn-primary{% else %}btn-ghost border border-base-300{% endif %}">
+        Todas
+        <span class="badge badge-sm ml-1">{{ total_publicados|add:total_rascunhos }}</span>
+    </a>
+    <a href="?status=PUBLICADO"
+       class="btn btn-sm {% if status_ativo == 'PUBLICADO' %}btn-primary{% else %}btn-ghost border border-base-300{% endif %}">
+        Publicadas
+        <span class="badge badge-sm ml-1">{{ total_publicados }}</span>
+    </a>
+    <a href="?status=RASCUNHO"
+       class="btn btn-sm {% if status_ativo == 'RASCUNHO' %}btn-primary{% else %}btn-ghost border border-base-300{% endif %}">
+        Rascunhos
+        <span class="badge badge-sm ml-1">{{ total_rascunhos }}</span>
+    </a>
+</div>
+
+{% if noticias %}
+    <div class="rounded-2xl border border-base-200 bg-base-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="table table-sm">
+                <thead>
+                    <tr class="border-b border-base-200 text-xs text-base-content/45 uppercase tracking-wide">
+                        <th class="font-semibold py-3 bg-base-200/30">Notícia</th>
+                        <th class="font-semibold py-3 bg-base-200/30 hidden sm:table-cell">Categoria</th>
+                        <th class="font-semibold py-3 bg-base-200/30 hidden md:table-cell">Autor</th>
+                        <th class="font-semibold py-3 bg-base-200/30">Status / Visib.</th>
+                        <th class="font-semibold py-3 bg-base-200/30 hidden lg:table-cell">Data</th>
+                        <th class="font-semibold py-3 bg-base-200/30 text-right">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for noticia in noticias %}
+                        <tr class="border-b border-base-200/60 hover:bg-base-200/40 transition-colors duration-100">
+
+                            {# Notícia: miniatura + título #}
+                            <td class="py-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="shrink-0 w-10 h-10 rounded-lg overflow-hidden bg-base-200">
+                                        {% if noticia.imagem %}
+                                            <img src="{{ noticia.imagem.url }}" alt=""
+                                                 class="w-full h-full object-cover">
+                                        {% else %}
+                                            <div class="w-full h-full flex items-center justify-center">
+                                                <svg class="w-5 h-5 text-base-content/20" fill="none"
+                                                     viewBox="0 0 24 24" stroke="currentColor"
+                                                     stroke-width="1.5" aria-hidden="true">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                                </svg>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="font-medium text-sm text-base-content truncate max-w-52">
+                                            {{ noticia.titulo }}
+                                        </p>
+                                        {% if noticia.destaque %}
+                                            <span class="badge badge-warning badge-xs mt-0.5">destaque</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+
+                            {# Categoria #}
+                            <td class="py-3 hidden sm:table-cell">
+                                {% if noticia.categoria %}
+                                    <span class="badge badge-ghost badge-sm">{{ noticia.categoria }}</span>
+                                {% else %}
+                                    <span class="text-xs text-base-content/25">—</span>
+                                {% endif %}
+                            </td>
+
+                            {# Autor #}
+                            <td class="py-3 hidden md:table-cell">
+                                <span class="text-sm text-base-content/55">
+                                    {{ noticia.autor.nome|default:"—" }}
+                                </span>
+                            </td>
+
+                            {# Status + Visibilidade #}
+                            <td class="py-3">
+                                <div class="flex flex-col gap-1 items-start">
+                                    {% if noticia.status == 'PUBLICADO' %}
+                                        <span class="badge badge-success badge-sm gap-1">
+                                            <span class="w-1 h-1 rounded-full bg-current shrink-0"
+                                                  aria-hidden="true"></span>
+                                            Publicado
+                                        </span>
+                                    {% else %}
+                                        <span class="badge badge-ghost badge-sm">Rascunho</span>
+                                    {% endif %}
+                                    {% if noticia.visibilidade == 'PRIV' %}
+                                        <span class="badge badge-warning badge-xs gap-1">
+                                            <svg class="w-2.5 h-2.5 shrink-0" fill="none" viewBox="0 0 24 24"
+                                                 stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                            </svg>
+                                            Privada
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </td>
+
+                            {# Data #}
+                            <td class="py-3 hidden lg:table-cell">
+                                <span class="text-xs text-base-content/45">
+                                    {{ noticia.criado_em|date:"d/m/Y" }}
+                                </span>
+                            </td>
+
+                            {# Ações #}
+                            <td class="py-3 text-right">
+                                <div class="flex items-center gap-0.5 justify-end">
+
+                                    {# Ver (só se publicada) #}
+                                    {% if noticia.status == 'PUBLICADO' %}
+                                        <a href="{{ noticia.get_absolute_url }}"
+                                           target="_blank" rel="noopener"
+                                           class="btn btn-ghost btn-xs"
+                                           title="Ver publicação">
+                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
+                                                 stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                            </svg>
+                                        </a>
+                                    {% endif %}
+
+                                    {# Editar #}
+                                    <a href="{% url 'blog:edit_noticia' noticia.pk %}"
+                                       class="btn btn-ghost btn-xs" title="Editar">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
+                                             stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                        </svg>
+                                    </a>
+
+                                    {# Publicar / Despublicar #}
+                                    <form method="post" action="{% url 'blog:publicar' noticia.pk %}"
+                                          class="inline">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                                class="btn btn-ghost btn-xs
+                                                       {% if noticia.status == 'PUBLICADO' %}text-warning{% else %}text-success{% endif %}"
+                                                title="{% if noticia.status == 'PUBLICADO' %}Mover para rascunho{% else %}Publicar{% endif %}">
+                                            {% if noticia.status == 'PUBLICADO' %}
+                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
+                                                     stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                          d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                                                </svg>
+                                            {% else %}
+                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
+                                                     stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                                </svg>
+                                            {% endif %}
+                                        </button>
+                                    </form>
+
+                                    {# Excluir (somente ADMIN e DIRETOR) #}
+                                    {% if request.vinculo.tipo_usuario == 'DIR' or request.vinculo.tipo_usuario == 'ADMIN' %}
+                                        <a href="{% url 'blog:excluir' noticia.pk %}"
+                                           class="btn btn-ghost btn-xs text-error"
+                                           title="Excluir">
+                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
+                                                 stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                        </a>
+                                    {% endif %}
+
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {# Paginação #}
+    {% if is_paginated %}
+        <nav class="flex justify-center items-center gap-1 mt-6" aria-label="Paginação">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if status_ativo %}&status={{ status_ativo }}{% endif %}"
+                   class="btn btn-ghost btn-sm" aria-label="Página anterior">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                         stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </a>
+            {% endif %}
+            <span class="btn btn-ghost btn-sm pointer-events-none text-base-content/50">
+                {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+            </span>
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if status_ativo %}&status={{ status_ativo }}{% endif %}"
+                   class="btn btn-ghost btn-sm" aria-label="Próxima página">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                         stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </a>
+            {% endif %}
+        </nav>
+    {% endif %}
+
+{% else %}
+    <div class="flex flex-col items-center justify-center py-20 text-center
+                rounded-2xl border border-dashed border-base-300 bg-base-100">
+        <div class="w-14 h-14 rounded-2xl bg-base-200 flex items-center justify-center mb-5">
+            <svg class="w-7 h-7 text-base-content/25" fill="none" viewBox="0 0 24 24"
+                 stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+            </svg>
+        </div>
+        <h3 class="font-semibold text-base-content">
+            {% if status_ativo %}
+                Nenhuma notícia com este status
+            {% else %}
+                Nenhuma notícia cadastrada
+            {% endif %}
+        </h3>
+        <p class="text-sm text-base-content/40 mt-1.5">
+            {% if status_ativo %}
+                Tente outro filtro de status.
+            {% else %}
+                Crie a primeira notícia para o blog.
+            {% endif %}
+        </p>
+        {% if not status_ativo %}
+            <a href="{% url 'blog:add_noticia' %}" class="btn btn-primary btn-sm mt-5 gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                </svg>
+                Criar primeira notícia
+            </a>
+        {% endif %}
+    </div>
+{% endif %}
+
+{% endblock %}

@@ -1,119 +1,203 @@
-{% extends 'temp_base/indice.html' %}
-{% block titulo %}Notícia{% endblock %}
+{% extends 'base/base_blog.html' %}
 {% load static %}
-{% load social_share %}
-{% block estatico %}
-<meta property="og:url"           content="https://smepedrabranca.com.br/blog/{{noticia.pk}}" />
-<meta property="og:type"          content="website" />
-<meta property="og:title"         content="{{noticia}}" />
-<meta property="og:description"   content="" />
-<meta property="og:image"         content="{{noticia.imagem.url}}" />
+
+{% block titulo %}{{ noticia.titulo }}{% endblock %}
+{% block meta_descricao %}{{ noticia.get_resumo|truncatechars:160 }}{% endblock %}
+
+{% block og %}
+<meta property="og:title" content="{{ noticia.titulo }}">
+<meta property="og:type" content="article">
+<meta property="og:description" content="{{ noticia.get_resumo|truncatechars:160 }}">
+{% if noticia.imagem %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ noticia.imagem.url }}">{% endif %}
+<meta property="og:url" content="{{ request.build_absolute_uri }}">
 {% endblock %}
-{% block conteudo %}
-<div class="container">
-    <div id="fb-root"></div>
-    <script async defer crossorigin="anonymous"
-            src="https://connect.facebook.net/pt_BR/sdk.js#xfbml=1&version=v14.0&appId=2624277097784962&autoLogAppEvents=1"
-            nonce="n4ZzO278"></script>
-</div>
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-lg-8">
-            <!-- Post content-->
-            <article>
-                <!-- Post header-->
-                <header class="mb-4">
-                    <!-- Post title-->
-                    <h1 class="fw-bolder mb-1">{{noticia}}</h1>
-                    <!-- Post meta content-->
-                    <div class="text-muted fst-italic mb-2">Autor: {{noticia.autor.nome}}</div>
-                </header>
-                <!-- Preview image figure-->
-                {% if noticia.imagem00 %}
-                <figure class="mb-4"><img class="img-fluid rounded" src="{{noticia.imagem.url}}" alt="..." /></figure>
-                <div class="text-muted fst-italic">Publicado: {{noticia.data}}</div>
-                {% else %}
-                <figure class="mb-4"><img class="img-fluid rounded" src="https://dummyimage.com/900x400/ced4da/6c757d.jpg" alt="..." /></figure>
-                {% endif %}
-                <!-- Post content-->
-                <hr>
-                <div class="row">
-              <div class="col-md-2 col-4">
-                <div class="fb-share-button" data-href="https://smepedrabranca.com.br/blog/{{noticia.pk}}/"
-                     data-layout="button" data-size="large">
-                  <a target="_blank"
-                     href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fsmepedrabranca.com.br%2Fblog%2Flampadas-de-nicola-tesla%2F&amp;src=sdkpreparse"
-                     class="fb-xfbml-parse-ignore">Compartilhar</a>
-                </div>
-              </div>
-              <div class="col-md-3 col-5">
-                <button type="button" style="background-color: #4CAF50;
-                                            border: none;
-                                            color: white;
-                                            padding-left: 10px;
-                                            padding-right: 10px;
-                                            padding-top: 4px;
-                                            padding-bottom: 3px;
-                                            text-align: center;
-                                            text-decoration: none;
-                                            display: inline-block;
-                                            font-size: 14px;
-                                            margin: 0px 2px;
-                                            cursor: pointer;
-                                            font-family: Helvetica, Arial, sans-serif;
-                                            border-radius: 5px;">
-                {% post_to_whatsapp object_or_url "" %}
-                </button>
-              </div>
-            </div>
-                <hr>
-                <section class="mb-5">
-                    {{noticia.conteudo|safe}}
-                </section>
-            </article>
-            <!-- Comments section-->
-        </div>
-        <!-- Side widgets-->
-        <div class="col-lg-4">
-            <!-- Search widget-->
-            <div class="card mb-4">
-                <div class="card-header">Pesquisar</div>
-                <div class="card-body">
-                    <form action="{% url 'blog:noticias_pesquisadas' %}" method="get">
-                       <div class="row">
-                        <div class="col-8">
-                            <input class="form-control" name="q" type="text" placeholder="Pesquisar noticia...">
-                        </div>
-                        <div class="col-1">
-                        <button type="submit" class="btn btn-primary text-white"><i class="fas fa-search"></i></button>
-                        </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            <!-- Categories widget-->
-            <div class="card mb-4">
-                <div class="card-header">Categorias</div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-sm-10">
-                            <ul class="list-unstyled mb-0">
-                                {% for categoria in temas %}
-                                <li><a href="#!">{{categoria}}</a></li>
-                                {% empty %}
-                                <li><a href="#!">VAZIO</a></li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Side widget-->
-            <div class="card mb-4">
-                <div class="card-header">Espaço vazio</div>
-                <div class="card-body">Em desenvolvimento</div>
-            </div>
+
+{# ── Hero: imagem de capa em largura total ────────────────────────────────── #}
+{% block hero %}
+{% if noticia.imagem %}
+<div class="border-b border-base-200 bg-base-200/30">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div class="aspect-[21/9] rounded-2xl overflow-hidden bg-base-300">
+            <img src="{{ noticia.imagem.url }}" alt="{{ noticia.titulo }}"
+                 class="w-full h-full object-cover">
         </div>
     </div>
 </div>
+{% endif %}
+{% endblock %}
+
+{% block conteudo %}
+
+<div class="grid lg:grid-cols-[1fr_272px] gap-12">
+
+    {# ── Artigo principal ─────────────────────────────────────────────────── #}
+    <article>
+
+        {# Breadcrumb #}
+        <nav class="flex items-center gap-1.5 text-xs text-base-content/40 mb-6"
+             aria-label="Navegação estrutural">
+            <a href="{% url 'blog:noticias' %}"
+               class="hover:text-base-content transition-colors duration-150">Notícias</a>
+            <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24"
+                 stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+            </svg>
+            <span class="truncate max-w-xs text-base-content/55">{{ noticia.titulo }}</span>
+        </nav>
+
+        {# Categoria + destaque #}
+        <div class="flex items-center gap-2 mb-4">
+            {% if noticia.destaque %}
+                <span class="badge badge-primary badge-sm font-medium">Destaque</span>
+            {% endif %}
+            {% if noticia.categoria %}
+                <span class="text-xs font-semibold uppercase tracking-wider text-primary/70">
+                    {{ noticia.categoria }}
+                </span>
+            {% endif %}
+        </div>
+
+        {# Título #}
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-base-content leading-tight tracking-tight mb-5">
+            {{ noticia.titulo }}
+        </h1>
+
+        {# Resumo / lead #}
+        {% if noticia.resumo %}
+            <p class="text-lg text-base-content/60 leading-relaxed mb-6 pl-4 border-l-2 border-primary/30">
+                {{ noticia.resumo }}
+            </p>
+        {% endif %}
+
+        {# Meta: data + autor #}
+        <div class="flex items-center gap-3 text-xs text-base-content/40 pb-6 border-b border-base-200">
+            <time>{{ noticia.criado_em|date:"d \d\e F \d\e Y" }}</time>
+            {% if noticia.autor %}
+                <span class="w-1 h-1 rounded-full bg-base-content/20 shrink-0" aria-hidden="true"></span>
+                <div class="flex items-center gap-1.5">
+                    <div class="w-4 h-4 rounded-full bg-primary/15 flex items-center justify-center shrink-0"
+                         aria-hidden="true">
+                        <span class="text-[8px] font-bold text-primary">
+                            {{ noticia.autor.nome|first|upper }}
+                        </span>
+                    </div>
+                    <span>{{ noticia.autor.nome }}</span>
+                </div>
+            {% endif %}
+        </div>
+
+        {# Conteúdo rich text (CKEditor) #}
+        <div class="rich-text mt-8">
+            {{ noticia.conteudo|safe }}
+        </div>
+
+        {# Compartilhar #}
+        <div class="flex items-center gap-3 flex-wrap mt-10 pt-6 border-t border-base-200">
+            <span class="text-xs font-medium text-base-content/40 shrink-0">Compartilhar:</span>
+            <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}"
+               target="_blank" rel="noopener noreferrer"
+               class="btn btn-ghost btn-xs gap-1.5 border border-base-300"
+               aria-label="Compartilhar no Facebook">
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+                Facebook
+            </a>
+            <a href="https://api.whatsapp.com/send?text={{ noticia.titulo|urlencode }}%20{{ request.build_absolute_uri|urlencode }}"
+               target="_blank" rel="noopener noreferrer"
+               class="btn btn-ghost btn-xs gap-1.5 border border-base-300"
+               aria-label="Compartilhar no WhatsApp">
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                </svg>
+                WhatsApp
+            </a>
+        </div>
+
+        {# Voltar #}
+        <div class="mt-8">
+            <a href="{% url 'blog:noticias' %}"
+               class="inline-flex items-center gap-1.5 text-sm font-medium
+                      text-base-content/50 hover:text-base-content transition-colors duration-150">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                </svg>
+                Voltar às notícias
+            </a>
+        </div>
+
+    </article>
+
+    {# ── Sidebar ──────────────────────────────────────────────────────────── #}
+    <aside class="flex flex-col gap-8" aria-label="Conteúdo lateral">
+
+        {# Pesquisa #}
+        <div>
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-base-content/35 mb-3">
+                Pesquisar
+            </h3>
+            <form action="{% url 'blog:noticias_pesquisadas' %}" method="get">
+                <div class="join w-full">
+                    <input class="input input-bordered join-item input-sm w-full text-sm"
+                           name="q" type="search" placeholder="Buscar notícia..."
+                           aria-label="Pesquisar notícia">
+                    <button type="submit" class="btn btn-primary btn-sm join-item"
+                            aria-label="Pesquisar">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
+                             stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        {# Categorias #}
+        {% if temas %}
+            <div>
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-base-content/35 mb-3">
+                    Categorias
+                </h3>
+                <div class="flex flex-col gap-0.5">
+                    {% for tema in temas %}
+                        <a href="{% url 'blog:noticias' %}?categoria={{ tema.slug }}"
+                           class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-base-content/60
+                                  hover:bg-base-200 hover:text-base-content transition-colors duration-150">
+                            <span class="w-1.5 h-1.5 rounded-full bg-primary/40 shrink-0" aria-hidden="true"></span>
+                            {{ tema.titulo }}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        {# Notícias recentes #}
+        {% if recentes %}
+            <div>
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-base-content/35 mb-3">
+                    Recentes
+                </h3>
+                <div class="flex flex-col divide-y divide-base-200">
+                    {% for recente in recentes %}
+                        <a href="{% url 'blog:noticia' recente.slug %}"
+                           class="py-3 group flex flex-col gap-1 first:pt-0">
+                            <span class="text-sm font-medium text-base-content/70 leading-snug line-clamp-2
+                                         group-hover:text-primary transition-colors duration-150">
+                                {{ recente.titulo }}
+                            </span>
+                            <time class="text-xs text-base-content/35">
+                                {{ recente.criado_em|date:"d/m/Y" }}
+                            </time>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+    </aside>
+
+</div>
+
 {% endblock %}

@@ -1,36 +1,184 @@
-{% extends 'temp_base/indice.html' %}
-{% load bootstrap4 %}
-{% block titulo %}Adicionar Notícia{% endblock %}
+{% extends 'base/base.html' %}
 {% load static %}
+
+{% block titulo %}{{ titulo|default:"Publicar notícia" }}{% endblock %}
+{% block titulo_pagina %}{{ titulo|default:"Publicar notícia" }}{% endblock %}
+
+{% block head_extra %}
+    {{ form.media }}
+{% endblock %}
+
 {% block conteudo %}
-<div class="container-fluid bg-primary py-5 mb-5 page-header">
-        <div class="container py-5">
-            <div class="row justify-content-left">
-                <div class="col-lg-10 text-left">
-                    <h1 class="display-3 text-white animated slideInDown">Criar Notícia</h1>
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb justify-content-left">
-                            <li class="breadcrumb-item"><a class="text-white" href="{% url 'core:inicio' %}">Inicio</a></li>
-                            <li class="breadcrumb-item text-white active" aria-current="page">Notícia</li>
-                        </ol>
-                    </nav>
+
+<div class="max-w-3xl">
+
+    {# Breadcrumb #}
+    <nav class="flex items-center gap-1.5 text-xs text-base-content/40 mb-6"
+         aria-label="Navegação estrutural">
+        <a href="{% url 'escola:dash_escola' %}"
+           class="hover:text-base-content transition-colors duration-150">Painel</a>
+        <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24"
+             stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+        </svg>
+        <a href="{% url 'blog:gerenciar' %}"
+           class="hover:text-base-content transition-colors duration-150">Notícias</a>
+        <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24"
+             stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+        </svg>
+        <span class="text-base-content/55">{{ titulo|default:"Publicar" }}</span>
+    </nav>
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div role="alert" class="alert alert-error text-sm mb-6">
+                <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                {% for erro in form.non_field_errors %}
+                    <span>{{ erro }}</span>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {# Seção 1: Conteúdo principal #}
+        <div class="rounded-2xl border border-base-200 bg-base-100 overflow-hidden mb-5">
+            <div class="px-6 py-4 border-b border-base-200 bg-base-200/30">
+                <h2 class="text-sm font-semibold text-base-content">Conteúdo</h2>
+            </div>
+            <div class="p-6 flex flex-col gap-5">
+
+                {# Título #}
+                <div class="form-control gap-1.5">
+                    <label class="label py-0" for="{{ form.titulo.id_for_label }}">
+                        <span class="label-text text-sm font-medium text-base-content">
+                            Título
+                            <span class="text-error ml-0.5">*</span>
+                        </span>
+                    </label>
+                    {{ form.titulo }}
+                    {% if form.titulo.errors %}
+                        <p class="text-xs text-error mt-0.5">{{ form.titulo.errors|join:", " }}</p>
+                    {% endif %}
                 </div>
+
+                {# Resumo #}
+                <div class="form-control gap-1.5">
+                    <label class="label py-0" for="{{ form.resumo.id_for_label }}">
+                        <span class="label-text text-sm font-medium text-base-content">Resumo</span>
+                        <span class="label-text-alt text-base-content/40">Opcional — exibido nos cards</span>
+                    </label>
+                    {{ form.resumo }}
+                    {% if form.resumo.errors %}
+                        <p class="text-xs text-error mt-0.5">{{ form.resumo.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+
+                {# Conteúdo CKEditor #}
+                <div class="form-control gap-1.5">
+                    <label class="label py-0" for="{{ form.conteudo.id_for_label }}">
+                        <span class="label-text text-sm font-medium text-base-content">
+                            Conteúdo
+                            <span class="text-error ml-0.5">*</span>
+                        </span>
+                    </label>
+                    {{ form.conteudo }}
+                    {% if form.conteudo.errors %}
+                        <p class="text-xs text-error mt-0.5">{{ form.conteudo.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+
             </div>
         </div>
-    </div>
-<div class="container">
-    <hr>
-    <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.media }}
-    {% bootstrap_form form layout='inline'%}
-        <hr>
-    {% buttons %}
-    <button type="submit" class="btn btn-primary"><i class="fas fa-edit"></i></i> Publicar</button>
-    <a href="#">
-        <button type="button" class="btn btn-danger"><i class="fas fa-undo"></i> Cancelar</button>
-    </a>
-    {% endbuttons %}
-</form>
+
+        {# Seção 2: Capa + metadados #}
+        <div class="rounded-2xl border border-base-200 bg-base-100 overflow-hidden mb-5">
+            <div class="px-6 py-4 border-b border-base-200 bg-base-200/30">
+                <h2 class="text-sm font-semibold text-base-content">Configurações</h2>
+            </div>
+            <div class="p-6 flex flex-col gap-5">
+
+                {# Imagem de capa #}
+                <div class="form-control gap-1.5">
+                    <label class="label py-0" for="{{ form.imagem.id_for_label }}">
+                        <span class="label-text text-sm font-medium text-base-content">Imagem de capa</span>
+                        <span class="label-text-alt text-base-content/40">Opcional</span>
+                    </label>
+                    {{ form.imagem }}
+                    {% if form.imagem.errors %}
+                        <p class="text-xs text-error mt-0.5">{{ form.imagem.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+
+                {# Categoria + Status + Visibilidade (3 colunas) #}
+                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <div class="form-control gap-1.5">
+                        <label class="label py-0" for="{{ form.categoria.id_for_label }}">
+                            <span class="label-text text-sm font-medium text-base-content">Categoria</span>
+                        </label>
+                        {{ form.categoria }}
+                        {% if form.categoria.errors %}
+                            <p class="text-xs text-error mt-0.5">{{ form.categoria.errors|join:", " }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-control gap-1.5">
+                        <label class="label py-0" for="{{ form.status.id_for_label }}">
+                            <span class="label-text text-sm font-medium text-base-content">Status</span>
+                        </label>
+                        {{ form.status }}
+                        {% if form.status.errors %}
+                            <p class="text-xs text-error mt-0.5">{{ form.status.errors|join:", " }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-control gap-1.5">
+                        <label class="label py-0" for="{{ form.visibilidade.id_for_label }}">
+                            <span class="label-text text-sm font-medium text-base-content">Visibilidade</span>
+                        </label>
+                        {{ form.visibilidade }}
+                        {% if form.visibilidade.errors %}
+                            <p class="text-xs text-error mt-0.5">{{ form.visibilidade.errors|join:", " }}</p>
+                        {% endif %}
+                        <p class="text-xs text-base-content/40 mt-0.5">
+                            Pública: visível a todos. Privada: apenas sua escola.
+                        </p>
+                    </div>
+                </div>
+
+                {# Destaque #}
+                <div class="flex items-center justify-between py-3 px-4 rounded-xl bg-base-200/50 border border-base-200">
+                    <div>
+                        <p class="text-sm font-medium text-base-content">Marcar como destaque</p>
+                        <p class="text-xs text-base-content/45 mt-0.5">
+                            Exibe a notícia em posição de destaque na página inicial do blog
+                        </p>
+                    </div>
+                    {{ form.destaque }}
+                </div>
+
+            </div>
+        </div>
+
+        {# Ações #}
+        <div class="flex flex-col-reverse sm:flex-row gap-3 pt-2">
+            <a href="{% url 'blog:gerenciar' %}"
+               class="btn btn-ghost w-full sm:w-auto">
+                Cancelar
+            </a>
+            <button type="submit"
+                    class="btn btn-primary w-full sm:w-auto sm:ml-auto">
+                {{ titulo|default:"Publicar notícia" }}
+            </button>
+        </div>
+
+    </form>
+
 </div>
+
 {% endblock %}

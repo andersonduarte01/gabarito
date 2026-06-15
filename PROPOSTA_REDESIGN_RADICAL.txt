@@ -827,3 +827,281 @@ ser construído com qualidade. É a fundação de tudo.
   Para iniciar implementação: diga "comece pela Fase 1" ou indique uma
   tela específica para começar.
 ================================================================================
+
+
+================================================================================
+  REGISTRO DE PROGRESSO — IMPLEMENTAÇÃO POR MÓDULOS E PERFIS
+  Ordem definida pelo desenvolvedor. Atualizado a cada sessão.
+================================================================================
+
+LEGENDA DE STATUS:
+  [✅ CONCLUÍDO]   Item totalmente implementado e funcional no novo design
+  [🔄 PARCIAL]     Item iniciado mas com pendências
+  [⏳ AGUARDANDO]  Na fila, ainda não iniciado
+  [🔒 BLOQUEADO]   Aguardando pré-requisito
+
+ORDEM DE IMPLEMENTAÇÃO DEFINIDA:
+  FUNDAÇÃO → BLOG → ESCOLA → ADMINISTRADOR → DIRETOR → COLABORADOR → ALUNO
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  [0] FUNDAÇÃO — base template + design system + autenticação
+      (pré-requisito de tudo — já executado)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  DESIGN SYSTEM
+  [✅ CONCLUÍDO]  0.1  TailwindCSS v4 + DaisyUI v5 configurados (PostCSS)
+  [✅ CONCLUÍDO]  0.2  Tema "gabarito" definido em styles.css (OKLCH)
+  [✅ CONCLUÍDO]  0.3  templates/base/base.html — shell completo (sidebar + topbar)
+  [✅ CONCLUÍDO]  0.4  templates/base/_form_field.html — partial reutilizável
+  [✅ CONCLUÍDO]  0.5  templates/registration/base_auth.html — shell de autenticação
+
+  NAVS POR PERFIL
+  [✅ CONCLUÍDO]  0.6  templates/base/_nav_admin.html
+  [✅ CONCLUÍDO]  0.7  templates/base/_nav_escola.html (DIR + COLAB)
+  [✅ CONCLUÍDO]  0.8  templates/base/_nav_professor.html
+  [⏳ AGUARDANDO] 0.9  templates/base/_nav_aluno.html
+  [⏳ AGUARDANDO] 0.10 templates/base/_nav_responsavel.html
+
+  AUTENTICAÇÃO (apps.accounts + registration/)
+  [✅ CONCLUÍDO]  0.11 Login — split screen DaisyUI
+  [✅ CONCLUÍDO]  0.12 Logout
+  [✅ CONCLUÍDO]  0.13 Alterar senha
+  [✅ CONCLUÍDO]  0.14 Recuperar senha (fluxo completo — 4 templates)
+  [✅ CONCLUÍDO]  0.15 Selecionar escola (multi-tenant)
+  [✅ CONCLUÍDO]  0.16 EscolaMiddleware — injeção de request.escola + request.vinculo
+  [✅ CONCLUÍDO]  0.17 PermissaoRequiredMixin + BaseDashboardView
+  [✅ CONCLUÍDO]  0.18 UsuarioService + AlunoService (services.py)
+  [⏳ AGUARDANDO] 0.19 Centralizar constantes de permissão em core/models.py
+
+  LIMPEZA TÉCNICA (executar ao final de cada módulo concluído)
+  [⏳ AGUARDANDO] 0.20 Remover templates/ legados (temp_base/) de todos os apps
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  [1] BLOG — módulo de notícias e comunicados
+      App: apps.blog  |  Status: DESATIVADO (comentado em settings.py + urls.py)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  BACKEND
+  [⏳ AGUARDANDO] 1.1  Revisar models.py — avaliar se atende ao novo design
+  [⏳ AGUARDANDO] 1.2  Revisar views.py — adaptar para novo padrão (CBV + permissoes)
+  [⏳ AGUARDANDO] 1.3  Reativar app em INSTALLED_APPS e urls.py
+
+  TEMPLATES
+  [⏳ AGUARDANDO] 1.4  Lista de notícias / comunicados (grid de cards)
+  [⏳ AGUARDANDO] 1.5  Detalhe da notícia
+  [⏳ AGUARDANDO] 1.6  Criar notícia (form com editor de texto)
+  [⏳ AGUARDANDO] 1.7  Editar notícia
+  [⏳ AGUARDANDO] 1.8  Confirmar exclusão de notícia
+
+  NAVEGAÇÃO
+  [⏳ AGUARDANDO] 1.9  Adicionar "Notícias" no _nav_admin.html
+  [⏳ AGUARDANDO] 1.10 Adicionar "Notícias" no _nav_escola.html (DIR + COLAB)
+  [⏳ AGUARDANDO] 1.11 Notícias visíveis (somente leitura) no nav do PROFESSOR e ALUNO
+
+  LIMPEZA
+  [⏳ AGUARDANDO] 1.12 Remover blog/templates/ e blog/templates1/ legados
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  [2] ESCOLA — módulo estrutural (turmas, dados, arquivos)
+      Apps: apps.escola + apps.sala + apps.funcao + apps.arquivos
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  DADOS DA ESCOLA
+  [✅ CONCLUÍDO]  2.1  Editar dados da escola
+  [✅ CONCLUÍDO]  2.2  Editar endereço da escola
+  [⏳ AGUARDANDO] 2.3  Gerenciar funções/cargos (apps.funcao — migrar templates)
+
+  TURMAS (apps.sala)
+  [✅ CONCLUÍDO]  2.4  Lista de turmas (card grid com badge de turno)
+  [✅ CONCLUÍDO]  2.5  Adicionar turma
+  [✅ CONCLUÍDO]  2.6  Editar turma
+  [✅ CONCLUÍDO]  2.7  Confirmar remoção de turma
+  [⏳ AGUARDANDO] 2.8  Detalhe da turma — lista de alunos + status frequência do dia
+
+  ARQUIVOS / BIBLIOTECA (apps.arquivos)
+  App: apps.arquivos  |  Status: DESATIVADO (comentado em settings.py + urls.py)
+  [⏳ AGUARDANDO] 2.9  Revisar models.py e views.py
+  [⏳ AGUARDANDO] 2.10 Reativar app em INSTALLED_APPS e urls.py
+  [⏳ AGUARDANDO] 2.11 Lista de arquivos por categoria (grid expansível)
+  [⏳ AGUARDANDO] 2.12 Upload de arquivo
+  [⏳ AGUARDANDO] 2.13 Gerenciar categorias
+  [⏳ AGUARDANDO] 2.14 Adicionar "Arquivos" nos navs pertinentes
+
+  LIMPEZA
+  [⏳ AGUARDANDO] 2.15 Remover sala/templates1/, funcao/templates1/, arquivos/templates1/ legados
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  [3] ADMINISTRADOR — perfil ADMIN (visão de rede + gestão da plataforma)
+      Acesso: painel_adm → todas as escolas
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  DASHBOARD
+  [✅ CONCLUÍDO]  3.1  Dashboard admin — lista de escolas da rede (cards)
+  [⏳ AGUARDANDO] 3.2  Dashboard admin — métricas de rede (total alunos, escolas, freq. média)
+  [⏳ AGUARDANDO] 3.3  Dashboard admin — alertas (escolas sem freq. hoje, avaliações ativas)
+
+  AVALIAÇÕES — visão admin (apps.avaliacao)
+  App: apps.avaliacao  |  Status: DESATIVADO (comentado em settings.py + urls.py)
+  [⏳ AGUARDANDO] 3.4  Revisar models.py e views.py do módulo avaliação
+  [⏳ AGUARDANDO] 3.5  Reativar app em INSTALLED_APPS e urls.py
+  [⏳ AGUARDANDO] 3.6  Lista de avaliações — admin (tabs: Ativas / Em breve / Encerradas)
+  [⏳ AGUARDANDO] 3.7  Criar avaliação (wizard 3 etapas: Informações / Questões / Aplicação)
+  [⏳ AGUARDANDO] 3.8  Editar avaliação
+  [⏳ AGUARDANDO] 3.9  Gerenciar questões (lista + add + editar)
+  [⏳ AGUARDANDO] 3.10 Distribuir avaliação para escolas (selecionar quais recebem)
+
+  RELATÓRIOS — visão admin (apps.relatorios)
+  App: apps.relatorios  |  Status: DESATIVADO (comentado em settings.py + urls.py)
+  [⏳ AGUARDANDO] 3.11 Revisar models.py e views.py do módulo relatórios
+  [⏳ AGUARDANDO] 3.12 Reativar app em INSTALLED_APPS e urls.py
+  [⏳ AGUARDANDO] 3.13 Relatório geral da rede (consolidado de todas as escolas)
+  [⏳ AGUARDANDO] 3.14 Relatório de avaliação consolidado
+
+  GESTÃO DE USUÁRIOS (web — sem depender do Django Admin)
+  [⏳ AGUARDANDO] 3.15 Listar usuários da plataforma
+  [⏳ AGUARDANDO] 3.16 Criar usuário + vincular escola + definir papel
+  [⏳ AGUARDANDO] 3.17 Editar usuário / reatribuir papel
+
+  NAVEGAÇÃO
+  [⏳ AGUARDANDO] 3.18 Atualizar _nav_admin.html — ativar links reais (sem "Em breve")
+
+  LIMPEZA
+  [⏳ AGUARDANDO] 3.19 Remover avaliacao/templates1/, relatorios/templates1/ legados
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  [4] DIRETOR — perfil DIR (gestão completa de uma escola)
+      Acesso: dash_escola → escola da sessão
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  DASHBOARD
+  [✅ CONCLUÍDO]  4.1  Dashboard escola — stat cards + grid de turmas
+  [⏳ AGUARDANDO] 4.2  Dashboard escola — seção "Frequência de Hoje" (status visual por turma)
+  [⏳ AGUARDANDO] 4.3  Dashboard escola — próximas avaliações + relatórios pendentes
+
+  GESTÃO DE PESSOAS
+  [✅ CONCLUÍDO]  4.4  Lista + cadastrar + editar + desativar professores
+  [✅ CONCLUÍDO]  4.5  Lista + cadastrar + editar + desativar colaboradores
+  [✅ CONCLUÍDO]  4.6  Lista + cadastrar + editar + desativar alunos
+
+  FREQUÊNCIA — visão do diretor (apps.frequencia)
+  App: apps.frequencia  |  Status: DESATIVADO (comentado em settings.py + urls.py)
+  [⏳ AGUARDANDO] 4.7  Revisar models.py e views.py do módulo frequência
+  [⏳ AGUARDANDO] 4.8  Reativar app em INSTALLED_APPS e urls.py
+  [⏳ AGUARDANDO] 4.9  Painel de frequência por turma — visão consolidada do mês
+  [⏳ AGUARDANDO] 4.10 Relatório de frequência por bimestre (escola)
+  [⏳ AGUARDANDO] 4.11 Relatório por sala / turma
+
+  AVALIAÇÕES — visão do diretor
+  [🔒 BLOQUEADO]  4.12 Avaliações recebidas (distribuídas pelo ADMIN) — ver e aplicar
+  [🔒 BLOQUEADO]  4.13 Resultados de avaliações da escola
+  [🔒 BLOQUEADO]  4.14 Relatório de avaliação por sala
+
+  NAVEGAÇÃO
+  [⏳ AGUARDANDO] 4.15 Atualizar _nav_escola.html — ativar links reais de Frequência e Avaliações
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  [5] COLABORADOR — perfis COLAB e PROF (operação diária da escola)
+      Acesso: dash_escola → escola da sessão (permissões reduzidas)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  NOTA: COLAB e PROF usam app "colaborador". Tratados juntos nesta fase pois
+  compartilham views e o app já contém os dois modelos.
+
+  DASHBOARD
+  [⏳ AGUARDANDO] 5.1  Dashboard do Colaborador (visão operacional — turmas, tarefas)
+  [⏳ AGUARDANDO] 5.2  Dashboard do Professor (minhas turmas + tarefas do dia + calendário)
+
+  FREQUÊNCIA — visão do professor (apps.frequencia)
+  [🔒 BLOQUEADO]  5.3  Calendário mensal de frequência por turma (visão professor)
+  [🔒 BLOQUEADO]  5.4  Registro de frequência diária — modo rápido (checklist "marcar todos")
+  [🔒 BLOQUEADO]  5.5  Registro de frequência diária — editar registro existente
+  [🔒 BLOQUEADO]  5.6  Registro semanal de atividades (add + editar)
+  [🔒 BLOQUEADO]  5.7  Relatório de frequência das suas turmas por bimestre
+
+  AVALIAÇÕES — visão do professor
+  [🔒 BLOQUEADO]  5.8  Avaliações das turmas do professor
+  [🔒 BLOQUEADO]  5.9  Resultados das suas turmas
+
+  NAVEGAÇÃO
+  [⏳ AGUARDANDO] 5.10 Atualizar _nav_professor.html — ativar links reais (remover "Em breve")
+  [⏳ AGUARDANDO] 5.11 Criar/revisar _nav_colaborador dentro do _nav_escola.html
+
+  LIMPEZA
+  [⏳ AGUARDANDO] 5.12 Remover frequencia/templates/ e frequencia/templates1/ legados
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  [6] ALUNO — perfil ALUNO (e RESPONSAVEL)
+      Acesso: dash_escola → escola da sessão (somente leitura + ações próprias)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  NOTA: RESPONSAVEL ainda não tem model próprio nem views. Decisão de produto
+  pendente: acesso próprio ou apenas atributo do aluno?
+
+  DASHBOARD / PERFIL
+  [⏳ AGUARDANDO] 6.1  Definir escopo do perfil ALUNO (o que vê + o que faz)
+  [⏳ AGUARDANDO] 6.2  Dashboard do aluno — resumo de desempenho
+  [⏳ AGUARDANDO] 6.3  Perfil do aluno — visão do próprio aluno (dados + foto)
+
+  FREQUÊNCIA — visão do aluno
+  [🔒 BLOQUEADO]  6.4  Histórico de frequência (calendário visual por cores)
+  [🔒 BLOQUEADO]  6.5  Frequência por bimestre (% de presença)
+
+  AVALIAÇÕES — visão do aluno
+  [🔒 BLOQUEADO]  6.6  Avaliações disponíveis para o aluno
+  [🔒 BLOQUEADO]  6.7  Preencher avaliação
+  [🔒 BLOQUEADO]  6.8  Ver resultado / gabarito individual
+
+  NAVEGAÇÃO
+  [⏳ AGUARDANDO] 6.9  Criar templates/base/_nav_aluno.html com itens corretos
+  [⏳ AGUARDANDO] 6.10 Corrigir routing no base.html — ALUNO não pode cair no _nav_escola.html
+
+  RESPONSAVEL (decisão de produto necessária antes de implementar)
+  [⏳ AGUARDANDO] 6.11 Definir: RESP tem conta própria ou é apenas atributo do Aluno?
+  [⏳ AGUARDANDO] 6.12 Se conta própria: criar model Responsavel + service + templates
+  [⏳ AGUARDANDO] 6.13 Criar templates/base/_nav_responsavel.html
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  [7] POLISH FINAL — executado após todos os perfis concluídos
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [⏳ AGUARDANDO] 7.1  Skeleton loaders em todas as listas
+  [⏳ AGUARDANDO] 7.2  Toast de mensagens com auto-dismiss (JS vanilla)
+  [⏳ AGUARDANDO] 7.3  Modais de confirmação inline (DaisyUI dialog nativo)
+  [⏳ AGUARDANDO] 7.4  Paginação padronizada (templatetag custom DaisyUI)
+  [⏳ AGUARDANDO] 7.5  Geração de PDF — layout profissional (ReportLab)
+  [⏳ AGUARDANDO] 7.6  Dark mode
+  [⏳ AGUARDANDO] 7.7  PWA — manifest + service worker básico
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  HISTÓRICO DE SESSÕES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [2026-06-12]  Proposta criada — diagnóstico completo do sistema legado
+
+  [2026-06-14]  Análise de progresso: Fundação (base.html, tema, navs) e módulos
+                escola/turmas/alunos/colaboradores migrados. Autenticação completa.
+                Módulos frequência, avaliação, relatórios, arquivos e blog ainda
+                desativados (comentados em settings.py). Papéis ALUNO e RESPONSAVEL
+                sem nav próprio e sem comportamento definido.
+
+  [2026-06-14]  Checkpoints reorganizados por ordem de implementação definida pelo
+                desenvolvedor: BLOG → ESCOLA → ADMINISTRADOR → DIRETOR →
+                COLABORADOR → ALUNO. Implementação guiada sessão a sessão.
+                Aguardando diretriz para iniciar Fase 1 — BLOG.
+
+================================================================================
+  INSTRUÇÃO DE USO DESTE REGISTRO
+  A cada sessão: atualizar status dos itens trabalhados (⏳/🔒 → 🔄 → ✅),
+  adicionar entrada no HISTÓRICO DE SESSÕES com data e resumo.
+  Itens BLOQUEADOS desbloqueiam automaticamente quando o pré-requisito
+  indicado na mesma fase for concluído.
+================================================================================

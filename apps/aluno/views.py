@@ -10,7 +10,7 @@ from .forms import AlunoCreateForm, AlunoEditForm
 from .models import Aluno
 
 
-_TIPOS_GESTAO = [UsuarioEscola.ADMIN, UsuarioEscola.DIRETOR, UsuarioEscola.COLABORADOR]
+_TIPOS_GESTAO = [UsuarioEscola.DIRETOR, UsuarioEscola.COLABORADOR]
 
 
 class ListaAlunos(PermissaoRequiredMixin, ListView):

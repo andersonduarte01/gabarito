@@ -1,6 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import PermissionDenied
+from django.db.models import Count
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
@@ -86,38 +87,14 @@ class SelecionarEscola(LoginRequiredMixin, TemplateView):
 # Dashboards
 # ---------------------------------------------------------------------------
 
-class DashAdmin(BaseDashboardView):
-    """
-    Painel do administrador — visão de todas as escolas do sistema.
-    Acesso: somente ADMIN.
-    """
-    template_name = 'escola/administrador_dash.html'
-    tipo_permitido = [UsuarioEscola.ADMIN]
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['escolas'] = (
-            UnidadeEscolar.objects
-            .filter(ativo=True)
-            .prefetch_related('anos_letivos', 'vinculos')
-            .order_by('nome_escola')
-        )
-        return context
-
-
 class DashEscola(BaseDashboardView):
-    """
-    Painel da escola.
-    Acesso: DIRETOR, COLABORADOR, PROFESSOR, ALUNO, RESPONSAVEL.
-    """
+    """Painel principal da escola — acessível a todos os vínculos ativos."""
     template_name = 'escola/escola_dash.html'
     tipo_permitido = [
-        UsuarioEscola.ADMIN,
         UsuarioEscola.DIRETOR,
         UsuarioEscola.COLABORADOR,
         UsuarioEscola.PROFESSOR,
         UsuarioEscola.ALUNO,
-        UsuarioEscola.RESPONSAVEL,
     ]
 
     def get_context_data(self, **kwargs):
@@ -130,6 +107,7 @@ class DashEscola(BaseDashboardView):
             Sala.objects
             .filter(escola=escola)
             .select_related('ano', 'ano_letivo')
+            .annotate(num_alunos=Count('alunos'))
             .order_by('descricao')
         )
         if ano:
@@ -138,8 +116,11 @@ class DashEscola(BaseDashboardView):
         context['salas'] = salas_qs
         context['total_salas'] = salas_qs.count()
         context['total_alunos'] = (
-            Aluno.objects
-            .filter(escola=escola, situacao='MATRIC')
+            Aluno.objects.filter(escola=escola, situacao='MATRIC').count()
+        )
+        context['total_colaboradores'] = (
+            UsuarioEscola.objects
+            .filter(escola=escola, tipo_usuario=UsuarioEscola.COLABORADOR, ativo=True)
             .count()
         )
         return context
@@ -160,7 +141,7 @@ class EditarEscola(PermissaoRequiredMixin, SuccessMessageMixin, UpdateView):
     success_message = 'Dados da escola atualizados com sucesso.'
     success_url = reverse_lazy('escola:dash_escola')
     context_object_name = 'escola'
-    permissao_tipos = [UsuarioEscola.ADMIN, UsuarioEscola.DIRETOR]
+    permissao_tipos = [UsuarioEscola.DIRETOR]
 
     def get_object(self, queryset=None):
         return get_object_or_404(UnidadeEscolar, pk=self.request.escola.pk)
@@ -170,7 +151,6 @@ class EditarEndereco(PermissaoRequiredMixin, SuccessMessageMixin, UpdateView):
     """
     Edição do endereço da escola.
     Cria o endereço automaticamente se ainda não existir.
-    Acesso: ADMIN, DIRETOR.
     """
     model = EnderecoEscolar
     form_class = EnderecoEscolarForm
@@ -178,7 +158,7 @@ class EditarEndereco(PermissaoRequiredMixin, SuccessMessageMixin, UpdateView):
     success_message = 'Endereço atualizado com sucesso.'
     success_url = reverse_lazy('escola:dash_escola')
     context_object_name = 'endereco'
-    permissao_tipos = [UsuarioEscola.ADMIN, UsuarioEscola.DIRETOR]
+    permissao_tipos = [UsuarioEscola.DIRETOR]
 
     def get_object(self, queryset=None):
         endereco, _ = EnderecoEscolar.objects.get_or_create(
@@ -229,7 +209,7 @@ class EscolaDetalheUpdateView(RetrieveUpdateAPIView):
                 usuario=self.request.user,
                 escola_id=escola_id,
                 ativo=True,
-                tipo_usuario__in=[UsuarioEscola.ADMIN, UsuarioEscola.DIRETOR],
+                tipo_usuario__in=[UsuarioEscola.DIRETOR],
             )
             .select_related('escola')
             .first()
@@ -242,7 +222,7 @@ class EscolaDetalheUpdateView(RetrieveUpdateAPIView):
 class EnderecoEscolarUpdateView(RetrieveUpdateAPIView):
     """
     Recupera ou atualiza o endereço de uma escola.
-    O usuário precisa ter vínculo ativo (ADMIN ou DIRETOR) com a escola.
+    O usuário precisa ter vínculo ativo (DIRETOR) com a escola.
     """
     serializer_class = EnderecoEscolarSerializer
     permission_classes = [IsAuthenticated]
@@ -255,7 +235,7 @@ class EnderecoEscolarUpdateView(RetrieveUpdateAPIView):
                 usuario=self.request.user,
                 escola_id=escola_id,
                 ativo=True,
-                tipo_usuario__in=[UsuarioEscola.ADMIN, UsuarioEscola.DIRETOR],
+                tipo_usuario__in=[UsuarioEscola.DIRETOR],
             )
             .select_related('escola')
             .first()

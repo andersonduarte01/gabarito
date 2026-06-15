@@ -54,17 +54,8 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     def get_dashboard_url(self, escola):
         try:
-            vinculo = self.usuarioescola_set.get(escola=escola, ativo=True)
-            mapa = {
-                UsuarioEscola.ADMIN:       'escola:painel_adm',
-                UsuarioEscola.DIRETOR:     'escola:dash_escola',
-                UsuarioEscola.COLABORADOR: 'escola:dash_escola',
-                UsuarioEscola.PROFESSOR:   'escola:dash_escola',
-                UsuarioEscola.ALUNO:       'escola:dash_escola',
-                UsuarioEscola.RESPONSAVEL: 'escola:dash_escola',
-            }
-            url_name = mapa.get(vinculo.tipo_usuario, 'escola:selecionar')
-            return reverse(url_name)
+            self.usuarioescola_set.get(escola=escola, ativo=True)
+            return reverse('escola:dash_escola')
         except UsuarioEscola.DoesNotExist:
             return reverse('accounts:login')
 
@@ -76,20 +67,16 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
 
 class UsuarioEscola(models.Model):
-    ADMIN       = 'ADMIN'
     DIRETOR     = 'DIR'
     COLABORADOR = 'COLAB'
     PROFESSOR   = 'PROF'
     ALUNO       = 'ALUNO'
-    RESPONSAVEL = 'RESP'
 
     TIPOS = [
-        (ADMIN,       'Administrador'),
         (DIRETOR,     'Diretor'),
         (COLABORADOR, 'Colaborador'),
         (PROFESSOR,   'Professor'),
         (ALUNO,       'Aluno'),
-        (RESPONSAVEL, 'Responsável'),
     ]
 
     usuario = models.ForeignKey(

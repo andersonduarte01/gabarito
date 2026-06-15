@@ -1,7 +1,7 @@
 from django.contrib import admin
-from .models import Arquivo, Livro, Categoria
+from .models import Arquivo, CategoriaArquivo, Livro, Video
 
-# Register your models here.
 admin.site.register(Arquivo)
 admin.site.register(Livro)
-admin.site.register(Categoria)
+admin.site.register(CategoriaArquivo)
+admin.site.register(Video)

@@ -11,7 +11,7 @@ from .forms import ColaboradorCreateForm, ColaboradorEditForm, ProfessorCreateFo
 from .models import Colaborador, Professor
 
 
-_TIPOS_GESTAO = [UsuarioEscola.ADMIN, UsuarioEscola.DIRETOR, UsuarioEscola.COLABORADOR]
+_TIPOS_GESTAO = [UsuarioEscola.DIRETOR, UsuarioEscola.COLABORADOR]
 
 
 # ---------------------------------------------------------------------------
@@ -35,7 +35,7 @@ class ListaColaboradores(PermissaoRequiredMixin, ListView):
 
 class CadastrarColaborador(PermissaoRequiredMixin, TemplateView):
     template_name = 'colaborador/form_colaborador.html'
-    permissao_tipos = [UsuarioEscola.ADMIN, UsuarioEscola.DIRETOR]
+    permissao_tipos = [UsuarioEscola.DIRETOR]
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -90,7 +90,7 @@ class CadastrarColaborador(PermissaoRequiredMixin, TemplateView):
 
 class EditarColaborador(PermissaoRequiredMixin, TemplateView):
     template_name = 'colaborador/form_colaborador.html'
-    permissao_tipos = [UsuarioEscola.ADMIN, UsuarioEscola.DIRETOR]
+    permissao_tipos = [UsuarioEscola.DIRETOR]
 
     def get_object(self):
         return get_object_or_404(
@@ -132,7 +132,7 @@ class EditarColaborador(PermissaoRequiredMixin, TemplateView):
 
 class DesativarColaborador(PermissaoRequiredMixin, TemplateView):
     template_name = 'colaborador/confirmar_remocao.html'
-    permissao_tipos = [UsuarioEscola.ADMIN, UsuarioEscola.DIRETOR]
+    permissao_tipos = [UsuarioEscola.DIRETOR]
 
     def get_object(self):
         return get_object_or_404(
@@ -175,7 +175,7 @@ class ListaProfessores(PermissaoRequiredMixin, ListView):
 
 class CadastrarProfessor(PermissaoRequiredMixin, TemplateView):
     template_name = 'colaborador/form_professor.html'
-    permissao_tipos = [UsuarioEscola.ADMIN, UsuarioEscola.DIRETOR]
+    permissao_tipos = [UsuarioEscola.DIRETOR]
 
     def get_context_data(self, form=None, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -222,7 +222,7 @@ class CadastrarProfessor(PermissaoRequiredMixin, TemplateView):
 
 class EditarProfessor(PermissaoRequiredMixin, TemplateView):
     template_name = 'colaborador/form_professor.html'
-    permissao_tipos = [UsuarioEscola.ADMIN, UsuarioEscola.DIRETOR]
+    permissao_tipos = [UsuarioEscola.DIRETOR]
 
     def get_object(self):
         return get_object_or_404(
@@ -260,7 +260,7 @@ class EditarProfessor(PermissaoRequiredMixin, TemplateView):
 
 class DesativarProfessor(PermissaoRequiredMixin, TemplateView):
     template_name = 'colaborador/confirmar_remocao.html'
-    permissao_tipos = [UsuarioEscola.ADMIN, UsuarioEscola.DIRETOR]
+    permissao_tipos = [UsuarioEscola.DIRETOR]
 
     def get_object(self):
         return get_object_or_404(

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="pt-br" data-theme="educare">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="{% block meta_descricao %}EduCare — Sistema de Gestão Escolar Municipal{% endblock %}">
+
+    <title>{% block titulo %}EduCare{% endblock %} — Notícias</title>
+
+    {% block og %}{% endblock %}
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..800;1,14..32,300..500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}">
+
+    {% block head_extra %}{% endblock %}
+    <style>
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(1rem); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        .toast-item {
+            animation: toastIn .3s cubic-bezier(.4,0,.2,1) both;
+            transition: opacity .3s ease, transform .3s ease;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-base-100">
+
+{# Skip to content — acessibilidade por teclado #}
+<a href="#conteudo-principal"
+   class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999]
+          focus:inline-flex focus:items-center focus:gap-2
+          focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg
+          focus:bg-primary focus:text-primary-content focus:text-sm focus:font-semibold">
+    Ir para o conteúdo
+</a>
+
+{# ── Navbar ─────────────────────────────────────────────────────────────── #}
+<header class="sticky top-0 z-50 border-b border-base-200/70 bg-base-100/95 backdrop-blur-md">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+
+            {# Brand #}
+            <a href="{% url 'blog:noticias' %}"
+               class="flex items-center gap-3 group outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-lg">
+                <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0
+                            shadow-sm group-hover:shadow-md group-hover:scale-105
+                            transition-all duration-150">
+                    <svg class="w-4 h-4 text-primary-content" fill="none" viewBox="0 0 24 24"
+                         stroke="currentColor" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+                <div class="flex flex-col leading-none gap-0.5">
+                    <span class="text-sm font-bold text-base-content tracking-tight">EduCare</span>
+                    <span class="text-[10px] font-medium text-base-content/35 tracking-widest uppercase
+                                 hidden sm:block">
+                        Sistema Escolar
+                    </span>
+                </div>
+            </a>
+
+            {# Navegação + CTA #}
+            <nav class="flex items-center gap-1" aria-label="Navegação principal">
+                <a href="{% url 'blog:noticias' %}"
+                   class="hidden sm:inline-flex items-center px-3 py-1.5 rounded-lg
+                          text-sm font-medium text-base-content/55 hover:text-base-content
+                          hover:bg-base-200 transition-colors duration-150
+                          outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                    Notícias
+                </a>
+
+                <div class="w-px h-4 bg-base-300 mx-2 hidden sm:block" aria-hidden="true"></div>
+
+                <a href="{% url 'accounts:login' %}"
+                   class="btn btn-primary btn-sm">
+                    Entrar
+                </a>
+            </nav>
+
+        </div>
+    </div>
+</header>
+
+{# ── Bloco opicional entre navbar e conteúdo (hero, banner, etc.) ────────── #}
+{% block hero %}{% endblock %}
+
+{# ── Conteúdo principal ──────────────────────────────────────────────────── #}
+<main id="conteudo-principal" tabindex="-1"
+      class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    {% block conteudo %}{% endblock %}
+</main>
+
+{# ── Footer ──────────────────────────────────────────────────────────────── #}
+<footer class="border-t border-base-200 mt-20">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-5">
+
+            {# Brand + tagline #}
+            <div class="flex items-center gap-2.5">
+                <div class="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
+                    <svg class="w-3.5 h-3.5 text-primary" fill="none" viewBox="0 0 24 24"
+                         stroke="currentColor" stroke-width="3" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+                <p class="text-sm text-base-content/50">
+                    <span class="font-semibold text-base-content/70">EduCare</span>
+                    <span class="mx-1.5 text-base-content/20">·</span>
+                    Sistema de Gestão Escolar
+                </p>
+            </div>
+
+            {# Copyright #}
+            <p class="text-xs text-base-content/30 order-last sm:order-none">
+                © {% now "Y" %} EduCare. Todos os direitos reservados.
+            </p>
+
+            {# Acesso #}
+            <a href="{% url 'accounts:login' %}"
+               class="inline-flex items-center gap-1 text-xs font-medium
+                      text-base-content/40 hover:text-primary transition-colors duration-150
+                      outline-none focus-visible:ring-2 focus-visible:ring-primary rounded">
+                Acesso ao sistema
+                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                </svg>
+            </a>
+
+        </div>
+    </div>
+</footer>
+
+{# ── Toasts ─────────────────────────────────────────────────────────────── #}
+{% if messages %}
+<div id="toast-container"
+     class="fixed top-[4.5rem] right-4 z-[9999] flex flex-col gap-2.5 items-end w-full max-w-sm pointer-events-none">
+    {% for message in messages %}
+        <div class="toast-item pointer-events-auto w-full flex items-start gap-3
+                    bg-base-100 rounded-2xl shadow-xl px-4 py-3.5 text-sm border-l-4
+                    {% if 'error' in message.tags %}border-l-error
+                    {% elif 'success' in message.tags %}border-l-success
+                    {% elif 'warning' in message.tags %}border-l-warning
+                    {% else %}border-l-info{% endif %}"
+             style="animation-delay: {{ forloop.counter0 }}00ms"
+             data-duration="4500">
+
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 class="w-4 h-4 mt-0.5 shrink-0
+                        {% if 'error' in message.tags %}text-error
+                        {% elif 'success' in message.tags %}text-success
+                        {% elif 'warning' in message.tags %}text-warning
+                        {% else %}text-info{% endif %}"
+                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                {% if 'error' in message.tags %}
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                {% elif 'success' in message.tags %}
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                {% elif 'warning' in message.tags %}
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                {% else %}
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                {% endif %}
+            </svg>
+
+            <span class="flex-1 font-medium text-base-content leading-snug">{{ message }}</span>
+
+            <button onclick="dismissToast(this.closest('.toast-item'))"
+                    class="shrink-0 w-5 h-5 rounded-full flex items-center justify-center
+                           text-base-content/40 hover:text-base-content hover:bg-base-200
+                           transition-colors mt-0.5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<script>
+function dismissToast(el) {
+    if (!el || !el.isConnected) return;
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(0.75rem)';
+    setTimeout(function() { el && el.remove(); }, 320);
+}
+(function () {
+    document.querySelectorAll('.toast-item').forEach(function (el, i) {
+        const delay = i * 120;
+        const dur = parseInt(el.dataset.duration || '4500');
+        setTimeout(function () { dismissToast(el); }, dur + delay);
+    });
+})();
+</script>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

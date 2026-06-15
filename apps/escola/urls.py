@@ -8,8 +8,7 @@ urlpatterns = [
     path('redirecionamento/', views.RedirecionarDashboard.as_view(), name='redirecionar'),
     path('selecionar/',       views.SelecionarEscola.as_view(),      name='selecionar'),
 
-    # Dashboards
-    path('administrador/',   views.DashAdmin.as_view(),  name='painel_adm'),
+    # Dashboard
     path('painel/',          views.DashEscola.as_view(), name='dash_escola'),
 
     # Edição

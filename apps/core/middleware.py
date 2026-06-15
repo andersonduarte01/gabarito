@@ -20,7 +20,7 @@ class EscolaMiddleware:
     """
 
     # /accounts/ cobre login, logout e todo o fluxo de senha — todos são públicos
-    PREFIXOS_IGNORADOS = ('/admin/', '/api/', '/static/', '/media/', '/accounts/')
+    PREFIXOS_IGNORADOS = ('/admin/', '/api/', '/static/', '/media/', '/accounts/', '/blog/')
 
     ROTAS_PUBLICAS = (
         'escola:selecionar',

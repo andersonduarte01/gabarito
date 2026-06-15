@@ -10,7 +10,7 @@ from .forms import SalaForm
 from .models import Sala
 
 
-_TIPOS_GESTAO = [UsuarioEscola.ADMIN, UsuarioEscola.DIRETOR, UsuarioEscola.COLABORADOR]
+_TIPOS_GESTAO = [UsuarioEscola.DIRETOR, UsuarioEscola.COLABORADOR]
 
 
 class ListaSalas(PermissaoRequiredMixin, ListView):
@@ -78,7 +78,7 @@ class DeletarSala(PermissaoRequiredMixin, SuccessMessageMixin, DeleteView):
     template_name = 'sala/confirmar_remocao.html'
     success_message = 'Sala removida com sucesso.'
     success_url = reverse_lazy('sala:lista_salas')
-    permissao_tipos = [UsuarioEscola.ADMIN, UsuarioEscola.DIRETOR]
+    permissao_tipos = [UsuarioEscola.DIRETOR]
 
     def get_object(self, queryset=None):
         return get_object_or_404(Sala, pk=self.kwargs['pk'], escola=self.request.escola)

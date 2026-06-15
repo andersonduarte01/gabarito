@@ -8,7 +8,7 @@ from apps.core.permissao import PermissaoRequiredMixin
 from .models import Funcao
 
 
-_TIPOS_GESTAO = [UsuarioEscola.ADMIN, UsuarioEscola.DIRETOR]
+_TIPOS_GESTAO = [UsuarioEscola.DIRETOR]
 
 
 class ListaFuncao(PermissaoRequiredMixin, ListView):
