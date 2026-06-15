@@ -59,6 +59,10 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         except UsuarioEscola.DoesNotExist:
             return reverse('accounts:login')
 
+    @property
+    def primeiro_nome(self):
+        return self.nome.split()[0] if self.nome else ''
+
     def remover_escola(self, escola):
         self.usuarioescola_set.filter(escola=escola).update(ativo=False)
         if not self.usuarioescola_set.filter(ativo=True).exists():

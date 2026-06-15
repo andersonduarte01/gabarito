@@ -45,9 +45,9 @@
 
 [data-theme="educare"] {
     color-scheme: light;
-    --color-primary: oklch(46% 0.19 264);
+    --color-primary: oklch(56% 0.232 264);
     --color-primary-content: oklch(100% 0 0);
-    --color-secondary: oklch(60% 0.15 264);
+    --color-secondary: oklch(70% 0.12 264);
     --color-secondary-content: oklch(100% 0 0);
     --color-accent: oklch(65% 0.17 230);
     --color-accent-content: oklch(100% 0 0);

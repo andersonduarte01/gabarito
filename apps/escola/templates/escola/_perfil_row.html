@@ -1,0 +1,10 @@
+<div class="flex items-start gap-3 px-5 py-3">
+    <span class="text-[11px] font-medium text-slate-400 w-28 shrink-0 mt-0.5">{{ label }}</span>
+    {% if empty %}
+        <span class="text-[12px] text-slate-300 italic">Não informado</span>
+    {% else %}
+        <span class="text-[13px] {% if mono %}font-mono text-slate-600{% else %}text-slate-700{% endif %} leading-snug">
+            {{ value }}
+        </span>
+    {% endif %}
+</div>

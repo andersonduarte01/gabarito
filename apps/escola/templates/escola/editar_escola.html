@@ -1,85 +1,239 @@
-{% extends 'base/base.html' %}
+{% extends 'base/base_escola.html' %}
 
-{% block titulo %}Editar Escola{% endblock %}
+{% block titulo %}Dados da Escola — {{ escola.nome_escola }}{% endblock %}
 {% block titulo_pagina %}Dados da Escola{% endblock %}
 
+{% block subtitulo_pagina %}
+    <a href="{% url 'escola:dash_escola' %}"
+       class="text-[11px] text-slate-400 hover:text-slate-600 transition-colors">Painel</a>
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-2.5 text-slate-300"
+         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+    </svg>
+    <span class="text-[11px] text-slate-500 font-medium">Dados da Escola</span>
+{% endblock %}
+
 {% block conteudo %}
+<form method="post" enctype="multipart/form-data" novalidate>
+{% csrf_token %}
 
-<div class="max-w-2xl">
+<div class="max-w-3xl mx-auto space-y-5">
 
-    <!-- Breadcrumb -->
-    <div class="text-sm breadcrumbs text-base-content/50 mb-4">
-        <ul>
-            <li><a href="{% url 'escola:dash_escola' %}">Painel</a></li>
-            <li>Editar escola</li>
-        </ul>
-    </div>
+    {# ── Identificação ─────────────────────────────────────────────────────── #}
+    <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/5 overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-100">
+            <h2 class="text-[13px] font-semibold text-slate-800">Identificação</h2>
+            <p class="text-[11px] text-slate-400 mt-0.5">Nome oficial, tipo e registros da escola</p>
+        </div>
+        <div class="p-5 space-y-4">
 
-    <div class="card bg-base-100 shadow-sm">
-        <div class="card-body p-6">
-
-            <h1 class="text-lg font-bold text-base-content mb-1">Dados cadastrais</h1>
-            <p class="text-sm text-base-content/60 mb-6">
-                Informações gerais da escola. Campos com <span class="text-error">*</span> são obrigatórios.
-            </p>
-
-            <form method="post" enctype="multipart/form-data" novalidate>
-                {% csrf_token %}
-
-                <!-- Erros gerais do formulário -->
-                {% if form.non_field_errors %}
-                    <div role="alert" class="alert alert-error text-sm mb-4">
-                        {% for erro in form.non_field_errors %}
-                            <span>{{ erro }}</span>
+            <div class="form-control">
+                <label class="label pb-1.5">
+                    <span class="label-text text-[13px] font-medium text-slate-700">
+                        Nome da escola <span class="text-error">*</span>
+                    </span>
+                </label>
+                {{ form.nome_escola }}
+                {% if form.nome_escola.errors %}
+                    <div class="label pt-1">
+                        {% for e in form.nome_escola.errors %}
+                            <span class="label-text-alt text-error text-[11px]">{{ e }}</span>
                         {% endfor %}
                     </div>
                 {% endif %}
+            </div>
 
-                <!-- Campos do formulário -->
-                <div class="space-y-4">
-                    {% for field in form %}
-                        <div class="form-control w-full">
-                            <label class="label pb-1" for="{{ field.id_for_label }}">
-                                <span class="label-text font-medium">
-                                    {{ field.label }}
-                                    {% if field.field.required %}
-                                        <span class="text-error ml-0.5">*</span>
-                                    {% endif %}
-                                </span>
-                            </label>
-
-                            {{ field }}
-
-                            {% if field.help_text %}
-                                <label class="label pt-1">
-                                    <span class="label-text-alt text-base-content/50">{{ field.help_text }}</span>
-                                </label>
-                            {% endif %}
-
-                            {% if field.errors %}
-                                {% for erro in field.errors %}
-                                    <label class="label pt-1">
-                                        <span class="label-text-alt text-error">{{ erro }}</span>
-                                    </label>
-                                {% endfor %}
-                            {% endif %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="form-control">
+                    <label class="label pb-1.5">
+                        <span class="label-text text-[13px] font-medium text-slate-700">Tipo</span>
+                    </label>
+                    {{ form.tipo }}
+                    {% if form.tipo.errors %}
+                        <div class="label pt-1">
+                            {% for e in form.tipo.errors %}
+                                <span class="label-text-alt text-error text-[11px]">{{ e }}</span>
+                            {% endfor %}
                         </div>
-                    {% endfor %}
+                    {% endif %}
                 </div>
+                <div class="form-control">
+                    <label class="label pb-1.5">
+                        <span class="label-text text-[13px] font-medium text-slate-700">Código INEP</span>
+                    </label>
+                    {{ form.inep }}
+                    {% if form.inep.errors %}
+                        <div class="label pt-1">
+                            {% for e in form.inep.errors %}
+                                <span class="label-text-alt text-error text-[11px]">{{ e }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    {% if form.inep.help_text %}
+                        <div class="label pt-0.5">
+                            <span class="label-text-alt text-slate-400 text-[11px]">{{ form.inep.help_text }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
 
-                <!-- Ações -->
-                <div class="flex flex-col-reverse sm:flex-row gap-3 mt-8">
-                    <a href="{% url 'escola:dash_escola' %}" class="btn btn-ghost w-full sm:w-auto">
-                        Cancelar
-                    </a>
-                    <button type="submit" class="btn btn-primary w-full sm:w-auto sm:ml-auto">
-                        Salvar alterações
-                    </button>
-                </div>
-            </form>
+            <div class="form-control">
+                <label class="label pb-1.5">
+                    <span class="label-text text-[13px] font-medium text-slate-700">CNPJ</span>
+                </label>
+                {{ form.cnpj }}
+                {% if form.cnpj.errors %}
+                    <div class="label pt-1">
+                        {% for e in form.cnpj.errors %}
+                            <span class="label-text-alt text-error text-[11px]">{{ e }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {% if form.cnpj.help_text %}
+                    <div class="label pt-0.5">
+                        <span class="label-text-alt text-slate-400 text-[11px]">{{ form.cnpj.help_text }}</span>
+                    </div>
+                {% endif %}
+            </div>
 
         </div>
     </div>
-</div>
 
+    {# ── Contato ───────────────────────────────────────────────────────────── #}
+    <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/5 overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-100">
+            <h2 class="text-[13px] font-semibold text-slate-800">Contato</h2>
+            <p class="text-[11px] text-slate-400 mt-0.5">Telefone, e-mail e site da unidade</p>
+        </div>
+        <div class="p-5 space-y-4">
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="form-control">
+                    <label class="label pb-1.5">
+                        <span class="label-text text-[13px] font-medium text-slate-700">Telefone</span>
+                    </label>
+                    {{ form.telefone }}
+                    {% if form.telefone.errors %}
+                        <div class="label pt-1">
+                            {% for e in form.telefone.errors %}
+                                <span class="label-text-alt text-error text-[11px]">{{ e }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    {% if form.telefone.help_text %}
+                        <div class="label pt-0.5">
+                            <span class="label-text-alt text-slate-400 text-[11px]">{{ form.telefone.help_text }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="form-control">
+                    <label class="label pb-1.5">
+                        <span class="label-text text-[13px] font-medium text-slate-700">E-mail</span>
+                    </label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <div class="label pt-1">
+                            {% for e in form.email.errors %}
+                                <span class="label-text-alt text-error text-[11px]">{{ e }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-control">
+                <label class="label pb-1.5">
+                    <span class="label-text text-[13px] font-medium text-slate-700">Site</span>
+                </label>
+                {{ form.site }}
+                {% if form.site.errors %}
+                    <div class="label pt-1">
+                        {% for e in form.site.errors %}
+                            <span class="label-text-alt text-error text-[11px]">{{ e }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+
+    {# ── Logotipo ──────────────────────────────────────────────────────────── #}
+    <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/5 overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-100">
+            <h2 class="text-[13px] font-semibold text-slate-800">Logotipo</h2>
+            <p class="text-[11px] text-slate-400 mt-0.5">Imagem exibida no sistema e em relatórios</p>
+        </div>
+        <div class="p-5">
+            <div class="flex items-start gap-4">
+
+                <div class="shrink-0">
+                    {% if escola.logo_escola %}
+                        <img src="{{ escola.logo_escola.url }}"
+                             alt="{{ escola.nome_escola }}"
+                             class="w-16 h-16 rounded-xl object-contain ring-1 ring-slate-200 bg-slate-50 p-1.5">
+                    {% else %}
+                        <div class="w-16 h-16 rounded-xl ring-1 ring-slate-200 bg-slate-50
+                                    flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-slate-300"
+                                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586
+                                         a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6
+                                         a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="flex-1 form-control">
+                    {{ form.logo_escola }}
+                    {% if form.logo_escola.errors %}
+                        <div class="label pt-1">
+                            {% for e in form.logo_escola.errors %}
+                                <span class="label-text-alt text-error text-[11px]">{{ e }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <p class="text-[11px] text-slate-400 mt-2">
+                        PNG ou JPG. Recomendado 256×256px.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    {# ── Erros globais ─────────────────────────────────────────────────────── #}
+    {% if form.non_field_errors %}
+        <div role="alert" class="alert alert-error text-sm py-3 rounded-xl">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" fill="none"
+                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4
+                         c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <ul class="list-none">
+                {% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    {# ── Ações ─────────────────────────────────────────────────────────────── #}
+    <div class="flex items-center justify-end gap-3 pb-2">
+        <a href="{% url 'escola:dash_escola' %}"
+           class="btn btn-ghost btn-sm rounded-xl text-slate-600 border border-slate-200 hover:bg-slate-50">
+            Cancelar
+        </a>
+        <button type="submit" class="btn btn-primary btn-sm rounded-xl gap-1.5 px-5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none"
+                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+            Salvar alterações
+        </button>
+    </div>
+
+</div>
+</form>
 {% endblock %}

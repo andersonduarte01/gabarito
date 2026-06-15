@@ -1,0 +1,146 @@
+{% extends 'base/base_escola.html' %}
+
+{% block titulo %}Meu Perfil — {{ user.nome }}{% endblock %}
+{% block titulo_pagina %}Meu Perfil{% endblock %}
+
+{% block subtitulo_pagina %}
+    <a href="{% url 'escola:dash_escola' %}"
+       class="text-[11px] text-slate-400 hover:text-slate-600 transition-colors">Painel</a>
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-2.5 text-slate-300"
+         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+    </svg>
+    <span class="text-[11px] text-slate-500 font-medium">Meu Perfil</span>
+{% endblock %}
+
+{% block conteudo %}
+<div class="max-w-3xl mx-auto space-y-5">
+
+    {# ── Hero / Avatar + identidade ────────────────────────────────────────── #}
+    <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/5 p-5 sm:p-6">
+        <div class="flex flex-col sm:flex-row sm:items-start gap-5">
+
+            {# Foto #}
+            <div class="shrink-0">
+                {% if diretor.foto %}
+                    <img src="{{ diretor.foto.url }}" alt="{{ user.nome }}"
+                         class="w-20 h-20 rounded-2xl object-cover ring-1 ring-slate-200">
+                {% else %}
+                    <div class="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center">
+                        <span class="text-3xl font-bold text-primary">{{ user.nome|first|upper }}</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            {# Info #}
+            <div class="flex-1 min-w-0">
+                <div class="flex flex-wrap items-center gap-2 mb-1.5">
+                    <span class="inline-flex items-center text-[11px] font-bold
+                                 text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
+                        Diretor
+                    </span>
+                    {% if diretor.ativo %}
+                        <span class="inline-flex items-center gap-1 text-[11px] font-semibold
+                                     text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
+                            Ativo
+                        </span>
+                    {% endif %}
+                </div>
+                <h2 class="text-xl font-bold text-slate-900 truncate">{{ user.nome }}</h2>
+                <p class="text-[13px] text-slate-400 truncate mt-0.5">{{ user.email }}</p>
+                <p class="text-[12px] text-slate-400 mt-1.5">
+                    <span class="text-slate-300">→</span>
+                    {{ request.escola.nome_escola }}
+                </p>
+            </div>
+
+            {# Ação principal #}
+            <div class="shrink-0">
+                <a href="{% url 'diretor:editar_perfil' %}"
+                   class="btn btn-primary btn-sm rounded-xl gap-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none"
+                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5
+                                 m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                    Editar perfil
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    {# ── Dados pessoais ────────────────────────────────────────────────────── #}
+    <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/5 overflow-hidden">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+            <div>
+                <h3 class="text-[13px] font-semibold text-slate-800">Dados pessoais</h3>
+                <p class="text-[11px] text-slate-400 mt-0.5">CPF e telefone de contato</p>
+            </div>
+            <a href="{% url 'diretor:editar_perfil' %}"
+               class="text-[11px] font-medium text-slate-400 hover:text-primary
+                      transition-colors flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5
+                             m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+                Editar
+            </a>
+        </div>
+        <div class="divide-y divide-slate-50">
+            <div class="flex items-center gap-3 px-5 py-3">
+                <span class="text-[11px] font-medium text-slate-400 w-28 shrink-0">CPF</span>
+                {% if diretor.cpf %}
+                    <span class="text-[13px] font-mono text-slate-700">{{ diretor.cpf }}</span>
+                {% else %}
+                    <span class="text-[12px] text-slate-300 italic">Não informado</span>
+                {% endif %}
+            </div>
+            <div class="flex items-center gap-3 px-5 py-3">
+                <span class="text-[11px] font-medium text-slate-400 w-28 shrink-0">Telefone</span>
+                {% if diretor.telefone %}
+                    <span class="text-[13px] text-slate-700">{{ diretor.telefone }}</span>
+                {% else %}
+                    <span class="text-[12px] text-slate-300 italic">Não informado</span>
+                {% endif %}
+            </div>
+            <div class="flex items-center gap-3 px-5 py-3">
+                <span class="text-[11px] font-medium text-slate-400 w-28 shrink-0">Membro desde</span>
+                <span class="text-[13px] text-slate-700">{{ diretor.criado_em|date:"d/m/Y" }}</span>
+            </div>
+        </div>
+    </div>
+
+    {# ── Conta ─────────────────────────────────────────────────────────────── #}
+    <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/5 overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-100">
+            <h3 class="text-[13px] font-semibold text-slate-800">Conta</h3>
+            <p class="text-[11px] text-slate-400 mt-0.5">Credenciais de acesso ao sistema</p>
+        </div>
+        <div class="divide-y divide-slate-50">
+            <div class="flex items-center gap-3 px-5 py-3">
+                <span class="text-[11px] font-medium text-slate-400 w-28 shrink-0">E-mail</span>
+                <span class="text-[13px] text-slate-700 truncate">{{ user.email }}</span>
+            </div>
+            <div class="flex items-center justify-between px-5 py-3">
+                <div class="flex items-center gap-3">
+                    <span class="text-[11px] font-medium text-slate-400 w-28 shrink-0">Senha</span>
+                    <span class="text-[13px] text-slate-400 tracking-widest">••••••••</span>
+                </div>
+                <a href="{% url 'accounts:password_change' %}"
+                   class="text-[11px] font-medium text-primary hover:text-primary/80 transition-colors">
+                    Alterar senha
+                </a>
+            </div>
+        </div>
+        <p class="px-5 py-3 text-[11px] text-slate-400 border-t border-slate-100">
+            Para alterar nome ou e-mail, entre em contato com o administrador do sistema.
+        </p>
+    </div>
+
+</div>
+{% endblock %}

@@ -127,6 +127,32 @@ class DashEscola(BaseDashboardView):
 
 
 # ---------------------------------------------------------------------------
+# Perfil da escola
+# ---------------------------------------------------------------------------
+
+class PerfilEscola(PermissaoRequiredMixin, TemplateView):
+    """Página de perfil completo da escola — leitura + links de edição."""
+    template_name = 'escola/perfil_escola.html'
+    permissao_tipos = [UsuarioEscola.DIRETOR, UsuarioEscola.COLABORADOR]
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        escola = self.request.escola
+        ctx['escola'] = escola
+        ctx['ano_corrente'] = escola.ano_letivo_corrente
+        ctx['anos_letivos'] = escola.anos_letivos.order_by('-ano')
+        try:
+            ctx['endereco'] = escola.endereco_obj
+        except Exception:
+            ctx['endereco'] = None
+        try:
+            ctx['diretor'] = escola.diretor
+        except Exception:
+            ctx['diretor'] = None
+        return ctx
+
+
+# ---------------------------------------------------------------------------
 # Edição da escola
 # ---------------------------------------------------------------------------
 

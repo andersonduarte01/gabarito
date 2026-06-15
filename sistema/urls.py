@@ -29,6 +29,7 @@ urlpatterns = [
     path('accounts/', include('apps.accounts.urls', namespace='accounts')),
     path('', include('apps.core.urls', namespace='core')),
     path('escola/', include('apps.escola.urls', namespace='escola')),
+    path('diretor/', include('apps.diretor.urls', namespace='diretor')),
     path('funcao/', include('apps.funcao.urls', namespace='funcao')),
     path('salas/', include('apps.sala.urls', namespace='sala')),
     path('colaborador/', include('apps.colaborador.urls', namespace='colaborador')),

@@ -11,7 +11,8 @@ urlpatterns = [
     # Dashboard
     path('painel/',          views.DashEscola.as_view(), name='dash_escola'),
 
-    # Edição
+    # Perfil e edição
+    path('perfil/',          views.PerfilEscola.as_view(),   name='perfil_escola'),
     path('editar/',          views.EditarEscola.as_view(),   name='editar_escola'),
     path('editar/endereco/', views.EditarEndereco.as_view(), name='editar_endereco'),
 

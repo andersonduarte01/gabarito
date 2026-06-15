@@ -858,17 +858,23 @@ ORDEM DE IMPLEMENTAÇÃO DEFINIDA:
 
   NAVS POR PERFIL
   [✅ CONCLUÍDO]  0.6  templates/base/_nav_admin.html
-  [✅ CONCLUÍDO]  0.7  templates/base/_nav_escola.html (DIR + COLAB)
+  [✅ CONCLUÍDO]  0.7  templates/base/_nav_escola.html (DIR + COLAB) — nav inlined em base_escola.html
   [✅ CONCLUÍDO]  0.8  templates/base/_nav_professor.html
   [⏳ AGUARDANDO] 0.9  templates/base/_nav_aluno.html
   [⏳ AGUARDANDO] 0.10 templates/base/_nav_responsavel.html
+
+  TOPBAR (base_escola.html)
+  [✅ CONCLUÍDO]  0.T1 Dropdown do topbar: foto/iniciais do diretor + primeiro nome
+  [✅ CONCLUÍDO]  0.T2 Links internos do dropdown: Perfil da Escola, Meu Perfil (DIR), Alterar Senha, Sair
+  [✅ CONCLUÍDO]  0.T3 Modal DaisyUI de confirmação de logout (dialog nativo)
+  [✅ CONCLUÍDO]  0.T4 Property primeiro_nome adicionada em core.Usuario
 
   AUTENTICAÇÃO (apps.accounts + registration/)
   [✅ CONCLUÍDO]  0.11 Login — split screen DaisyUI
   [✅ CONCLUÍDO]  0.12 Logout
   [✅ CONCLUÍDO]  0.13 Alterar senha
   [✅ CONCLUÍDO]  0.14 Recuperar senha (fluxo completo — 4 templates)
-  [✅ CONCLUÍDO]  0.15 Selecionar escola (multi-tenant)
+  [✅ CONCLUÍDO]  0.15 Selecionar escola — reconstruída (herda base_auth.html, botões por vínculo)
   [✅ CONCLUÍDO]  0.16 EscolaMiddleware — injeção de request.escola + request.vinculo
   [✅ CONCLUÍDO]  0.17 PermissaoRequiredMixin + BaseDashboardView
   [✅ CONCLUÍDO]  0.18 UsuarioService + AlunoService (services.py)
@@ -910,8 +916,9 @@ ORDEM DE IMPLEMENTAÇÃO DEFINIDA:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   DADOS DA ESCOLA
-  [✅ CONCLUÍDO]  2.1  Editar dados da escola
-  [✅ CONCLUÍDO]  2.2  Editar endereço da escola
+  [✅ CONCLUÍDO]  2.0  Perfil da escola — view read-only (perfil_escola.html + partial _perfil_row.html)
+  [✅ CONCLUÍDO]  2.1  Editar dados da escola — reconstruído (editar_escola.html)
+  [✅ CONCLUÍDO]  2.2  Editar endereço da escola — reconstruído (editar_endereco.html)
   [⏳ AGUARDANDO] 2.3  Gerenciar funções/cargos (apps.funcao — migrar templates)
 
   TURMAS (apps.sala)
@@ -982,6 +989,14 @@ ORDEM DE IMPLEMENTAÇÃO DEFINIDA:
   [✅ CONCLUÍDO]  4.1  Dashboard escola — stat cards + grid de turmas
   [⏳ AGUARDANDO] 4.2  Dashboard escola — seção "Frequência de Hoje" (status visual por turma)
   [⏳ AGUARDANDO] 4.3  Dashboard escola — próximas avaliações + relatórios pendentes
+
+  PERFIL DO DIRETOR (apps.diretor — módulo criado do zero)
+  [✅ CONCLUÍDO]  4.D1 forms.py — DiretorForm (foto, cpf, telefone) com DaisyFormMixin
+  [✅ CONCLUÍDO]  4.D2 views.py — MeuPerfil (TemplateView, read-only) + EditarPerfil (UpdateView)
+  [✅ CONCLUÍDO]  4.D3 urls.py — /diretor/meu-perfil/ e /diretor/editar-perfil/ com app_name='diretor'
+  [✅ CONCLUÍDO]  4.D4 meu_perfil.html — hero com foto/iniciais, dados pessoais, conta, links de edição
+  [✅ CONCLUÍDO]  4.D5 editar_perfil.html — preview de foto, CPF + telefone em grid 2 colunas
+  [✅ CONCLUÍDO]  4.D6 URL /diretor/ incluída em sistema/urls.py (namespace='diretor')
 
   GESTÃO DE PESSOAS
   [✅ CONCLUÍDO]  4.4  Lista + cadastrar + editar + desativar professores
@@ -1097,6 +1112,22 @@ ORDEM DE IMPLEMENTAÇÃO DEFINIDA:
                 desenvolvedor: BLOG → ESCOLA → ADMINISTRADOR → DIRETOR →
                 COLABORADOR → ALUNO. Implementação guiada sessão a sessão.
                 Aguardando diretriz para iniciar Fase 1 — BLOG.
+
+  [2026-06-15]  Redesign premium DaisyUI v5 — reconstrução da fundação e módulos
+                escola + diretor concluída:
+                • Topbar dropdown refatorado: foto/iniciais do diretor + primeiro
+                  nome; links limpos (Perfil da Escola, Meu Perfil, Alterar Senha,
+                  Sair); modal DaisyUI de confirmação de logout (dialog nativo).
+                • Property primeiro_nome adicionada em core.Usuario.
+                • selecionar_escola.html reconstruída (herda base_auth.html).
+                • Módulo escola — perfil_escola.html (read-only com editar links),
+                  partial _perfil_row.html, editar_escola.html e editar_endereco.html
+                  todos reconstruídos no padrão premium.
+                • Módulo diretor criado do zero: forms.py (DiretorForm +
+                  DaisyFormMixin), views.py (MeuPerfil + EditarPerfil), urls.py
+                  registrado em sistema/urls.py, templates meu_perfil.html e
+                  editar_perfil.html no padrão premium.
+                Próximos: AnoLetivo (CRUD) → Sala/Turma → Aluno → Blog.
 
 ================================================================================
   INSTRUÇÃO DE USO DESTE REGISTRO
