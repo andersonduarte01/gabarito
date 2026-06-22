@@ -9,7 +9,22 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.text import slugify
 
-from ..sala.models import SERIE_CHOICES
+SERIE_CHOICES = [
+    ('Educação Infantil', 'Educação Infantil'),
+    ('Pré-Escola',        'Pré-Escola'),
+    ('4 Anos',            '4 Anos'),
+    ('5 Anos',            '5 Anos'),
+    ('Turma Unificada',   'Turma Unificada'),
+    ('1º Ano',            '1º Ano'),
+    ('2º Ano',            '2º Ano'),
+    ('3º Ano',            '3º Ano'),
+    ('4º Ano',            '4º Ano'),
+    ('5º Ano',            '5º Ano'),
+    ('6º Ano',            '6º Ano'),
+    ('7º Ano',            '7º Ano'),
+    ('8º Ano',            '8º Ano'),
+    ('9º Ano',            '9º Ano'),
+]
 
 try:
     from unidecode import unidecode as _unidecode

@@ -1,0 +1,205 @@
+{% extends 'base/base_escola.html' %}
+
+{% block titulo %}Séries — {{ request.escola.nome_escola }}{% endblock %}
+{% block titulo_pagina %}Séries{% endblock %}
+
+{% block subtitulo_pagina %}
+    <a href="{% url 'escola:dash_escola' %}"
+       class="text-[11px] text-slate-400 hover:text-slate-600 transition-colors">Painel</a>
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-2.5 text-slate-300"
+         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+    </svg>
+    <a href="{% url 'escola:perfil_escola' %}"
+       class="text-[11px] text-slate-400 hover:text-slate-600 transition-colors">Perfil da escola</a>
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-2.5 text-slate-300"
+         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+    </svg>
+    <span class="text-[11px] text-slate-500 font-medium">Séries</span>
+{% endblock %}
+
+{% block conteudo %}
+
+<div class="flex items-start justify-between gap-4 mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-slate-900 tracking-tight leading-snug">Séries</h1>
+        <p class="mt-1 text-[13px] text-slate-500">
+            Séries configuradas para {{ request.escola.nome_escola }}
+        </p>
+    </div>
+    <a href="{% url 'escola:adicionar_serie' %}"
+       class="btn btn-primary btn-sm rounded-xl gap-1.5 px-5 shrink-0">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none"
+             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+        </svg>
+        Nova série
+    </a>
+</div>
+
+<div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/5 overflow-hidden">
+
+    <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+        <div>
+            <h2 class="text-[13px] font-semibold text-slate-800">Todas as séries</h2>
+            <p class="text-[11px] text-slate-400 mt-0.5">
+                {{ series|length }} série{{ series|length|pluralize }} cadastrada{{ series|length|pluralize }}
+            </p>
+        </div>
+    </div>
+
+    {% if series %}
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-slate-100">
+                        <th class="text-left px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                            Nome
+                        </th>
+                        <th class="text-center px-4 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                            Ordem
+                        </th>
+                        <th class="text-center px-4 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest hidden sm:table-cell">
+                            Turmas
+                        </th>
+                        <th class="px-4 py-3"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    {% for serie in series %}
+                    <tr class="group hover:bg-slate-50/60 transition-colors">
+
+                        <td class="px-5 py-3.5">
+                            <p class="text-[13px] font-semibold text-slate-800">{{ serie.nome }}</p>
+                        </td>
+
+                        <td class="px-4 py-3.5 text-center">
+                            <span class="text-[12px] text-slate-500 tabular-nums">{{ serie.ordem }}</span>
+                        </td>
+
+                        <td class="px-4 py-3.5 text-center hidden sm:table-cell">
+                            {% if serie.total_turmas %}
+                                <span class="text-[13px] font-semibold text-slate-700">{{ serie.total_turmas }}</span>
+                                <span class="text-[11px] text-slate-400">turma{{ serie.total_turmas|pluralize }}</span>
+                            {% else %}
+                                <span class="text-[11px] text-slate-300">—</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="px-4 py-3.5">
+                            <div class="flex items-center justify-end gap-1
+                                        opacity-0 group-hover:opacity-100 transition-opacity">
+                                <a href="{% url 'escola:editar_serie' serie.pk %}"
+                                   title="Editar"
+                                   class="inline-flex items-center justify-center w-7 h-7
+                                          rounded-lg text-slate-400 hover:text-primary
+                                          hover:bg-primary/5 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none"
+                                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5
+                                                 m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    </svg>
+                                </a>
+                                <button type="button"
+                                        title="Remover"
+                                        onclick="document.getElementById('modal_remover_{{ serie.pk }}').showModal()"
+                                        class="inline-flex items-center justify-center w-7 h-7
+                                               rounded-lg text-slate-400 hover:text-error
+                                               hover:bg-error/5 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none"
+                                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0
+                                                 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1
+                                                 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    {% else %}
+        <div class="flex flex-col items-center justify-center px-6 py-16 text-center">
+            <div class="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-slate-300" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987
+                             8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0
+                             016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967
+                             8.967 0 00-6 2.292m0-14.25v14.25"/>
+                </svg>
+            </div>
+            <p class="text-[14px] font-semibold text-slate-700">Nenhuma série cadastrada</p>
+            <p class="text-[12px] text-slate-400 mt-1 max-w-xs leading-relaxed">
+                Cadastre as séries desta escola para vinculá-las às turmas.
+            </p>
+            <a href="{% url 'escola:adicionar_serie' %}"
+               class="btn btn-primary btn-sm rounded-xl gap-1.5 mt-5 px-5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                </svg>
+                Cadastrar primeira série
+            </a>
+        </div>
+    {% endif %}
+
+</div>
+
+{# ── Modais de confirmação de remoção ─────────────────────────────────────── #}
+{% for serie in series %}
+<dialog id="modal_remover_{{ serie.pk }}" class="modal modal-bottom sm:modal-middle">
+    <div class="modal-box max-w-sm rounded-2xl p-6">
+
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-10 h-10 rounded-xl bg-error/10 flex items-center justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-error" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0
+                             01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1
+                             1 0 00-1 1v3M4 7h16"/>
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-[15px] font-semibold text-slate-800">Remover série "{{ serie.nome }}"</h3>
+                <p class="text-[13px] text-slate-400 mt-0.5">Esta ação não pode ser desfeita.</p>
+            </div>
+        </div>
+
+        {% if serie.total_turmas %}
+            <div class="mb-4 p-3.5 rounded-xl bg-amber-50 ring-1 ring-amber-200/80">
+                <p class="text-[12px] font-medium text-amber-800 leading-relaxed">
+                    <span class="font-bold">{{ serie.total_turmas }} turma{{ serie.total_turmas|pluralize }}</span>
+                    vinculada{{ serie.total_turmas|pluralize }} perder{{ serie.total_turmas|pluralize:"á,ão" }}
+                    a série (os registros de turmas são preservados).
+                </p>
+            </div>
+        {% endif %}
+
+        <div class="flex gap-2">
+            <button type="button"
+                    onclick="document.getElementById('modal_remover_{{ serie.pk }}').close()"
+                    class="btn btn-ghost btn-sm rounded-xl text-slate-600 flex-1 border border-slate-200">
+                Cancelar
+            </button>
+            <form method="post" action="{% url 'escola:remover_serie' serie.pk %}" class="flex-1">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-error btn-sm rounded-xl w-full">Remover</button>
+            </form>
+        </div>
+
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>fechar</button></form>
+</dialog>
+{% endfor %}
+
+{% endblock %}

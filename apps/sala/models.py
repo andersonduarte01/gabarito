@@ -1,28 +1,35 @@
 from django.db import models
 from apps.escola.models import UnidadeEscolar, AnoLetivo
 
-SERIE_CHOICES = [
-    ('Educação Infantil', 'Educação Infantil'),
-    ('Pré-Escola',        'Pré-Escola'),
-    ('4 Anos',            '4 Anos'),
-    ('5 Anos',            '5 Anos'),
-    ('Turma Unificada',   'Turma Unificada'),
-    ('1º Ano',            '1º Ano'),
-    ('2º Ano',            '2º Ano'),
-    ('3º Ano',            '3º Ano'),
-    ('4º Ano',            '4º Ano'),
-    ('5º Ano',            '5º Ano'),
-    ('6º Ano',            '6º Ano'),
-    ('7º Ano',            '7º Ano'),
-    ('8º Ano',            '8º Ano'),
-    ('9º Ano',            '9º Ano'),
-]
-
 TURNO_CHOICES = [
     ('manha',    'Manhã'),
     ('tarde',    'Tarde'),
     ('integral', 'Tempo Integral'),
 ]
+
+
+class Serie(models.Model):
+    nome   = models.CharField(verbose_name='Nome', max_length=50)
+    escola = models.ForeignKey(
+        UnidadeEscolar,
+        on_delete=models.CASCADE,
+        related_name='series',
+        verbose_name='Escola',
+    )
+    ordem = models.PositiveSmallIntegerField(
+        verbose_name='Ordem',
+        default=0,
+        help_text='Ordem de exibição na listagem.',
+    )
+
+    class Meta:
+        verbose_name        = 'Série'
+        verbose_name_plural = 'Séries'
+        ordering            = ['ordem', 'nome']
+        unique_together     = [('nome', 'escola')]
+
+    def __str__(self):
+        return self.nome
 
 
 class Turma(models.Model):
@@ -39,12 +46,13 @@ class Turma(models.Model):
         choices=TURNO_CHOICES,
         default='manha',
     )
-    serie = models.CharField(
-        verbose_name='Série',
-        max_length=30,
-        choices=SERIE_CHOICES,
+    serie = models.ForeignKey(
+        Serie,
+        on_delete=models.SET_NULL,
+        null=True,
         blank=True,
-        default='',
+        related_name='turmas',
+        verbose_name='Série',
     )
     ano_letivo = models.ForeignKey(
         AnoLetivo,
@@ -61,18 +69,17 @@ class Turma(models.Model):
     ativo = models.BooleanField(verbose_name='Ativa', default=True)
 
     class Meta:
-        verbose_name = 'Turma'
+        verbose_name        = 'Turma'
         verbose_name_plural = 'Turmas'
-        ordering = ['nome']
+        ordering            = ['nome']
 
     def __str__(self):
         turno_label = dict(TURNO_CHOICES).get(self.turno, self.turno)
-        serie_label = self.serie or '—'
+        serie_label = self.serie.nome if self.serie_id else '—'
         return f'{self.nome} — {serie_label} ({turno_label})'
 
     @property
     def total_alunos(self):
-        # usa a annotation alunos_count quando disponível (evita query extra)
         if 'alunos_count' in self.__dict__:
             return self.__dict__['alunos_count']
         return self.alunos.count()

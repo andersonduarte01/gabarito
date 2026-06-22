@@ -7,8 +7,7 @@ from django.views.generic import CreateView, ListView, DeleteView, UpdateView
 from apps.core.models import UsuarioEscola
 from apps.core.permissao import PermissaoRequiredMixin
 from .forms import ArquivoForm, CategoriaArquivoForm, LivroForm, VideoForm
-from .models import Arquivo, CategoriaArquivo, Livro, Video
-from ..sala.models import SERIE_CHOICES
+from .models import Arquivo, CategoriaArquivo, Livro, Video, SERIE_CHOICES
 
 _TIPOS_GESTAO = [UsuarioEscola.DIRETOR, UsuarioEscola.COLABORADOR]
 _TIPOS_ACESSO = [

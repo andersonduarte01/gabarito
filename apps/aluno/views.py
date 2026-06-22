@@ -1,4 +1,6 @@
 from django.contrib import messages
+from django.core.paginator import Paginator
+from django.db.models import Q
 from django.shortcuts import redirect, get_object_or_404
 from django.views.generic import TemplateView, UpdateView
 from django.urls import reverse_lazy
@@ -18,6 +20,8 @@ class ListaAlunos(PermissaoRequiredMixin, TemplateView):
     template_name = 'aluno/lista_alunos.html'
     permissao_tipos = _TIPOS_GESTAO
 
+    POR_PAGINA = 15
+
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         escola = self.request.escola
@@ -30,19 +34,32 @@ class ListaAlunos(PermissaoRequiredMixin, TemplateView):
         )
 
         turma_id = self.request.GET.get('turma', '')
-        situacao  = self.request.GET.get('situacao', '')
+        situacao = self.request.GET.get('situacao', '')
+        busca    = self.request.GET.get('busca', '').strip()
 
         if turma_id:
             qs = qs.filter(sala_id=turma_id)
         if situacao:
             qs = qs.filter(situacao=situacao)
+        if busca:
+            qs = qs.filter(
+                Q(usuario__nome__icontains=busca) | Q(matricula__icontains=busca)
+            )
 
-        alunos = list(qs)
-        ctx['alunos']           = alunos
-        ctx['total']            = len(alunos)
+        total     = qs.count()
+        paginator = Paginator(qs, self.POR_PAGINA)
+        page_obj  = paginator.get_page(self.request.GET.get('page', 1))
+
+        params = self.request.GET.copy()
+        params.pop('page', None)
+
+        ctx['alunos']           = page_obj.object_list
+        ctx['page_obj']         = page_obj
+        ctx['total']            = total
         ctx['turmas']           = Turma.objects.filter(escola=escola, ativo=True).order_by('nome')
         ctx['situacao_choices'] = SITUACAO
-        ctx['filtros']          = {'turma': turma_id, 'situacao': situacao}
+        ctx['filtros']          = {'turma': turma_id, 'situacao': situacao, 'busca': busca}
+        ctx['query_string']     = params.urlencode()
         return ctx
 
 
@@ -72,7 +89,6 @@ class CadastrarAluno(PermissaoRequiredMixin, TemplateView):
             email=d.get('email') or None,
             password=d.get('password') or None,
             sexo=d.get('sexo') or '',
-            matricula=d.get('matricula') or '',
             telefone=d.get('telefone') or '',
             responsavel_legal=d.get('responsavel_legal') or '',
             telefone_responsavel=d.get('telefone_responsavel') or '',

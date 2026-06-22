@@ -300,18 +300,11 @@ class AlunoService:
     def _resolver_credenciais(
         self, *, cpf: str, email, password, tem_responsavel: bool
     ) -> tuple[str, bool, str | None]:
-        """Retorna (email_login, is_active, senha) conforme regra de responsável."""
-        if tem_responsavel:
-            import uuid
-            slug = cpf[-6:] if cpf else uuid.uuid4().hex[:8]
-            email_login = f'aluno.{slug}@{self.EMAIL_INSTITUCIONAL_DOMINIO}'
-            return email_login, False, None
-
+        """Retorna (email_login, is_active, senha). Ambos os casos exigem credenciais reais."""
         if not email:
-            raise ValueError('Email é obrigatório para aluno sem responsável.')
+            raise ValueError('E-mail é obrigatório.')
         if not password:
-            raise ValueError('Senha é obrigatória para aluno sem responsável.')
-
+            raise ValueError('Senha é obrigatória.')
         return email, True, password
 
     def _garantir_vinculo(self, usuario) -> None:

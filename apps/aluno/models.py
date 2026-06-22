@@ -96,7 +96,16 @@ class Aluno(models.Model):
     def __str__(self):
         return self.usuario.nome
 
+    def _gerar_matricula(self):
+        from django.utils import timezone
+        ano = timezone.now().year
+        esc = self.escola_id or 0
+        seq = Aluno.objects.filter(escola_id=esc).count() + 1
+        return f'{ano}{esc:03d}{seq:06d}'
+
     def save(self, *args, **kwargs):
         if self.cpf:
             self.cpf = normalizar_cpf(self.cpf)
+        if not self.matricula and self.escola_id:
+            self.matricula = self._gerar_matricula()
         super().save(*args, **kwargs)

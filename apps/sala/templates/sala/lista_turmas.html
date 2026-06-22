@@ -47,9 +47,9 @@
                 </label>
                 <select name="serie" class="select select-bordered select-sm rounded-xl h-9 text-[12px]">
                     <option value="">Todas as séries</option>
-                    {% for valor, label in serie_choices %}
-                        <option value="{{ valor }}" {% if filtros.serie == valor %}selected{% endif %}>
-                            {{ label }}
+                    {% for s in series %}
+                        <option value="{{ s.pk }}" {% if filtros.serie == s.pk|stringformat:'s' %}selected{% endif %}>
+                            {{ s.nome }}
                         </option>
                     {% endfor %}
                 </select>

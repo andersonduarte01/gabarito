@@ -41,6 +41,7 @@
         </div>
         <div class="p-5 space-y-4">
 
+            {# Linha 1 — Nome #}
             <div class="form-control">
                 <label class="label pb-1.5">
                     <span class="label-text text-[13px] font-medium text-slate-700">
@@ -55,7 +56,8 @@
                 {% endif %}
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {# Linha 2 — Data de nascimento + Sexo #}
+            <div class="grid grid-cols-2 gap-4">
                 <div class="form-control">
                     <label class="label pb-1.5">
                         <span class="label-text text-[13px] font-medium text-slate-700">Data de nascimento</span>
@@ -80,7 +82,8 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {# Linha 3 — CPF + Telefone #}
+            <div class="grid grid-cols-2 gap-4">
                 <div class="form-control">
                     <label class="label pb-1.5">
                         <span class="label-text text-[13px] font-medium text-slate-700">CPF</span>
@@ -94,27 +97,15 @@
                 </div>
                 <div class="form-control">
                     <label class="label pb-1.5">
-                        <span class="label-text text-[13px] font-medium text-slate-700">Matrícula</span>
+                        <span class="label-text text-[13px] font-medium text-slate-700">Telefone</span>
                     </label>
-                    {{ form.matricula }}
-                    {% if form.matricula.errors %}
-                        <div class="label pt-1">{% for e in form.matricula.errors %}
+                    {{ form.telefone }}
+                    {% if form.telefone.errors %}
+                        <div class="label pt-1">{% for e in form.telefone.errors %}
                             <span class="label-text-alt text-error text-[11px]">{{ e }}</span>
                         {% endfor %}</div>
                     {% endif %}
                 </div>
-            </div>
-
-            <div class="form-control">
-                <label class="label pb-1.5">
-                    <span class="label-text text-[13px] font-medium text-slate-700">Telefone</span>
-                </label>
-                {{ form.telefone }}
-                {% if form.telefone.errors %}
-                    <div class="label pt-1">{% for e in form.telefone.errors %}
-                        <span class="label-text-alt text-error text-[11px]">{{ e }}</span>
-                    {% endfor %}</div>
-                {% endif %}
             </div>
 
         </div>
@@ -127,28 +118,47 @@
             <p class="text-[11px] text-slate-400 mt-0.5">Dados do responsável legal pelo aluno</p>
         </div>
         <div class="p-5 space-y-4">
-            <div class="form-control">
-                <label class="label pb-1.5">
-                    <span class="label-text text-[13px] font-medium text-slate-700">Nome do responsável</span>
-                </label>
-                {{ form.responsavel_legal }}
-                {% if form.responsavel_legal.errors %}
-                    <div class="label pt-1">{% for e in form.responsavel_legal.errors %}
-                        <span class="label-text-alt text-error text-[11px]">{{ e }}</span>
-                    {% endfor %}</div>
-                {% endif %}
+
+            {# Toggle no topo #}
+            <label class="flex items-start gap-4 cursor-pointer group">
+                <div class="pt-0.5">{{ form.tem_responsavel }}</div>
+                <div class="flex-1">
+                    <p class="text-[13px] font-semibold text-slate-800 group-hover:text-primary
+                               transition-colors leading-snug">
+                        Possui responsável
+                    </p>
+                    <p class="text-[12px] text-slate-400 mt-0.5 leading-relaxed">
+                        Ative para informar os dados do responsável legal.
+                    </p>
+                </div>
+            </label>
+
+            {# Campos exibidos somente com toggle ativo #}
+            <div id="responsavel-fields" class="space-y-4 hidden">
+                <div class="form-control">
+                    <label class="label pb-1.5">
+                        <span class="label-text text-[13px] font-medium text-slate-700">Nome do responsável</span>
+                    </label>
+                    {{ form.responsavel_legal }}
+                    {% if form.responsavel_legal.errors %}
+                        <div class="label pt-1">{% for e in form.responsavel_legal.errors %}
+                            <span class="label-text-alt text-error text-[11px]">{{ e }}</span>
+                        {% endfor %}</div>
+                    {% endif %}
+                </div>
+                <div class="form-control">
+                    <label class="label pb-1.5">
+                        <span class="label-text text-[13px] font-medium text-slate-700">Telefone do responsável</span>
+                    </label>
+                    {{ form.telefone_responsavel }}
+                    {% if form.telefone_responsavel.errors %}
+                        <div class="label pt-1">{% for e in form.telefone_responsavel.errors %}
+                            <span class="label-text-alt text-error text-[11px]">{{ e }}</span>
+                        {% endfor %}</div>
+                    {% endif %}
+                </div>
             </div>
-            <div class="form-control">
-                <label class="label pb-1.5">
-                    <span class="label-text text-[13px] font-medium text-slate-700">Telefone do responsável</span>
-                </label>
-                {{ form.telefone_responsavel }}
-                {% if form.telefone_responsavel.errors %}
-                    <div class="label pt-1">{% for e in form.telefone_responsavel.errors %}
-                        <span class="label-text-alt text-error text-[11px]">{{ e }}</span>
-                    {% endfor %}</div>
-                {% endif %}
-            </div>
+
         </div>
     </div>
 
@@ -186,93 +196,51 @@
         </div>
     </div>
 
-    {# ── Acesso ao sistema (criar) ──────────────────────────────────────────── #}
-    {% if modo == 'criar' %}
-        <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/5 overflow-hidden">
-            <div class="px-5 py-4 border-b border-slate-100">
-                <h2 class="text-[13px] font-semibold text-slate-800">Acesso ao sistema</h2>
-                <p class="text-[11px] text-slate-400 mt-0.5">
-                    Alunos com responsável não possuem login próprio
-                </p>
-            </div>
-            <div class="p-5 space-y-4">
-
-                <label class="flex items-start gap-4 cursor-pointer group">
-                    <div class="pt-0.5">{{ form.tem_responsavel }}</div>
-                    <div class="flex-1">
-                        <p class="text-[13px] font-semibold text-slate-800 group-hover:text-primary
-                                   transition-colors leading-snug">
-                            Possui responsável
-                        </p>
-                        <p class="text-[12px] text-slate-400 mt-0.5 leading-relaxed">
-                            Quando ativado, o acesso ao sistema é gerido pelo responsável.
-                        </p>
-                    </div>
-                </label>
-
-                <div id="acesso-fields" class="space-y-4 hidden">
-                    <div class="form-control">
-                        <label class="label pb-1.5">
-                            <span class="label-text text-[13px] font-medium text-slate-700">
-                                E-mail de acesso <span class="text-error">*</span>
-                            </span>
-                        </label>
-                        {{ form.email }}
-                        {% if form.email.errors %}
-                            <div class="label pt-1">{% for e in form.email.errors %}
-                                <span class="label-text-alt text-error text-[11px]">{{ e }}</span>
-                            {% endfor %}</div>
-                        {% endif %}
-                    </div>
-                    <div class="form-control">
-                        <label class="label pb-1.5">
-                            <span class="label-text text-[13px] font-medium text-slate-700">
-                                Senha <span class="text-error">*</span>
-                            </span>
-                        </label>
-                        {{ form.password }}
-                        {% if form.password.errors %}
-                            <div class="label pt-1">{% for e in form.password.errors %}
-                                <span class="label-text-alt text-error text-[11px]">{{ e }}</span>
-                            {% endfor %}</div>
-                        {% endif %}
-                        <div class="label pt-0.5">
-                            <span class="label-text-alt text-slate-400 text-[11px]">Mínimo 8 caracteres.</span>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
+    {# ── Acesso ao sistema ─────────────────────────────────────────────────── #}
+    <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/5 overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-100">
+            <h2 class="text-[13px] font-semibold text-slate-800">Acesso ao sistema</h2>
+            <p class="text-[11px] text-slate-400 mt-0.5">
+                Credenciais usadas pelo aluno ou responsável para entrar no sistema
+            </p>
         </div>
-    {% endif %}
+        <div class="p-5 space-y-4">
 
-    {# ── Conta (editar) ────────────────────────────────────────────────────── #}
-    {% if modo == 'editar' %}
-        <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/5 overflow-hidden">
-            <div class="px-5 py-4 border-b border-slate-100">
-                <h2 class="text-[13px] font-semibold text-slate-800">Conta</h2>
-                <p class="text-[11px] text-slate-400 mt-0.5">E-mail de acesso ao sistema</p>
+            <div class="form-control">
+                <label class="label pb-1.5">
+                    <span class="label-text text-[13px] font-medium text-slate-700">
+                        E-mail <span class="text-error">*</span>
+                    </span>
+                </label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                    <div class="label pt-1">{% for e in form.email.errors %}
+                        <span class="label-text-alt text-error text-[11px]">{{ e }}</span>
+                    {% endfor %}</div>
+                {% endif %}
             </div>
-            <div class="p-5">
+
+            {% if modo == 'criar' %}
                 <div class="form-control">
                     <label class="label pb-1.5">
-                        <span class="label-text text-[13px] font-medium text-slate-700">E-mail</span>
+                        <span class="label-text text-[13px] font-medium text-slate-700">
+                            Senha <span class="text-error">*</span>
+                        </span>
                     </label>
-                    {{ form.email }}
-                    {% if form.email.errors %}
-                        <div class="label pt-1">{% for e in form.email.errors %}
+                    {{ form.password }}
+                    {% if form.password.errors %}
+                        <div class="label pt-1">{% for e in form.password.errors %}
                             <span class="label-text-alt text-error text-[11px]">{{ e }}</span>
                         {% endfor %}</div>
                     {% endif %}
                     <div class="label pt-0.5">
-                        <span class="label-text-alt text-slate-400 text-[11px]">
-                            Alterar o e-mail muda as credenciais de login do aluno.
-                        </span>
+                        <span class="label-text-alt text-slate-400 text-[11px]">Mínimo 8 caracteres.</span>
                     </div>
                 </div>
-            </div>
+            {% endif %}
+
         </div>
-    {% endif %}
+    </div>
 
     {# ── Erros globais ─────────────────────────────────────────────────────── #}
     {% if form.non_field_errors %}
@@ -307,18 +275,16 @@
 {% endblock %}
 
 {% block script %}
-{% if modo == 'criar' %}
 <script>
 (function () {
     const toggle = document.getElementById('id_tem_responsavel');
-    const fields = document.getElementById('acesso-fields');
+    const fields = document.getElementById('responsavel-fields');
     if (!toggle || !fields) return;
     function sync() {
-        fields.classList.toggle('hidden', toggle.checked);
+        fields.classList.toggle('hidden', !toggle.checked);
     }
     toggle.addEventListener('change', sync);
     sync();
 }());
 </script>
-{% endif %}
 {% endblock %}

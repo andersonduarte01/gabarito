@@ -17,8 +17,8 @@ from apps.core.models import UsuarioEscola
 from apps.core.permissao import PermissaoRequiredMixin
 from apps.core.views import BaseDashboardView
 from apps.aluno.models import Aluno
-from apps.sala.models import Turma
-from .forms import EscolaForm, EnderecoEscolarForm, AnoLetivoForm
+from apps.sala.models import Turma, Serie
+from .forms import EscolaForm, EnderecoEscolarForm, AnoLetivoForm, SerieForm
 from .models import UnidadeEscolar, EnderecoEscolar, AnoLetivo
 from .serializers import (
     UnidadeEscolarSerializer,
@@ -150,6 +150,7 @@ class PerfilEscola(PermissaoRequiredMixin, TemplateView):
             ctx['diretor'] = escola.diretor
         except Exception:
             ctx['diretor'] = None
+        ctx['series_perfil'] = Serie.objects.filter(escola=escola).order_by('ordem', 'nome')
         return ctx
 
 
@@ -283,6 +284,78 @@ class RemoverAnoLetivo(PermissaoRequiredMixin, DeleteView):
         ano = self.object.ano
         response = super().form_valid(form)
         messages.success(self.request, f'Ano letivo {ano} removido com sucesso.')
+        return response
+
+
+# ---------------------------------------------------------------------------
+# Séries
+# ---------------------------------------------------------------------------
+
+class ListaSeries(PermissaoRequiredMixin, TemplateView):
+    template_name   = 'escola/serie_lista.html'
+    permissao_tipos = [UsuarioEscola.DIRETOR, UsuarioEscola.COLABORADOR]
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['series'] = (
+            Serie.objects
+            .filter(escola=self.request.escola)
+            .annotate(total_turmas=Count('turmas'))
+            .order_by('ordem', 'nome')
+        )
+        return ctx
+
+
+class AdicionarSerie(PermissaoRequiredMixin, SuccessMessageMixin, CreateView):
+    model           = Serie
+    form_class      = SerieForm
+    template_name   = 'escola/serie_form.html'
+    success_url     = reverse_lazy('escola:series')
+    success_message = 'Série "%(nome)s" criada com sucesso.'
+    permissao_tipos = [UsuarioEscola.DIRETOR]
+
+    def form_valid(self, form):
+        form.instance.escola = self.request.escola
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['modo'] = 'criar'
+        return ctx
+
+
+class EditarSerie(PermissaoRequiredMixin, SuccessMessageMixin, UpdateView):
+    model           = Serie
+    form_class      = SerieForm
+    template_name   = 'escola/serie_form.html'
+    success_url     = reverse_lazy('escola:series')
+    success_message = 'Série "%(nome)s" atualizada com sucesso.'
+    permissao_tipos = [UsuarioEscola.DIRETOR]
+
+    def get_queryset(self):
+        return Serie.objects.filter(escola=self.request.escola)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['modo'] = 'editar'
+        return ctx
+
+
+class RemoverSerie(PermissaoRequiredMixin, DeleteView):
+    model           = Serie
+    success_url     = reverse_lazy('escola:series')
+    permissao_tipos = [UsuarioEscola.DIRETOR]
+
+    def get_queryset(self):
+        return Serie.objects.filter(escola=self.request.escola)
+
+    def get(self, request, *args, **kwargs):
+        return redirect('escola:series')
+
+    def form_valid(self, form):
+        nome     = self.object.nome
+        response = super().form_valid(form)
+        messages.success(self.request, f'Série "{nome}" removida com sucesso.')
         return response
 
 

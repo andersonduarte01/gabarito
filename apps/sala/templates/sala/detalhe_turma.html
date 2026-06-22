@@ -209,9 +209,11 @@
                             <p class="text-[13px] font-semibold text-slate-800 truncate leading-snug">
                                 {{ aluno.usuario.nome }}
                             </p>
-                            <p class="text-[11px] text-slate-400 truncate mt-0.5">
-                                {{ aluno.usuario.email }}
-                            </p>
+                            {% if aluno.matricula %}
+                                <p class="text-[11px] text-slate-400 truncate mt-0.5">
+                                    {{ aluno.matricula }}
+                                </p>
+                            {% endif %}
                         </div>
                         <span class="shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full
                                      {% if aluno.situacao == 'MATRIC' %}text-emerald-700 bg-emerald-50

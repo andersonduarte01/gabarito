@@ -23,6 +23,12 @@ urlpatterns = [
     path('ano-letivo/<int:pk>/corrente/',          views.DefinirAnoCorrente.as_view(),  name='definir_ano_corrente'),
     path('ano-letivo/<int:pk>/remover/',           views.RemoverAnoLetivo.as_view(),    name='remover_ano_letivo'),
 
+    # Séries
+    path('series/',                      views.ListaSeries.as_view(),    name='series'),
+    path('series/nova/',                 views.AdicionarSerie.as_view(), name='adicionar_serie'),
+    path('series/<int:pk>/editar/',      views.EditarSerie.as_view(),    name='editar_serie'),
+    path('series/<int:pk>/remover/',     views.RemoverSerie.as_view(),   name='remover_serie'),
+
     # Rotas comentadas — dependem de apps desativados temporariamente
     # path('sala/<slug:slug>/alunos/<int:id>/', views.UnidAlunos.as_view(), name='unidade_sala_alunos'),
     # path('frequencia/relatorios/<int:pk>/',   views.FrequenciaRelatorios.as_view(), name='freq_relatorios'),

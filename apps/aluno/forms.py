@@ -15,10 +15,18 @@ class AlunoCreateForm(DaisyFormMixin, forms.Form):
     )
     sexo = forms.ChoiceField(label='Sexo', choices=SEXO, required=False)
     cpf = forms.CharField(label='CPF', max_length=14, required=False)
-    matricula = forms.CharField(label='Matrícula', max_length=20, required=False)
     telefone = forms.CharField(label='Telefone', max_length=20, required=False)
 
     # ── Responsável ───────────────────────────────────────────────────────────
+    tem_responsavel = forms.BooleanField(
+        label='Possui responsável',
+        required=False,
+        initial=True,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'toggle toggle-primary',
+            'role': 'switch',
+        }),
+    )
     responsavel_legal = forms.CharField(
         label='Nome do responsável', max_length=150, required=False,
     )
@@ -35,20 +43,10 @@ class AlunoCreateForm(DaisyFormMixin, forms.Form):
     )
 
     # ── Acesso ao sistema ─────────────────────────────────────────────────────
-    tem_responsavel = forms.BooleanField(
-        label='Possui responsável',
-        required=False,
-        initial=True,
-        widget=forms.CheckboxInput(attrs={
-            'class': 'toggle toggle-primary',
-            'role': 'switch',
-        }),
-    )
-    email = forms.EmailField(label='E-mail de acesso', required=False)
+    email = forms.EmailField(label='E-mail de acesso')
     password = forms.CharField(
         label='Senha',
         widget=forms.PasswordInput(render_value=False),
-        required=False,
         min_length=8,
     )
 
@@ -61,22 +59,28 @@ class AlunoCreateForm(DaisyFormMixin, forms.Form):
 
     def clean(self):
         cleaned = super().clean()
-        if not cleaned.get('tem_responsavel', True):
-            if not cleaned.get('email'):
-                self.add_error('email', 'Obrigatório para alunos sem responsável.')
-            if not cleaned.get('password'):
-                self.add_error('password', 'Obrigatório para alunos sem responsável.')
+        if not cleaned.get('tem_responsavel'):
+            cleaned['responsavel_legal'] = ''
+            cleaned['telefone_responsavel'] = ''
         return cleaned
 
 
 class AlunoEditForm(DaisyFormMixin, forms.ModelForm):
     nome = forms.CharField(label='Nome completo', max_length=150)
     email = forms.EmailField(label='E-mail de acesso', required=False)
+    tem_responsavel = forms.BooleanField(
+        label='Possui responsável',
+        required=False,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'toggle toggle-primary',
+            'role': 'switch',
+        }),
+    )
 
     class Meta:
         model = Aluno
         fields = (
-            'cpf', 'matricula', 'data_nascimento', 'sexo',
+            'cpf', 'data_nascimento', 'sexo',
             'telefone', 'responsavel_legal', 'telefone_responsavel',
             'sala', 'situacao',
         )
@@ -91,6 +95,7 @@ class AlunoEditForm(DaisyFormMixin, forms.ModelForm):
         if self.instance and self.instance.pk:
             self.fields['nome'].initial = self.instance.usuario.nome
             self.fields['email'].initial = self.instance.usuario.email
+            self.fields['tem_responsavel'].initial = bool(self.instance.responsavel_legal)
         if escola:
             self.fields['sala'].queryset = (
                 Turma.objects.filter(escola=escola, ativo=True).order_by('nome')
@@ -100,4 +105,10 @@ class AlunoEditForm(DaisyFormMixin, forms.ModelForm):
         self.fields['sala'].required = False
         self.fields['sala'].empty_label = '— Sem turma —'
         self.fields['cpf'].required = False
-        self.fields['matricula'].required = False
+
+    def clean(self):
+        cleaned = super().clean()
+        if not cleaned.get('tem_responsavel'):
+            cleaned['responsavel_legal'] = ''
+            cleaned['telefone_responsavel'] = ''
+        return cleaned

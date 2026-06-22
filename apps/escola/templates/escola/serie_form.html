@@ -1,0 +1,115 @@
+{% extends 'base/base_escola.html' %}
+
+{% block titulo %}
+    {% if modo == 'criar' %}Nova Série{% else %}Editar Série — {{ object.nome }}{% endif %}
+    — {{ request.escola.nome_escola }}
+{% endblock %}
+{% block titulo_pagina %}
+    {% if modo == 'criar' %}Nova Série{% else %}Editar Série{% endif %}
+{% endblock %}
+
+{% block subtitulo_pagina %}
+    <a href="{% url 'escola:dash_escola' %}"
+       class="text-[11px] text-slate-400 hover:text-slate-600 transition-colors">Painel</a>
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-2.5 text-slate-300"
+         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+    </svg>
+    <a href="{% url 'escola:perfil_escola' %}"
+       class="text-[11px] text-slate-400 hover:text-slate-600 transition-colors">Perfil da escola</a>
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-2.5 text-slate-300"
+         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+    </svg>
+    <a href="{% url 'escola:series' %}"
+       class="text-[11px] text-slate-400 hover:text-slate-600 transition-colors">Séries</a>
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-2.5 text-slate-300"
+         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+    </svg>
+    <span class="text-[11px] text-slate-500 font-medium">
+        {% if modo == 'criar' %}Nova{% else %}Editar{% endif %}
+    </span>
+{% endblock %}
+
+{% block conteudo %}
+<form method="post" novalidate>
+{% csrf_token %}
+
+<div class="space-y-5">
+
+    <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/5 overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-100">
+            <h2 class="text-[13px] font-semibold text-slate-800">Dados da série</h2>
+            <p class="text-[11px] text-slate-400 mt-0.5">
+                Séries são configuradas por escola e aparecem no cadastro de turmas.
+            </p>
+        </div>
+        <div class="p-5 space-y-4">
+
+            <div class="form-control">
+                <label class="label pb-1.5">
+                    <span class="label-text text-[13px] font-medium text-slate-700">
+                        Nome <span class="text-error">*</span>
+                    </span>
+                </label>
+                {{ form.nome }}
+                {% if form.nome.errors %}
+                    <div class="label pt-1">
+                        {% for e in form.nome.errors %}
+                            <span class="label-text-alt text-error text-[11px]">{{ e }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <div class="label pt-0.5">
+                    <span class="label-text-alt text-slate-400 text-[11px]">
+                        Ex: 1º Ano, 2º Ano, Educação Infantil
+                    </span>
+                </div>
+            </div>
+
+            <div class="form-control">
+                <label class="label pb-1.5">
+                    <span class="label-text text-[13px] font-medium text-slate-700">Ordem de exibição</span>
+                </label>
+                {{ form.ordem }}
+                {% if form.ordem.errors %}
+                    <div class="label pt-1">
+                        {% for e in form.ordem.errors %}
+                            <span class="label-text-alt text-error text-[11px]">{{ e }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <div class="label pt-0.5">
+                    <span class="label-text-alt text-slate-400 text-[11px]">
+                        Séries são ordenadas por este número (menor = primeiro).
+                    </span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    {% if form.non_field_errors %}
+        <div role="alert" class="alert alert-error text-sm py-3 rounded-xl">
+            <ul class="list-none">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        </div>
+    {% endif %}
+
+    <div class="flex items-center justify-end gap-3 pb-2">
+        <a href="{% url 'escola:series' %}"
+           class="btn btn-ghost btn-sm rounded-xl text-slate-600 border border-slate-200 hover:bg-slate-50">
+            Cancelar
+        </a>
+        <button type="submit" class="btn btn-primary btn-sm rounded-xl gap-1.5 px-5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none"
+                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+            {% if modo == 'criar' %}Criar série{% else %}Salvar alterações{% endif %}
+        </button>
+    </div>
+
+</div>
+</form>
+{% endblock %}

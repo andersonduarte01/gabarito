@@ -2,6 +2,7 @@ from django import forms
 from django.utils.timezone import now
 
 from .models import UnidadeEscolar, EnderecoEscolar, AnoLetivo
+from apps.sala.models import Serie
 
 
 # ---------------------------------------------------------------------------
@@ -187,3 +188,16 @@ class FiltroMesForm(DaisyFormMixin, forms.Form):
         initial=now().month,
         label='Mês',
     )
+
+
+class SerieForm(DaisyFormMixin, forms.ModelForm):
+    class Meta:
+        model  = Serie
+        fields = ('nome', 'ordem')
+        labels = {
+            'nome':  'Nome da série',
+            'ordem': 'Ordem de exibição',
+        }
+        help_texts = {
+            'ordem': 'Número inteiro; séries com menor valor aparecem primeiro.',
+        }
