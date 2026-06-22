@@ -139,17 +139,35 @@ class AnoLetivoForm(DaisyFormMixin, forms.ModelForm):
         model  = AnoLetivo
         fields = ('ano', 'inicio', 'fim', 'corrente', 'descricao')
         labels = {
-            'ano':      'Ano letivo',
-            'inicio':   'Data de início',
-            'fim':      'Data de término',
-            'corrente': 'Ano letivo atual',
-            'descricao':'Observações',
+            'ano':       'Ano letivo',
+            'inicio':    'Data de início',
+            'fim':       'Data de término',
+            'corrente':  'Definir como ano letivo corrente',
+            'descricao': 'Observações',
         }
         widgets = {
-            'inicio':   forms.DateInput(attrs={'type': 'date'}),
-            'fim':      forms.DateInput(attrs={'type': 'date'}),
-            'descricao': forms.Textarea(attrs={'rows': 3}),
+            'ano':      forms.NumberInput(attrs={
+                'placeholder': 'Ex: 2026',
+                'min': '2000',
+                'max': '2099',
+            }),
+            'inicio':    forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
+            'fim':       forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
+            'corrente':  forms.CheckboxInput(attrs={
+                'class': 'toggle toggle-primary',
+                'role':  'switch',
+            }),
+            'descricao': forms.Textarea(attrs={
+                'rows':        3,
+                'placeholder': 'Informações adicionais sobre o ano letivo (opcional).',
+            }),
         }
+
+    def clean_ano(self):
+        ano = self.cleaned_data.get('ano')
+        if ano is not None and not (2000 <= ano <= 2099):
+            raise forms.ValidationError('Informe um ano válido entre 2000 e 2099.')
+        return ano
 
     def clean(self):
         cleaned = super().clean()

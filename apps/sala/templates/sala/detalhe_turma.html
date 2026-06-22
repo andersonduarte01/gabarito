@@ -1,0 +1,258 @@
+{% extends 'base/base_escola.html' %}
+
+{% block titulo %}{{ turma.nome }} — {{ request.escola.nome_escola }}{% endblock %}
+{% block titulo_pagina %}{{ turma.nome }}{% endblock %}
+
+{% block subtitulo_pagina %}
+    <a href="{% url 'escola:dash_escola' %}"
+       class="text-[11px] text-slate-400 hover:text-slate-600 transition-colors">Painel</a>
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-2.5 text-slate-300"
+         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+    </svg>
+    <a href="{% url 'turma:lista_turmas' %}"
+       class="text-[11px] text-slate-400 hover:text-slate-600 transition-colors">Turmas</a>
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-2.5 text-slate-300"
+         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+    </svg>
+    <span class="text-[11px] text-slate-500 font-medium truncate max-w-[180px]">{{ turma.nome }}</span>
+{% endblock %}
+
+{% block conteudo %}
+<div class="space-y-4">
+
+    {# ── Hero ─────────────────────────────────────────────────────────────── #}
+    <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/5 p-5 sm:p-6">
+        <div class="flex flex-col sm:flex-row sm:items-start gap-5">
+
+            {# Ícone #}
+            <div class="shrink-0">
+                <div class="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-primary" fill="none"
+                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25
+                                 a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6z
+                                 M3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18
+                                 a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25z
+                                 M13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25
+                                 A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6z
+                                 M13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18
+                                 A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
+                    </svg>
+                </div>
+            </div>
+
+            {# Info #}
+            <div class="flex-1 min-w-0">
+                <div class="flex flex-wrap items-center gap-2 mb-2">
+                    {# Status #}
+                    {% if turma.status == 'ativa' %}
+                        <span class="inline-flex items-center gap-1 text-[11px] font-semibold
+                                     text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            Ativa
+                        </span>
+                    {% elif turma.status == 'lotada' %}
+                        <span class="inline-flex items-center gap-1 text-[11px] font-semibold
+                                     text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                            Lotada
+                        </span>
+                    {% else %}
+                        <span class="inline-flex items-center gap-1 text-[11px] font-semibold
+                                     text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                            Inativa
+                        </span>
+                    {% endif %}
+
+                    {# Turno #}
+                    <span class="inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full
+                                 {% if turma.turno == 'manha' %}bg-amber-50 text-amber-700
+                                 {% elif turma.turno == 'tarde' %}bg-sky-50 text-sky-700
+                                 {% else %}bg-violet-50 text-violet-700{% endif %}">
+                        {{ turma.get_turno_display }}
+                    </span>
+                </div>
+
+                <h1 class="text-[20px] font-bold text-slate-900">{{ turma.nome }}</h1>
+
+                <div class="flex flex-wrap items-center gap-3 mt-2">
+                    {% if turma.serie %}
+                        <span class="text-[12px] text-slate-500">
+                            <span class="text-slate-300">Série:</span> {{ turma.get_serie_display }}
+                        </span>
+                    {% endif %}
+                    <span class="text-[12px] text-slate-500">
+                        <span class="text-slate-300">Ano letivo:</span>
+                        {{ turma.ano_letivo.ano }}
+                        {% if turma.ano_letivo.corrente %}
+                            <span class="ml-1 text-[10px] font-bold text-emerald-600
+                                         bg-emerald-50 px-1.5 py-0.5 rounded-full">corrente</span>
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+
+            {# Ações #}
+            {% if request.vinculo.tipo_usuario == 'DIR' or request.vinculo.tipo_usuario == 'COLAB' %}
+                <div class="shrink-0">
+                    <a href="{% url 'turma:editar_turma' turma.pk %}"
+                       class="btn btn-primary btn-sm rounded-xl gap-1.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5
+                                     m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                        Editar turma
+                    </a>
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    {# ── Estatísticas ─────────────────────────────────────────────────────── #}
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+
+        <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/5 p-4">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Alunos</p>
+            <p class="text-[26px] font-extrabold text-slate-900 leading-none">{{ turma.total_alunos }}</p>
+            <p class="text-[11px] text-slate-400 mt-1">matriculados</p>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/5 p-4">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Capacidade</p>
+            {% if turma.capacidade %}
+                <p class="text-[26px] font-extrabold text-slate-900 leading-none">{{ turma.capacidade }}</p>
+                <p class="text-[11px] text-slate-400 mt-1">vagas totais</p>
+            {% else %}
+                <p class="text-[26px] font-extrabold text-slate-300 leading-none">—</p>
+                <p class="text-[11px] text-slate-300 mt-1">não definida</p>
+            {% endif %}
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/5 p-4">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Vagas livres</p>
+            {% if turma.vagas_disponiveis is not None %}
+                <p class="text-[26px] font-extrabold leading-none
+                           {% if turma.vagas_disponiveis == 0 %}text-red-500
+                           {% elif turma.vagas_disponiveis <= 5 %}text-amber-500
+                           {% else %}text-emerald-600{% endif %}">
+                    {{ turma.vagas_disponiveis }}
+                </p>
+                <p class="text-[11px] text-slate-400 mt-1">disponíveis</p>
+            {% else %}
+                <p class="text-[26px] font-extrabold text-slate-300 leading-none">—</p>
+                <p class="text-[11px] text-slate-300 mt-1">ilimitado</p>
+            {% endif %}
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/5 p-4">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Ocupação</p>
+            {% if turma.percentual_ocupacao is not None %}
+                <p class="text-[26px] font-extrabold leading-none
+                           {% if turma.percentual_ocupacao >= 90 %}text-red-500
+                           {% elif turma.percentual_ocupacao >= 70 %}text-amber-500
+                           {% else %}text-emerald-600{% endif %}">
+                    {{ turma.percentual_ocupacao }}%
+                </p>
+                <div class="w-full h-1.5 bg-slate-100 rounded-full mt-2 overflow-hidden">
+                    <div class="h-full rounded-full
+                                {% if turma.percentual_ocupacao >= 90 %}bg-red-400
+                                {% elif turma.percentual_ocupacao >= 70 %}bg-amber-400
+                                {% else %}bg-emerald-400{% endif %}"
+                         style="width: {{ turma.percentual_ocupacao }}%"></div>
+                </div>
+            {% else %}
+                <p class="text-[26px] font-extrabold text-slate-300 leading-none">—</p>
+                <p class="text-[11px] text-slate-300 mt-1">sem limite</p>
+            {% endif %}
+        </div>
+
+    </div>
+
+    {# ── Lista de alunos ──────────────────────────────────────────────────── #}
+    <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/5 overflow-hidden">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+            <div>
+                <h2 class="text-[13px] font-semibold text-slate-800">Alunos matriculados</h2>
+                <p class="text-[11px] text-slate-400 mt-0.5">
+                    {{ alunos|length }} aluno{{ alunos|length|pluralize }} nesta turma
+                </p>
+            </div>
+            {% if request.vinculo.tipo_usuario == 'DIR' or request.vinculo.tipo_usuario == 'COLAB' %}
+                <a href="{% url 'aluno:cadastrar_aluno' %}"
+                   class="btn btn-ghost btn-sm rounded-xl gap-1 text-slate-500 border border-slate-200
+                          hover:border-primary hover:text-primary text-[12px]">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none"
+                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Adicionar aluno
+                </a>
+            {% endif %}
+        </div>
+
+        {% if alunos %}
+            <div class="divide-y divide-slate-50">
+                {% for aluno in alunos %}
+                    <div class="flex items-center gap-3.5 px-5 py-3 hover:bg-slate-50/60 transition-colors">
+                        <div class="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center
+                                    shrink-0 text-[12px] font-bold text-primary">
+                            {{ aluno.usuario.nome|first|upper }}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-[13px] font-semibold text-slate-800 truncate leading-snug">
+                                {{ aluno.usuario.nome }}
+                            </p>
+                            <p class="text-[11px] text-slate-400 truncate mt-0.5">
+                                {{ aluno.usuario.email }}
+                            </p>
+                        </div>
+                        <span class="shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full
+                                     {% if aluno.situacao == 'MATRIC' %}text-emerald-700 bg-emerald-50
+                                     {% elif aluno.situacao == 'TRANSF' %}text-amber-700 bg-amber-50
+                                     {% elif aluno.situacao == 'EVADIDO' %}text-red-600 bg-red-50
+                                     {% else %}text-slate-500 bg-slate-100{% endif %}">
+                            {{ aluno.get_situacao_display }}
+                        </span>
+                        {% if request.vinculo.tipo_usuario == 'DIR' or request.vinculo.tipo_usuario == 'COLAB' %}
+                            <a href="{% url 'aluno:editar_aluno' aluno.pk %}"
+                               class="shrink-0 btn btn-ghost btn-xs rounded-lg text-slate-400
+                                      hover:text-primary opacity-0 group-hover:opacity-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none"
+                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5
+                                             m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="flex flex-col items-center justify-center px-6 py-12 text-center">
+                <div class="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-300" fill="none"
+                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857
+                                 M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0
+                                 a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                </div>
+                <p class="text-[13px] font-semibold text-slate-600">Nenhum aluno nesta turma</p>
+                <p class="text-[11px] text-slate-400 mt-0.5">
+                    Adicione alunos ao cadastrar ou editar o perfil deles.
+                </p>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

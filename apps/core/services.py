@@ -208,47 +208,49 @@ class AlunoService:
         self,
         *,
         nome: str,
-        cpf: str,
-        data_nascimento: str,
-        sala,
-        tem_responsavel: bool,
+        cpf: str = '',
+        data_nascimento=None,
+        sala=None,
+        tem_responsavel: bool = True,
         email: str | None = None,
         password: str | None = None,
-        sexo: str = 'M',
+        sexo: str = '',
+        matricula: str = '',
+        telefone: str = '',
+        responsavel_legal: str = '',
+        telefone_responsavel: str = '',
     ) -> dict:
         """
         Cria um aluno com perfil de usuário e vínculo escolar.
 
-        Retorna dict com:
-            status  — 'created', 'exists', 'error'
-            message — descrição legível
-            aluno   — instância de Aluno ou None
-            usuario — instância de Usuario ou None
+        Regras:
+          - tem_responsavel=True  → email institucional gerado, is_active=False
+          - tem_responsavel=False → email/senha reais obrigatórios, is_active=True
+          - CPF é opcional; quando fornecido, é usado para detecção de duplicatas
         """
         try:
             from apps.aluno.models import Aluno
+            import uuid
 
-            cpf = normalizar_cpf(cpf)
-            if not cpf:
-                return self._erro('CPF é obrigatório.')
+            cpf_normalizado = normalizar_cpf(cpf) if cpf else ''
 
-            # Aluno já cadastrado nesta escola?
-            aluno_existente = Aluno.objects.filter(
-                cpf=cpf,
-                sala__escola=self.escola,
-            ).first()
-            if aluno_existente:
-                self._garantir_vinculo(aluno_existente.usuario)
-                return {
-                    'status': 'exists',
-                    'message': 'Aluno já cadastrado nesta escola.',
-                    'aluno': aluno_existente,
-                    'usuario': aluno_existente.usuario,
-                }
+            # Duplicata por CPF (quando fornecido)
+            if cpf_normalizado:
+                aluno_existente = Aluno.objects.filter(
+                    cpf=cpf_normalizado,
+                    escola=self.escola,
+                ).first()
+                if aluno_existente:
+                    self._garantir_vinculo(aluno_existente.usuario)
+                    return {
+                        'status': 'exists',
+                        'message': 'Aluno já cadastrado nesta escola.',
+                        'aluno': aluno_existente,
+                        'usuario': aluno_existente.usuario,
+                    }
 
             email_login, ativo, senha = self._resolver_credenciais(
-                nome=nome,
-                cpf=cpf,
+                cpf=cpf_normalizado,
                 email=email,
                 password=password,
                 tem_responsavel=tem_responsavel,
@@ -269,9 +271,13 @@ class AlunoService:
             )
 
             aluno = Aluno.objects.create(
-                cpf=cpf,
+                cpf=cpf_normalizado,
+                matricula=matricula,
                 data_nascimento=data_nascimento,
                 sexo=sexo,
+                telefone=telefone,
+                responsavel_legal=responsavel_legal,
+                telefone_responsavel=telefone_responsavel,
                 sala=sala,
                 escola=self.escola,
                 usuario=usuario,
@@ -292,13 +298,12 @@ class AlunoService:
     # ------------------------------------------------------------------
 
     def _resolver_credenciais(
-        self, *, nome: str, cpf: str, email, password, tem_responsavel: bool
+        self, *, cpf: str, email, password, tem_responsavel: bool
     ) -> tuple[str, bool, str | None]:
-        """
-        Retorna (email_login, is_active, password) conforme regra de responsável.
-        """
+        """Retorna (email_login, is_active, senha) conforme regra de responsável."""
         if tem_responsavel:
-            slug = cpf[-6:]
+            import uuid
+            slug = cpf[-6:] if cpf else uuid.uuid4().hex[:8]
             email_login = f'aluno.{slug}@{self.EMAIL_INSTITUCIONAL_DOMINIO}'
             return email_login, False, None
 

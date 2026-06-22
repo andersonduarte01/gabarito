@@ -1,7 +1,7 @@
 from django.db import models
 from ..aluno.models import Aluno
 from ..funcionario.models import Professor
-from ..sala.models import Sala
+from ..sala.models import Sala  # Sala = Turma (alias para compatibilidade)
 
 
 class Frequencia(models.Model):

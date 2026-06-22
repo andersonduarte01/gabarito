@@ -1,41 +1,48 @@
 from django.contrib import messages
 from django.shortcuts import redirect, get_object_or_404
-from django.views.generic import ListView, TemplateView, UpdateView
+from django.views.generic import TemplateView, UpdateView
 from django.urls import reverse_lazy
 
 from apps.core.models import UsuarioEscola
 from apps.core.permissao import PermissaoRequiredMixin
 from apps.core.services import AlunoService
+from apps.sala.models import Turma
 from .forms import AlunoCreateForm, AlunoEditForm
-from .models import Aluno
+from .models import Aluno, SITUACAO
 
 
 _TIPOS_GESTAO = [UsuarioEscola.DIRETOR, UsuarioEscola.COLABORADOR]
 
 
-class ListaAlunos(PermissaoRequiredMixin, ListView):
-    model = Aluno
+class ListaAlunos(PermissaoRequiredMixin, TemplateView):
     template_name = 'aluno/lista_alunos.html'
-    context_object_name = 'alunos'
     permissao_tipos = _TIPOS_GESTAO
 
-    def get_queryset(self):
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        escola = self.request.escola
+
         qs = (
             Aluno.objects
-            .filter(escola=self.request.escola)
-            .select_related('usuario', 'sala', 'sala__ano')
+            .filter(escola=escola)
+            .select_related('usuario', 'sala')
             .order_by('usuario__nome')
         )
-        sala_id = self.request.GET.get('sala')
-        if sala_id:
-            qs = qs.filter(sala_id=sala_id)
-        return qs
 
-    def get_context_data(self, **kwargs):
-        from apps.sala.models import Sala
-        ctx = super().get_context_data(**kwargs)
-        ctx['salas'] = Sala.objects.filter(escola=self.request.escola).order_by('descricao')
-        ctx['sala_selecionada'] = self.request.GET.get('sala', '')
+        turma_id = self.request.GET.get('turma', '')
+        situacao  = self.request.GET.get('situacao', '')
+
+        if turma_id:
+            qs = qs.filter(sala_id=turma_id)
+        if situacao:
+            qs = qs.filter(situacao=situacao)
+
+        alunos = list(qs)
+        ctx['alunos']           = alunos
+        ctx['total']            = len(alunos)
+        ctx['turmas']           = Turma.objects.filter(escola=escola, ativo=True).order_by('nome')
+        ctx['situacao_choices'] = SITUACAO
+        ctx['filtros']          = {'turma': turma_id, 'situacao': situacao}
         return ctx
 
 
@@ -46,7 +53,7 @@ class CadastrarAluno(PermissaoRequiredMixin, TemplateView):
     def get_context_data(self, form=None, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['form'] = form or AlunoCreateForm(escola=self.request.escola)
-        ctx['titulo'] = 'Cadastrar Aluno'
+        ctx['modo'] = 'criar'
         return ctx
 
     def post(self, request, *args, **kwargs):
@@ -62,9 +69,13 @@ class CadastrarAluno(PermissaoRequiredMixin, TemplateView):
             data_nascimento=d.get('data_nascimento'),
             sala=d.get('sala'),
             tem_responsavel=d.get('tem_responsavel', True),
-            email=d.get('email'),
-            password=d.get('password'),
-            sexo=d.get('sexo', 'M'),
+            email=d.get('email') or None,
+            password=d.get('password') or None,
+            sexo=d.get('sexo') or '',
+            matricula=d.get('matricula') or '',
+            telefone=d.get('telefone') or '',
+            responsavel_legal=d.get('responsavel_legal') or '',
+            telefone_responsavel=d.get('telefone_responsavel') or '',
         )
 
         if result['status'] == 'error':
@@ -74,12 +85,7 @@ class CadastrarAluno(PermissaoRequiredMixin, TemplateView):
         if result['status'] == 'exists':
             messages.warning(request, result['message'])
         else:
-            messages.success(request, 'Aluno cadastrado com sucesso.')
-
-        aluno = result.get('aluno')
-        if aluno and d.get('responsavel_legal'):
-            aluno.responsavel_legal = d['responsavel_legal']
-            aluno.save(update_fields=['responsavel_legal'])
+            messages.success(request, f'Aluno {d["nome"]} cadastrado com sucesso.')
 
         return redirect('aluno:lista_alunos')
 
@@ -102,28 +108,29 @@ class EditarAluno(PermissaoRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['titulo'] = f'Editar — {self.object.usuario.nome}'
+        ctx['modo'] = 'editar'
         return ctx
 
     def form_valid(self, form):
-        messages.success(self.request, 'Aluno atualizado com sucesso.')
+        usuario = self.object.usuario
+        usuario.nome = form.cleaned_data['nome']
+        novo_email = (form.cleaned_data.get('email') or '').strip()
+        if novo_email and novo_email != usuario.email:
+            usuario.email = novo_email
+        usuario.save(update_fields=['nome', 'email'])
+        messages.success(self.request, f'Aluno {usuario.nome} atualizado com sucesso.')
         return super().form_valid(form)
 
 
 class DesativarAluno(PermissaoRequiredMixin, TemplateView):
-    template_name = 'aluno/confirmar_remocao.html'
-    permissao_tipos = _TIPOS_GESTAO
+    permissao_tipos = [UsuarioEscola.DIRETOR]
 
-    def get_object(self):
-        return get_object_or_404(Aluno, pk=self.kwargs['pk'], escola=self.request.escola)
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx['objeto'] = self.get_object()
-        return ctx
+    def get(self, request, *args, **kwargs):
+        return redirect('aluno:lista_alunos')
 
     def post(self, request, *args, **kwargs):
-        aluno = self.get_object()
+        aluno = get_object_or_404(Aluno, pk=self.kwargs['pk'], escola=request.escola)
+        nome = aluno.usuario.nome
         aluno.usuario.remover_escola(request.escola)
-        messages.success(request, f'{aluno.usuario.nome} foi desativado.')
+        messages.success(request, f'{nome} foi desativado.')
         return redirect('aluno:lista_alunos')

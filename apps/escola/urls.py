@@ -16,6 +16,13 @@ urlpatterns = [
     path('editar/',          views.EditarEscola.as_view(),   name='editar_escola'),
     path('editar/endereco/', views.EditarEndereco.as_view(), name='editar_endereco'),
 
+    # Anos letivos
+    path('ano-letivo/',                           views.ListaAnosLetivos.as_view(),    name='anos_letivos'),
+    path('ano-letivo/novo/',                      views.AdicionarAnoLetivo.as_view(),  name='adicionar_ano_letivo'),
+    path('ano-letivo/<int:pk>/editar/',            views.EditarAnoLetivo.as_view(),     name='editar_ano_letivo'),
+    path('ano-letivo/<int:pk>/corrente/',          views.DefinirAnoCorrente.as_view(),  name='definir_ano_corrente'),
+    path('ano-letivo/<int:pk>/remover/',           views.RemoverAnoLetivo.as_view(),    name='remover_ano_letivo'),
+
     # Rotas comentadas — dependem de apps desativados temporariamente
     # path('sala/<slug:slug>/alunos/<int:id>/', views.UnidAlunos.as_view(), name='unidade_sala_alunos'),
     # path('frequencia/relatorios/<int:pk>/',   views.FrequenciaRelatorios.as_view(), name='freq_relatorios'),

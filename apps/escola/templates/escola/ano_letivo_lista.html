@@ -1,0 +1,383 @@
+{% extends 'base/base_escola.html' %}
+
+{% block titulo %}Anos Letivos — {{ request.escola.nome_escola }}{% endblock %}
+{% block titulo_pagina %}Anos Letivos{% endblock %}
+
+{% block subtitulo_pagina %}
+    <a href="{% url 'escola:dash_escola' %}"
+       class="text-[11px] text-slate-400 hover:text-slate-600 transition-colors">Painel</a>
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-2.5 text-slate-300"
+         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+    </svg>
+    <span class="text-[11px] text-slate-500 font-medium">Anos Letivos</span>
+{% endblock %}
+
+{% block conteudo %}
+
+{# ── Page header ──────────────────────────────────────────────────────────── #}
+<div class="flex items-start justify-between gap-4 mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-slate-900 tracking-tight leading-snug">
+            Anos Letivos
+        </h1>
+        <p class="mt-1 text-[13px] text-slate-500">
+            Gerencie os períodos letivos de {{ request.escola.nome_escola }}
+        </p>
+    </div>
+    <a href="{% url 'escola:adicionar_ano_letivo' %}"
+       class="btn btn-primary btn-sm rounded-xl gap-1.5 px-5 shrink-0">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none"
+             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+        </svg>
+        Novo Ano Letivo
+    </a>
+</div>
+
+{# ── Ano corrente em destaque ─────────────────────────────────────────────── #}
+{% if ano_corrente %}
+<div class="bg-white rounded-2xl shadow-sm ring-1 ring-emerald-500/20 p-5 mb-5
+            flex flex-col sm:flex-row sm:items-center gap-4">
+    <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600
+                flex items-center justify-center shrink-0">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
+             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5
+                     a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+    </div>
+    <div class="flex-1 min-w-0">
+        <div class="flex flex-wrap items-center gap-2 mb-1">
+            <span class="text-[13px] font-bold text-slate-900">
+                Ano Letivo Corrente: {{ ano_corrente.ano }}
+            </span>
+            <span class="inline-flex items-center gap-1 text-[10px] font-bold
+                         text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full tracking-wide">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
+                {{ ano_corrente.status_display }}
+            </span>
+        </div>
+        <p class="text-[12px] text-slate-500 mb-2">
+            {{ ano_corrente.inicio|date:"d/m/Y" }} – {{ ano_corrente.fim|date:"d/m/Y" }}
+            <span class="text-slate-300 mx-1.5">·</span>
+            {{ ano_corrente.duracao_dias }} dias
+        </p>
+        {% if ano_corrente.status == 'em_curso' %}
+        <div class="flex items-center gap-2.5">
+            <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden max-w-xs">
+                <div class="h-full bg-emerald-500 rounded-full transition-all"
+                     style="width: {{ ano_corrente.percentual_decorrido }}%"></div>
+            </div>
+            <span class="text-[11px] text-slate-400 font-medium shrink-0">
+                {{ ano_corrente.percentual_decorrido }}% concluído
+            </span>
+        </div>
+        {% endif %}
+    </div>
+    <a href="{% url 'escola:editar_ano_letivo' ano_corrente.pk %}"
+       class="shrink-0 btn btn-ghost btn-sm rounded-xl border border-slate-200
+              text-slate-600 hover:bg-slate-50 text-[12px]">
+        Editar
+    </a>
+</div>
+{% endif %}
+
+{# ── Tabela de anos ───────────────────────────────────────────────────────── #}
+<div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/5 overflow-hidden">
+
+    <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+        <div>
+            <h2 class="text-[13px] font-semibold text-slate-800">Todos os anos letivos</h2>
+            <p class="text-[11px] text-slate-400 mt-0.5">
+                {{ anos|length }} ano{{ anos|length|pluralize }} cadastrado{{ anos|length|pluralize }}
+            </p>
+        </div>
+    </div>
+
+    {% if anos %}
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-slate-100">
+                        <th class="text-left px-5 py-3 text-[10px] font-bold text-slate-400
+                                   uppercase tracking-widest">Ano</th>
+                        <th class="text-left px-4 py-3 text-[10px] font-bold text-slate-400
+                                   uppercase tracking-widest">Período</th>
+                        <th class="text-left px-4 py-3 text-[10px] font-bold text-slate-400
+                                   uppercase tracking-widest hidden sm:table-cell">Progresso</th>
+                        <th class="text-left px-4 py-3 text-[10px] font-bold text-slate-400
+                                   uppercase tracking-widest hidden md:table-cell">Turmas</th>
+                        <th class="text-left px-4 py-3 text-[10px] font-bold text-slate-400
+                                   uppercase tracking-widest">Status</th>
+                        <th class="px-4 py-3"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    {% for ano in anos %}
+                    <tr class="group hover:bg-slate-50/60 transition-colors
+                               {% if ano.corrente %}bg-emerald-50/30{% endif %}">
+
+                        {# Ano #}
+                        <td class="px-5 py-3.5">
+                            <div class="flex items-center gap-2">
+                                <span class="text-[15px] font-bold
+                                             {% if ano.corrente %}text-emerald-700{% else %}text-slate-800{% endif %}">
+                                    {{ ano.ano }}
+                                </span>
+                                {% if ano.corrente %}
+                                    <span class="text-[9px] font-bold text-emerald-700
+                                                 bg-emerald-100 px-1.5 py-0.5 rounded-full
+                                                 tracking-wide uppercase">
+                                        Corrente
+                                    </span>
+                                {% endif %}
+                            </div>
+                            {% if ano.descricao %}
+                                <p class="text-[11px] text-slate-400 mt-0.5 truncate max-w-[140px]">
+                                    {{ ano.descricao }}
+                                </p>
+                            {% endif %}
+                        </td>
+
+                        {# Período #}
+                        <td class="px-4 py-3.5">
+                            <p class="text-[13px] text-slate-700 font-medium tabular-nums">
+                                {{ ano.inicio|date:"d/m/Y" }}
+                            </p>
+                            <p class="text-[11px] text-slate-400 mt-0.5">
+                                até {{ ano.fim|date:"d/m/Y" }}
+                            </p>
+                        </td>
+
+                        {# Progresso #}
+                        <td class="px-4 py-3.5 hidden sm:table-cell">
+                            {% if ano.status == 'em_curso' %}
+                                <div class="flex items-center gap-2">
+                                    <div class="w-20 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                        <div class="h-full bg-emerald-500 rounded-full"
+                                             style="width: {{ ano.percentual_decorrido }}%"></div>
+                                    </div>
+                                    <span class="text-[11px] text-slate-400 tabular-nums">
+                                        {{ ano.percentual_decorrido }}%
+                                    </span>
+                                </div>
+                            {% elif ano.status == 'encerrado' %}
+                                <div class="flex items-center gap-2">
+                                    <div class="w-20 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                        <div class="h-full bg-slate-300 rounded-full w-full"></div>
+                                    </div>
+                                    <span class="text-[11px] text-slate-400">100%</span>
+                                </div>
+                            {% else %}
+                                <span class="text-[11px] text-slate-300">—</span>
+                            {% endif %}
+                        </td>
+
+                        {# Turmas #}
+                        <td class="px-4 py-3.5 hidden md:table-cell">
+                            {% if ano.total_salas %}
+                                <span class="text-[13px] font-semibold text-slate-700">
+                                    {{ ano.total_salas }}
+                                </span>
+                                <span class="text-[11px] text-slate-400">
+                                    turma{{ ano.total_salas|pluralize }}
+                                </span>
+                            {% else %}
+                                <span class="text-[11px] text-slate-300">Sem turmas</span>
+                            {% endif %}
+                        </td>
+
+                        {# Status badge #}
+                        <td class="px-4 py-3.5">
+                            {% if ano.status == 'em_curso' %}
+                                <span class="inline-flex items-center gap-1 text-[11px] font-semibold
+                                             text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                    Em curso
+                                </span>
+                            {% elif ano.status == 'futuro' %}
+                                <span class="inline-flex items-center gap-1 text-[11px] font-semibold
+                                             text-sky-600 bg-sky-50 px-2.5 py-1 rounded-full">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+                                    Futuro
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center gap-1 text-[11px] font-semibold
+                                             text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                                    Encerrado
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        {# Ações #}
+                        <td class="px-4 py-3.5">
+                            <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+
+                                {# Definir como corrente — só aparece para anos não correntes #}
+                                {% if not ano.corrente %}
+                                <form method="post"
+                                      action="{% url 'escola:definir_ano_corrente' ano.pk %}"
+                                      class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                            title="Definir como corrente"
+                                            class="inline-flex items-center gap-1 text-[11px] font-medium
+                                                   text-slate-500 hover:text-emerald-600
+                                                   hover:bg-emerald-50 px-2 py-1.5 rounded-lg
+                                                   transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5"
+                                             fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                             stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                        <span class="hidden lg:inline">Definir corrente</span>
+                                    </button>
+                                </form>
+                                {% endif %}
+
+                                <a href="{% url 'escola:editar_ano_letivo' ano.pk %}"
+                                   title="Editar"
+                                   class="inline-flex items-center justify-center w-7 h-7
+                                          rounded-lg text-slate-400 hover:text-primary
+                                          hover:bg-primary/5 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5"
+                                         fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                         stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0
+                                                 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828
+                                                 15H9v-2.828l8.586-8.586z"/>
+                                    </svg>
+                                </a>
+
+                                <button type="button"
+                                        title="Remover"
+                                        onclick="document.getElementById('modal_remover_{{ ano.pk }}').showModal()"
+                                        class="inline-flex items-center justify-center w-7 h-7
+                                               rounded-lg text-slate-400 hover:text-error
+                                               hover:bg-error/5 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5"
+                                         fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                         stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2
+                                                 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1
+                                                 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+
+                            </div>
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    {% else %}
+        {# Empty state #}
+        <div class="flex flex-col items-center justify-center px-6 py-16 text-center">
+            <div class="w-12 h-12 rounded-2xl bg-slate-100 flex items-center
+                        justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-slate-300"
+                     fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5
+                             a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+            </div>
+            <p class="text-[14px] font-semibold text-slate-700">
+                Nenhum ano letivo cadastrado
+            </p>
+            <p class="text-[12px] text-slate-400 mt-1.5 max-w-xs leading-relaxed">
+                Cadastre o primeiro ano letivo para começar a organizar turmas e alunos.
+            </p>
+            <a href="{% url 'escola:adicionar_ano_letivo' %}"
+               class="btn btn-primary btn-sm rounded-xl gap-1.5 mt-5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                </svg>
+                Cadastrar primeiro ano letivo
+            </a>
+        </div>
+    {% endif %}
+
+</div>
+
+{# ── Modais de confirmação de remoção ─────────────────────────────────────── #}
+{% for ano in anos %}
+<dialog id="modal_remover_{{ ano.pk }}" class="modal modal-bottom sm:modal-middle">
+    <div class="modal-box max-w-sm rounded-2xl p-6">
+
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-10 h-10 rounded-xl bg-error/10 flex items-center
+                        justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-error"
+                     fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0
+                             01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1
+                             1 0 00-1 1v3M4 7h16"/>
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-[15px] font-semibold text-slate-800">
+                    Remover Ano Letivo {{ ano.ano }}
+                </h3>
+                <p class="text-[13px] text-slate-400 mt-0.5">
+                    Esta ação não pode ser desfeita.
+                </p>
+            </div>
+        </div>
+
+        {% if ano.total_salas %}
+            <div class="mb-4 p-3.5 rounded-xl bg-amber-50 ring-1 ring-amber-200/80">
+                <p class="text-[12px] font-medium text-amber-800 leading-relaxed">
+                    <span class="font-bold">{{ ano.total_salas }} turma{{ ano.total_salas|pluralize }}</span>
+                    vinculada{{ ano.total_salas|pluralize }} também
+                    ser{{ ano.total_salas|pluralize:"á,ão" }} removida{{ ano.total_salas|pluralize }}
+                    permanentemente.
+                </p>
+            </div>
+        {% endif %}
+
+        {% if ano.corrente %}
+            <div class="mb-4 p-3.5 rounded-xl bg-amber-50 ring-1 ring-amber-200/80">
+                <p class="text-[12px] font-medium text-amber-800 leading-relaxed">
+                    Este é o <span class="font-bold">ano letivo corrente</span>. O sistema
+                    ficará sem ano ativo até que outro seja definido.
+                </p>
+            </div>
+        {% endif %}
+
+        <div class="flex gap-2">
+            <button type="button"
+                    onclick="document.getElementById('modal_remover_{{ ano.pk }}').close()"
+                    class="btn btn-ghost btn-sm rounded-xl text-slate-600 flex-1
+                           border border-slate-200">
+                Cancelar
+            </button>
+            <form method="post"
+                  action="{% url 'escola:remover_ano_letivo' ano.pk %}"
+                  class="flex-1">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-error btn-sm rounded-xl w-full">
+                    Remover
+                </button>
+            </form>
+        </div>
+
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button>fechar</button>
+    </form>
+</dialog>
+{% endfor %}
+
+{% endblock %}

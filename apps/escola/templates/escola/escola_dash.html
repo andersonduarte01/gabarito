@@ -38,8 +38,6 @@
         {% if ano_corrente %}
             <p class="mt-1 text-[13px] text-slate-500">
                 Ano letivo {{ ano_corrente.ano }}
-                <span class="text-slate-300 mx-1.5">·</span>
-                {{ ano_corrente.inicio|date:"d/m" }} – {{ ano_corrente.fim|date:"d/m/Y" }}
             </p>
         {% endif %}
     </div>
@@ -77,7 +75,7 @@
     </div>
 
     {# Turmas #}
-    <a href="{% url 'sala:lista_salas' %}"
+    <a href="{% url 'turma:lista_turmas' %}"
        class="group bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/5 p-4 flex items-center gap-3.5
               hover:ring-primary/20 hover:shadow-md transition-all duration-200">
         <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary
@@ -188,7 +186,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                     {% if tipo == 'DIR' or tipo == 'COLAB' %}
-                        <a href="{% url 'sala:adicionar_sala' %}"
+                        <a href="{% url 'turma:adicionar_turma' %}"
                            class="inline-flex items-center gap-1 text-[12px] font-semibold
                                   text-white bg-primary hover:bg-primary/90
                                   px-2.5 py-1.5 rounded-lg transition-colors">
@@ -199,7 +197,7 @@
                             Nova turma
                         </a>
                     {% endif %}
-                    <a href="{% url 'sala:lista_salas' %}"
+                    <a href="{% url 'turma:lista_turmas' %}"
                        class="inline-flex items-center gap-1 text-[12px] font-medium
                               text-slate-400 hover:text-slate-700 transition-colors px-1">
                         Ver todas
@@ -214,7 +212,7 @@
             {% if salas %}
                 <div class="divide-y divide-slate-50">
                     {% for sala in salas %}
-                        <a href="{% url 'sala:lista_salas' %}"
+                        <a href="{% url 'turma:lista_turmas' %}"
                            class="group flex items-center gap-4 px-5 py-3.5
                                   hover:bg-slate-50/80 transition-colors">
                             <div class="w-7 h-7 rounded-lg bg-slate-100 flex items-center
@@ -225,7 +223,7 @@
                             <div class="flex-1 min-w-0">
                                 <p class="text-[13px] font-semibold text-slate-800 truncate
                                           leading-snug group-hover:text-primary transition-colors">
-                                    {{ sala.descricao }}
+                                    {{ sala.nome }}
                                 </p>
                                 <p class="text-[11px] mt-0.5
                                           {% if sala.num_alunos %}text-slate-400{% else %}text-slate-300{% endif %}">
@@ -278,7 +276,7 @@
                         {% endif %}
                     </p>
                     {% if tipo == 'DIR' or tipo == 'COLAB' %}
-                        <a href="{% url 'sala:adicionar_sala' %}"
+                        <a href="{% url 'turma:adicionar_turma' %}"
                            class="inline-flex items-center gap-1.5 mt-5 text-[13px] font-semibold
                                   text-white bg-primary hover:bg-primary/90
                                   px-4 py-2 rounded-xl transition-colors">
@@ -306,7 +304,7 @@
                 </p>
             </div>
             <div class="p-1.5">
-                {% include 'escola/_dash_link.html' with url='sala:lista_salas' label='Turmas' color='primary' icon='squares' %}
+                {% include 'escola/_dash_link.html' with url='turma:lista_turmas' label='Turmas' color='primary' icon='squares' %}
                 {% include 'escola/_dash_link.html' with url='aluno:lista_alunos' label='Alunos' color='emerald' icon='user-group' %}
                 {% if tipo == 'DIR' or tipo == 'COLAB' %}
                     {% include 'escola/_dash_link.html' with url='colaborador:lista_professores' label='Professores' color='violet' icon='academic-cap' %}

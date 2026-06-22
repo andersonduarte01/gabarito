@@ -4,6 +4,7 @@ from apps.core.validators import validate_cpf, normalizar_cpf
 
 
 SEXO = [
+    ('',  'Não informado'),
     ('M', 'Masculino'),
     ('F', 'Feminino'),
 ]
@@ -30,18 +31,25 @@ class Aluno(models.Model):
         verbose_name='Escola',
     )
     sala = models.ForeignKey(
-        'sala.Sala',
+        'sala.Turma',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name='alunos',
-        verbose_name='Sala',
+        verbose_name='Turma',
     )
     cpf = models.CharField(
         verbose_name='CPF',
         max_length=11,
         blank=True,
+        default='',
         validators=[validate_cpf],
+    )
+    matricula = models.CharField(
+        verbose_name='Matrícula',
+        max_length=20,
+        blank=True,
+        default='',
     )
     data_nascimento = models.DateField(
         verbose_name='Data de Nascimento',
@@ -52,12 +60,26 @@ class Aluno(models.Model):
         verbose_name='Sexo',
         max_length=1,
         choices=SEXO,
-        default='M',
+        blank=True,
+        default='',
+    )
+    telefone = models.CharField(
+        verbose_name='Telefone',
+        max_length=20,
+        blank=True,
+        default='',
     )
     responsavel_legal = models.CharField(
         verbose_name='Responsável Legal',
         max_length=150,
         blank=True,
+        default='',
+    )
+    telefone_responsavel = models.CharField(
+        verbose_name='Telefone do Responsável',
+        max_length=20,
+        blank=True,
+        default='',
     )
     situacao = models.CharField(
         verbose_name='Situação',
@@ -72,10 +94,6 @@ class Aluno(models.Model):
         ordering = ['usuario__nome']
 
     def __str__(self):
-        return self.usuario.nome
-
-    @property
-    def nome(self):
         return self.usuario.nome
 
     def save(self, *args, **kwargs):

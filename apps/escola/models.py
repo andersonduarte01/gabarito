@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.db import models
 from django.utils.text import slugify
 
@@ -139,3 +141,30 @@ class AnoLetivo(models.Model):
         if self.corrente:
             AnoLetivo.objects.filter(escola=self.escola, corrente=True).exclude(pk=self.pk).update(corrente=False)
         super().save(*args, **kwargs)
+
+    @property
+    def status(self):
+        hoje = date.today()
+        if hoje < self.inicio:
+            return 'futuro'
+        if hoje > self.fim:
+            return 'encerrado'
+        return 'em_curso'
+
+    @property
+    def status_display(self):
+        return {'futuro': 'Futuro', 'em_curso': 'Em curso', 'encerrado': 'Encerrado'}[self.status]
+
+    @property
+    def duracao_dias(self):
+        return (self.fim - self.inicio).days
+
+    @property
+    def percentual_decorrido(self):
+        if self.status == 'futuro':
+            return 0
+        if self.status == 'encerrado':
+            return 100
+        hoje = date.today()
+        total = self.duracao_dias or 1
+        return min(100, round((hoje - self.inicio).days * 100 / total))

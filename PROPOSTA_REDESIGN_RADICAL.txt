@@ -919,6 +919,7 @@ ORDEM DE IMPLEMENTAÇÃO DEFINIDA:
   [✅ CONCLUÍDO]  2.0  Perfil da escola — view read-only (perfil_escola.html + partial _perfil_row.html)
   [✅ CONCLUÍDO]  2.1  Editar dados da escola — reconstruído (editar_escola.html)
   [✅ CONCLUÍDO]  2.2  Editar endereço da escola — reconstruído (editar_endereco.html)
+  [✅ CONCLUÍDO]  2.AL AnoLetivo CRUD — lista, criar, editar, definir corrente, remover
   [⏳ AGUARDANDO] 2.3  Gerenciar funções/cargos (apps.funcao — migrar templates)
 
   TURMAS (apps.sala)
@@ -1112,6 +1113,13 @@ ORDEM DE IMPLEMENTAÇÃO DEFINIDA:
                 desenvolvedor: BLOG → ESCOLA → ADMINISTRADOR → DIRETOR →
                 COLABORADOR → ALUNO. Implementação guiada sessão a sessão.
                 Aguardando diretriz para iniciar Fase 1 — BLOG.
+
+  [2026-06-17]  AnoLetivo completo — model (4 properties: status, status_display,
+                duracao_dias, percentual_decorrido), form (clean_ano, toggle corrente),
+                5 views (Lista, Adicionar, Editar, DefinirCorrente, Remover),
+                5 URLs, 3 templates premium (lista com highlight do corrente + barra
+                de progresso, form com seções, confirmação com impacto em cascata).
+                Sem migrações necessárias (apenas properties adicionadas ao model).
 
   [2026-06-15]  Redesign premium DaisyUI v5 — reconstrução da fundação e módulos
                 escola + diretor concluída:

@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import PermissionDenied
@@ -5,7 +6,7 @@ from django.db.models import Count
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
-from django.views.generic import TemplateView, UpdateView, RedirectView
+from django.views.generic import CreateView, DeleteView, TemplateView, UpdateView, RedirectView, View
 
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -16,9 +17,9 @@ from apps.core.models import UsuarioEscola
 from apps.core.permissao import PermissaoRequiredMixin
 from apps.core.views import BaseDashboardView
 from apps.aluno.models import Aluno
-from apps.sala.models import Sala
-from .forms import EscolaForm, EnderecoEscolarForm
-from .models import UnidadeEscolar, EnderecoEscolar
+from apps.sala.models import Turma
+from .forms import EscolaForm, EnderecoEscolarForm, AnoLetivoForm
+from .models import UnidadeEscolar, EnderecoEscolar, AnoLetivo
 from .serializers import (
     UnidadeEscolarSerializer,
     UnidadeEscolarSerializerEdit,
@@ -104,11 +105,11 @@ class DashEscola(BaseDashboardView):
         context['ano_corrente'] = ano
 
         salas_qs = (
-            Sala.objects
+            Turma.objects
             .filter(escola=escola)
-            .select_related('ano', 'ano_letivo')
+            .select_related('ano_letivo')
             .annotate(num_alunos=Count('alunos'))
-            .order_by('descricao')
+            .order_by('nome')
         )
         if ano:
             salas_qs = salas_qs.filter(ano_letivo=ano)
@@ -197,6 +198,92 @@ class EditarEndereco(PermissaoRequiredMixin, SuccessMessageMixin, UpdateView):
         return endereco
 
 
+
+
+# ---------------------------------------------------------------------------
+# Anos Letivos
+# ---------------------------------------------------------------------------
+
+class ListaAnosLetivos(PermissaoRequiredMixin, TemplateView):
+    template_name    = 'escola/ano_letivo_lista.html'
+    permissao_tipos  = [UsuarioEscola.DIRETOR, UsuarioEscola.COLABORADOR]
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['anos'] = (
+            self.request.escola.anos_letivos
+            .annotate(total_salas=Count('turmas'))
+            .order_by('-ano')
+        )
+        ctx['ano_corrente'] = self.request.escola.ano_letivo_corrente
+        return ctx
+
+
+class AdicionarAnoLetivo(PermissaoRequiredMixin, SuccessMessageMixin, CreateView):
+    model            = AnoLetivo
+    form_class       = AnoLetivoForm
+    template_name    = 'escola/ano_letivo_form.html'
+    success_url      = reverse_lazy('escola:anos_letivos')
+    success_message  = 'Ano letivo %(ano)s criado com sucesso.'
+    permissao_tipos  = [UsuarioEscola.DIRETOR]
+
+    def form_valid(self, form):
+        form.instance.escola = self.request.escola
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['modo'] = 'criar'
+        return ctx
+
+
+class EditarAnoLetivo(PermissaoRequiredMixin, SuccessMessageMixin, UpdateView):
+    model            = AnoLetivo
+    form_class       = AnoLetivoForm
+    template_name    = 'escola/ano_letivo_form.html'
+    success_url      = reverse_lazy('escola:anos_letivos')
+    success_message  = 'Ano letivo %(ano)s atualizado com sucesso.'
+    permissao_tipos  = [UsuarioEscola.DIRETOR]
+
+    def get_queryset(self):
+        return AnoLetivo.objects.filter(escola=self.request.escola)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['modo'] = 'editar'
+        return ctx
+
+
+class DefinirAnoCorrente(PermissaoRequiredMixin, View):
+    permissao_tipos = [UsuarioEscola.DIRETOR]
+
+    def post(self, request, pk):
+        ano_letivo = get_object_or_404(AnoLetivo, pk=pk, escola=request.escola)
+        ano_letivo.corrente = True
+        ano_letivo.save()
+        messages.success(request, f'Ano letivo {ano_letivo.ano} definido como corrente.')
+        return redirect('escola:anos_letivos')
+
+
+class RemoverAnoLetivo(PermissaoRequiredMixin, DeleteView):
+    model           = AnoLetivo
+    template_name   = 'escola/ano_letivo_confirmar_remocao.html'
+    success_url     = reverse_lazy('escola:anos_letivos')
+    permissao_tipos = [UsuarioEscola.DIRETOR]
+
+    def get_queryset(self):
+        return AnoLetivo.objects.filter(escola=self.request.escola)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['total_salas'] = self.object.turmas.count()
+        return ctx
+
+    def form_valid(self, form):
+        ano = self.object.ano
+        response = super().form_valid(form)
+        messages.success(self.request, f'Ano letivo {ano} removido com sucesso.')
+        return response
 
 
 # ---------------------------------------------------------------------------

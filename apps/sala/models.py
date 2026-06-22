@@ -1,9 +1,7 @@
 from django.db import models
-
 from apps.escola.models import UnidadeEscolar, AnoLetivo
 
-
-ANO_CHOICES = [
+SERIE_CHOICES = [
     ('Educação Infantil', 'Educação Infantil'),
     ('Pré-Escola',        'Pré-Escola'),
     ('4 Anos',            '4 Anos'),
@@ -27,29 +25,12 @@ TURNO_CHOICES = [
 ]
 
 
-class Ano(models.Model):
-    descricao = models.CharField(
-        verbose_name='Ano',
-        max_length=30,
-        choices=ANO_CHOICES,
-        unique=True,
-    )
-
-    class Meta:
-        verbose_name = 'Ano'
-        verbose_name_plural = 'Anos'
-        ordering = ['descricao']
-
-    def __str__(self):
-        return self.descricao
-
-
-class Sala(models.Model):
-    descricao = models.CharField(verbose_name='Identificação da sala', max_length=100)
+class Turma(models.Model):
+    nome = models.CharField(verbose_name='Nome da turma', max_length=100)
     escola = models.ForeignKey(
         UnidadeEscolar,
         on_delete=models.CASCADE,
-        related_name='salas',
+        related_name='turmas',
         verbose_name='Escola',
     )
     turno = models.CharField(
@@ -58,31 +39,68 @@ class Sala(models.Model):
         choices=TURNO_CHOICES,
         default='manha',
     )
-    ano = models.ForeignKey(
-        Ano,
-        on_delete=models.SET_NULL,
-        null=True,
+    serie = models.CharField(
+        verbose_name='Série',
+        max_length=30,
+        choices=SERIE_CHOICES,
         blank=True,
-        related_name='salas',
-        verbose_name='Ano escolar',
+        default='',
     )
     ano_letivo = models.ForeignKey(
         AnoLetivo,
         on_delete=models.CASCADE,
-        related_name='salas',
+        related_name='turmas',
         verbose_name='Ano letivo',
     )
+    capacidade = models.PositiveSmallIntegerField(
+        verbose_name='Capacidade',
+        null=True,
+        blank=True,
+        help_text='Número máximo de alunos na turma.',
+    )
+    ativo = models.BooleanField(verbose_name='Ativa', default=True)
 
     class Meta:
-        verbose_name = 'Sala'
-        verbose_name_plural = 'Salas'
-        ordering = ['descricao']
+        verbose_name = 'Turma'
+        verbose_name_plural = 'Turmas'
+        ordering = ['nome']
 
     def __str__(self):
         turno_label = dict(TURNO_CHOICES).get(self.turno, self.turno)
-        ano_label = self.ano.descricao if self.ano else '—'
-        return f'{self.descricao} — {ano_label} ({turno_label})'
+        serie_label = self.serie or '—'
+        return f'{self.nome} — {serie_label} ({turno_label})'
 
     @property
     def total_alunos(self):
+        # usa a annotation alunos_count quando disponível (evita query extra)
+        if 'alunos_count' in self.__dict__:
+            return self.__dict__['alunos_count']
         return self.alunos.count()
+
+    @property
+    def vagas_disponiveis(self):
+        if self.capacidade is None:
+            return None
+        return max(0, self.capacidade - self.total_alunos)
+
+    @property
+    def percentual_ocupacao(self):
+        if not self.capacidade:
+            return None
+        return min(100, round(self.total_alunos * 100 / self.capacidade))
+
+    @property
+    def status(self):
+        if not self.ativo:
+            return 'inativa'
+        if self.capacidade and self.total_alunos >= self.capacidade:
+            return 'lotada'
+        return 'ativa'
+
+    @property
+    def status_display(self):
+        return {'ativa': 'Ativa', 'inativa': 'Inativa', 'lotada': 'Lotada'}[self.status]
+
+
+# Alias para compatibilidade com apps desativados que importam Sala
+Sala = Turma

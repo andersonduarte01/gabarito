@@ -8,7 +8,7 @@ from apps.core.models import UsuarioEscola
 from apps.core.permissao import PermissaoRequiredMixin
 from .forms import ArquivoForm, CategoriaArquivoForm, LivroForm, VideoForm
 from .models import Arquivo, CategoriaArquivo, Livro, Video
-from ..sala.models import Ano
+from ..sala.models import SERIE_CHOICES
 
 _TIPOS_GESTAO = [UsuarioEscola.DIRETOR, UsuarioEscola.COLABORADOR]
 _TIPOS_ACESSO = [
@@ -36,7 +36,7 @@ def _qs_arquivos_publicos(request):
 
 def _qs_livros_publicos(request):
     escola = getattr(request, 'escola', None)
-    qs = Livro.objects.select_related('categoria', 'ano_referencia', 'escola')
+    qs = Livro.objects.select_related('categoria', 'escola')
     if escola:
         return qs.filter(
             Q(visibilidade=Livro.PUBLICA)
@@ -278,18 +278,18 @@ class TutoriaisLista(PermissaoRequiredMixin, ListView):
     permissao_tipos = _TIPOS_ACESSO
 
     def get_queryset(self):
-        qs = Video.objects.select_related('ano').order_by('numero', 'titulo')
+        qs = Video.objects.order_by('numero', 'titulo')
         ano_slug = self.request.GET.get('ano', '').strip()
         materia = self.request.GET.get('materia', '').strip()
         if ano_slug:
-            qs = qs.filter(ano__descricao=_MAPA_ANOS.get(ano_slug, ano_slug))
+            qs = qs.filter(ano=_MAPA_ANOS.get(ano_slug, ano_slug))
         if materia:
             qs = qs.filter(sigla__iexact=materia)
         return qs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['anos'] = Ano.objects.all()
+        context['serie_choices'] = SERIE_CHOICES
         context['materias'] = (
             Video.objects.values_list('sigla', 'materia')
             .distinct().order_by('materia')
@@ -305,8 +305,7 @@ class AnoMateria(PermissaoRequiredMixin, ListView):
 
     def get_queryset(self):
         descricao = _MAPA_ANOS.get(self.kwargs['ano'], self.kwargs['ano'])
-        ano = get_object_or_404(Ano, descricao=descricao)
-        return Video.objects.filter(ano=ano, sigla=self.kwargs['sigla']).order_by('numero')
+        return Video.objects.filter(ano=descricao, sigla=self.kwargs['sigla']).order_by('numero')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

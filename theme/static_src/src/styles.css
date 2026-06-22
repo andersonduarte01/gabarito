@@ -21,6 +21,7 @@
     }
 }
 
+
 /* Estilização do conteúdo rich text (saída do CKEditor) */
 @layer components {
     .rich-text > * + * { margin-top: 1rem; }
@@ -41,6 +42,17 @@
     .rich-text table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
     .rich-text th { background: oklch(97% 0.003 264); padding: 0.5rem 0.75rem; text-align: left; font-weight: 600; border: 1px solid oklch(93% 0.007 264); }
     .rich-text td { padding: 0.5rem 0.75rem; border: 1px solid oklch(93% 0.007 264); }
+}
+
+/* Focus: sobrescreve --input-color (DaisyUI v5) com cinza neutro */
+[data-theme="educare"] .input:focus,
+[data-theme="educare"] .input:focus-within,
+[data-theme="educare"] .select:focus,
+[data-theme="educare"] .select:focus-within,
+[data-theme="educare"] .textarea:focus,
+[data-theme="educare"] .textarea:focus-within {
+    --input-color: oklch(72% 0.007 264);
+    outline-color: oklch(72% 0.007 264);
 }
 
 [data-theme="educare"] {

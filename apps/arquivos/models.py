@@ -9,7 +9,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.text import slugify
 
-from ..sala.models import Ano
+from ..sala.models import SERIE_CHOICES
 
 try:
     from unidecode import unidecode as _unidecode
@@ -154,13 +154,12 @@ class Livro(models.Model):
     )
     autor = models.CharField(max_length=200, verbose_name='Autor')
     editora = models.CharField(max_length=200, blank=True, verbose_name='Editora')
-    ano_referencia = models.ForeignKey(
-        Ano,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='livros',
+    ano_referencia = models.CharField(
         verbose_name='Ano de Referência',
+        max_length=30,
+        choices=SERIE_CHOICES,
+        blank=True,
+        default='',
     )
     pdf = models.FileField(upload_to='livros/', verbose_name='Arquivo PDF')
     pdf_miniatura = models.ImageField(
@@ -200,13 +199,12 @@ class Video(models.Model):
     )
     titulo = models.CharField(max_length=255, verbose_name='Título')
     url_video = models.URLField(max_length=500, verbose_name='URL do vídeo')
-    ano = models.ForeignKey(
-        Ano,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='videos',
+    ano = models.CharField(
         verbose_name='Ano escolar',
+        max_length=30,
+        choices=SERIE_CHOICES,
+        blank=True,
+        default='',
     )
     materia = models.CharField(
         max_length=100, blank=True, verbose_name='Matéria',
