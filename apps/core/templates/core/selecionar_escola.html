@@ -1,0 +1,73 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="pt-br" class="">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Selecionar Escola — EduCare</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { colors: { primary: { DEFAULT: '#0d6efd', 600: '#0b5ed7' } } } }
+        }
+    </script>
+    <script>
+        (function () {
+            var s = localStorage.getItem('educare-theme');
+            if (s === 'dark' || (!s && window.matchMedia('(prefers-color-scheme: dark)').matches))
+                document.documentElement.classList.add('dark');
+        })();
+    </script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body class="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center px-4 py-12 antialiased">
+
+<div class="w-full max-w-md">
+
+    <!-- Logo -->
+    <div class="flex items-center justify-center gap-3 mb-8">
+        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-[#0d6efd] text-white">
+            <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+        </div>
+        <span class="text-xl font-bold text-slate-900 dark:text-white">EduCare</span>
+    </div>
+
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-8 shadow-sm">
+        <div class="mb-6">
+            <h1 class="text-xl font-bold text-slate-900 dark:text-white">Selecionar escola</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                Você está vinculado a mais de uma escola. Escolha com qual deseja entrar.
+            </p>
+        </div>
+
+        <form method="post" class="space-y-3">
+            {% csrf_token %}
+            {% for vinculo in vinculos %}
+            <button type="submit" name="vinculo_id" value="{{ vinculo.pk }}"
+                    class="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#0d6efd] hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all text-left group">
+                <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 flex-shrink-0">
+                    <i data-lucide="building-2" class="w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-[#0d6efd] transition-colors"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-slate-900 dark:text-white truncate">{{ vinculo.escola }}</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        {% for papel in vinculo.papeis.all %}{% if papel.ativo %}{{ papel.get_tipo_display }}{% if not forloop.last %}, {% endif %}{% endif %}{% endfor %}
+                    </p>
+                </div>
+                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 group-hover:text-[#0d6efd] flex-shrink-0 transition-colors"></i>
+            </button>
+            {% empty %}
+            <p class="text-sm text-slate-500 text-center py-4">Nenhuma escola disponível.</p>
+            {% endfor %}
+        </form>
+    </div>
+
+    <p class="text-center text-xs text-slate-400 dark:text-slate-600 mt-6">
+        &copy; {% now "Y" %} EduCare — Gestão Escolar
+    </p>
+</div>
+
+<script>lucide.createIcons();</script>
+</body>
+</html>

@@ -1,28 +1,29 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin, TabularInline, StackedInline
 
 from .models import UnidadeEscolar, EnderecoEscolar, AnoLetivo
 
 
-class EnderecoInline(admin.StackedInline):
-    model = EnderecoEscolar
-    extra = 0
+class EnderecoInline(StackedInline):
+    model      = EnderecoEscolar
+    extra      = 0
     can_delete = False
 
 
-class AnoLetivoInline(admin.TabularInline):
-    model = AnoLetivo
-    extra = 0
+class AnoLetivoInline(TabularInline):
+    model  = AnoLetivo
+    extra  = 0
     fields = ('ano', 'inicio', 'fim', 'corrente')
 
 
 @admin.register(UnidadeEscolar)
-class EscolaAdmin(admin.ModelAdmin):
-    list_display  = ('nome_escola', 'tipo', 'cnpj', 'telefone', 'email', 'ativo')
-    list_filter   = ('tipo', 'ativo')
-    search_fields = ('nome_escola', 'cnpj', 'inep', 'email')
+class EscolaAdmin(ModelAdmin):
+    list_display        = ('nome_escola', 'tipo', 'cnpj', 'telefone', 'email', 'ativo')
+    list_filter         = ('tipo', 'ativo')
+    search_fields       = ('nome_escola', 'cnpj', 'inep', 'email')
     prepopulated_fields = {'slug': ('nome_escola',)}
-    readonly_fields = ('criado_em', 'atualizado_em')
-    inlines = [EnderecoInline, AnoLetivoInline]
+    readonly_fields     = ('criado_em', 'atualizado_em')
+    inlines             = [EnderecoInline, AnoLetivoInline]
 
     fieldsets = (
         ('Identificação', {
@@ -42,7 +43,7 @@ class EscolaAdmin(admin.ModelAdmin):
 
 
 @admin.register(AnoLetivo)
-class AnoLetivoAdmin(admin.ModelAdmin):
+class AnoLetivoAdmin(ModelAdmin):
     list_display  = ('ano', 'escola', 'inicio', 'fim', 'corrente')
     list_filter   = ('corrente', 'escola')
     search_fields = ('escola__nome_escola',)

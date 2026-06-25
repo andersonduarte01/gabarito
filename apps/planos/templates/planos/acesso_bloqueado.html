@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Acesso Bloqueado — EduCare</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { colors: { primary: { DEFAULT: '#0d6efd', 600: '#0b5ed7' } } } }
+        }
+    </script>
+    <script>
+        (function () {
+            var s = localStorage.getItem('educare-theme');
+            if (s === 'dark' || (!s && window.matchMedia('(prefers-color-scheme: dark)').matches))
+                document.documentElement.classList.add('dark');
+        })();
+    </script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+
+<body class="min-h-screen bg-slate-100 dark:bg-slate-900 antialiased flex items-center justify-center p-4">
+
+<div class="w-full max-w-md">
+
+    <!-- Card -->
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-8 text-center space-y-6">
+
+        <!-- Ícone -->
+        <div class="flex justify-center">
+            <div class="w-20 h-20 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                <i data-lucide="shield-off" class="w-10 h-10 text-red-500 dark:text-red-400"></i>
+            </div>
+        </div>
+
+        <!-- Título -->
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">Acesso Suspenso</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400">
+                O acesso da sua escola à plataforma EduCare está temporariamente bloqueado.
+            </p>
+        </div>
+
+        {% if assinatura %}
+        <!-- Status atual -->
+        <div class="bg-slate-50 dark:bg-slate-700/50 rounded-xl px-4 py-3 text-sm space-y-1">
+            <div class="flex justify-between items-center">
+                <span class="text-slate-500 dark:text-slate-400">Escola</span>
+                <span class="font-medium text-slate-900 dark:text-white">{{ assinatura.escola }}</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-slate-500 dark:text-slate-400">Status</span>
+                <span class="font-medium
+                    {% if assinatura.status == 'TRIAL_EXPIRADO' %}text-orange-600 dark:text-orange-400
+                    {% elif assinatura.status == 'SUSPENSA' %}text-red-600 dark:text-red-400
+                    {% elif assinatura.status == 'CANCELADA' %}text-slate-600 dark:text-slate-400
+                    {% else %}text-slate-600 dark:text-slate-400{% endif %}">
+                    {{ assinatura.get_status_display }}
+                </span>
+            </div>
+            {% if assinatura.status == 'TRIAL_EXPIRADO' %}
+            <div class="pt-2 text-xs text-slate-500 dark:text-slate-400">
+                O período de avaliação gratuita foi encerrado. Entre em contato para contratar um plano.
+            </div>
+            {% elif assinatura.status == 'SUSPENSA' %}
+            <div class="pt-2 text-xs text-slate-500 dark:text-slate-400">
+                A assinatura foi suspensa por falta de pagamento. Regularize para restabelecer o acesso.
+            </div>
+            {% elif assinatura.status == 'CANCELADA' %}
+            <div class="pt-2 text-xs text-slate-500 dark:text-slate-400">
+                A assinatura foi cancelada. Entre em contato se desejar reativar.
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Ações -->
+        <div class="space-y-3">
+            <a href="mailto:contato@educare.com.br"
+               class="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl
+                      bg-[#0d6efd] hover:bg-[#0b5ed7] text-white text-sm font-medium transition-colors">
+                <i data-lucide="mail" class="w-4 h-4"></i>
+                Entrar em Contato
+            </a>
+            <a href="{% url 'accounts:logout' %}"
+               class="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl
+                      border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300
+                      hover:bg-slate-50 dark:hover:bg-slate-700 text-sm font-medium transition-colors">
+                <i data-lucide="log-out" class="w-4 h-4"></i>
+                Sair
+            </a>
+        </div>
+    </div>
+
+    <!-- Rodapé -->
+    <p class="text-center text-xs text-slate-400 dark:text-slate-600 mt-6">
+        EduCare © {% now "Y" %} · Suporte: contato@educare.com.br
+    </p>
+</div>
+
+<script>lucide.createIcons();</script>
+</body>
+</html>

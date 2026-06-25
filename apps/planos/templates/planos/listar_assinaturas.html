@@ -1,0 +1,73 @@
+{% extends "base/base_plataforma.html" %}
+
+{% block titulo %}Assinaturas{% endblock %}
+{% block page_title %}Assinaturas das Escolas{% endblock %}
+
+{% block sidebar_nav %}
+<a href="{% url 'planos:listar_planos' %}"
+   class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+    <i data-lucide="package" class="w-4 h-4 flex-shrink-0"></i>
+    Planos
+</a>
+<a href="{% url 'planos:listar_assinaturas' %}"
+   class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium bg-slate-800 text-white">
+    <i data-lucide="file-check" class="w-4 h-4 flex-shrink-0"></i>
+    Assinaturas
+</a>
+{% endblock %}
+
+{% block conteudo %}
+{% if not assinaturas %}
+<div class="text-center py-20 text-slate-400 dark:text-slate-600">
+    <i data-lucide="file-check" class="w-12 h-12 mx-auto mb-3 opacity-50"></i>
+    <p class="text-sm">Nenhuma assinatura cadastrada.</p>
+</div>
+{% else %}
+<div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+    <table class="w-full text-sm">
+        <thead>
+            <tr class="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50">
+                <th class="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">Escola</th>
+                <th class="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">Plano</th>
+                <th class="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">Status</th>
+                <th class="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">Vencimento</th>
+                <th class="px-4 py-3 text-right font-medium text-slate-500 dark:text-slate-400"></th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+            {% for ass in assinaturas %}
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                <td class="px-4 py-3 font-medium text-slate-900 dark:text-white">
+                    {{ ass.escola.nome_escola }}
+                </td>
+                <td class="px-4 py-3 text-slate-600 dark:text-slate-300">
+                    {{ ass.plano.nome|default:"—" }}
+                </td>
+                <td class="px-4 py-3">
+                    <span class="px-2 py-0.5 rounded-full text-xs font-medium
+                        {% if ass.status == 'ATIVA' %}bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400
+                        {% elif ass.status == 'TRIAL' %}bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400
+                        {% elif ass.status == 'GRACE' %}bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400
+                        {% elif ass.status == 'SUSPENSA' %}bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400
+                        {% elif ass.status == 'CANCELADA' %}bg-slate-100 dark:bg-slate-700 text-slate-500
+                        {% else %}bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400
+                        {% endif %}">
+                        {{ ass.get_status_display }}
+                    </span>
+                </td>
+                <td class="px-4 py-3 text-slate-500 dark:text-slate-400">
+                    {{ ass.data_vencimento|date:"d/m/Y"|default:"—" }}
+                </td>
+                <td class="px-4 py-3 text-right">
+                    <a href="{% url 'planos:detalhe_assinatura' ass.pk %}"
+                       class="text-[#0d6efd] hover:underline text-xs font-medium">
+                        Ver detalhes
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}

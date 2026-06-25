@@ -3,53 +3,27 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 
-# from rest_framework.routers import DefaultRouter
-# from apps.mobile.views import (
-#     ChamadaTecnicoViewSet, ChamadaUsuarioViewSet, ChamadaFinalizadaTecnicoViewSet,
-#     MobileUsuarioViewSet, MobileTecnicoViewSet, ChamadaFinalizadaUsuarioViewSet,
-#     ChamadaAguardandoUsuarioViewSet, ChamadaAguardandoTecnicoViewSet,
-#     MyTokenObtainPairView,
-# )
-
-# router_usuario = DefaultRouter()
-# router_usuario.register(r'chamados-usuario', ChamadaUsuarioViewSet, basename='chamados-usuario')
-# router_usuario.register(r'usuarios', MobileUsuarioViewSet, basename='usuarios')
-# router_usuario.register(r'chamados-usuario-finalizados', ChamadaFinalizadaUsuarioViewSet, basename='chamados-usuario-finalizados')
-# router_usuario.register(r'chamados-usuario-aguardando', ChamadaAguardandoUsuarioViewSet, basename='chamados-usuario-aguardando')
-
-# router_tecnico = DefaultRouter()
-# router_tecnico.register(r'chamados-tecnico', ChamadaTecnicoViewSet, basename='chamados-tecnico')
-# router_tecnico.register(r'tecnicos', MobileTecnicoViewSet, basename='tecnicos')
-# router_tecnico.register(r'chamados-finalizados', ChamadaFinalizadaTecnicoViewSet, basename='chamados-finalizados')
-# router_tecnico.register(r'chamados-tecnico-aguardando', ChamadaAguardandoTecnicoViewSet, basename='chamados-tecnico-aguardando')
-
-
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('admin/',    admin.site.urls),
     path('accounts/', include('apps.accounts.urls', namespace='accounts')),
-    path('', include('apps.core.urls', namespace='core')),
-    path('escola/', include('apps.escola.urls', namespace='escola')),
-    path('diretor/', include('apps.diretor.urls', namespace='diretor')),
-    path('funcao/', include('apps.funcao.urls', namespace='funcao')),
-    path('turmas/', include('apps.sala.urls', namespace='turma')),
-    path('colaborador/', include('apps.colaborador.urls', namespace='colaborador')),
-    path('aluno/', include('apps.aluno.urls', namespace='aluno')),
-    # path('avaliacao/', include('apps.avaliacao.urls', namespace='avaliacao')),
-    # path('relatorio/', include('apps.relatorios.urls', namespace='relatorios')),
-    path('blog/', include('apps.blog.urls', namespace='blog')),
-    path('ckeditor/', include('ckeditor_uploader.urls')),
-    path('pdf/', include('apps.arquivos.urls', namespace='arquivos')),
-    # path('frequencia/', include('apps.frequencia.urls', namespace='frequencia')),
-    # path('cadastro/', include('apps.cadastro.urls', namespace='cadastro')),
-    # path('tinymce/', include('tinymce.urls')),
-    # path('api/v1/', include(router_usuario.urls)),
-    # path('api/v1/', include(router_tecnico.urls)),
-    # path('api/', include('apps.mobile.urls')),
-    # path('hijack/', include('hijack.urls')),
-    # path('api/token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('',          include('apps.core.urls',    namespace='core')),
+    path('escola/',   include('apps.escola.urls',  namespace='escola')),
+    # Módulos adicionados à medida que são implementados:
+    path('planos/',      include('apps.planos.urls',      namespace='planos')),        # M01
+    # path('onboarding/',  include('apps.onboarding.urls',  namespace='onboarding')),  # M02
+    # path('diretor/',     include('apps.diretor.urls',     namespace='diretor')),      # M07
+    # path('colaborador/', include('apps.colaborador.urls', namespace='colaborador')),  # M08
+    # path('professor/',   include('apps.professor.urls',   namespace='professor')),    # M09
+    # path('responsavel/', include('apps.responsavel.urls', namespace='responsavel')), # M10
+    # path('ano-letivo/',  include('apps.ano_letivo.urls',  namespace='ano_letivo')),  # M11
+    # path('series/',      include('apps.serie.urls',       namespace='serie')),        # M12
+    # path('turmas/',      include('apps.turma.urls',       namespace='turma')),        # M13
+    # path('materias/',    include('apps.materia.urls',     namespace='materia')),      # M14
+    # path('alunos/',      include('apps.aluno.urls',       namespace='aluno')),        # M15
+    # path('avaliacoes/',  include('apps.avaliacao.urls',   namespace='avaliacao')),    # M16
+    # path('boletim/',     include('apps.boletim.urls',     namespace='boletim')),      # M17
+    # path('frequencia/',  include('apps.frequencia.urls',  namespace='frequencia')),   # M18
+    # path('financeiro/',  include('apps.financeiro.urls',  namespace='financeiro')),   # M19
+    # path('comunicados/', include('apps.comunicado.urls',  namespace='comunicado')),   # M20
+    # path('relatorios/',  include('apps.relatorio.urls',   namespace='relatorio')),    # M21
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-# handler404 = 'apps.erros.views.error_404'
-# handler500 = 'apps.erros.views.error_500'
-# handler403 = 'apps.erros.views.error_403'
-# handler400 = 'apps.erros.views.error_400'

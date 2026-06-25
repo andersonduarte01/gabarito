@@ -1,33 +1,51 @@
+from django.apps import apps as django_apps
 from django.contrib.auth import logout
 from django.http import HttpResponseRedirect
 from django.urls import reverse, NoReverseMatch
 
-from .models import UsuarioEscola
-from apps.escola.models import UnidadeEscolar
+from .models import PapelVinculo, VinculoEscola
 
 
-class EscolaMiddleware:
+class TenantMiddleware:
     """
-    Injeta request.escola e request.vinculo em cada requisição autenticada.
+    Injeta request.papel, request.vinculo e request.escola em cada requisição
+    autenticada de usuários não-plataforma.
 
-    Fluxo:
-      - Admin e API passam direto (autenticação própria)
-      - Rotas públicas passam direto
-      - Usuário sem autenticação passa direto (LoginRequired da view cuida disso)
-      - 0 vínculos ativos  → logout + redirect login
-      - 1 vínculo ativo    → seleciona automaticamente
-      - N vínculos ativos  → redirect para tela de seleção de escola
+    Sessão armazena papel_id (PapelVinculo.id).
+
+    Fluxo pós-login:
+      0 vínculos ativos             → logout
+      1 escola · 1 papel            → injeta direto
+      1 escola · N papéis           → tela seleção de papel
+      N escolas                     → tela seleção de escola
+        └─ escola com 1 papel       → injeta direto
+        └─ escola com N papéis      → tela seleção de papel
+
+    Após injetar escola, verifica assinatura:
+      TRIAL válido                  → passa (todos os módulos ativos)
+      TRIAL expirado no dia         → expirar_trial() + redireciona acesso_bloqueado
+      ATIVA                         → passa
+      GRACE                         → passa + seta request.grace_dias_restantes
+      TRIAL_EXPIRADO / SUSPENSA
+        / CANCELADA                 → redireciona acesso_bloqueado
     """
 
-    # /accounts/ cobre login, logout e todo o fluxo de senha — todos são públicos
-    PREFIXOS_IGNORADOS = ('/admin/', '/api/', '/static/', '/media/', '/accounts/', '/blog/')
+    PREFIXOS_IGNORADOS = (
+        '/admin/', '/api/', '/static/', '/media/', '/accounts/',
+    )
 
-    ROTAS_PUBLICAS = (
-        'escola:selecionar',
+    NOMES_IGNORADOS = (
+        'core:inicio',
+        'core:contato',
+        'core:sobre',
+        'core:selecionar_escola',
+        'core:selecionar_papel',
+        'planos:acesso_bloqueado',
     )
 
     def __init__(self, get_response):
-        self.get_response = get_response
+        self.get_response     = get_response
+        self._rotas_ignoradas = None  # resolvidas lazy para evitar AppRegistryNotReady
 
     def __call__(self, request):
         resposta = self._processar(request)
@@ -35,8 +53,6 @@ class EscolaMiddleware:
             return resposta
         return self.get_response(request)
 
-    # ------------------------------------------------------------------
-    # Processamento principal
     # ------------------------------------------------------------------
 
     def _processar(self, request):
@@ -46,90 +62,117 @@ class EscolaMiddleware:
         if not request.user.is_authenticated:
             return None
 
-        escola_id = request.session.get('escola_id')
+        if request.user.is_platform_admin:
+            return None
 
-        if not escola_id:
-            return self._handle_sem_escola(request)
+        papel_id = request.session.get('papel_id')
 
-        # Valida escola ativa
+        if not papel_id:
+            return self._handle_sem_papel(request)
+
         try:
-            escola = UnidadeEscolar.objects.get(pk=escola_id, ativo=True)
-        except UnidadeEscolar.DoesNotExist:
-            return self._limpar_sessao(request)
-
-        # Valida vínculo ativo do usuário com a escola
-        try:
-            vinculo = (
-                UsuarioEscola.objects
-                .select_related('escola')
-                .get(usuario=request.user, escola=escola, ativo=True)
+            papel = (
+                PapelVinculo.objects
+                .select_related('vinculo__escola', 'vinculo__usuario')
+                .get(pk=papel_id, ativo=True, vinculo__ativo=True)
             )
-        except UsuarioEscola.DoesNotExist:
+        except PapelVinculo.DoesNotExist:
             return self._limpar_sessao(request)
 
-        request.escola = escola
-        request.vinculo = vinculo
-        request.tem_multiplas_escolas = (
-            UsuarioEscola.objects
-            .filter(usuario=request.user, ativo=True)
-            .count() > 1
-        )
+        if papel.vinculo.usuario_id != request.user.pk:
+            return self._limpar_sessao(request)
 
-        return None
+        request.papel   = papel
+        request.vinculo = papel.vinculo
+        request.escola  = papel.vinculo.escola
+
+        return self._verificar_assinatura(request)
 
     # ------------------------------------------------------------------
-    # Helpers
+
+    def _verificar_assinatura(self, request):
+        if not django_apps.is_installed('apps.planos'):
+            return None
+
+        from apps.planos.models import AssinaturaEscola, StatusAssinatura
+        from apps.planos.services import assinatura_service
+
+        try:
+            assinatura = request.escola.assinatura
+        except AssinaturaEscola.DoesNotExist:
+            return None  # escola sem assinatura criada ainda (não bloqueia)
+
+        status = assinatura.status
+
+        if status == StatusAssinatura.TRIAL:
+            if not assinatura.trial_valido():
+                assinatura_service.expirar_trial(assinatura)
+                return HttpResponseRedirect(reverse('planos:acesso_bloqueado'))
+            return None
+
+        if status == StatusAssinatura.ATIVA:
+            return None
+
+        if status == StatusAssinatura.GRACE:
+            request.grace_dias_restantes = assinatura.dias_restantes_grace()
+            return None
+
+        # TRIAL_EXPIRADO, SUSPENSA, CANCELADA
+        return HttpResponseRedirect(reverse('planos:acesso_bloqueado'))
+
     # ------------------------------------------------------------------
 
     def _deve_ignorar(self, request):
         path = request.path_info
-
         for prefixo in self.PREFIXOS_IGNORADOS:
             if path.startswith(prefixo):
                 return True
+        if self._rotas_ignoradas is None:
+            self._rotas_ignoradas = self._resolver_rotas()
+        return path in self._rotas_ignoradas
 
-        for nome in self.ROTAS_PUBLICAS:
+    def _resolver_rotas(self):
+        rotas = set()
+        for nome in self.NOMES_IGNORADOS:
             try:
-                if path == reverse(nome):
-                    return True
+                rotas.add(reverse(nome))
             except NoReverseMatch:
-                continue
+                pass
+        return rotas
 
-        return False
-
-    def _handle_sem_escola(self, request):
-        vinculos = (
-            UsuarioEscola.objects
+    def _handle_sem_papel(self, request):
+        vinculos = list(
+            VinculoEscola.objects
             .filter(usuario=request.user, ativo=True)
             .select_related('escola')
+            .prefetch_related('papeis')
         )
 
-        if not vinculos.exists():
+        if not vinculos:
             logout(request)
             return HttpResponseRedirect(reverse('accounts:login'))
 
-        if vinculos.count() == 1:
-            vinculo = vinculos.first()
-            escola = vinculo.escola
-            request.session['escola_id'] = escola.pk
-            request.escola = escola
-            request.vinculo = vinculo
-            request.tem_multiplas_escolas = False
-            return None
+        if len(vinculos) > 1:
+            return HttpResponseRedirect(reverse('core:selecionar_escola'))
 
-        return self._redirecionar_selecao()
+        vinculo       = vinculos[0]
+        papeis_ativos = [p for p in vinculo.papeis.all() if p.ativo]
+
+        if not papeis_ativos:
+            logout(request)
+            return HttpResponseRedirect(reverse('accounts:login'))
+
+        if len(papeis_ativos) == 1:
+            papel = papeis_ativos[0]
+            request.session['papel_id'] = papel.pk
+            request.papel   = papel
+            request.vinculo = vinculo
+            request.escola  = vinculo.escola
+            return self._verificar_assinatura(request)
+
+        return HttpResponseRedirect(reverse('core:selecionar_papel'))
 
     def _limpar_sessao(self, request):
-        request.session.pop('escola_id', None)
-
-        if not UsuarioEscola.objects.filter(usuario=request.user, ativo=True).exists():
-            logout(request)
-            return HttpResponseRedirect(reverse('accounts:login'))
-
-        return self._redirecionar_selecao()
-
-    def _redirecionar_selecao(self):
-        try:
-            return HttpResponseRedirect(reverse('escola:selecionar'))
-        except NoReverseMatch:
-            return None
+        request.session.pop('papel_id', None)
+        request.session.pop('vinculo_selecionado', None)
+        return self._handle_sem_papel(request)

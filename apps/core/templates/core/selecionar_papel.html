@@ -1,0 +1,89 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="pt-br" class="">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Selecionar Perfil — EduCare</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { colors: { primary: { DEFAULT: '#0d6efd', 600: '#0b5ed7' } } } }
+        }
+    </script>
+    <script>
+        (function () {
+            var s = localStorage.getItem('educare-theme');
+            if (s === 'dark' || (!s && window.matchMedia('(prefers-color-scheme: dark)').matches))
+                document.documentElement.classList.add('dark');
+        })();
+    </script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body class="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center px-4 py-12 antialiased">
+
+<div class="w-full max-w-md">
+
+    <!-- Logo -->
+    <div class="flex items-center justify-center gap-3 mb-8">
+        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-[#0d6efd] text-white">
+            <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+        </div>
+        <span class="text-xl font-bold text-slate-900 dark:text-white">EduCare</span>
+    </div>
+
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-8 shadow-sm">
+        <div class="mb-6">
+            {% if vinculo %}
+            <div class="flex items-center gap-2 mb-3">
+                <i data-lucide="building-2" class="w-4 h-4 text-slate-400"></i>
+                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ vinculo.escola }}</span>
+            </div>
+            {% endif %}
+            <h1 class="text-xl font-bold text-slate-900 dark:text-white">Selecionar perfil</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                Você possui múltiplos perfis nesta escola. Com qual deseja entrar?
+            </p>
+        </div>
+
+        <!-- Ícones por tipo de papel -->
+        {% with icones="DIRETOR:shield-check,FUNCIONARIO:briefcase,PROFESSOR:book-open,ALUNO:graduation-cap,RESPONSAVEL:users" %}
+        <form method="post" class="space-y-3">
+            {% csrf_token %}
+            {% for papel in papeis %}
+            <button type="submit" name="papel_id" value="{{ papel.pk }}"
+                    class="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-[#0d6efd] hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all text-left group">
+                <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 flex-shrink-0">
+                    <i data-lucide="user-circle" class="w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-[#0d6efd] transition-colors"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ papel.get_tipo_display }}</p>
+                </div>
+                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 group-hover:text-[#0d6efd] flex-shrink-0 transition-colors"></i>
+            </button>
+            {% empty %}
+            <p class="text-sm text-slate-500 text-center py-4">Nenhum perfil disponível.</p>
+            {% endfor %}
+        </form>
+        {% endwith %}
+
+        {% if vinculo %}
+        <div class="mt-5 pt-5 border-t border-slate-100 dark:border-slate-700">
+            <a href="{% url 'core:selecionar_escola' %}"
+               class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 hover:text-[#0d6efd] transition-colors">
+                <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+                Trocar de escola
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <p class="text-center text-xs text-slate-400 dark:text-slate-600 mt-6">
+        &copy; {% now "Y" %} EduCare — Gestão Escolar
+    </p>
+</div>
+
+<script>lucide.createIcons();</script>
+</body>
+</html>

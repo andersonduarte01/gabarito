@@ -21,43 +21,41 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'unfold',
+    'unfold.contrib.filters',
+    'unfold.contrib.forms',
+    'unfold.contrib.inlines',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'tailwind',
-    'theme',
-    #Baixados
-    # 'bootstrap4',
-    # 'django_bootstrap5',
-    # 'stdimage',
-    # 'tinymce',
-    #APPS
+    # Apps ativos
     'apps.core',
     'apps.accounts',
     'apps.escola',
-    'apps.funcao',
-    'apps.sala',
-    'apps.colaborador',
-    'apps.aluno',
-    'apps.diretor',
-    'apps.blog',
-    'ckeditor',
-    'ckeditor_uploader',
-    # 'apps.erros',
-    # 'apps.funcionario',  # substituído por apps.colaborador
-    # 'apps.perfil',       # campos migrados para modelos de perfil
-    # 'apps.avaliacao',
-    # 'apps.mobile',
-    # 'apps.frequencia',
-    # 'apps.relatorios',
-    'apps.arquivos',
-    # 'apps.cadastro',
-    'rest_framework',
-    'rest_framework_simplejwt',
-    # 'hijack',
+    'apps.planos',        # Módulo 01
+    # Apps aguardando implementação (ativados conforme módulos forem implementados)
+    # 'apps.onboarding',    # Módulo 02
+    # 'apps.configuracao',  # Módulo 03
+    # 'apps.notificacao',   # Módulo 04
+    # 'apps.auditoria',     # Módulo 05
+    # 'apps.diretor',       # Módulo 07
+    # 'apps.colaborador',   # Módulo 08
+    # 'apps.professor',     # Módulo 09
+    # 'apps.responsavel',   # Módulo 10
+    # 'apps.ano_letivo',    # Módulo 11
+    # 'apps.serie',         # Módulo 12
+    # 'apps.turma',         # Módulo 13
+    # 'apps.materia',       # Módulo 14
+    # 'apps.aluno',         # Módulo 15
+    # 'apps.avaliacao',     # Módulo 16
+    # 'apps.boletim',       # Módulo 17
+    # 'apps.frequencia',    # Módulo 18
+    # 'apps.financeiro',    # Módulo 19
+    # 'apps.comunicado',    # Módulo 20
+    # 'apps.relatorio',     # Módulo 21
 ]
 
 MIDDLEWARE = [
@@ -68,7 +66,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'apps.core.middleware.EscolaMiddleware',
+    'apps.core.middleware.TenantMiddleware',
     # 'hijack.middleware.HijackUserMiddleware',
 ]
 
@@ -160,8 +158,8 @@ CKEDITOR_UPLOAD_PATH = "media/Noticias"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'core.Usuario'
 
-LOGIN_URL          = '/accounts/login/'
-LOGIN_REDIRECT_URL = '/escola/redirecionamento/'
+LOGIN_URL           = '/accounts/login/'
+LOGIN_REDIRECT_URL  = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
 
 #CKEDITOR
@@ -236,6 +234,113 @@ EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
 EMAIL_FILE_PATH = str(BASE_DIR.joinpath('sent_emails'))
 
 from datetime import timedelta
+from django.urls import reverse_lazy
+
+# ---------------------------------------------------------------------------
+# Django Unfold — Admin Theme
+# ---------------------------------------------------------------------------
+
+UNFOLD = {
+    "SITE_TITLE":  "EduCare Admin",
+    "SITE_HEADER": "EduCare",
+    "SITE_URL":    "/",
+    "SITE_SYMBOL": "school",
+    "SHOW_HISTORY":      True,
+    "SHOW_VIEW_ON_SITE": True,
+
+    # Bootstrap 5 blue (#0d6efd = rgb 13 110 253) como cor primária
+    "COLORS": {
+        "primary": {
+            "50":  "239 246 255",
+            "100": "219 234 254",
+            "200": "191 219 254",
+            "300": "147 197 253",
+            "400": "96 165 250",
+            "500": "59 130 246",
+            "600": "13 110 253",
+            "700": "11 94 215",
+            "800": "30 64 175",
+            "900": "30 58 138",
+            "950": "23 37 84",
+        },
+    },
+
+    "SIDEBAR": {
+        "show_search":           True,
+        "show_all_applications": False,
+        "navigation": [
+            {
+                "title": "Plataforma SaaS",
+                "collapsible": False,
+                "items": [
+                    {
+                        "title": "Planos",
+                        "icon":  "deployed_code",
+                        "link":  reverse_lazy("admin:planos_plano_changelist"),
+                    },
+                    {
+                        "title": "Assinaturas",
+                        "icon":  "task_alt",
+                        "link":  reverse_lazy("admin:planos_assinaturaescola_changelist"),
+                    },
+                    {
+                        "title": "Módulos",
+                        "icon":  "extension",
+                        "link":  reverse_lazy("admin:planos_modulo_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": "Controle de Acesso",
+                "collapsible": False,
+                "items": [
+                    {
+                        "title": "Usuários",
+                        "icon":  "group",
+                        "link":  reverse_lazy("admin:core_usuario_changelist"),
+                    },
+                    {
+                        "title": "Vínculos",
+                        "icon":  "swap_horiz",
+                        "link":  reverse_lazy("admin:core_vinculoescola_changelist"),
+                    },
+                    {
+                        "title": "Papéis",
+                        "icon":  "verified_user",
+                        "link":  reverse_lazy("admin:core_papelvinculo_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": "Escolas",
+                "collapsible": False,
+                "items": [
+                    {
+                        "title": "Unidades Escolares",
+                        "icon":  "apartment",
+                        "link":  reverse_lazy("admin:escola_unidadeescolar_changelist"),
+                    },
+                    {
+                        "title": "Anos Letivos",
+                        "icon":  "calendar_month",
+                        "link":  reverse_lazy("admin:escola_anoletivo_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": "Autenticação",
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": "Grupos",
+                        "icon":  "layers",
+                        "link":  reverse_lazy("admin:auth_group_changelist"),
+                    },
+                ],
+            },
+        ],
+    },
+}
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=3650),  # 10 anos, por exemplo

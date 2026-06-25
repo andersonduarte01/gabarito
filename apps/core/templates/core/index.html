@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="pt-br" class="scroll-smooth" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduCare — Plataforma Completa de Gestão Escolar</title>
+    <meta name="description" content="Unifique controle acadêmico, comunicação e financeiro em uma única solução. Avaliações, frequência, boletim e muito mais para escolas brasileiras.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50:  '#e7f1ff',
+                            100: '#cfe2ff',
+                            200: '#9ec5fe',
+                            300: '#6ea8fe',
+                            400: '#3d8bfd',
+                            DEFAULT: '#0d6efd',
+                            500: '#0d6efd',
+                            600: '#0a58ca',
+                            700: '#084298',
+                            800: '#052c65',
+                            900: '#031633',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+
+        .hero-gradient {
+            background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(13,110,253,0.12) 0%, transparent 70%),
+                        linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+        }
+        .dark .hero-gradient {
+            background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(13,110,253,0.18) 0%, transparent 70%),
+                        linear-gradient(180deg, #0f172a 0%, #0f172a 100%);
+        }
+
+        .feature-card { transition: transform .2s ease, box-shadow .2s ease; }
+        .feature-card:hover { transform: translateY(-3px); }
+
+        /* Smooth theme toggle */
+        html { transition: background-color .2s ease, color .2s ease; }
+
+        /* Mockup shimmer */
+        .shimmer { background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%); background-size: 200% 100%; animation: shimmer 1.8s infinite; }
+        .dark .shimmer { background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%); background-size: 200% 100%; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    </style>
+</head>
+
+<body class="antialiased bg-white text-slate-800 dark:bg-slate-900 dark:text-slate-200 transition-colors duration-200">
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- NAVBAR                                                           -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<nav class="sticky top-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+
+            <!-- Logo -->
+            <a href="#" class="flex items-center gap-2.5">
+                <div class="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center shadow-sm">
+                    <i data-lucide="graduation-cap" class="w-4.5 h-4.5 text-white" style="width:18px;height:18px"></i>
+                </div>
+                <span class="text-xl font-bold text-slate-900 dark:text-white tracking-tight">EduCare</span>
+            </a>
+
+            <!-- Nav links (desktop) -->
+            <div class="hidden md:flex items-center gap-7">
+                <a href="#funcionalidades" class="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors">Funcionalidades</a>
+                <a href="#modulos"         class="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors">Módulos</a>
+                <a href="#como-funciona"   class="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors">Como funciona</a>
+                <a href="#planos"          class="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors">Planos</a>
+            </div>
+
+            <!-- Right actions -->
+            <div class="flex items-center gap-2">
+                <!-- Theme toggle -->
+                <button id="theme-toggle" class="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="Alternar tema">
+                    <i data-lucide="sun"  id="icon-light" class="w-4 h-4 hidden"></i>
+                    <i data-lucide="moon" id="icon-dark"  class="w-4 h-4 hidden"></i>
+                </button>
+
+                <a href="{% url 'accounts:login' %}" class="hidden sm:block text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+                    Entrar
+                </a>
+                <a href="#planos" class="text-sm font-semibold text-white bg-primary-500 hover:bg-primary-600 px-4 py-2 rounded-lg transition-colors shadow-sm">
+                    Começar grátis
+                </a>
+
+                <!-- Mobile menu btn -->
+                <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    <i data-lucide="menu" class="w-5 h-5" id="mobile-menu-icon"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="hidden md:hidden border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 space-y-1">
+        <a href="#funcionalidades" class="block px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary-500 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800">Funcionalidades</a>
+        <a href="#modulos"         class="block px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary-500 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800">Módulos</a>
+        <a href="#como-funciona"   class="block px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary-500 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800">Como funciona</a>
+        <a href="#planos"          class="block px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary-500 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800">Planos</a>
+        <a href="{% url 'accounts:login' %}" class="block px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary-500 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800">Entrar</a>
+    </div>
+</nav>
+
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- HERO                                                             -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<section class="hero-gradient pt-20 pb-28 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center max-w-4xl mx-auto">
+
+            <!-- Badge -->
+            <div class="inline-flex items-center gap-2 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-xs font-semibold px-3.5 py-1.5 rounded-full mb-7 border border-primary-100 dark:border-primary-800">
+                <i data-lucide="sparkles" style="width:13px;height:13px"></i>
+                Trial gratuito · 10 dias · Todos os módulos · Sem cartão
+            </div>
+
+            <!-- Headline -->
+            <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-slate-900 dark:text-white leading-tight tracking-tight mb-6">
+                A plataforma completa<br>
+                para <span class="text-primary-500">gestão escolar</span>
+            </h1>
+
+            <!-- Subheadline -->
+            <p class="text-xl text-slate-500 dark:text-slate-400 leading-relaxed mb-10 max-w-2xl mx-auto">
+                Do controle de frequência ao financeiro — tudo integrado, simples para professores e poderoso para gestores. Pensado para a realidade das escolas brasileiras.
+            </p>
+
+            <!-- CTAs -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-5">
+                <a href="#planos" class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-primary-500 hover:bg-primary-600 text-white font-semibold text-base px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-primary-500/30 hover:shadow-primary-500/50">
+                    <i data-lucide="rocket" style="width:18px;height:18px"></i>
+                    Começar grátis agora
+                </a>
+                <a href="#como-funciona" class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold text-base px-8 py-3.5 rounded-xl transition-all border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700">
+                    <i data-lucide="play-circle" style="width:18px;height:18px" class="text-primary-500"></i>
+                    Como funciona
+                </a>
+            </div>
+            <p class="text-sm text-slate-400 dark:text-slate-500 mb-16">
+                Sem cartão de crédito &nbsp;·&nbsp; 30 alunos grátis &nbsp;·&nbsp; Cancele quando quiser
+            </p>
+
+            <!-- Dashboard mockup -->
+            <div class="relative max-w-5xl mx-auto">
+                <div class="absolute -inset-6 bg-primary-500/8 dark:bg-primary-500/5 rounded-3xl blur-3xl -z-10"></div>
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl ring-1 ring-slate-900/10 dark:ring-white/10 overflow-hidden">
+                    <!-- Browser chrome -->
+                    <div class="bg-slate-100 dark:bg-slate-700/60 px-4 py-3 flex items-center gap-2 border-b border-slate-200 dark:border-slate-700">
+                        <span class="w-3 h-3 rounded-full bg-red-400"></span>
+                        <span class="w-3 h-3 rounded-full bg-amber-400"></span>
+                        <span class="w-3 h-3 rounded-full bg-emerald-400"></span>
+                        <div class="flex-1 mx-4 bg-white dark:bg-slate-600 rounded-md px-3 py-1 text-xs text-slate-400 dark:text-slate-300 text-left border border-slate-200 dark:border-slate-500 flex items-center gap-1.5">
+                            <i data-lucide="lock" style="width:10px;height:10px" class="text-slate-300 dark:text-slate-400"></i>
+                            app.educare.com.br/dashboard
+                        </div>
+                    </div>
+                    <!-- Dashboard body -->
+                    <div class="bg-slate-50 dark:bg-slate-900/50 p-5 sm:p-7">
+                        <!-- Page header -->
+                        <div class="flex items-start justify-between mb-5">
+                            <div>
+                                <div class="shimmer h-5 w-52 rounded-lg mb-2"></div>
+                                <div class="shimmer h-3 w-32 rounded-md"></div>
+                            </div>
+                            <div class="shimmer h-8 w-28 rounded-lg bg-primary-500/20"></div>
+                        </div>
+                        <!-- KPI row -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                            <div class="bg-white dark:bg-slate-800 rounded-xl p-3.5 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm">
+                                <div class="flex items-center gap-2.5 mb-2">
+                                    <div class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-700 shimmer"></div>
+                                    <div class="shimmer h-2.5 w-16 rounded"></div>
+                                </div>
+                                <div class="shimmer h-7 w-14 rounded-md mb-1"></div>
+                                <div class="shimmer h-2 w-20 rounded"></div>
+                            </div>
+                            <div class="bg-white dark:bg-slate-800 rounded-xl p-3.5 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm">
+                                <div class="flex items-center gap-2.5 mb-2">
+                                    <div class="w-7 h-7 rounded-lg bg-primary-100 dark:bg-primary-900/40 shimmer"></div>
+                                    <div class="shimmer h-2.5 w-14 rounded"></div>
+                                </div>
+                                <div class="shimmer h-7 w-10 rounded-md mb-1"></div>
+                                <div class="shimmer h-2 w-20 rounded"></div>
+                            </div>
+                            <div class="bg-white dark:bg-slate-800 rounded-xl p-3.5 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm">
+                                <div class="flex items-center gap-2.5 mb-2">
+                                    <div class="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 shimmer"></div>
+                                    <div class="shimmer h-2.5 w-12 rounded"></div>
+                                </div>
+                                <div class="shimmer h-7 w-14 rounded-md mb-1"></div>
+                                <div class="shimmer h-2 w-20 rounded"></div>
+                            </div>
+                            <div class="bg-white dark:bg-slate-800 rounded-xl p-3.5 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm">
+                                <div class="flex items-center gap-2.5 mb-2">
+                                    <div class="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-900/30 shimmer"></div>
+                                    <div class="shimmer h-2.5 w-16 rounded"></div>
+                                </div>
+                                <div class="shimmer h-7 w-10 rounded-md mb-1"></div>
+                                <div class="shimmer h-2 w-20 rounded"></div>
+                            </div>
+                        </div>
+                        <!-- Content grid -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div class="sm:col-span-2 bg-white dark:bg-slate-800 rounded-xl ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="shimmer h-3 w-24 rounded"></div>
+                                    <div class="shimmer h-3 w-12 rounded"></div>
+                                </div>
+                                <div class="space-y-2.5">
+                                    {% for i in "12345" %}
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-7 h-7 rounded-lg shimmer shrink-0"></div>
+                                        <div class="shimmer h-2.5 flex-1 rounded"></div>
+                                        <div class="shimmer h-5 w-14 rounded-full"></div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="bg-white dark:bg-slate-800 rounded-xl ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm p-4">
+                                <div class="shimmer h-3 w-20 rounded mb-3"></div>
+                                <div class="space-y-2">
+                                    {% for i in "1234" %}
+                                    <div class="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 dark:bg-slate-700/40">
+                                        <div class="w-6 h-6 rounded-lg shimmer shrink-0"></div>
+                                        <div class="shimmer h-2.5 flex-1 rounded"></div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- STATS BAR                                                        -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<section class="bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div>
+                <p class="text-3xl font-extrabold text-slate-900 dark:text-white mb-1">+500</p>
+                <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">Escolas cadastradas</p>
+            </div>
+            <div>
+                <p class="text-3xl font-extrabold text-slate-900 dark:text-white mb-1">+15 mil</p>
+                <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">Alunos gerenciados</p>
+            </div>
+            <div>
+                <p class="text-3xl font-extrabold text-slate-900 dark:text-white mb-1">21</p>
+                <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">Módulos integrados</p>
+            </div>
+            <div>
+                <p class="text-3xl font-extrabold text-slate-900 dark:text-white mb-1">99,9%</p>
+                <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">Uptime garantido</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- FEATURES                                                         -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<section id="funcionalidades" class="py-24 px-4 sm:px-6 lg:px-8 bg-slate-50 dark:bg-slate-950">
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-16">
+            <p class="text-xs font-bold text-primary-500 uppercase tracking-widest mb-3">Funcionalidades</p>
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white mb-4">
+                Tudo que sua escola precisa
+            </h2>
+            <p class="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
+                Cada funcionalidade foi desenvolvida ouvindo gestores, professores e secretarias de escolas brasileiras.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+
+            <div class="feature-card bg-white dark:bg-slate-900 rounded-2xl p-6 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm">
+                <div class="w-11 h-11 rounded-xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center mb-4">
+                    <i data-lucide="clipboard-list" class="text-primary-500" style="width:22px;height:22px"></i>
+                </div>
+                <h3 class="text-base font-semibold text-slate-900 dark:text-white mb-2">Avaliações online e presenciais</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Gabarito automático para múltipla escolha, correção manual para discursivas. Ou aplique no papel e lance as notas depois — com geração de PDF da prova.
+                </p>
+            </div>
+
+            <div class="feature-card bg-white dark:bg-slate-900 rounded-2xl p-6 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm">
+                <div class="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center mb-4">
+                    <i data-lucide="calendar-check" class="text-emerald-600 dark:text-emerald-400" style="width:22px;height:22px"></i>
+                </div>
+                <h3 class="text-base font-semibold text-slate-900 dark:text-white mb-2">Frequência flexível</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Lançamento diário, semanal ou mensal — a escola decide. Dois níveis de alerta preventivo antes de atingir o limite legal de 75%, com notificação automática.
+                </p>
+            </div>
+
+            <div class="feature-card bg-white dark:bg-slate-900 rounded-2xl p-6 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm">
+                <div class="w-11 h-11 rounded-xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center mb-4">
+                    <i data-lucide="banknote" class="text-amber-600 dark:text-amber-400" style="width:22px;height:22px"></i>
+                </div>
+                <h3 class="text-base font-semibold text-slate-900 dark:text-white mb-2">Financeiro integrado</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Gere mensalidades em lote, controle inadimplência e receba via Mercado Pago (Pix, boleto, cartão). Responsáveis pagam direto pelo sistema.
+                </p>
+            </div>
+
+            <div class="feature-card bg-white dark:bg-slate-900 rounded-2xl p-6 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm">
+                <div class="w-11 h-11 rounded-xl bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center mb-4">
+                    <i data-lucide="file-text" class="text-violet-600 dark:text-violet-400" style="width:22px;height:22px"></i>
+                </div>
+                <h3 class="text-base font-semibold text-slate-900 dark:text-white mb-2">Boletim automático em PDF</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Médias calculadas a cada nota lançada. Boletim em PDF com identidade visual da escola. Alunos e responsáveis acessam online, sem precisar ir à secretaria.
+                </p>
+            </div>
+
+            <div class="feature-card bg-white dark:bg-slate-900 rounded-2xl p-6 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm">
+                <div class="w-11 h-11 rounded-xl bg-sky-50 dark:bg-sky-900/20 flex items-center justify-center mb-4">
+                    <i data-lucide="megaphone" class="text-sky-600 dark:text-sky-400" style="width:22px;height:22px"></i>
+                </div>
+                <h3 class="text-base font-semibold text-slate-900 dark:text-white mb-2">Comunicados e agenda</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Canal oficial de comunicação com famílias. Professores convocam responsáveis quando precisam — tudo registrado para auditoria em caso de divergências.
+                </p>
+            </div>
+
+            <div class="feature-card bg-white dark:bg-slate-900 rounded-2xl p-6 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm">
+                <div class="w-11 h-11 rounded-xl bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center mb-4">
+                    <i data-lucide="bar-chart-3" class="text-rose-500 dark:text-rose-400" style="width:22px;height:22px"></i>
+                </div>
+                <h3 class="text-base font-semibold text-slate-900 dark:text-white mb-2">Relatórios de gestão</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Desempenho por turma, frequência consolidada e qualidade de ensino por professor. Exportação em PDF e Excel, automático no fechamento do período.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- COMO FUNCIONA                                                    -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<section id="como-funciona" class="py-24 px-4 sm:px-6 lg:px-8 bg-white dark:bg-slate-900">
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-16">
+            <p class="text-xs font-bold text-primary-500 uppercase tracking-widest mb-3">Como funciona</p>
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white mb-4">
+                Sua escola funcionando em minutos
+            </h2>
+            <p class="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
+                Três passos simples. Sem treinamento técnico, sem configuração complexa.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-10 relative">
+            <!-- Connector -->
+            <div class="hidden md:block absolute top-10 left-[38%] right-[38%] h-px bg-gradient-to-r from-primary-200 via-primary-400 to-primary-200 dark:from-primary-800 dark:via-primary-600 dark:to-primary-800"></div>
+
+            <!-- Step 1 -->
+            <div class="text-center relative">
+                <div class="w-20 h-20 rounded-2xl bg-primary-500 flex items-center justify-center mx-auto mb-5 shadow-xl shadow-primary-500/30 relative z-10">
+                    <i data-lucide="building-2" class="text-white" style="width:34px;height:34px"></i>
+                </div>
+                <span class="inline-block text-xs font-bold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 px-2.5 py-1 rounded-full mb-3 border border-primary-100 dark:border-primary-800">Passo 1</span>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Cadastre sua escola</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Nossa equipe cria sua escola na plataforma. Você recebe um convite por e-mail ou WhatsApp para acessar e completar o cadastro.
+                </p>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="text-center relative">
+                <div class="w-20 h-20 rounded-2xl bg-white dark:bg-slate-800 border-2 border-primary-200 dark:border-primary-700 flex items-center justify-center mx-auto mb-5 shadow-lg relative z-10">
+                    <i data-lucide="settings-2" class="text-primary-500" style="width:34px;height:34px"></i>
+                </div>
+                <span class="inline-block text-xs font-bold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 px-2.5 py-1 rounded-full mb-3 border border-primary-100 dark:border-primary-800">Passo 2</span>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Configure turmas e alunos</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Adicione séries, turmas, professores e alunos com um checklist guiado. Matérias pré-cadastradas pela BNCC — edite só o que precisar.
+                </p>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="text-center relative">
+                <div class="w-20 h-20 rounded-2xl bg-white dark:bg-slate-800 border-2 border-primary-200 dark:border-primary-700 flex items-center justify-center mx-auto mb-5 shadow-lg relative z-10">
+                    <i data-lucide="trending-up" class="text-primary-500" style="width:34px;height:34px"></i>
+                </div>
+                <span class="inline-block text-xs font-bold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 px-2.5 py-1 rounded-full mb-3 border border-primary-100 dark:border-primary-800">Passo 3</span>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Gerencie com inteligência</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Professores lançam notas e frequência, responsáveis acompanham em tempo real e gestores tomam decisões com dados confiáveis.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- MÓDULOS                                                          -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<section id="modulos" class="py-24 px-4 sm:px-6 lg:px-8 bg-slate-50 dark:bg-slate-950">
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-16">
+            <p class="text-xs font-bold text-primary-500 uppercase tracking-widest mb-3">Plataforma completa</p>
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white mb-4">
+                21 módulos integrados
+            </h2>
+            <p class="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
+                Ative somente o que sua escola precisa. Todos os módulos conversam entre si — sem integrações manuais.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            <div class="bg-white dark:bg-slate-900 rounded-xl p-4 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm flex items-center gap-3 hover:ring-primary-200 dark:hover:ring-primary-800 transition-all group">
+                <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0"><i data-lucide="shield" class="text-slate-500 dark:text-slate-400" style="width:15px;height:15px"></i></div>
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Autenticação</span>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-xl p-4 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm flex items-center gap-3 hover:ring-primary-200 dark:hover:ring-primary-800 transition-all group">
+                <div class="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center shrink-0"><i data-lucide="building-2" class="text-primary-500" style="width:15px;height:15px"></i></div>
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Gestão Escolar</span>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-xl p-4 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm flex items-center gap-3 hover:ring-primary-200 dark:hover:ring-primary-800 transition-all group">
+                <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center shrink-0"><i data-lucide="users" class="text-emerald-600 dark:text-emerald-400" style="width:15px;height:15px"></i></div>
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Alunos</span>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-xl p-4 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm flex items-center gap-3 hover:ring-primary-200 dark:hover:ring-primary-800 transition-all group">
+                <div class="w-8 h-8 rounded-lg bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center shrink-0"><i data-lucide="graduation-cap" class="text-violet-600 dark:text-violet-400" style="width:15px;height:15px"></i></div>
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Professores</span>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-xl p-4 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm flex items-center gap-3 hover:ring-primary-200 dark:hover:ring-primary-800 transition-all group">
+                <div class="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center shrink-0"><i data-lucide="layout-grid" class="text-amber-600 dark:text-amber-400" style="width:15px;height:15px"></i></div>
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Turmas</span>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-xl p-4 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm flex items-center gap-3 hover:ring-primary-200 dark:hover:ring-primary-800 transition-all group">
+                <div class="w-8 h-8 rounded-lg bg-sky-50 dark:bg-sky-900/20 flex items-center justify-center shrink-0"><i data-lucide="book-open" class="text-sky-600 dark:text-sky-400" style="width:15px;height:15px"></i></div>
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Matérias</span>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-xl p-4 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm flex items-center gap-3 hover:ring-primary-200 dark:hover:ring-primary-800 transition-all group">
+                <div class="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center shrink-0"><i data-lucide="clipboard-list" class="text-primary-500" style="width:15px;height:15px"></i></div>
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Avaliações</span>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-xl p-4 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm flex items-center gap-3 hover:ring-primary-200 dark:hover:ring-primary-800 transition-all group">
+                <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center shrink-0"><i data-lucide="calendar-check" class="text-emerald-600 dark:text-emerald-400" style="width:15px;height:15px"></i></div>
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Frequência</span>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-xl p-4 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm flex items-center gap-3 hover:ring-primary-200 dark:hover:ring-primary-800 transition-all group">
+                <div class="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center shrink-0"><i data-lucide="file-text" class="text-rose-500 dark:text-rose-400" style="width:15px;height:15px"></i></div>
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Boletim</span>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-xl p-4 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm flex items-center gap-3 hover:ring-primary-200 dark:hover:ring-primary-800 transition-all group">
+                <div class="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center shrink-0"><i data-lucide="banknote" class="text-amber-600 dark:text-amber-400" style="width:15px;height:15px"></i></div>
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Financeiro</span>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-xl p-4 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm flex items-center gap-3 hover:ring-primary-200 dark:hover:ring-primary-800 transition-all group">
+                <div class="w-8 h-8 rounded-lg bg-sky-50 dark:bg-sky-900/20 flex items-center justify-center shrink-0"><i data-lucide="megaphone" class="text-sky-600 dark:text-sky-400" style="width:15px;height:15px"></i></div>
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Comunicados</span>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-xl p-4 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm flex items-center gap-3 hover:ring-primary-200 dark:hover:ring-primary-800 transition-all group">
+                <div class="w-8 h-8 rounded-lg bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center shrink-0"><i data-lucide="bar-chart-3" class="text-violet-600 dark:text-violet-400" style="width:15px;height:15px"></i></div>
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Relatórios</span>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-xl p-4 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm flex items-center gap-3 hover:ring-primary-200 dark:hover:ring-primary-800 transition-all group">
+                <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0"><i data-lucide="bell" class="text-slate-500 dark:text-slate-400" style="width:15px;height:15px"></i></div>
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Notificações</span>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-xl p-4 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm flex items-center gap-3 hover:ring-primary-200 dark:hover:ring-primary-800 transition-all group">
+                <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0"><i data-lucide="user-check" class="text-slate-500 dark:text-slate-400" style="width:15px;height:15px"></i></div>
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Responsáveis</span>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-xl p-4 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm flex items-center gap-3 hover:ring-primary-200 dark:hover:ring-primary-800 transition-all group">
+                <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0"><i data-lucide="briefcase" class="text-slate-500 dark:text-slate-400" style="width:15px;height:15px"></i></div>
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Colaboradores</span>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-xl p-4 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm flex items-center gap-3 hover:ring-primary-200 dark:hover:ring-primary-800 transition-all group">
+                <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0"><i data-lucide="calendar" class="text-slate-500 dark:text-slate-400" style="width:15px;height:15px"></i></div>
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Agenda</span>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-xl p-4 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm flex items-center gap-3 hover:ring-primary-200 dark:hover:ring-primary-800 transition-all group">
+                <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0"><i data-lucide="shield-check" class="text-slate-500 dark:text-slate-400" style="width:15px;height:15px"></i></div>
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Auditoria</span>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-xl p-4 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm flex items-center gap-3 hover:ring-primary-200 dark:hover:ring-primary-800 transition-all group">
+                <div class="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center shrink-0"><i data-lucide="credit-card" class="text-primary-500" style="width:15px;height:15px"></i></div>
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Planos e Assinatura</span>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-xl p-4 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm flex items-center gap-3 hover:ring-primary-200 dark:hover:ring-primary-800 transition-all group">
+                <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0"><i data-lucide="user-cog" class="text-slate-500 dark:text-slate-400" style="width:15px;height:15px"></i></div>
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Diretor</span>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-xl p-4 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm flex items-center gap-3 hover:ring-primary-200 dark:hover:ring-primary-800 transition-all group">
+                <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0"><i data-lucide="calendar-range" class="text-slate-500 dark:text-slate-400" style="width:15px;height:15px"></i></div>
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Ano Letivo</span>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-xl p-4 ring-1 ring-slate-900/5 dark:ring-white/5 shadow-sm flex items-center gap-3 hover:ring-primary-200 dark:hover:ring-primary-800 transition-all group">
+                <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0"><i data-lucide="list-ordered" class="text-slate-500 dark:text-slate-400" style="width:15px;height:15px"></i></div>
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Séries</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- PLANOS                                                           -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<section id="planos" class="py-24 px-4 sm:px-6 lg:px-8 bg-white dark:bg-slate-900">
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-16">
+            <p class="text-xs font-bold text-primary-500 uppercase tracking-widest mb-3">Planos</p>
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white mb-4">
+                Comece grátis, cresça no seu ritmo
+            </h2>
+            <p class="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
+                Trial gratuito com todos os módulos ativos. Sem cartão de crédito, sem compromisso.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+
+            <!-- Trial -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-7 ring-1 ring-slate-200 dark:ring-slate-700 shadow-sm">
+                <div class="mb-6">
+                    <p class="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">Trial gratuito</p>
+                    <div class="flex items-end gap-1">
+                        <p class="text-4xl font-extrabold text-slate-900 dark:text-white">R$ 0</p>
+                    </div>
+                    <p class="text-sm text-slate-400 dark:text-slate-500 mt-1">por 10 dias</p>
+                </div>
+                <ul class="space-y-3 mb-7">
+                    <li class="flex items-center gap-2.5 text-sm text-slate-600 dark:text-slate-400">
+                        <i data-lucide="check" class="text-emerald-500 shrink-0" style="width:16px;height:16px"></i>
+                        Até 30 alunos ativos
+                    </li>
+                    <li class="flex items-center gap-2.5 text-sm text-slate-600 dark:text-slate-400">
+                        <i data-lucide="check" class="text-emerald-500 shrink-0" style="width:16px;height:16px"></i>
+                        Todos os módulos ativos
+                    </li>
+                    <li class="flex items-center gap-2.5 text-sm text-slate-600 dark:text-slate-400">
+                        <i data-lucide="check" class="text-emerald-500 shrink-0" style="width:16px;height:16px"></i>
+                        Suporte por WhatsApp
+                    </li>
+                    <li class="flex items-center gap-2.5 text-sm text-slate-400 dark:text-slate-600">
+                        <i data-lucide="x" class="text-slate-300 dark:text-slate-600 shrink-0" style="width:16px;height:16px"></i>
+                        Sem cartão de crédito
+                    </li>
+                </ul>
+                <a href="{% url 'core:contato' %}" class="block text-center w-full py-3 rounded-xl border border-slate-200 dark:border-slate-600 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                    Começar grátis
+                </a>
+            </div>
+
+            <!-- Básico (featured) -->
+            <div class="bg-primary-500 rounded-2xl p-7 shadow-2xl shadow-primary-500/30 relative">
+                <div class="absolute -top-3.5 left-1/2 -translate-x-1/2">
+                    <span class="bg-amber-400 text-amber-900 text-xs font-bold px-3 py-1 rounded-full shadow-sm whitespace-nowrap">
+                        ⭐ Mais popular
+                    </span>
+                </div>
+                <div class="mb-6">
+                    <p class="text-sm font-semibold text-primary-100 mb-1">Plano Básico</p>
+                    <div class="flex items-end gap-1">
+                        <p class="text-4xl font-extrabold text-white">R$ 199</p>
+                    </div>
+                    <p class="text-sm text-primary-200 mt-1">por mês</p>
+                </div>
+                <ul class="space-y-3 mb-7">
+                    <li class="flex items-center gap-2.5 text-sm text-primary-50">
+                        <i data-lucide="check" class="text-white shrink-0" style="width:16px;height:16px"></i>
+                        Até 300 alunos
+                    </li>
+                    <li class="flex items-center gap-2.5 text-sm text-primary-50">
+                        <i data-lucide="check" class="text-white shrink-0" style="width:16px;height:16px"></i>
+                        Todos os módulos
+                    </li>
+                    <li class="flex items-center gap-2.5 text-sm text-primary-50">
+                        <i data-lucide="check" class="text-white shrink-0" style="width:16px;height:16px"></i>
+                        Suporte prioritário
+                    </li>
+                    <li class="flex items-center gap-2.5 text-sm text-primary-50">
+                        <i data-lucide="check" class="text-white shrink-0" style="width:16px;height:16px"></i>
+                        Relatórios avançados
+                    </li>
+                </ul>
+                <a href="{% url 'core:contato' %}" class="block text-center w-full py-3 rounded-xl bg-white text-sm font-semibold text-primary-600 hover:bg-primary-50 transition-colors">
+                    Assinar agora
+                </a>
+            </div>
+
+            <!-- Pro -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-7 ring-1 ring-slate-200 dark:ring-slate-700 shadow-sm">
+                <div class="mb-6">
+                    <p class="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">Plano Pro</p>
+                    <div class="flex items-end gap-1">
+                        <p class="text-4xl font-extrabold text-slate-900 dark:text-white">R$ 399</p>
+                    </div>
+                    <p class="text-sm text-slate-400 dark:text-slate-500 mt-1">por mês</p>
+                </div>
+                <ul class="space-y-3 mb-7">
+                    <li class="flex items-center gap-2.5 text-sm text-slate-600 dark:text-slate-400">
+                        <i data-lucide="check" class="text-emerald-500 shrink-0" style="width:16px;height:16px"></i>
+                        Alunos ilimitados
+                    </li>
+                    <li class="flex items-center gap-2.5 text-sm text-slate-600 dark:text-slate-400">
+                        <i data-lucide="check" class="text-emerald-500 shrink-0" style="width:16px;height:16px"></i>
+                        Todos os módulos
+                    </li>
+                    <li class="flex items-center gap-2.5 text-sm text-slate-600 dark:text-slate-400">
+                        <i data-lucide="check" class="text-emerald-500 shrink-0" style="width:16px;height:16px"></i>
+                        Suporte dedicado
+                    </li>
+                    <li class="flex items-center gap-2.5 text-sm text-slate-600 dark:text-slate-400">
+                        <i data-lucide="check" class="text-emerald-500 shrink-0" style="width:16px;height:16px"></i>
+                        Multi-unidades
+                    </li>
+                </ul>
+                <a href="{% url 'core:contato' %}" class="block text-center w-full py-3 rounded-xl border border-slate-200 dark:border-slate-600 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                    Assinar agora
+                </a>
+            </div>
+
+        </div>
+
+        <p class="text-center text-sm text-slate-400 dark:text-slate-500 mt-8">
+            Precisa de um plano personalizado?
+            <a href="{% url 'core:contato' %}" class="text-primary-500 font-semibold hover:underline underline-offset-2">Fale conosco</a>
+        </p>
+    </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- CTA FINAL                                                        -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<section class="py-24 px-4 sm:px-6 lg:px-8 bg-primary-500 relative overflow-hidden">
+    <div class="absolute inset-0 opacity-10">
+        <div class="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-white blur-3xl"></div>
+        <div class="absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-white blur-3xl"></div>
+    </div>
+    <div class="max-w-4xl mx-auto text-center relative z-10">
+        <div class="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center mx-auto mb-6">
+            <i data-lucide="graduation-cap" class="text-white" style="width:32px;height:32px"></i>
+        </div>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">
+            Pronto para transformar sua escola?
+        </h2>
+        <p class="text-lg text-primary-100 mb-10 max-w-xl mx-auto">
+            Comece com o trial gratuito hoje. 10 dias, todos os módulos, 30 alunos. Sem compromisso.
+        </p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a href="{% url 'core:contato' %}" class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-white text-primary-600 font-semibold text-base px-8 py-3.5 rounded-xl hover:bg-primary-50 transition-colors shadow-lg">
+                <i data-lucide="rocket" style="width:18px;height:18px"></i>
+                Começar grátis agora
+            </a>
+            <a href="{% url 'core:contato' %}" class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 border border-white/40 text-white font-semibold text-base px-8 py-3.5 rounded-xl hover:bg-white/10 transition-colors">
+                <i data-lucide="message-circle" style="width:18px;height:18px"></i>
+                Falar com a equipe
+            </a>
+        </div>
+    </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- FOOTER                                                           -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<footer class="bg-slate-950 text-slate-400 py-16 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
+            <div class="col-span-2 md:col-span-1">
+                <div class="flex items-center gap-2.5 mb-4">
+                    <div class="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
+                        <i data-lucide="graduation-cap" class="text-white" style="width:17px;height:17px"></i>
+                    </div>
+                    <span class="text-lg font-bold text-white tracking-tight">EduCare</span>
+                </div>
+                <p class="text-sm leading-relaxed text-slate-500 max-w-xs">
+                    Plataforma completa de gestão escolar para escolas brasileiras de todos os tamanhos.
+                </p>
+            </div>
+
+            <div>
+                <h4 class="text-sm font-semibold text-white mb-4">Produto</h4>
+                <ul class="space-y-2.5">
+                    <li><a href="#funcionalidades" class="text-sm hover:text-white transition-colors">Funcionalidades</a></li>
+                    <li><a href="#modulos"         class="text-sm hover:text-white transition-colors">Módulos</a></li>
+                    <li><a href="#planos"          class="text-sm hover:text-white transition-colors">Planos</a></li>
+                    <li><a href="#como-funciona"   class="text-sm hover:text-white transition-colors">Como funciona</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="text-sm font-semibold text-white mb-4">Empresa</h4>
+                <ul class="space-y-2.5">
+                    <li><a href="{% url 'core:sobre' %}"   class="text-sm hover:text-white transition-colors">Sobre nós</a></li>
+                    <li><a href="{% url 'core:contato' %}" class="text-sm hover:text-white transition-colors">Contato</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="text-sm font-semibold text-white mb-4">Acesso</h4>
+                <ul class="space-y-2.5">
+                    <li><a href="{% url 'accounts:login' %}" class="text-sm hover:text-white transition-colors">Entrar</a></li>
+                    <li><a href="{% url 'core:contato' %}"   class="text-sm hover:text-white transition-colors">Começar grátis</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="border-t border-slate-800 pt-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p class="text-xs text-slate-600">&copy; 2026 EduCare. Todos os direitos reservados.</p>
+            <p class="text-xs text-slate-700">Feito com <span class="text-rose-500">♥</span> para educadores brasileiros</p>
+        </div>
+    </div>
+</footer>
+
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- SCRIPTS                                                          -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+    // ── Lucide icons ──────────────────────────────────────────────
+    lucide.createIcons();
+
+    // ── Dark mode ─────────────────────────────────────────────────
+    const html       = document.documentElement;
+    const iconLight  = document.getElementById('icon-light');
+    const iconDark   = document.getElementById('icon-dark');
+    const btn        = document.getElementById('theme-toggle');
+
+    function applyTheme(dark) {
+        html.classList.toggle('dark', dark);
+        iconLight.classList.toggle('hidden', !dark);
+        iconDark.classList.toggle('hidden',  dark);
+        localStorage.setItem('theme', dark ? 'dark' : 'light');
+    }
+
+    // Init from localStorage or system preference
+    const saved = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(saved ? saved === 'dark' : prefersDark);
+
+    btn.addEventListener('click', () => applyTheme(!html.classList.contains('dark')));
+
+    // ── Mobile menu ───────────────────────────────────────────────
+    const menuBtn  = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    menuBtn.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
+
+    // Close mobile menu on link click
+    mobileMenu.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => mobileMenu.classList.add('hidden'));
+    });
+
+    // ── Smooth active nav highlight on scroll ─────────────────────
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('nav a[href^="#"]');
+
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                navLinks.forEach(link => {
+                    const active = link.getAttribute('href') === '#' + entry.target.id;
+                    link.classList.toggle('text-primary-500', active);
+                    link.classList.toggle('dark:text-primary-400', active);
+                });
+            }
+        });
+    }, { threshold: 0.4 });
+
+    sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

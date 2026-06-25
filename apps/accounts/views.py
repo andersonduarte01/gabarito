@@ -7,37 +7,36 @@ from django.contrib.auth.forms import (
 from django.contrib.auth import views as auth_views
 from django.urls import reverse_lazy
 
-INPUT    = 'input input-bordered w-full'
-INPUT_PW = 'input input-bordered w-full'
+INPUT    = 'w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#0d6efd] focus:border-transparent transition-colors'
+INPUT_PW = 'w-full pl-3.5 pr-10 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#0d6efd] focus:border-transparent transition-colors'
 
 
-def _aplicar_daisy(form_class, campos: dict):
-    """Retorna uma subclasse do form com classes DaisyUI nos widgets informados."""
-    class FormDaisy(form_class):
+def _aplicar_classes(form_class, campos: dict):
+    class FormComClasses(form_class):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             for nome, css in campos.items():
                 if nome in self.fields:
                     self.fields[nome].widget.attrs.update({'class': css})
-    return FormDaisy
+    return FormComClasses
 
 
-LoginFormDaisy = _aplicar_daisy(AuthenticationForm, {
+LoginFormDaisy = _aplicar_classes(AuthenticationForm, {
     'username': INPUT,
     'password': INPUT_PW,
 })
 
-PasswordChangeFormDaisy = _aplicar_daisy(PasswordChangeForm, {
+PasswordChangeFormDaisy = _aplicar_classes(PasswordChangeForm, {
     'old_password':  INPUT_PW,
     'new_password1': INPUT_PW,
     'new_password2': INPUT_PW,
 })
 
-PasswordResetFormDaisy = _aplicar_daisy(PasswordResetForm, {
+PasswordResetFormDaisy = _aplicar_classes(PasswordResetForm, {
     'email': INPUT,
 })
 
-SetPasswordFormDaisy = _aplicar_daisy(SetPasswordForm, {
+SetPasswordFormDaisy = _aplicar_classes(SetPasswordForm, {
     'new_password1': INPUT_PW,
     'new_password2': INPUT_PW,
 })
