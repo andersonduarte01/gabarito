@@ -1,61 +1,67 @@
 from django.db import models
-from ..aluno.models import Aluno
-from ..funcionario.models import Professor
-from ..sala.models import Sala  # Sala = Turma (alias para compatibilidade)
 
 
-class Frequencia(models.Model):
-    sala = models.ForeignKey(Sala, related_name='freq_sala', on_delete=models.CASCADE)
-    presentes = models.IntegerField(verbose_name='Presentes')
-    data = models.DateField()
-    status = models.BooleanField(verbose_name='Status', default=False)
-
-    def __str__(self):
-        return f'{self.sala} - {self.data}'
-
-    class Meta:
-        unique_together = ('sala', 'data')
-
-
-class FrequenciaAluno(models.Model):
-    aluno = models.ForeignKey(Aluno, related_name='freq_aluno', on_delete=models.CASCADE)
-    observacao = models.CharField(verbose_name='Observacao', null=True, blank=True, max_length=255)
-    data = models.DateField()
-    presente = models.BooleanField(verbose_name='Status', default=True)
-
-    def __str__(self):
-        return f'{self.aluno} - {self.data}'
-
-    class Meta:
-        unique_together = ('aluno', 'data')
-
-
-class Registro(models.Model):
-    sala = models.ForeignKey(Sala, on_delete=models.CASCADE, verbose_name='Sala')
-    data = models.DateField(verbose_name='Semana Inicio')
-    data_fim = models.DateField(verbose_name='Semana Final', null=True, blank=True)
-    pratica = models.TextField(verbose_name='PRÁTICAS QUE POSSIBILITAM:')
-    campo = models.TextField(verbose_name='CAMPOS DE EXPERIÊNCIAS:')
-    objeto = models.TextField(verbose_name='OBJETOS DE APRENDIZAGEM:')
-    professor = models.TextField(verbose_name='Professor', null=True, blank=True, default=None)
-
-
-class Periodo(models.Model):
-    periodo = models.CharField(verbose_name='Período', max_length=100)
-
-
-    def __str__(self):
-        return self.periodo
-
-
-class Relatorio(models.Model):
-    periodo = models.ForeignKey(Periodo, on_delete=models.DO_NOTHING)
-    aluno = models.ForeignKey(Aluno, on_delete=models.DO_NOTHING, related_name='relatorio_aluno')
-    relatorio = models.TextField(verbose_name='Relatório')
-    professor = models.TextField(verbose_name='Professor', null=True, blank=True, default=None)
-    data_relatorio = models.DateTimeField(auto_now_add=True)
-    atualiza_relatorio = models.DateTimeField(auto_now=True)
+class RegistroFrequencia(models.Model):
+    turma        = models.ForeignKey(
+        'turma.Turma', on_delete=models.CASCADE,
+        related_name='registros_frequencia', verbose_name='Turma',
+    )
+    materia      = models.ForeignKey(
+        'materia.Materia', on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='registros_frequencia', verbose_name='Matéria',
+    )
+    professor    = models.ForeignKey(
+        'professor.PerfilProfessor', on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='registros_frequencia', verbose_name='Professor',
+    )
+    ano_letivo   = models.ForeignKey(
+        'ano_letivo.AnoLetivo', on_delete=models.CASCADE,
+        related_name='registros_frequencia', verbose_name='Ano Letivo',
+    )
+    periodo_letivo = models.ForeignKey(
+        'ano_letivo.PeriodoLetivo', on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='registros_frequencia', verbose_name='Período Letivo',
+    )
+    data         = models.DateField('Data da Aula')
+    criado_em    = models.DateTimeField('Criado em', auto_now_add=True)
+    criado_por   = models.ForeignKey(
+        'core.Usuario', on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='registros_frequencia_criados', verbose_name='Criado por',
+    )
 
     class Meta:
-        unique_together = ('periodo', 'aluno')
+        verbose_name        = 'Registro de Frequência'
+        verbose_name_plural = 'Registros de Frequência'
+        ordering            = ['-data', '-criado_em']
 
+    def __str__(self):
+        materia = self.materia.nome if self.materia else '—'
+        return f'{self.turma.nome} | {materia} | {self.data}'
+
+
+class PresencaAluno(models.Model):
+    registro     = models.ForeignKey(
+        RegistroFrequencia, on_delete=models.CASCADE,
+        related_name='presencas', verbose_name='Registro',
+    )
+    aluno        = models.ForeignKey(
+        'aluno.Aluno', on_delete=models.CASCADE,
+        related_name='presencas', verbose_name='Aluno',
+    )
+    presente     = models.BooleanField('Presente', default=True)
+    justificado  = models.BooleanField('Justificado', default=False)
+    observacao   = models.TextField('Observação', blank=True)
+
+    class Meta:
+        verbose_name        = 'Presença'
+        verbose_name_plural = 'Presenças'
+        unique_together     = ('registro', 'aluno')
+        ordering            = ['aluno__nome_completo']
+
+    def __str__(self):
+        status = 'P' if self.presente else ('FJ' if self.justificado else 'F')
+        return f'{self.aluno.nome_completo} [{status}] — {self.registro}'

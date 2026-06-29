@@ -1,152 +1,209 @@
 from django.contrib import messages
-from django.core.paginator import Paginator
+from django.core.exceptions import PermissionDenied
 from django.db.models import Q
-from django.shortcuts import redirect, get_object_or_404
-from django.views.generic import TemplateView, UpdateView
-from django.urls import reverse_lazy
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views import View
 
-from apps.core.models import UsuarioEscola
-from apps.core.permissao import PermissaoRequiredMixin
-from apps.core.services import AlunoService
-from apps.sala.models import Turma
-from .forms import AlunoCreateForm, AlunoEditForm
-from .models import Aluno, SITUACAO
+from .forms import CriarAlunoForm, EditarAlunoForm, MatriculaTurmaForm, TrocarTurmaForm
+from .models import Aluno, MatriculaTurma
+from .services import aluno_service
 
 
-_TIPOS_GESTAO = [UsuarioEscola.DIRETOR, UsuarioEscola.COLABORADOR]
+class _LeituraMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('accounts:login')
+        papel = getattr(request, 'papel', None)
+        if papel is None or papel.tipo not in ('DIRETOR', 'FUNCIONARIO'):
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+    def _ctx(self, request, **extra):
+        return {'usuario': request.user, 'escola': request.escola, 'papel': request.papel, **extra}
 
 
-class ListaAlunos(PermissaoRequiredMixin, TemplateView):
-    template_name = 'aluno/lista_alunos.html'
-    permissao_tipos = _TIPOS_GESTAO
+class _DiretorMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('accounts:login')
+        papel = getattr(request, 'papel', None)
+        if papel is None or papel.tipo != 'DIRETOR':
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
 
-    POR_PAGINA = 15
+    def _ctx(self, request, **extra):
+        return {'usuario': request.user, 'escola': request.escola, 'papel': request.papel, **extra}
 
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        escola = self.request.escola
 
+class ListarAlunosView(_LeituraMixin, View):
+    template_name = 'aluno/lista.html'
+
+    def get(self, request):
+        escola = request.escola
         qs = (
             Aluno.objects
             .filter(escola=escola)
-            .select_related('usuario', 'sala')
-            .order_by('usuario__nome')
+            .prefetch_related('matriculas__turma', 'matriculas__ano_letivo')
+            .order_by('nome_completo')
         )
-
-        turma_id = self.request.GET.get('turma', '')
-        situacao = self.request.GET.get('situacao', '')
-        busca    = self.request.GET.get('busca', '').strip()
-
-        if turma_id:
-            qs = qs.filter(sala_id=turma_id)
-        if situacao:
-            qs = qs.filter(situacao=situacao)
+        busca  = request.GET.get('q', '').strip()
+        ativo  = request.GET.get('ativo', '')
+        turma  = request.GET.get('turma', '')
         if busca:
             qs = qs.filter(
-                Q(usuario__nome__icontains=busca) | Q(matricula__icontains=busca)
+                Q(nome_completo__icontains=busca) | Q(matricula__icontains=busca)
             )
+        if ativo == '1':
+            qs = qs.filter(ativo=True)
+        elif ativo == '0':
+            qs = qs.filter(ativo=False)
+        if turma:
+            qs = qs.filter(matriculas__turma_id=turma, matriculas__ativo=True)
 
-        total     = qs.count()
-        paginator = Paginator(qs, self.POR_PAGINA)
-        page_obj  = paginator.get_page(self.request.GET.get('page', 1))
+        from apps.turma.models import Turma
+        turmas = Turma.objects.filter(escola=escola, ativo=True).order_by('nome')
 
-        params = self.request.GET.copy()
-        params.pop('page', None)
-
-        ctx['alunos']           = page_obj.object_list
-        ctx['page_obj']         = page_obj
-        ctx['total']            = total
-        ctx['turmas']           = Turma.objects.filter(escola=escola, ativo=True).order_by('nome')
-        ctx['situacao_choices'] = SITUACAO
-        ctx['filtros']          = {'turma': turma_id, 'situacao': situacao, 'busca': busca}
-        ctx['query_string']     = params.urlencode()
-        return ctx
+        return render(request, self.template_name, self._ctx(
+            request, alunos=qs, turmas=turmas,
+            filtros={'q': busca, 'ativo': ativo, 'turma': turma},
+        ))
 
 
-class CadastrarAluno(PermissaoRequiredMixin, TemplateView):
+class CriarAlunoView(_DiretorMixin, View):
     template_name = 'aluno/form_aluno.html'
-    permissao_tipos = _TIPOS_GESTAO
 
-    def get_context_data(self, form=None, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx['form'] = form or AlunoCreateForm(escola=self.request.escola)
-        ctx['modo'] = 'criar'
-        return ctx
+    def get(self, request):
+        form = CriarAlunoForm(escola=request.escola)
+        return render(request, self.template_name, self._ctx(request, form=form, editando=False))
 
-    def post(self, request, *args, **kwargs):
-        form = AlunoCreateForm(request.POST, escola=request.escola)
-        if not form.is_valid():
-            return self.render_to_response(self.get_context_data(form=form))
+    def post(self, request):
+        form = CriarAlunoForm(request.POST, escola=request.escola)
+        if form.is_valid():
+            cd = form.cleaned_data
+            try:
+                aluno_service.criar(request.escola, {
+                    'nome_completo':   cd['nome_completo'],
+                    'data_nascimento': cd.get('data_nascimento'),
+                    'cpf':             cd.get('cpf', ''),
+                    'rg':              cd.get('rg', ''),
+                    'turma':           cd.get('turma'),
+                    'ano_letivo':      cd.get('ano_letivo'),
+                })
+                messages.success(request, f'Aluno {cd["nome_completo"]} cadastrado com sucesso.')
+                return redirect('aluno:lista')
+            except Exception as exc:
+                messages.error(request, f'Erro ao cadastrar: {exc}')
+        return render(request, self.template_name, self._ctx(request, form=form, editando=False))
 
-        d = form.cleaned_data
-        service = AlunoService(request.escola)
-        result = service.criar_aluno(
-            nome=d['nome'],
-            cpf=d.get('cpf') or '',
-            data_nascimento=d.get('data_nascimento'),
-            sala=d.get('sala'),
-            tem_responsavel=d.get('tem_responsavel', True),
-            email=d.get('email') or None,
-            password=d.get('password') or None,
-            sexo=d.get('sexo') or '',
-            telefone=d.get('telefone') or '',
-            responsavel_legal=d.get('responsavel_legal') or '',
-            telefone_responsavel=d.get('telefone_responsavel') or '',
+
+class DetalheAlunoView(_LeituraMixin, View):
+    template_name = 'aluno/detalhe.html'
+
+    def get(self, request, pk):
+        aluno = get_object_or_404(
+            Aluno.objects.prefetch_related(
+                'matriculas__turma', 'matriculas__ano_letivo',
+            ),
+            pk=pk, escola=request.escola,
         )
-
-        if result['status'] == 'error':
-            messages.error(request, result['message'])
-            return self.render_to_response(self.get_context_data(form=form))
-
-        if result['status'] == 'exists':
-            messages.warning(request, result['message'])
-        else:
-            messages.success(request, f'Aluno {d["nome"]} cadastrado com sucesso.')
-
-        return redirect('aluno:lista_alunos')
+        mat_form   = MatriculaTurmaForm(escola=request.escola)
+        troca_form = TrocarTurmaForm(escola=request.escola)
+        return render(request, self.template_name, self._ctx(
+            request, aluno=aluno, mat_form=mat_form, troca_form=troca_form,
+        ))
 
 
-class EditarAluno(PermissaoRequiredMixin, UpdateView):
-    model = Aluno
-    form_class = AlunoEditForm
+class EditarAlunoView(_DiretorMixin, View):
     template_name = 'aluno/form_aluno.html'
-    context_object_name = 'aluno'
-    permissao_tipos = _TIPOS_GESTAO
-    success_url = reverse_lazy('aluno:lista_alunos')
 
-    def get_object(self, queryset=None):
-        return get_object_or_404(Aluno, pk=self.kwargs['pk'], escola=self.request.escola)
+    def _get_aluno(self, request, pk):
+        return get_object_or_404(Aluno, pk=pk, escola=request.escola)
 
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs['escola'] = self.request.escola
-        return kwargs
+    def get(self, request, pk):
+        aluno = self._get_aluno(request, pk)
+        form  = EditarAlunoForm(instance=aluno)
+        return render(request, self.template_name, self._ctx(request, form=form, editando=True, aluno=aluno))
 
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx['modo'] = 'editar'
-        return ctx
-
-    def form_valid(self, form):
-        usuario = self.object.usuario
-        usuario.nome = form.cleaned_data['nome']
-        novo_email = (form.cleaned_data.get('email') or '').strip()
-        if novo_email and novo_email != usuario.email:
-            usuario.email = novo_email
-        usuario.save(update_fields=['nome', 'email'])
-        messages.success(self.request, f'Aluno {usuario.nome} atualizado com sucesso.')
-        return super().form_valid(form)
+    def post(self, request, pk):
+        aluno = self._get_aluno(request, pk)
+        form  = EditarAlunoForm(request.POST, instance=aluno)
+        if form.is_valid():
+            aluno_service.editar(aluno, form.cleaned_data)
+            messages.success(request, 'Aluno atualizado com sucesso.')
+            return redirect('aluno:detalhe', pk=aluno.pk)
+        return render(request, self.template_name, self._ctx(request, form=form, editando=True, aluno=aluno))
 
 
-class DesativarAluno(PermissaoRequiredMixin, TemplateView):
-    permissao_tipos = [UsuarioEscola.DIRETOR]
+class DesativarAlunoView(_DiretorMixin, View):
+    def post(self, request, pk):
+        aluno = get_object_or_404(Aluno, pk=pk, escola=request.escola)
+        aluno_service.desativar(aluno)
+        messages.success(request, f'{aluno.nome_completo} foi desativado.')
+        return redirect('aluno:lista')
 
-    def get(self, request, *args, **kwargs):
-        return redirect('aluno:lista_alunos')
 
-    def post(self, request, *args, **kwargs):
-        aluno = get_object_or_404(Aluno, pk=self.kwargs['pk'], escola=request.escola)
-        nome = aluno.usuario.nome
-        aluno.usuario.remover_escola(request.escola)
-        messages.success(request, f'{nome} foi desativado.')
-        return redirect('aluno:lista_alunos')
+class ReativarAlunoView(_DiretorMixin, View):
+    def post(self, request, pk):
+        aluno = get_object_or_404(Aluno, pk=pk, escola=request.escola)
+        aluno_service.reativar(aluno)
+        messages.success(request, f'{aluno.nome_completo} foi reativado.')
+        return redirect('aluno:lista')
+
+
+class MatricularView(_DiretorMixin, View):
+    def post(self, request, pk):
+        aluno = get_object_or_404(Aluno, pk=pk, escola=request.escola)
+        form  = MatriculaTurmaForm(request.POST, escola=request.escola)
+        if form.is_valid():
+            try:
+                aluno_service.matricular(aluno, form.cleaned_data['turma'], form.cleaned_data['ano_letivo'])
+                messages.success(request, 'Aluno matriculado com sucesso.')
+            except ValueError as exc:
+                messages.error(request, str(exc))
+        else:
+            messages.error(request, 'Dados de matrícula inválidos.')
+        return redirect('aluno:detalhe', pk=aluno.pk)
+
+
+class TrocarTurmaView(_DiretorMixin, View):
+    def post(self, request, mat_pk):
+        matricula = get_object_or_404(
+            MatriculaTurma, pk=mat_pk, aluno__escola=request.escola, ativo=True,
+        )
+        form = TrocarTurmaForm(request.POST, escola=request.escola)
+        if form.is_valid():
+            aluno_service.trocar_turma(matricula, form.cleaned_data['nova_turma'])
+            messages.success(request, 'Turma alterada com sucesso.')
+        else:
+            messages.error(request, 'Turma inválida.')
+        return redirect('aluno:detalhe', pk=matricula.aluno_id)
+
+
+class TransferirView(_DiretorMixin, View):
+    def post(self, request, mat_pk):
+        matricula = get_object_or_404(
+            MatriculaTurma, pk=mat_pk, aluno__escola=request.escola, ativo=True,
+        )
+        aluno_service.transferir(matricula)
+        messages.success(request, f'{matricula.aluno.nome_completo} transferido(a).')
+        return redirect('aluno:lista')
+
+
+class EvadiemView(_DiretorMixin, View):
+    def post(self, request, mat_pk):
+        matricula = get_object_or_404(
+            MatriculaTurma, pk=mat_pk, aluno__escola=request.escola, ativo=True,
+        )
+        aluno_service.evadir(matricula)
+        messages.success(request, f'{matricula.aluno.nome_completo} marcado(a) como evadido(a).')
+        return redirect('aluno:lista')
+
+
+class ConcluirView(_DiretorMixin, View):
+    def post(self, request, mat_pk):
+        matricula = get_object_or_404(
+            MatriculaTurma, pk=mat_pk, aluno__escola=request.escola, ativo=True,
+        )
+        aluno_service.concluir(matricula)
+        messages.success(request, f'{matricula.aluno.nome_completo} marcado(a) como concluinte.')
+        return redirect('aluno:detalhe', pk=matricula.aluno_id)

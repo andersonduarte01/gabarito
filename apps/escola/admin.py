@@ -1,50 +1,51 @@
 from django.contrib import admin
 from unfold.admin import ModelAdmin, TabularInline, StackedInline
 
-from .models import UnidadeEscolar, EnderecoEscolar, AnoLetivo
+from .models import EnderecoEscolar, SegmentoEscolar, UnidadeEscolar
+
+
+class SegmentoInline(TabularInline):
+    model      = SegmentoEscolar
+    extra      = 0
+    fields     = ('tipo',)
 
 
 class EnderecoInline(StackedInline):
     model      = EnderecoEscolar
     extra      = 0
-    can_delete = False
-
-
-class AnoLetivoInline(TabularInline):
-    model  = AnoLetivo
-    extra  = 0
-    fields = ('ano', 'inicio', 'fim', 'corrente')
+    fields     = ('nome', 'principal', 'cep', 'logradouro', 'numero',
+                  'complemento', 'bairro', 'municipio', 'uf')
 
 
 @admin.register(UnidadeEscolar)
 class EscolaAdmin(ModelAdmin):
-    list_display        = ('nome_escola', 'tipo', 'cnpj', 'telefone', 'email', 'ativo')
-    list_filter         = ('tipo', 'ativo')
-    search_fields       = ('nome_escola', 'cnpj', 'inep', 'email')
-    prepopulated_fields = {'slug': ('nome_escola',)}
+    list_display        = ('nome', 'tipo', 'cnpj', 'municipio', 'uf', 'criado_em')
+    list_filter         = ('tipo',)
+    search_fields       = ('nome', 'cnpj', 'email')
+    prepopulated_fields = {'slug': ('nome',)}
     readonly_fields     = ('criado_em', 'atualizado_em')
-    inlines             = [EnderecoInline, AnoLetivoInline]
+    inlines             = [SegmentoInline, EnderecoInline]
 
     fieldsets = (
         ('Identificação', {
-            'fields': ('nome_escola', 'slug', 'tipo', 'logo_escola', 'ativo'),
+            'fields': ('nome', 'nome_curto', 'slug', 'tipo', 'logo'),
         }),
         ('Dados Oficiais', {
-            'fields': ('inep', 'cnpj'),
+            'fields': ('cnpj',),
         }),
         ('Contato', {
             'fields': ('telefone', 'email', 'site'),
+        }),
+        ('Localização (referência rápida)', {
+            'fields': ('municipio', 'uf'),
+            'description': 'Atualizado automaticamente ao definir o endereço principal.',
+        }),
+        ('Identidade Visual', {
+            'fields': ('cor_primaria', 'cor_secundaria', 'cor_acento'),
+            'classes': ('collapse',),
         }),
         ('Datas', {
             'fields': ('criado_em', 'atualizado_em'),
             'classes': ('collapse',),
         }),
     )
-
-
-@admin.register(AnoLetivo)
-class AnoLetivoAdmin(ModelAdmin):
-    list_display  = ('ano', 'escola', 'inicio', 'fim', 'corrente')
-    list_filter   = ('corrente', 'escola')
-    search_fields = ('escola__nome_escola',)
-    ordering      = ('-ano',)

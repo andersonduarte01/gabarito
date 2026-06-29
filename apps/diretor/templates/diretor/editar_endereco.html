@@ -1,0 +1,130 @@
+{% extends "base/base_diretor.html" %}
+
+{% block titulo %}Endereço — {{ usuario.nome }}{% endblock %}
+{% block page_title %}Endereço{% endblock %}
+
+{% block sidebar_nav %}
+{% include "diretor/_nav.html" with active="perfil" %}
+{% endblock %}
+
+{% block conteudo %}
+<div>
+
+    <div class="mb-6">
+        <a href="{% url 'diretor:meu_perfil' %}"
+           class="inline-flex items-center gap-1.5 text-sm text-slate-500
+                  hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            Voltar para perfil
+        </a>
+    </div>
+
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+
+        <div class="flex items-center gap-2 px-6 py-4 border-b border-slate-100 dark:border-slate-700">
+            <div class="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-900/30
+                        flex items-center justify-center">
+                <i data-lucide="map-pin" class="w-3.5 h-3.5 text-amber-500"></i>
+            </div>
+            <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                Endereço Residencial
+            </h2>
+        </div>
+
+        <form method="post" class="px-6 py-5 space-y-4">
+            {% csrf_token %}
+
+            <!-- Linha 1: Logradouro -->
+            <div>
+                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                    Logradouro <span class="text-red-500">*</span>
+                </label>
+                {{ form.logradouro }}
+                {% if form.logradouro.errors %}
+                <p class="text-xs text-red-500 mt-1">{{ form.logradouro.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Linha 2: Número (3/12) + Complemento (9/12) -->
+            <div class="grid grid-cols-12 gap-4">
+                <div class="col-span-12 sm:col-span-3">
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        Número <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.numero }}
+                    {% if form.numero.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.numero.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div class="col-span-12 sm:col-span-9">
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        Complemento
+                    </label>
+                    {{ form.complemento }}
+                    {% if form.complemento.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.complemento.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Linha 3: CEP + Bairro -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        CEP
+                    </label>
+                    {{ form.cep }}
+                    {% if form.cep.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.cep.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        Bairro <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.bairro }}
+                    {% if form.bairro.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.bairro.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Linha 4: Cidade + Estado -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        Cidade <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.municipio }}
+                    {% if form.municipio.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.municipio.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        Estado <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.uf }}
+                    {% if form.uf.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.uf.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-2 border-t border-slate-100 dark:border-slate-700">
+                <a href="{% url 'diretor:meu_perfil' %}"
+                   class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200
+                          dark:bg-slate-700 dark:hover:bg-slate-600
+                          text-slate-600 dark:text-slate-300 text-sm font-medium transition-colors">
+                    Cancelar
+                </a>
+                <button type="submit"
+                        class="px-5 py-2.5 rounded-xl bg-[#0d6efd] hover:bg-[#0b5ed7]
+                               text-white text-sm font-medium transition-colors">
+                    Salvar endereço
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

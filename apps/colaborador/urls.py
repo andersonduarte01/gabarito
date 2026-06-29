@@ -5,14 +5,17 @@ app_name = 'colaborador'
 
 urlpatterns = [
     # Colaboradores
-    path('', views.ListaColaboradores.as_view(), name='lista_colaboradores'),
-    path('cadastrar/', views.CadastrarColaborador.as_view(), name='cadastrar_colaborador'),
-    path('<int:pk>/editar/', views.EditarColaborador.as_view(), name='editar_colaborador'),
-    path('<int:pk>/desativar/', views.DesativarColaborador.as_view(), name='desativar_colaborador'),
+    path('',                            views.ListarColaboradoresView.as_view(), name='lista'),
+    path('criar/',                      views.CriarColaboradorView.as_view(),    name='criar'),
+    path('<int:pk>/',                   views.DetalheColaboradorView.as_view(),  name='detalhe'),
+    path('<int:pk>/editar/',            views.EditarColaboradorView.as_view(),   name='editar'),
+    path('<int:pk>/desativar/',         views.DesativarColaboradorView.as_view(), name='desativar'),
+    path('<int:pk>/reativar/',          views.ReativarColaboradorView.as_view(), name='reativar'),
 
-    # Professores
-    path('professores/', views.ListaProfessores.as_view(), name='lista_professores'),
-    path('professores/cadastrar/', views.CadastrarProfessor.as_view(), name='cadastrar_professor'),
-    path('professores/<int:pk>/editar/', views.EditarProfessor.as_view(), name='editar_professor'),
-    path('professores/<int:pk>/desativar/', views.DesativarProfessor.as_view(), name='desativar_professor'),
+    # Funções Escolares
+    path('funcoes/',                    views.ListarFuncoesView.as_view(),       name='funcoes'),
+    path('funcoes/criar/',              views.CriarFuncaoView.as_view(),         name='funcao_criar'),
+    path('funcoes/<int:pk>/editar/',    views.EditarFuncaoView.as_view(),        name='funcao_editar'),
+    path('funcoes/<int:pk>/desativar/', views.DesativarFuncaoView.as_view(),     name='funcao_desativar'),
+    path('funcoes/<int:pk>/reativar/',  views.ReativarFuncaoView.as_view(),      name='funcao_reativar'),
 ]

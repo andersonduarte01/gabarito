@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; font-size: 11px; color: #1e293b; padding: 24px; }
+
+  .header { display: flex; align-items: center; gap: 16px; border-bottom: 2px solid #0d6efd; padding-bottom: 12px; margin-bottom: 16px; }
+  .header-logo { width: 48px; height: 48px; }
+  .header-text h1 { font-size: 15px; font-weight: bold; color: #0d6efd; }
+  .header-text p { font-size: 10px; color: #64748b; margin-top: 2px; }
+
+  .aluno-info { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 14px; margin-bottom: 16px; }
+  .aluno-info table { width: 100%; border-collapse: collapse; }
+  .aluno-info td { padding: 2px 8px; font-size: 10px; }
+  .aluno-info td:first-child { font-weight: bold; color: #475569; width: 120px; }
+
+  .boletim-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+  .boletim-table th { background: #0d6efd; color: white; padding: 6px 8px; text-align: center; font-size: 9px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .boletim-table th:first-child { text-align: left; }
+  .boletim-table td { padding: 5px 8px; border-bottom: 1px solid #e2e8f0; font-size: 10px; }
+  .boletim-table td:not(:first-child) { text-align: center; }
+  .boletim-table tr:nth-child(even) td { background: #f8fafc; }
+
+  .verde { color: #16a34a; font-weight: bold; }
+  .amarelo { color: #d97706; font-weight: bold; }
+  .vermelho { color: #dc2626; font-weight: bold; }
+  .azul { color: #2563eb; font-weight: bold; }
+
+  .badge { display: inline-block; padding: 1px 6px; border-radius: 10px; font-size: 9px; font-weight: bold; }
+  .badge-verde { background: #dcfce7; color: #16a34a; }
+  .badge-vermelho { background: #fee2e2; color: #dc2626; }
+  .badge-azul { background: #dbeafe; color: #2563eb; }
+
+  .footer { margin-top: 24px; border-top: 1px solid #e2e8f0; padding-top: 10px; font-size: 9px; color: #94a3b8; text-align: center; }
+  .assinatura { margin-top: 32px; display: flex; justify-content: space-around; }
+  .assinatura div { text-align: center; }
+  .assinatura .linha { border-top: 1px solid #475569; width: 160px; margin: 0 auto 4px; padding-top: 4px; font-size: 9px; color: #475569; }
+</style>
+</head>
+<body>
+
+<div class="header">
+    {% if escola.logo %}
+    <img src="{{ escola.logo.url }}" class="header-logo" alt="Logo">
+    {% endif %}
+    <div class="header-text">
+        <h1>{{ escola.nome }}</h1>
+        <p>Boletim Escolar — Ano Letivo {{ ano_letivo.ano }}</p>
+    </div>
+</div>
+
+<div class="aluno-info">
+    <table>
+        <tr>
+            <td>Aluno:</td>
+            <td><strong>{{ aluno.nome_completo }}</strong></td>
+            <td>Matrícula:</td>
+            <td>{{ aluno.matricula }}</td>
+        </tr>
+        <tr>
+            <td>Turma:</td>
+            <td>{% if matricula %}{{ matricula.turma.nome }} — {{ matricula.turma.serie.nome }}{% else %}—{% endif %}</td>
+            <td>Ano Letivo:</td>
+            <td>{{ ano_letivo.ano }} ({{ ano_letivo.get_status_display }})</td>
+        </tr>
+    </table>
+</div>
+
+<table class="boletim-table">
+    <thead>
+        <tr>
+            <th>Matéria</th>
+            {% for p in periodos %}
+            <th>{{ p.nome }}</th>
+            {% endfor %}
+            <th>Média</th>
+            <th>Freq. %</th>
+            <th>Situação</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for linha in linhas %}
+        <tr>
+            <td>{{ linha.materia.nome }}</td>
+            {% for rp in linha.periodos %}
+            <td>
+                {% if rp and rp.media_periodo is not None %}
+                    <span class="{% if rp.situacao_periodo == 'APROVADO' %}verde{% elif rp.situacao_periodo == 'RECUPERACAO' %}amarelo{% elif rp.situacao_periodo == 'REPROVADO' %}vermelho{% endif %}">
+                        {{ rp.media_periodo }}
+                    </span>
+                {% else %}—{% endif %}
+            </td>
+            {% endfor %}
+            <td>
+                {% if linha.anual and linha.anual.media_anual is not None %}
+                <strong class="{% if linha.anual.situacao_final == 'REPROVADO' %}vermelho{% else %}verde{% endif %}">{{ linha.anual.media_anual }}</strong>
+                {% else %}—{% endif %}
+            </td>
+            <td>
+                {% if linha.anual %}{{ linha.anual.frequencia_anual }}%{% else %}—{% endif %}
+            </td>
+            <td>
+                {% if linha.anual %}
+                    {% if linha.anual.situacao_final == 'APROVADO' %}
+                    <span class="badge badge-verde">Aprovado</span>
+                    {% elif linha.anual.situacao_final == 'APROVADO_CONSELHO' %}
+                    <span class="badge badge-azul">Conselho</span>
+                    {% elif linha.anual.situacao_final == 'REPROVADO' %}
+                    <span class="badge badge-vermelho">Reprovado</span>
+                    {% endif %}
+                {% else %}—{% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="{{ periodos|length|add:4 }}" style="text-align:center; color:#94a3b8; padding: 16px;">
+                Nenhuma avaliação registrada.
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="assinatura">
+    <div>
+        <div class="linha">Diretor(a)</div>
+    </div>
+    <div>
+        <div class="linha">Secretário(a)</div>
+    </div>
+    <div>
+        <div class="linha">Responsável pelo Aluno</div>
+    </div>
+</div>
+
+<div class="footer">
+    Documento gerado pelo EduCare — {{ escola.nome }} — {{ ano_letivo.ano }}
+</div>
+
+</body>
+</html>

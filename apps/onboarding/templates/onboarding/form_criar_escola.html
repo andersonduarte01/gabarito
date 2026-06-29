@@ -1,0 +1,152 @@
+{% extends "base/base_plataforma.html" %}
+
+{% block titulo %}Nova Escola{% endblock %}
+{% block page_title %}Criar Nova Escola{% endblock %}
+
+{% block sidebar_nav %}
+<a href="{% url 'onboarding:listar_escolas' %}"
+   class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium bg-slate-800 text-white">
+    <i data-lucide="building-2" class="w-4 h-4 flex-shrink-0"></i>
+    Escolas
+</a>
+<a href="{% url 'planos:listar_planos' %}"
+   class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+    <i data-lucide="package" class="w-4 h-4 flex-shrink-0"></i>
+    Planos
+</a>
+<a href="{% url 'planos:listar_assinaturas' %}"
+   class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+    <i data-lucide="file-check" class="w-4 h-4 flex-shrink-0"></i>
+    Assinaturas
+</a>
+{% endblock %}
+
+{% block conteudo %}
+<div class="max-w-2xl">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
+
+        <form method="post" novalidate class="space-y-6">
+            {% csrf_token %}
+
+            <!-- Dados da Escola -->
+            <div>
+                <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-4 pb-2 border-b border-slate-100 dark:border-slate-700">
+                    Dados da Escola
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                    <div class="sm:col-span-2 space-y-1.5">
+                        <label for="{{ form.nome_escola.id_for_label }}"
+                               class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                            {{ form.nome_escola.label }}
+                        </label>
+                        {{ form.nome_escola }}
+                        {% if form.nome_escola.errors %}
+                        <p class="text-xs text-red-500">{{ form.nome_escola.errors|join:", " }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label for="{{ form.cnpj.id_for_label }}"
+                               class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                            {{ form.cnpj.label }}
+                            <span class="text-slate-400 font-normal">(opcional)</span>
+                        </label>
+                        {{ form.cnpj }}
+                        {% if form.cnpj.errors %}
+                        <p class="text-xs text-red-500">{{ form.cnpj.errors|join:", " }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label for="{{ form.tipo.id_for_label }}"
+                               class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                            {{ form.tipo.label }}
+                        </label>
+                        {{ form.tipo }}
+                        {% if form.tipo.errors %}
+                        <p class="text-xs text-red-500">{{ form.tipo.errors|join:", " }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dados do Diretor -->
+            <div>
+                <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-4 pb-2 border-b border-slate-100 dark:border-slate-700">
+                    Diretor Responsável
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                    <div class="sm:col-span-2 space-y-1.5">
+                        <label for="{{ form.nome_diretor.id_for_label }}"
+                               class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                            {{ form.nome_diretor.label }}
+                        </label>
+                        {{ form.nome_diretor }}
+                        {% if form.nome_diretor.errors %}
+                        <p class="text-xs text-red-500">{{ form.nome_diretor.errors|join:", " }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label for="{{ form.email_diretor.id_for_label }}"
+                               class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                            {{ form.email_diretor.label }}
+                        </label>
+                        {{ form.email_diretor }}
+                        {% if form.email_diretor.errors %}
+                        <p class="text-xs text-red-500">{{ form.email_diretor.errors|join:", " }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label for="{{ form.telefone_diretor.id_for_label }}"
+                               class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                            {{ form.telefone_diretor.label }}
+                            <span class="text-slate-400 font-normal">(opcional)</span>
+                        </label>
+                        {{ form.telefone_diretor }}
+                        {% if form.telefone_diretor.errors %}
+                        <p class="text-xs text-red-500">{{ form.telefone_diretor.errors|join:", " }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Canal de Envio -->
+            <div>
+                <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-4 pb-2 border-b border-slate-100 dark:border-slate-700">
+                    Envio do Convite
+                </h3>
+                <div class="space-y-1.5">
+                    <label for="{{ form.canal_envio.id_for_label }}"
+                           class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                        {{ form.canal_envio.label }}
+                    </label>
+                    {{ form.canal_envio }}
+                    <p class="text-xs text-slate-400 dark:text-slate-500">
+                        O convite contém um link para o Diretor definir sua senha e completar o cadastro.
+                    </p>
+                    {% if form.canal_envio.errors %}
+                    <p class="text-xs text-red-500">{{ form.canal_envio.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Botões -->
+            <div class="flex items-center gap-3 pt-2 border-t border-slate-100 dark:border-slate-700">
+                <button type="submit"
+                        class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0d6efd] hover:bg-[#0b5ed7] text-white text-sm font-medium transition-colors">
+                    <i data-lucide="building-2" class="w-4 h-4"></i>
+                    Criar Escola e Enviar Convite
+                </button>
+                <a href="{% url 'onboarding:listar_escolas' %}"
+                   class="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

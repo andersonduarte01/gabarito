@@ -1,52 +1,139 @@
-{% extends 'base/base.html' %}
+{% extends "base/base_diretor.html" %}
 
-{% block titulo %}{{ titulo }}{% endblock %}
-{% block titulo_pagina %}{{ titulo }}{% endblock %}
+{% block titulo %}{% if editando %}Editar Colaborador{% else %}Novo Colaborador{% endif %} — {{ escola.nome }}{% endblock %}
+{% block page_title %}{% if editando %}Editar Colaborador{% else %}Novo Colaborador{% endif %}{% endblock %}
+
+{% block sidebar_nav %}
+{% include "diretor/_nav.html" with active="colaboradores" %}
+{% endblock %}
 
 {% block conteudo %}
+<div>
 
-<div class="max-w-lg">
-
-    <div class="text-sm breadcrumbs text-base-content/50 mb-4">
-        <ul>
-            <li><a href="{% url 'escola:dash_escola' %}">Painel</a></li>
-            <li><a href="{% url 'colaborador:lista_colaboradores' %}">Colaboradores</a></li>
-            <li>{{ titulo }}</li>
-        </ul>
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500 mb-6">
+        <a href="{% url 'colaborador:lista' %}" class="hover:text-[#0d6efd] transition-colors">Colaboradores</a>
+        <i data-lucide="chevron-right" class="w-3 h-3"></i>
+        <span class="text-slate-600 dark:text-slate-300">{% if editando %}Editar{% else %}Novo{% endif %}</span>
     </div>
 
-    <div class="card bg-base-100 shadow-sm">
-        <div class="card-body p-6">
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
 
-            <h1 class="text-lg font-bold text-base-content mb-5">{{ titulo }}</h1>
-
-            <form method="post" enctype="multipart/form-data" novalidate>
-                {% csrf_token %}
-
-                {% if form.non_field_errors %}
-                    <div role="alert" class="alert alert-error text-sm mb-4">
-                        {% for erro in form.non_field_errors %}<span>{{ erro }}</span>{% endfor %}
-                    </div>
-                {% endif %}
-
-                <div class="space-y-4">
-                    {% for field in form %}
-                        {% include 'base/_form_field.html' %}
-                    {% endfor %}
+        <!-- Dados do Usuário -->
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-6">
+            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+                <i data-lucide="user" class="w-4 h-4 text-slate-400"></i>
+                Dados de Acesso
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                        {{ form.nome.label }} <span class="text-red-400">*</span>
+                    </label>
+                    {{ form.nome }}
+                    {% if form.nome.errors %}<p class="text-xs text-red-500 mt-1">{{ form.nome.errors.0 }}</p>{% endif %}
                 </div>
-
-                <div class="flex flex-col-reverse sm:flex-row gap-3 mt-8">
-                    <a href="{% url 'colaborador:lista_colaboradores' %}" class="btn btn-ghost w-full sm:w-auto">
-                        Cancelar
-                    </a>
-                    <button type="submit" class="btn btn-primary w-full sm:w-auto sm:ml-auto">
-                        Salvar
-                    </button>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                        {{ form.email.label }} <span class="text-red-400">*</span>
+                    </label>
+                    {{ form.email }}
+                    {% if form.email.errors %}<p class="text-xs text-red-500 mt-1">{{ form.email.errors.0 }}</p>{% endif %}
                 </div>
-            </form>
-
+            </div>
         </div>
-    </div>
-</div>
 
+        <!-- Dados Profissionais -->
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-6">
+            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+                <i data-lucide="briefcase" class="w-4 h-4 text-slate-400"></i>
+                Dados Profissionais
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                        {{ form.funcao.label }}
+                    </label>
+                    {{ form.funcao }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                        {{ form.tipo_vinculo.label }} <span class="text-red-400">*</span>
+                    </label>
+                    {{ form.tipo_vinculo }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                        {{ form.data_admissao.label }}
+                    </label>
+                    {{ form.data_admissao }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                        {{ form.pis.label }}
+                    </label>
+                    {{ form.pis }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Dados Pessoais -->
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-6">
+            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+                <i data-lucide="id-card" class="w-4 h-4 text-slate-400"></i>
+                Dados Pessoais
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                        {{ form.cpf.label }}
+                    </label>
+                    {{ form.cpf }}
+                    {% if form.cpf.errors %}<p class="text-xs text-red-500 mt-1">{{ form.cpf.errors.0 }}</p>{% endif %}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                        {{ form.rg.label }}
+                    </label>
+                    {{ form.rg }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                        {{ form.data_nascimento.label }}
+                    </label>
+                    {{ form.data_nascimento }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                        {{ form.telefone.label }}
+                    </label>
+                    {{ form.telefone }}
+                </div>
+            </div>
+        </div>
+
+        {% if form.non_field_errors %}
+        <div class="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-sm text-red-600 dark:text-red-400">
+            {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        <!-- Ações -->
+        <div class="flex items-center justify-end gap-3">
+            <a href="{% if editando and perfil %}{% url 'colaborador:detalhe' perfil.pk %}{% else %}{% url 'colaborador:lista' %}{% endif %}"
+               class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300
+                      border border-slate-200 dark:border-slate-700 rounded-xl
+                      hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                Cancelar
+            </a>
+            <button type="submit"
+                    class="px-5 py-2 text-sm font-medium text-white bg-[#0d6efd] hover:bg-[#0b5ed7]
+                           rounded-xl transition-colors">
+                {% if editando %}Salvar alterações{% else %}Cadastrar colaborador{% endif %}
+            </button>
+        </div>
+    </form>
+
+</div>
 {% endblock %}

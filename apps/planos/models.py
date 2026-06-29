@@ -79,7 +79,7 @@ class AssinaturaEscola(models.Model):
     )
 
     # --- Trial ---
-    data_inicio_trial    = models.DateField('Início do Trial')
+    data_inicio_trial    = models.DateField('Início do Trial', null=True, blank=True)
     limite_alunos_trial  = models.PositiveIntegerField('Limite de alunos (trial)', default=30)
     duracao_trial_dias   = models.PositiveIntegerField('Duração do trial (dias)', default=10)
 
@@ -114,6 +114,8 @@ class AssinaturaEscola(models.Model):
 
     def trial_valido(self) -> bool:
         from datetime import timedelta
+        if not self.data_inicio_trial:
+            return False
         prazo = self.data_inicio_trial + timedelta(days=self.duracao_trial_dias)
         return date.today() <= prazo
 

@@ -1,0 +1,100 @@
+{% extends "base/base_diretor.html" %}
+
+{% block titulo %}Responsáveis — {{ escola.nome }}{% endblock %}
+{% block page_title %}Responsáveis{% endblock %}
+
+{% block sidebar_nav %}
+{% include "diretor/_nav.html" with active="responsaveis" %}
+{% endblock %}
+
+{% block conteudo %}
+<div>
+
+    <div class="flex items-start justify-between mb-6 gap-4">
+        <div>
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Responsáveis</h2>
+            <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
+                Pais e responsáveis dos alunos
+            </p>
+        </div>
+        {% if papel.tipo == 'DIRETOR' %}
+        <div class="flex items-center gap-2 shrink-0">
+            <a href="{% url 'responsavel:criar' %}?tipo=acesso"
+               class="flex items-center gap-2 px-4 py-2 rounded-xl
+                      bg-[#0d6efd] hover:bg-[#0b5ed7] text-white text-sm font-medium transition-colors">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                Com acesso
+            </a>
+            <a href="{% url 'responsavel:criar' %}?tipo=sem_acesso"
+               class="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600
+                      text-slate-600 dark:text-slate-300 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                <i data-lucide="user-plus" class="w-4 h-4"></i>
+                Só contato
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if responsaveis %}
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
+        <div class="divide-y divide-slate-100 dark:divide-slate-700">
+            {% for resp in responsaveis %}
+            <div class="flex items-center justify-between px-5 py-3.5">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-9 h-9 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center shrink-0">
+                        <i data-lucide="heart" class="w-4 h-4 text-indigo-400"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-sm font-semibold text-slate-800 dark:text-slate-100">{{ resp.nome }}</span>
+                            {% if resp.tem_acesso %}
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600">Com acesso</span>
+                            {% else %}
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 dark:bg-slate-700 text-slate-400">Só contato</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                            {% if resp.telefone %}{{ resp.telefone }} · {% endif %}
+                            {% for v in resp.vinculos_aluno.all %}{{ v.aluno.nome_completo }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                    <a href="{% url 'responsavel:detalhe' resp.pk %}"
+                       class="p-1.5 text-slate-300 hover:text-[#0d6efd] rounded-md transition-colors" title="Ver detalhes">
+                        <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                    </a>
+                    {% if papel.tipo == 'DIRETOR' %}
+                    <a href="{% url 'responsavel:editar' resp.pk %}"
+                       class="p-1.5 text-slate-300 hover:text-[#0d6efd] rounded-md transition-colors" title="Editar">
+                        <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% else %}
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
+        <div class="flex flex-col items-center justify-center py-16 px-5 text-center">
+            <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center mb-4">
+                <i data-lucide="heart" class="w-8 h-8 text-slate-300 dark:text-slate-500"></i>
+            </div>
+            <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-1">Nenhum responsável cadastrado</h3>
+            <p class="text-xs text-slate-400 dark:text-slate-500 max-w-xs leading-relaxed">
+                Cadastre os pais e responsáveis dos alunos.
+            </p>
+            {% if papel.tipo == 'DIRETOR' %}
+            <a href="{% url 'responsavel:criar' %}?tipo=acesso"
+               class="mt-4 text-sm text-[#0d6efd] hover:underline font-medium">
+                Cadastrar primeiro responsável →
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

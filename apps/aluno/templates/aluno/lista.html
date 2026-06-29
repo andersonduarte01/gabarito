@@ -1,0 +1,167 @@
+{% extends "base/base_diretor.html" %}
+
+{% block titulo %}Alunos — {{ escola.nome }}{% endblock %}
+{% block page_title %}Alunos{% endblock %}
+
+{% block sidebar_nav %}
+{% include "diretor/_nav.html" with active="alunos" %}
+{% endblock %}
+
+{% block conteudo %}
+<div>
+
+    <div class="flex items-start justify-between mb-6 gap-4">
+        <div>
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Alunos</h2>
+            <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
+                Corpo discente da escola
+            </p>
+        </div>
+        {% if papel.tipo == 'DIRETOR' %}
+        <a href="{% url 'aluno:criar' %}"
+           class="flex items-center gap-2 px-4 py-2 rounded-xl shrink-0
+                  bg-[#0d6efd] hover:bg-[#0b5ed7] text-white text-sm font-medium transition-colors">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Novo Aluno</span>
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Filtros -->
+    <form method="get" class="flex flex-wrap gap-3 mb-5">
+        <input type="text" name="q" value="{{ filtros.q }}" placeholder="Buscar por nome ou matrícula…"
+               class="flex-1 min-w-52 px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600
+                      bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100
+                      focus:outline-none focus:ring-2 focus:ring-[#0d6efd]/40 focus:border-[#0d6efd]">
+        <select name="turma"
+                class="px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600
+                       bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100
+                       focus:outline-none focus:ring-2 focus:ring-[#0d6efd]/40 focus:border-[#0d6efd]">
+            <option value="">Todas as turmas</option>
+            {% for t in turmas %}
+            <option value="{{ t.pk }}" {% if filtros.turma == t.pk|stringformat:"s" %}selected{% endif %}>{{ t.nome }}</option>
+            {% endfor %}
+        </select>
+        <select name="ativo"
+                class="px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600
+                       bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100
+                       focus:outline-none focus:ring-2 focus:ring-[#0d6efd]/40 focus:border-[#0d6efd]">
+            <option value="">Todos</option>
+            <option value="1" {% if filtros.ativo == '1' %}selected{% endif %}>Ativos</option>
+            <option value="0" {% if filtros.ativo == '0' %}selected{% endif %}>Inativos</option>
+        </select>
+        <button type="submit"
+                class="px-4 py-2 text-sm font-medium bg-slate-100 dark:bg-slate-700
+                       text-slate-700 dark:text-slate-200 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+            Filtrar
+        </button>
+        {% if filtros.q or filtros.ativo or filtros.turma %}
+        <a href="{% url 'aluno:lista' %}"
+           class="px-4 py-2 text-sm text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
+            Limpar
+        </a>
+        {% endif %}
+    </form>
+
+    {% if alunos %}
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
+        <div class="divide-y divide-slate-100 dark:divide-slate-700">
+            {% for aluno in alunos %}
+            {% with mat_ativa=aluno.matriculas.all|dictsort:"ativo" %}
+            <div class="flex items-center justify-between px-5 py-3.5 {% if not aluno.ativo %}opacity-50{% endif %}">
+                <div class="flex items-center gap-3 min-w-0">
+                    {% if aluno.foto %}
+                    <img src="{{ aluno.foto.url }}" alt="{{ aluno.nome_completo }}"
+                         class="w-9 h-9 rounded-full object-cover shrink-0">
+                    {% else %}
+                    <div class="w-9 h-9 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center shrink-0">
+                        <i data-lucide="user" class="w-4 h-4 text-emerald-500"></i>
+                    </div>
+                    {% endif %}
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                                {{ aluno.nome_completo }}
+                            </span>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 dark:bg-slate-700 text-slate-500">
+                                {{ aluno.matricula }}
+                            </span>
+                            {% if not aluno.ativo %}
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-red-100 dark:bg-red-900/30 text-red-500">
+                                Inativo
+                            </span>
+                            {% endif %}
+                        </div>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                            {% for mat in aluno.matriculas.all %}
+                            {% if mat.ativo %}{{ mat.turma.nome }} · {{ mat.ano_letivo.ano }}{% endif %}
+                            {% empty %}
+                            Sem turma ativa
+                            {% endfor %}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-1 shrink-0">
+                    <a href="{% url 'aluno:detalhe' aluno.pk %}"
+                       class="p-1.5 text-slate-300 hover:text-[#0d6efd] rounded-md transition-colors"
+                       title="Ver detalhes">
+                        <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                    </a>
+                    {% if papel.tipo == 'DIRETOR' %}
+                    <a href="{% url 'aluno:editar' aluno.pk %}"
+                       class="p-1.5 text-slate-300 hover:text-[#0d6efd] rounded-md transition-colors"
+                       title="Editar">
+                        <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </a>
+                    {% if aluno.ativo %}
+                    <form method="post" action="{% url 'aluno:desativar' aluno.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" title="Desativar"
+                                class="p-1.5 text-slate-300 hover:text-amber-500 rounded-md transition-colors">
+                            <i data-lucide="user-x" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </form>
+                    {% else %}
+                    <form method="post" action="{% url 'aluno:reativar' aluno.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" title="Reativar"
+                                class="p-1.5 text-slate-300 hover:text-emerald-500 rounded-md transition-colors">
+                            <i data-lucide="user-check" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </form>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            {% endwith %}
+            {% endfor %}
+        </div>
+    </div>
+
+    {% else %}
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
+        <div class="flex flex-col items-center justify-center py-16 px-5 text-center">
+            <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center mb-4">
+                <i data-lucide="users" class="w-8 h-8 text-slate-300 dark:text-slate-500"></i>
+            </div>
+            <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-1">Nenhum aluno encontrado</h3>
+            <p class="text-xs text-slate-400 dark:text-slate-500 max-w-xs leading-relaxed">
+                {% if filtros.q or filtros.ativo or filtros.turma %}
+                Tente ajustar os filtros de busca.
+                {% else %}
+                Cadastre os alunos da escola para começar.
+                {% endif %}
+            </p>
+            {% if papel.tipo == 'DIRETOR' and not filtros.q and not filtros.ativo and not filtros.turma %}
+            <a href="{% url 'aluno:criar' %}"
+               class="mt-4 text-sm text-[#0d6efd] hover:underline font-medium">
+                Cadastrar primeiro aluno →
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

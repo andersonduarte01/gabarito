@@ -1,0 +1,115 @@
+{% extends "base/base_diretor.html" %}
+
+{% block titulo %}Anos Letivos{% endblock %}
+{% block page_title %}Anos Letivos{% endblock %}
+
+{% block sidebar_nav %}
+    {% include "diretor/_nav.html" with active="ano_letivo" %}
+{% endblock %}
+
+{% block conteudo %}
+<div class="space-y-4">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <p class="text-sm text-slate-500 dark:text-slate-400">
+            {{ anos|length }} ano{{ anos|length|pluralize:"s" }} cadastrado{{ anos|length|pluralize:"s" }}
+        </p>
+        {% if eh_diretor %}
+        <a href="{% url 'ano_letivo:criar' %}"
+           class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0d6efd] hover:bg-[#0b5ed7]
+                  text-white text-sm font-medium transition-colors">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            Novo Ano Letivo
+        </a>
+        {% endif %}
+    </div>
+
+    {% if anos %}
+    <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60">
+                    <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Ano</th>
+                    <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Período</th>
+                    <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Períodos Letivos</th>
+                    <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Status</th>
+                    <th class="text-right px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Ações</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+                {% for ano in anos %}
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
+                    <td class="px-4 py-3">
+                        <span class="text-base font-bold text-slate-900 dark:text-white">{{ ano.ano }}</span>
+                    </td>
+                    <td class="px-4 py-3 text-slate-500 dark:text-slate-400 text-xs whitespace-nowrap">
+                        {{ ano.data_inicio|date:"d/m/Y" }} — {{ ano.data_fim|date:"d/m/Y" }}
+                    </td>
+                    <td class="px-4 py-3">
+                        {% with total=ano.periodos.count %}
+                        {% if total %}
+                        <span class="text-sm text-slate-600 dark:text-slate-300">
+                            {{ total }} período{{ total|pluralize:"s" }}
+                        </span>
+                        {% else %}
+                        <span class="text-xs text-slate-400 italic">Nenhum</span>
+                        {% endif %}
+                        {% endwith %}
+                    </td>
+                    <td class="px-4 py-3">
+                        {% if ano.status == 'EM_ANDAMENTO' %}
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
+                                     bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+                            <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                            Em Andamento
+                        </span>
+                        {% elif ano.status == 'EM_PLANEJAMENTO' %}
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
+                                     bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                            Em Planejamento
+                        </span>
+                        {% else %}
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
+                                     bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
+                            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                            Encerrado
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3 text-right">
+                        <a href="{% url 'ano_letivo:detalhe' ano.pk %}"
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium
+                                  text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600
+                                  hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                            <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                            Ver detalhes
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% else %}
+    <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-12 text-center">
+        <div class="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center mx-auto mb-4">
+            <i data-lucide="calendar" class="w-6 h-6 text-slate-400"></i>
+        </div>
+        <p class="text-sm font-medium text-slate-600 dark:text-slate-300">Nenhum ano letivo cadastrado</p>
+        {% if eh_diretor %}
+        <p class="text-xs text-slate-400 mt-1">Crie o primeiro ano letivo para começar.</p>
+        <a href="{% url 'ano_letivo:criar' %}"
+           class="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-xl bg-[#0d6efd] hover:bg-[#0b5ed7]
+                  text-white text-sm font-medium transition-colors">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            Novo Ano Letivo
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

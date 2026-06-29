@@ -1,0 +1,166 @@
+from django.contrib import messages
+from django.core.exceptions import PermissionDenied
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views import View
+
+from apps.core.services.usuario_service import editar as editar_usuario, trocar_email
+from .forms import CriarProfessorForm, EditarProfessorForm, EnderecoPerfilForm, FormacaoAcademicaForm
+from .models import FormacaoAcademica, PerfilProfessor
+from .services import professor_service
+
+
+class _LeituraMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('accounts:login')
+        papel = getattr(request, 'papel', None)
+        if papel is None or papel.tipo not in ('DIRETOR', 'FUNCIONARIO'):
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+    def _ctx(self, request, **extra):
+        return {'usuario': request.user, 'escola': request.escola, 'papel': request.papel, **extra}
+
+
+class _DiretorMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('accounts:login')
+        papel = getattr(request, 'papel', None)
+        if papel is None or papel.tipo != 'DIRETOR':
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+    def _ctx(self, request, **extra):
+        return {'usuario': request.user, 'escola': request.escola, 'papel': request.papel, **extra}
+
+
+class ListarProfessoresView(_LeituraMixin, View):
+    template_name = 'professor/lista.html'
+
+    def get(self, request):
+        professores = (
+            PerfilProfessor.objects
+            .filter(papel__vinculo__escola=request.escola)
+            .select_related('papel__vinculo__usuario')
+            .order_by('papel__ativo', 'papel__vinculo__usuario__nome')
+        )
+        return render(request, self.template_name, self._ctx(request, professores=professores))
+
+
+class CriarProfessorView(_DiretorMixin, View):
+    template_name = 'professor/form_professor.html'
+
+    def get(self, request):
+        form = CriarProfessorForm()
+        return render(request, self.template_name, self._ctx(request, form=form, editando=False))
+
+    def post(self, request):
+        form = CriarProfessorForm(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            try:
+                professor_service.criar(
+                    escola=request.escola,
+                    usuario_dados={'nome': cd['nome'], 'email': cd['email']},
+                    perfil_dados={k: v for k, v in cd.items() if k not in ('nome', 'email')},
+                    criado_por=request.user,
+                )
+                messages.success(request, 'Professor cadastrado com sucesso.')
+                return redirect('professor:lista')
+            except Exception as exc:
+                messages.error(request, f'Erro ao cadastrar: {exc}')
+        return render(request, self.template_name, self._ctx(request, form=form, editando=False))
+
+
+class DetalheProfessorView(_LeituraMixin, View):
+    template_name = 'professor/detalhe.html'
+
+    def get(self, request, pk):
+        perfil = get_object_or_404(
+            PerfilProfessor.objects.select_related(
+                'papel__vinculo__usuario', 'endereco'
+            ).prefetch_related('formacoes', 'professor_materia_turmas__materia', 'professor_materia_turmas__turma'),
+            pk=pk, papel__vinculo__escola=request.escola,
+        )
+        formacao_form = FormacaoAcademicaForm()
+        return render(request, self.template_name, self._ctx(
+            request, perfil=perfil, formacao_form=formacao_form,
+        ))
+
+
+class EditarProfessorView(_DiretorMixin, View):
+    template_name = 'professor/form_professor.html'
+
+    def _get_perfil(self, request, pk):
+        return get_object_or_404(
+            PerfilProfessor, pk=pk, papel__vinculo__escola=request.escola,
+        )
+
+    def get(self, request, pk):
+        perfil = self._get_perfil(request, pk)
+        form = EditarProfessorForm(instance=perfil, usuario=perfil.usuario)
+        return render(request, self.template_name, self._ctx(
+            request, form=form, editando=True, perfil=perfil,
+        ))
+
+    def post(self, request, pk):
+        perfil = self._get_perfil(request, pk)
+        form = EditarProfessorForm(request.POST, instance=perfil, usuario=perfil.usuario)
+        if form.is_valid():
+            novo_nome  = form.cleaned_data.pop('nome')
+            novo_email = form.cleaned_data.pop('email')
+            editar_usuario(perfil.usuario, {'nome': novo_nome})
+            if novo_email != perfil.usuario.email:
+                trocar_email(perfil.usuario, novo_email)
+            professor_service.editar(perfil, form.cleaned_data)
+            messages.success(request, 'Professor atualizado.')
+            return redirect('professor:detalhe', pk=perfil.pk)
+        return render(request, self.template_name, self._ctx(
+            request, form=form, editando=True, perfil=perfil,
+        ))
+
+
+class DesativarProfessorView(_DiretorMixin, View):
+    def post(self, request, pk):
+        perfil = get_object_or_404(
+            PerfilProfessor, pk=pk, papel__vinculo__escola=request.escola,
+        )
+        professor_service.desativar(perfil.papel, desativado_por=request.user)
+        messages.success(request, f'{perfil.usuario.nome} foi desativado.')
+        return redirect('professor:lista')
+
+
+class ReativarProfessorView(_DiretorMixin, View):
+    def post(self, request, pk):
+        perfil = get_object_or_404(
+            PerfilProfessor, pk=pk, papel__vinculo__escola=request.escola,
+        )
+        professor_service.reativar(perfil.papel)
+        messages.success(request, f'{perfil.usuario.nome} foi reativado.')
+        return redirect('professor:lista')
+
+
+class AdicionarFormacaoView(_DiretorMixin, View):
+    def post(self, request, pk):
+        perfil = get_object_or_404(
+            PerfilProfessor, pk=pk, papel__vinculo__escola=request.escola,
+        )
+        form = FormacaoAcademicaForm(request.POST)
+        if form.is_valid():
+            professor_service.adicionar_formacao(perfil, form.cleaned_data)
+            messages.success(request, 'Formação adicionada.')
+        else:
+            messages.error(request, 'Dados de formação inválidos.')
+        return redirect('professor:detalhe', pk=perfil.pk)
+
+
+class RemoverFormacaoView(_DiretorMixin, View):
+    def post(self, request, pk, formacao_pk):
+        perfil = get_object_or_404(
+            PerfilProfessor, pk=pk, papel__vinculo__escola=request.escola,
+        )
+        formacao = get_object_or_404(FormacaoAcademica, pk=formacao_pk, professor=perfil)
+        professor_service.remover_formacao(formacao)
+        messages.success(request, 'Formação removida.')
+        return redirect('professor:detalhe', pk=perfil.pk)

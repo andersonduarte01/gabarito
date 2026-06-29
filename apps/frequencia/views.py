@@ -1,615 +1,284 @@
-import calendar
-import datetime
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.messages.views import SuccessMessageMixin
-from django.db.models import OuterRef, Subquery
-from django.forms import modelformset_factory, formset_factory
-from django.http import HttpResponseRedirect, HttpResponse
-from django.shortcuts import render, get_object_or_404, get_list_or_404
-from django.urls import reverse_lazy, reverse
-from django.utils.dateparse import parse_date
-from django.utils.timezone import now
-from rest_framework import viewsets, status
-from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
-from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from ..sala.serializers import AlunoSerializer
-from .serializers import FrequenciaSerializer, FrequenciaAlunoSerializer, FrequenciaBlocoSerializer, RegistroSerializer, \
-    RelatorioSerializer, PeriodoSerializer
-from ..escola.forms import FiltroMesForm
-from django.views.generic import UpdateView, CreateView, ListView, DeleteView, TemplateView, FormView
-from datetime import datetime
-from .forms import FrequenciaAlunoForm, RegistroForm, RelatorioForm, RegistroUpdateForm, FrequenciaForm
+from django.contrib import messages
+from django.core.exceptions import PermissionDenied
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views import View
 
-from ..aluno.models import Aluno
-from ..escola.models import UnidadeEscolar
-from ..escola.traduzir import converter
-from ..funcionario.models import Professor
-from ..sala.models import Sala
-from .models import Frequencia, FrequenciaAluno, Registro, Relatorio, Periodo
-from django.core.serializers.json import DjangoJSONEncoder
-import json
+from .forms import RegistroFrequenciaForm
+from .models import PresencaAluno, RegistroFrequencia
+from .services import frequencia_service
 
 
+class _LeituraMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('accounts:login')
+        papel = getattr(request, 'papel', None)
+        if papel is None or papel.tipo not in ('DIRETOR', 'FUNCIONARIO'):
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
 
-class RegistroMesesSalas(LoginRequiredMixin, FormView):
-    template_name = 'frequencia/meses_salas.html'
-    form_class = FiltroMesForm
-    registros_filtrados = None  # Adiciona um atributo para armazenar os registros
+    def _ctx(self, request, **extra):
+        return {'usuario': request.user, 'escola': request.escola, 'papel': request.papel, **extra}
 
-    def form_valid(self, form):
-        mes = int(form.cleaned_data['mes'])
-        sala = get_object_or_404(Sala, id=self.kwargs['sala_id'])
-        self.registros_filtrados = Registro.objects.filter(
-            sala=sala,
-            data__month=mes,
-            data__year=now().year
+
+class _DiretorMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('accounts:login')
+        papel = getattr(request, 'papel', None)
+        if papel is None or papel.tipo != 'DIRETOR':
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+    def _ctx(self, request, **extra):
+        return {'usuario': request.user, 'escola': request.escola, 'papel': request.papel, **extra}
+
+
+# ---------------------------------------------------------------------------
+# Lista de registros
+# ---------------------------------------------------------------------------
+
+class ListarRegistrosView(_LeituraMixin, View):
+    template_name = 'frequencia/lista.html'
+
+    def get(self, request):
+        escola = request.escola
+        qs = (
+            RegistroFrequencia.objects
+            .filter(turma__escola=escola)
+            .select_related('turma', 'materia', 'professor__papel__vinculo__usuario',
+                            'ano_letivo', 'periodo_letivo')
+            .order_by('-data', '-criado_em')
         )
-        context = self.get_context_data(form=form, registros=self.registros_filtrados)
-        return self.render_to_response(context)
+        turma_id  = request.GET.get('turma', '')
+        data_str  = request.GET.get('data', '')
+        if turma_id:
+            qs = qs.filter(turma_id=turma_id)
+        if data_str:
+            qs = qs.filter(data=data_str)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        escola = get_object_or_404(UnidadeEscolar, pk=self.request.user)
-        sala = get_object_or_404(Sala, id=self.kwargs['sala_id'])
-        context['escola'] = escola
-        context['form'] = context.get('form') or self.form_class(initial={'mes': now().month})
-        context['sala'] = sala
+        from apps.turma.models import Turma
+        turmas = Turma.objects.filter(escola=escola, ativo=True).order_by('nome')
+        return render(request, self.template_name, self._ctx(
+            request,
+            registros=qs[:100],
+            turmas=turmas,
+            filtros={'turma': turma_id, 'data': data_str},
+        ))
 
-        if self.registros_filtrados is not None:
-            context['registros'] = self.registros_filtrados
-        else:
-            registros = Registro.objects.filter(
-                sala=sala,
-                data__month=now().month,
-                data__year=now().year
+
+# ---------------------------------------------------------------------------
+# Criar registro
+# ---------------------------------------------------------------------------
+
+class CriarRegistroView(_LeituraMixin, View):
+    template_name = 'frequencia/form_registro.html'
+
+    def get(self, request):
+        form = RegistroFrequenciaForm(escola=request.escola)
+        return render(request, self.template_name, self._ctx(request, form=form))
+
+    def post(self, request):
+        form = RegistroFrequenciaForm(request.POST, escola=request.escola)
+        if form.is_valid():
+            cd = form.cleaned_data
+            registro = frequencia_service.criar_registro(
+                turma          = cd['turma'],
+                materia        = cd.get('materia'),
+                professor      = cd.get('professor'),
+                data           = cd['data'],
+                ano_letivo     = cd['ano_letivo'],
+                periodo_letivo = cd.get('periodo_letivo'),
+                criado_por     = request.user,
             )
-            context['registros'] = registros
-
-        return context
-
-
-class RelatorioAdd(LoginRequiredMixin, SuccessMessageMixin, CreateView):
-    model = Relatorio
-    form_class = RelatorioForm
-    success_message = 'Relatorio adicionado com sucesso!'
-    template_name = 'frequencia/relatorio_add.html'
-
-    def get_success_url(self):
-        return reverse('funcionario:alunos_relatorios',
-                       kwargs={'pk': self.object.aluno.sala.pk, 'bimestre': self.object.periodo, 'slug':self.object.aluno.sala.escola.slug})
-
-    def form_valid(self, form):
-        relatorio = form.save(commit=False)
-        aluno = Aluno.objects.get(pk=self.kwargs['pk'])
-        relatorio.aluno = aluno
-        professor = Professor.objects.get(usuario_ptr=self.request.user)
-        relatorio.professor = professor.professor_nome
-        periodo = Periodo.objects.get(periodo=self.kwargs['bimestre'])
-        relatorio.periodo = periodo
-        relatorio.save()
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        contexto = super().get_context_data(**kwargs)
-
-        professor = Professor.objects.get(usuario_ptr=self.request.user)
-        contexto['professor'] = professor
-        contexto['escola'] = get_object_or_404(UnidadeEscolar, pk=professor.escola.pk)
-        contexto['aluno'] = get_object_or_404(Aluno, pk=self.kwargs['pk'])
-        contexto['bimestre'] = self.kwargs['bimestre']
-        return contexto
+            messages.success(request, 'Registro criado. Lance as presenças abaixo.')
+            return redirect('frequencia:lancar', pk=registro.pk)
+        return render(request, self.template_name, self._ctx(request, form=form))
 
 
-class RelatorioUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
-    model = Relatorio
-    form_class = RelatorioForm
-    success_message = 'Relatório alterado com sucesso!'
-    template_name = 'frequencia/relatorio_up.html'
-    context_object_name = 'relatorio'
+# ---------------------------------------------------------------------------
+# Detalhe do registro
+# ---------------------------------------------------------------------------
 
+class DetalheRegistroView(_LeituraMixin, View):
+    template_name = 'frequencia/detalhe.html'
 
-    def get_success_url(self):
-        return reverse('funcionario:alunos_relatorios',
-                       kwargs={'pk': self.object.aluno.sala.pk, 'bimestre': self.object.periodo,
-                               'slug': self.object.aluno.sala.escola.slug})
-
-    def form_valid(self, form):
-        relatorio = form.save(commit=False)
-        professor = Professor.objects.get(usuario_ptr=self.request.user)
-        relatorio.professor = professor.professor_nome
-        relatorio.save()
-        return super().form_valid(form)
-
-
-    def get_context_data(self, **kwargs):
-        contexto = super().get_context_data(**kwargs)
-        professor = get_object_or_404(Professor, usuario_ptr=self.request.user)
-        contexto['professor'] = professor
-        contexto['escola'] = get_object_or_404(UnidadeEscolar, pk=professor.escola.pk)
-        contexto['sala'] = get_object_or_404(Sala, pk=self.object.aluno.sala.pk)
-        return contexto
-
-
-class ProfessorRegistroMesesSalas(LoginRequiredMixin, FormView):
-    template_name = 'frequencia/prof_meses_salas.html'
-    form_class = FiltroMesForm
-    registros_filtrados = None  # Adiciona um atributo para armazenar os registros
-
-    def form_valid(self, form):
-        mes = int(form.cleaned_data['mes'])
-        sala = get_object_or_404(Sala, id=self.kwargs['sala_id'])
-        self.registros_filtrados = Registro.objects.filter(
-            sala=sala,
-            data__month=mes,
-            data__year=now().year
+    def get(self, request, pk):
+        registro = get_object_or_404(
+            RegistroFrequencia.objects.select_related(
+                'turma', 'materia', 'professor__papel__vinculo__usuario',
+                'ano_letivo', 'periodo_letivo',
+            ),
+            pk=pk, turma__escola=request.escola,
         )
-        context = self.get_context_data(form=form, registros=self.registros_filtrados)
-        return self.render_to_response(context)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        sala = get_object_or_404(Sala, id=self.kwargs['sala_id'])
-        escola = get_object_or_404(UnidadeEscolar, pk=sala.escola.pk)
-        context['escola'] = escola
-        context['form'] = context.get('form') or self.form_class(initial={'mes': now().month})
-        context['sala'] = sala
-
-        if self.registros_filtrados is not None:
-            context['registros'] = self.registros_filtrados
-        else:
-            registros = Registro.objects.filter(
-                sala=sala,
-                data__month=now().month,
-                data__year=now().year
-            ).order_by('data')
-            context['registros'] = registros
-
-        return context
-
-
-class RegistroAdd(LoginRequiredMixin, SuccessMessageMixin, CreateView):
-    model = Registro
-    form_class = RegistroForm
-    success_message = 'Registro adicionado com sucesso!'
-    template_name = 'frequencia/registro_add.html'
-
-    def get_success_url(self):
-        return reverse('frequencia:prof_relatorio_meses', kwargs={'sala_id': self.kwargs['pk']})
-
-    def form_valid(self, form):
-        registro = form.save(commit=False)
-        sala = Sala.objects.get(pk=self.kwargs['pk'])
-        professor = Professor.objects.get(usuario_ptr=self.request.user)
-        registro.professor = professor.professor_nome
-        registro.sala = sala
-        registro.save()
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        contexto = super().get_context_data(**kwargs)
-        if self.request.user.is_professor:
-            professor = Professor.objects.get(usuario_ptr=self.request.user)
-            escola = UnidadeEscolar.objects.get(pk=professor.escola.pk)
-        else:
-            escola = UnidadeEscolar.objects.get(pk=self.request.user)
-
-        sala = Sala.objects.get(pk=self.kwargs['pk'])
-        contexto['professor'] = professor
-        contexto['escola'] = escola
-        contexto['sala'] = sala
-        return contexto
-
-
-class RegistroUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
-    model = Registro
-    form_class = RegistroUpdateForm
-    success_message = 'Registro alterado com sucesso!'
-    template_name = 'frequencia/registro_up.html'
-
-    def get_success_url(self):
-        return reverse_lazy('frequencia:prof_relatorio_meses', kwargs={'sala_id': self.object.sala.pk})
-
-    def form_valid(self, form):
-        registro = form.save(commit=False)
-        professor = Professor.objects.get(usuario_ptr=self.request.user)
-        registro.professor = professor.professor_nome
-        registro.save()
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        contexto = super().get_context_data(**kwargs)
-        professor = Professor.objects.get(usuario_ptr=self.request.user)
-        escola = UnidadeEscolar.objects.get(pk=professor.escola.pk)
-        sala = Sala.objects.get(pk=self.object.sala.pk)
-
-        contexto['professor'] = professor
-        contexto['escola'] = escola
-        contexto['sala'] = sala
-        return contexto
-
-
-class DeletarRegistro(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
-    model = Registro
-    success_message = 'Registro removido com sucesso!'
-
-    def get_object(self, queryset=None):
-        return Registro.objects.get(pk=self.kwargs['pk'])
-
-    def get_success_url(self):
-        return reverse('frequencia:prof_relatorio_meses', kwargs={'sala_id': self.object.sala.pk})
-
-
-class FrequenciaMes(LoginRequiredMixin, TemplateView):
-    template_name = 'frequencia/frequencia_mes.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        professor = get_object_or_404(Professor, usuario_ptr=self.request.user)
-        sala = get_object_or_404(Sala, pk=self.kwargs['pk'])
-
-        ano = int(self.request.GET.get('ano', datetime.now().year))
-        mes = int(self.request.GET.get('mes', datetime.now().month))
-
-        frequencias = FrequenciaAluno.objects.filter(
-            aluno__sala=sala,
-            data__year=ano,
-            data__month=mes
-        ).values_list('data', flat=True)
-
-        datas_dict = {data.strftime('%Y-%m-%d'): True for data in frequencias}
-
-        context.update({
-            'professor': professor,
-            'escola': professor.escola,
-            'sala': sala,
-            'mes': mes,
-            'ano': ano,
-            'mes_nome': [
-                "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-                "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
-            ][mes - 1],
-            'frequencias_json': json.dumps(datas_dict),
-        })
-
-        return context
-
-
-def atualizar_frequencia_diaria(request, cal, sala_id):
-    data = datetime.strptime(cal, '%Y-%m-%d')
-
-    if data.weekday() in [5, 6]:  # fim de semana
-        return HttpResponse("Frequência não permitida aos finais de semana.", status=403)
-
-    sala = get_object_or_404(Sala, pk=sala_id)
-    alunos = Aluno.objects.filter(sala=sala)
-
-    FrequenciaFormSet = formset_factory(FrequenciaForm, extra=0)
-
-    if request.method == 'POST':
-        formset = FrequenciaFormSet(request.POST)
-        if formset.is_valid():
-            for form in formset:
-                aluno_id = form.cleaned_data.get('aluno_id')
-                presente = form.cleaned_data.get('presente', False)
-                observacao = form.cleaned_data.get('observacao', '')
-
-                try:
-                    frequencia = FrequenciaAluno.objects.get(aluno_id=aluno_id, data=data)
-                    frequencia.presente = presente
-                    frequencia.observacao = observacao
-                    frequencia.save()
-                except FrequenciaAluno.DoesNotExist:
-                    continue  # ignora se não existir
-
-            return HttpResponseRedirect(reverse_lazy('frequencia:frequencia_mes', kwargs={'pk': sala.pk}))
-    else:
-        initial_data = []
-        for aluno in alunos:
-            try:
-                freq = FrequenciaAluno.objects.get(aluno=aluno, data=data)
-                initial_data.append({
-                    'aluno_id': aluno.id,
-                    'nome': aluno.nome,
-                    'presente': freq.presente,
-                    'observacao': freq.observacao,
-                })
-            except FrequenciaAluno.DoesNotExist:
-                # Se não existe, pula (não preenche o formset)
-                continue
-
-        formset = FrequenciaFormSet(initial=initial_data)
-
-    return render(request, 'frequencia/up_frequencia_aluno.html', {
-        'formset': formset,
-        'sala': sala,
-        'data': data.date(),
-    })
-
-
-def frequencia_diaria(request, cal, sala_id):
-    data = datetime.strptime(cal, '%Y-%m-%d')
-
-    if data.weekday() in [5, 6]:  # fim de semana
-        return HttpResponse("Frequência não permitida aos finais de semana.", status=403)
-
-    sala = get_object_or_404(Sala, pk=sala_id)
-    alunos = Aluno.objects.filter(sala=sala)
-
-    FrequenciaFormSet = formset_factory(FrequenciaForm, extra=0)
-
-    if request.method == 'POST':
-        formset = FrequenciaFormSet(request.POST)
-        if formset.is_valid():
-            total_presentes = 0  # contador de alunos presentes
-
-            for form in formset:
-                aluno_id = form.cleaned_data.get('aluno_id')
-                presente = form.cleaned_data.get('presente', False)
-                observacao = form.cleaned_data.get('observacao', '')
-
-                aluno = get_object_or_404(Aluno, pk=aluno_id)
-
-                fa, created = FrequenciaAluno.objects.update_or_create(
-                    aluno=aluno,
-                    data=data,
-                    defaults={'presente': presente, 'observacao': observacao}
-                )
-
-                if presente:
-                    total_presentes += 1
-
-            # Criar ou atualizar a Frequencia da sala
-            Frequencia.objects.update_or_create(
-                sala=sala,
-                data=data,
-                defaults={
-                    'presentes': total_presentes,
-                    'status': True  # ou False dependendo do seu critério
-                }
-            )
-
-            return HttpResponseRedirect(reverse_lazy('frequencia:frequencia_mes', kwargs={'pk': sala.pk}))
-    else:
-        # Prepare dados iniciais incluindo frequências já existentes
-        initial_data = []
-        for aluno in alunos:
-            try:
-                freq = FrequenciaAluno.objects.get(aluno=aluno, data=data)
-                initial_data.append({
-                    'aluno_id': aluno.id,
-                    'nome': aluno.nome,
-                    'presente': freq.presente,
-                    'observacao': freq.observacao,
-                })
-            except FrequenciaAluno.DoesNotExist:
-                initial_data.append({
-                    'aluno_id': aluno.id,
-                    'nome': aluno.nome,
-                    'presente': True,
-                    'observacao': '',
-                })
-
-        formset = FrequenciaFormSet(initial=initial_data)
-
-    return render(request, 'frequencia/frequencia_aluno.html', {
-        'formset': formset,
-        'sala': sala,
-        'data': data.date(),
-    })
-
-
-
-#### APIs ####
-class FrequenciaViewSet(viewsets.ModelViewSet):
-    queryset = Frequencia.objects.all()
-    serializer_class = FrequenciaSerializer
-
-    # 1. Frequências de uma sala por mês
-    @action(detail=False, methods=['get'], url_path='sala/(?P<sala_id>[^/.]+)')
-    def frequencias_sala_mes(self, request, sala_id=None):
-        mes = request.query_params.get('mes')
-        if not mes:
-            return Response({"error": "Parâmetro 'mes' é obrigatório"}, status=400)
-        try:
-            ano, mes_int = map(int, mes.split('-'))
-        except ValueError:
-            return Response({"error": "Formato de 'mes' inválido"}, status=400)
-
-        frequencias = Frequencia.objects.filter(
-            sala_id=sala_id,
-            data__year=ano,
-            data__month=mes_int,
-            status=True
+        presencas = (
+            registro.presencas
+            .select_related('aluno')
+            .order_by('aluno__nome_completo')
         )
-        dias = [{"data": f.data.strftime('%Y-%m-%d'), "frequencia_registrada": f.status} for f in frequencias]
-        return Response(dias)
+        return render(request, self.template_name, self._ctx(
+            request, registro=registro, presencas=presencas,
+        ))
 
-    # 2. Criar ou atualizar bloco de frequência
-    @action(detail=False, methods=['post'])
-    def criar_bloco(self, request):
-        serializer = FrequenciaBlocoSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        sala_id = serializer.validated_data['sala_id']
-        data_frequencia = serializer.validated_data['data']
-        alunos_data = serializer.validated_data['frequencias_alunos']
 
-        # Cria ou atualiza frequência da sala
-        sala_frequencia, created = Frequencia.objects.get_or_create(
-            sala_id=sala_id,
-            data=data_frequencia,
-            defaults={
-                "presentes": sum(a['presente'] for a in alunos_data),
-                "status": True
-            }
-        )
-        if not created:
-            sala_frequencia.presentes = sum(a['presente'] for a in alunos_data)
-            sala_frequencia.status = True
-            sala_frequencia.save()
+# ---------------------------------------------------------------------------
+# Lançar presenças
+# ---------------------------------------------------------------------------
 
-        # Cria ou atualiza frequência de cada aluno
-        for aluno_data in alunos_data:
-            FrequenciaAluno.objects.update_or_create(
-                aluno_id=aluno_data['aluno'],
-                data=data_frequencia,
-                defaults={
-                    "presente": aluno_data['presente'],
-                    "observacao": aluno_data.get('observacao', '')
-                }
-            )
+class LancarPresencasView(_LeituraMixin, View):
+    template_name = 'frequencia/lancar.html'
 
-        return Response({"success": True})
-
-    # 3. Atualizar frequência de um aluno específico
-    @action(detail=False, methods=['patch'], url_path='aluno/(?P<aluno_id>[^/.]+)/(?P<data>[^/.]+)')
-    def atualizar_aluno(self, request, aluno_id=None, data=None):
-        frequencia_aluno = get_object_or_404(FrequenciaAluno, aluno_id=aluno_id, data=data)
-        serializer = FrequenciaAlunoSerializer(frequencia_aluno, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
-
-    # 4. Buscar frequências de todos os alunos de uma sala em uma data específica
-    @action(detail=False, methods=['get'], url_path='aluno-frequencia/(?P<sala_id>[^/.]+)')
-    def frequencias_por_data(self, request, sala_id=None):
-        data_str = request.query_params.get('data')
-        if not data_str:
-            return Response({"error": "Parâmetro 'data' é obrigatório"}, status=400)
-        try:
-            from datetime import datetime
-            data_obj = datetime.strptime(data_str, "%Y-%m-%d").date()
-        except ValueError:
-            return Response({"error": "Formato de 'data' inválido, use YYYY-MM-DD"}, status=400)
-
-        frequencias = FrequenciaAluno.objects.filter(
-            aluno__sala_id=sala_id,
-            data=data_obj
+    def _get_registro(self, request, pk):
+        return get_object_or_404(
+            RegistroFrequencia.objects.select_related(
+                'turma__escola', 'materia', 'ano_letivo', 'periodo_letivo',
+            ),
+            pk=pk, turma__escola=request.escola,
         )
 
-        resultado = [
-            {
-                "id": f.id,
-                "aluno": f.aluno.id,
-                "presente": f.presente,
-                "observacao": f.observacao
-            } for f in frequencias
+    def get(self, request, pk):
+        registro = self._get_registro(request, pk)
+        from apps.aluno.models import MatriculaTurma
+        matriculas = (
+            MatriculaTurma.objects
+            .filter(turma=registro.turma, ano_letivo=registro.ano_letivo, ativo=True)
+            .select_related('aluno')
+            .order_by('aluno__nome_completo')
+        )
+        presencas_map = {p.aluno_id: p for p in registro.presencas.all()}
+        alunos_list = [
+            (mat.aluno, presencas_map.get(mat.aluno_id))
+            for mat in matriculas
         ]
-        return Response(resultado)
+        return render(request, self.template_name, self._ctx(
+            request, registro=registro, alunos_list=alunos_list,
+        ))
+
+    def post(self, request, pk):
+        registro = self._get_registro(request, pk)
+        from apps.aluno.models import MatriculaTurma
+        matriculas = (
+            MatriculaTurma.objects
+            .filter(turma=registro.turma, ano_letivo=registro.ano_letivo, ativo=True)
+            .select_related('aluno')
+        )
+        entradas = []
+        for mat in matriculas:
+            aid = mat.aluno_id
+            presente    = bool(request.POST.get(f'presente_{aid}'))
+            justificado = bool(request.POST.get(f'justificado_{aid}')) and not presente
+            observacao  = request.POST.get(f'obs_{aid}', '').strip()
+            entradas.append({
+                'aluno_id':   aid,
+                'presente':   presente,
+                'justificado': justificado,
+                'observacao': observacao,
+            })
+        count = frequencia_service.lancar_presencas(registro, entradas)
+        messages.success(request, f'Presenças salvas ({count} alunos).')
+        return redirect('frequencia:detalhe', pk=pk)
 
 
-class FrequenciaAlunoViewSet(viewsets.ModelViewSet):
-    queryset = FrequenciaAluno.objects.all()
-    serializer_class = FrequenciaAlunoSerializer
+# ---------------------------------------------------------------------------
+# Justificar falta (POST only)
+# ---------------------------------------------------------------------------
 
-    @action(detail=False, methods=['patch'], url_path='aluno/(?P<aluno_id>[^/.]+)/(?P<data>[^/.]+)')
-    def atualizar_aluno(self, request, aluno_id=None, data=None):
-        """Atualiza a frequência de um aluno específico em uma data"""
-        frequencia_aluno = get_object_or_404(FrequenciaAluno, aluno_id=aluno_id, data=data)
-        serializer = self.get_serializer(frequencia_aluno, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
-
-
-class AlunosSalaFrequenciaViewSet(viewsets.ModelViewSet):
-    serializer_class = AlunoSerializer
-    permission_classes = [IsAuthenticated]
-    pagination_class = None
-
-    def get_queryset(self):
-        sala_id = self.kwargs.get("sala_pk")
-        if not sala_id:
-            raise ValidationError("ID da sala é obrigatório.")
-
-        return Aluno.objects.filter(sala_id=sala_id).order_by("nome")
-
-    def perform_create(self, serializer):
-        sala_id = self.kwargs.get("sala_pk")
-        try:
-            sala = Sala.objects.get(pk=sala_id)
-        except Sala.DoesNotExist:
-            raise ValidationError("Sala não encontrada.")
-        serializer.save(sala=sala)
+class JustificarFaltaView(_LeituraMixin, View):
+    def post(self, request, pk):
+        presenca = get_object_or_404(
+            PresencaAluno.objects.select_related('registro__turma__escola'),
+            pk=pk, registro__turma__escola=request.escola,
+        )
+        obs = request.POST.get('observacao', '').strip()
+        frequencia_service.justificar_falta(presenca, obs)
+        messages.success(request, 'Falta justificada.')
+        return redirect('frequencia:detalhe', pk=presenca.registro_id)
 
 
-class RegistroViewSet(viewsets.ModelViewSet):
-    queryset = Registro.objects.all().order_by("-data")
-    serializer_class = RegistroSerializer
+# ---------------------------------------------------------------------------
+# Cancelar aula (POST only) — DIRETOR only
+# ---------------------------------------------------------------------------
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        sala_id = self.request.query_params.get("sala")
-        data_inicio = self.request.query_params.get("data__gte")
-        data_fim = self.request.query_params.get("data__lte")
-
-        if sala_id:
-            queryset = queryset.filter(sala_id=sala_id)
-
-        if data_inicio:
-            queryset = queryset.filter(data__gte=parse_date(data_inicio))
-        if data_fim:
-            queryset = queryset.filter(data__lte=parse_date(data_fim))
-
-        return queryset
+class CancelarAulaView(_DiretorMixin, View):
+    def post(self, request, pk):
+        registro = get_object_or_404(
+            RegistroFrequencia, pk=pk, turma__escola=request.escola,
+        )
+        frequencia_service.cancelar_aula(registro)
+        messages.success(request, 'Aula cancelada e registros removidos.')
+        return redirect('frequencia:lista')
 
 
-class LargePagination(PageNumberPagination):
-    page_size = 100
+# ---------------------------------------------------------------------------
+# Frequência de um aluno (visão geral por período)
+# ---------------------------------------------------------------------------
 
+class FrequenciaAlunoView(_LeituraMixin, View):
+    template_name = 'frequencia/aluno.html'
 
-class RelatorioViewSet(viewsets.ModelViewSet):
-    queryset = Relatorio.objects.all().order_by("-data_relatorio")
-    serializer_class = RelatorioSerializer
-    permission_classes = [IsAuthenticated]
-    pagination_class = LargePagination
+    def get(self, request, aluno_pk, ano_letivo_pk):
+        from apps.aluno.models import Aluno, MatriculaTurma
+        from apps.ano_letivo.models import AnoLetivo, PeriodoLetivo
+        from apps.materia.models import Materia
 
-    def get_queryset(self):
-        periodo_id = self.request.query_params.get("periodo")
-        sala_id = self.request.query_params.get("sala")
+        aluno = get_object_or_404(Aluno, pk=aluno_pk, escola=request.escola)
+        ano_letivo = get_object_or_404(AnoLetivo, pk=ano_letivo_pk, escola=request.escola)
 
-        base_qs = Relatorio.objects.all().order_by("-data_relatorio")
+        periodos = PeriodoLetivo.objects.filter(ano_letivo=ano_letivo).order_by('numero')
+        matricula = (
+            MatriculaTurma.objects
+            .filter(aluno=aluno, ano_letivo=ano_letivo, ativo=True)
+            .select_related('turma')
+            .first()
+        )
 
-        if periodo_id:
-            base_qs = base_qs.filter(periodo_id=periodo_id)
-        if sala_id:
-            base_qs = base_qs.filter(aluno__sala_id=sala_id)
-
-        # 👇 pega o id do primeiro relatório por aluno/periodo
-        subquery = Relatorio.objects.filter(
-            aluno_id=OuterRef("aluno_id"),
-            periodo_id=OuterRef("periodo_id")
-        ).order_by("-data_relatorio").values("id")[:1]
-
-        queryset = base_qs.filter(id=Subquery(subquery))
-
-        return queryset
-
-    def perform_create(self, serializer):
-        periodo_id = self.request.data.get("periodo")
-        periodo = get_object_or_404(Periodo, id=periodo_id)
-        professor = Professor.objects.get(id=self.request.user.id)
-        serializer.save(professor=professor.professor_nome, periodo=periodo)
-
-    def update(self, request, *args, **kwargs):
-        relatorio_obj = self.get_object()
-        relatorio_texto = request.data.get("relatorio")
-
-        if relatorio_texto is not None:
-            relatorio_obj.relatorio = relatorio_texto
-            relatorio_obj.save()
-            serializer = self.get_serializer(relatorio_obj)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response(
-                {"detail": "Campo 'relatorio' é obrigatório."},
-                status=status.HTTP_400_BAD_REQUEST
+        # Materias with any registro in this turma/year
+        if matricula:
+            materia_ids = (
+                RegistroFrequencia.objects
+                .filter(turma=matricula.turma, ano_letivo=ano_letivo)
+                .values_list('materia_id', flat=True)
+                .distinct()
             )
+            materias = Materia.objects.filter(pk__in=materia_ids, ativo=True).order_by('nome')
+        else:
+            materias = Materia.objects.none()
 
+        # Build grid: materia × periodo → (percentual, total_aulas, presentes)
+        linhas = []
+        for materia in materias:
+            cols = []
+            for periodo in periodos:
+                pct = frequencia_service.calcular_percentual(aluno, materia, periodo)
+                total = RegistroFrequencia.objects.filter(
+                    turma=matricula.turma if matricula else None,
+                    materia=materia,
+                    periodo_letivo=periodo,
+                ).count() if matricula else 0
+                presentes = PresencaAluno.objects.filter(
+                    registro__turma=matricula.turma if matricula else None,
+                    registro__materia=materia,
+                    registro__periodo_letivo=periodo,
+                    aluno=aluno,
+                    presente=True,
+                ).count() if matricula else 0
+                cols.append({'pct': pct, 'total': total, 'presentes': presentes})
+            linhas.append({'materia': materia, 'cols': cols})
 
-class PeriodoViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Periodo.objects.all().order_by('periodo')
-    serializer_class = PeriodoSerializer
-    permission_classes = [IsAuthenticated]
+        # Presencas detail (last 30 records)
+        presencas_recentes = (
+            PresencaAluno.objects
+            .filter(aluno=aluno, registro__ano_letivo=ano_letivo)
+            .select_related('registro__materia', 'registro__turma')
+            .order_by('-registro__data')[:30]
+        )
+
+        return render(request, self.template_name, self._ctx(
+            request,
+            aluno=aluno,
+            ano_letivo=ano_letivo,
+            periodos=periodos,
+            linhas=linhas,
+            matricula=matricula,
+            presencas_recentes=presencas_recentes,
+        ))

@@ -1,0 +1,124 @@
+{% extends "base/base_diretor.html" %}
+
+{% block titulo %}Professores — {{ escola.nome }}{% endblock %}
+{% block page_title %}Professores{% endblock %}
+
+{% block sidebar_nav %}
+{% include "diretor/_nav.html" with active="professores" %}
+{% endblock %}
+
+{% block conteudo %}
+<div>
+
+    <div class="flex items-start justify-between mb-6 gap-4">
+        <div>
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Professores</h2>
+            <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
+                Corpo docente da escola
+            </p>
+        </div>
+        {% if papel.tipo == 'DIRETOR' %}
+        <a href="{% url 'professor:criar' %}"
+           class="flex items-center gap-2 px-4 py-2 rounded-xl shrink-0
+                  bg-[#0d6efd] hover:bg-[#0b5ed7] text-white text-sm font-medium transition-colors">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Novo Professor</span>
+        </a>
+        {% endif %}
+    </div>
+
+    {% if professores %}
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
+        <div class="divide-y divide-slate-100 dark:divide-slate-700">
+            {% for perfil in professores %}
+            <div class="flex items-center justify-between px-5 py-3.5 {% if not perfil.papel.ativo %}opacity-50{% endif %}">
+                <div class="flex items-center gap-3 min-w-0">
+                    {% if perfil.foto %}
+                    <img src="{{ perfil.foto.url }}" alt="{{ perfil.usuario.nome }}"
+                         class="w-9 h-9 rounded-full object-cover shrink-0">
+                    {% else %}
+                    <div class="w-9 h-9 rounded-full bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center shrink-0">
+                        <i data-lucide="graduation-cap" class="w-4 h-4 text-violet-500"></i>
+                    </div>
+                    {% endif %}
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                                {{ perfil.usuario.nome }}
+                            </span>
+                            {% if perfil.tipo_vinculo %}
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400">
+                                {{ perfil.get_tipo_vinculo_display }}
+                            </span>
+                            {% endif %}
+                            {% if not perfil.papel.ativo %}
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 dark:bg-slate-700 text-slate-400">
+                                Inativo
+                            </span>
+                            {% endif %}
+                        </div>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                            {{ perfil.usuario.email }}
+                            {% if perfil.registro_profissional %} · {{ perfil.registro_profissional }}{% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-1 shrink-0">
+                    <a href="{% url 'professor:detalhe' perfil.pk %}"
+                       class="p-1.5 text-slate-300 hover:text-[#0d6efd] rounded-md transition-colors"
+                       title="Ver detalhes">
+                        <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                    </a>
+                    {% if papel.tipo == 'DIRETOR' %}
+                    <a href="{% url 'professor:editar' perfil.pk %}"
+                       class="p-1.5 text-slate-300 hover:text-[#0d6efd] rounded-md transition-colors"
+                       title="Editar">
+                        <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </a>
+                    {% if perfil.papel.ativo %}
+                    <form method="post" action="{% url 'professor:desativar' perfil.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" title="Desativar"
+                                class="p-1.5 text-slate-300 hover:text-amber-500 rounded-md transition-colors">
+                            <i data-lucide="user-x" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </form>
+                    {% else %}
+                    <form method="post" action="{% url 'professor:reativar' perfil.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" title="Reativar"
+                                class="p-1.5 text-slate-300 hover:text-emerald-500 rounded-md transition-colors">
+                            <i data-lucide="user-check" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </form>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% else %}
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
+        <div class="flex flex-col items-center justify-center py-16 px-5 text-center">
+            <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center mb-4">
+                <i data-lucide="graduation-cap" class="w-8 h-8 text-slate-300 dark:text-slate-500"></i>
+            </div>
+            <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-1">Nenhum professor cadastrado</h3>
+            <p class="text-xs text-slate-400 dark:text-slate-500 max-w-xs leading-relaxed">
+                Adicione o corpo docente da escola.
+            </p>
+            {% if papel.tipo == 'DIRETOR' %}
+            <a href="{% url 'professor:criar' %}"
+               class="mt-4 text-sm text-[#0d6efd] hover:underline font-medium">
+                Cadastrar primeiro professor →
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

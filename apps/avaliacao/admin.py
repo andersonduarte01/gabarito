@@ -1,36 +1,39 @@
 from django.contrib import admin
-from pyexpat import model
+from unfold.admin import ModelAdmin, TabularInline
 
-from .models import Avaliacao, Questao, Gabarito, Resposta
-# Register your models here.
-from django.contrib.admin import ModelAdmin
+from .models import Avaliacao, NotaAluno, OpcaoResposta, Questao, RespostaAluno
 
 
-class QuestaoInline(admin.StackedInline):
-    model = Questao
-    exclude = ('status_questao',)
-    extra = 1
+class OpcaoRespostaInline(TabularInline):
+    model  = OpcaoResposta
+    extra  = 0
+    fields = ('letra', 'texto', 'correta')
 
 
+class QuestaoInline(TabularInline):
+    model  = Questao
+    extra  = 0
+    fields = ('numero', 'tipo', 'pontuacao', 'enunciado')
+
+
+@admin.register(Avaliacao)
 class AvaliacaoAdmin(ModelAdmin):
-    list_display = ('descricao', 'ano', 'data_encerramento')
-    fieldsets = (
-        ('Dados Avaliação', {'fields': ['descricao', 'ano', 'data_encerramento']}),
-    )
-    add_fieldsets = (
-        ('Informações da Avaliação', {
-            'classes': ('wide',),
-            'fields': ('descricao', 'ano', 'data_encerramento'),
-        }),
-    )
-    inlines = [QuestaoInline]
+    list_display  = ('titulo', 'turma', 'materia', 'tipo', 'modalidade', 'data_aplicacao', 'publicada')
+    list_filter   = ('tipo', 'modalidade', 'publicada', 'escola')
+    search_fields = ('titulo',)
+    inlines       = [QuestaoInline]
 
 
-class RespostaAdm(admin.ModelAdmin):
-    model = Resposta
-    list_display = ('gabarito', 'questao', 'acertou')
+@admin.register(Questao)
+class QuestaoAdmin(ModelAdmin):
+    list_display  = ('avaliacao', 'numero', 'tipo', 'pontuacao')
+    list_filter   = ('tipo',)
+    inlines       = [OpcaoRespostaInline]
 
 
-admin.site.register(Avaliacao, AvaliacaoAdmin)
-admin.site.register(Gabarito)
-admin.site.register(Resposta, RespostaAdm)
+@admin.register(NotaAluno)
+class NotaAlunoAdmin(ModelAdmin):
+    list_display  = ('avaliacao', 'aluno', 'nota', 'ausente', 'lancado_em')
+    list_filter   = ('ausente', 'avaliacao__escola')
+    search_fields = ('aluno__nome_completo',)
+    readonly_fields = ('lancado_em',)

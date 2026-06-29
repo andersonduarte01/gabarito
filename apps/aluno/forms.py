@@ -1,114 +1,108 @@
 from django import forms
 
-from apps.escola.forms import DaisyFormMixin
-from apps.sala.models import Turma
-from .models import Aluno, SEXO, SITUACAO
+from .models import Aluno
+
+_INPUT = (
+    'w-full px-3 py-2 text-sm bg-white dark:bg-slate-800 '
+    'border border-slate-200 dark:border-slate-700 rounded-lg '
+    'text-slate-900 dark:text-slate-100 focus:outline-none '
+    'focus:ring-2 focus:ring-[#0d6efd]/30 focus:border-[#0d6efd]'
+)
+_SELECT = _INPUT
 
 
-class AlunoCreateForm(DaisyFormMixin, forms.Form):
-    # ── Dados pessoais ────────────────────────────────────────────────────────
-    nome = forms.CharField(label='Nome completo', max_length=150)
+class CriarAlunoForm(forms.Form):
+    nome_completo   = forms.CharField(
+        label='Nome Completo', max_length=200,
+        widget=forms.TextInput(attrs={'class': _INPUT, 'placeholder': 'Nome completo do aluno'}),
+    )
     data_nascimento = forms.DateField(
-        label='Data de nascimento',
-        required=False,
-        widget=forms.DateInput(attrs={'type': 'date'}),
+        label='Data de Nascimento', required=False,
+        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}),
     )
-    sexo = forms.ChoiceField(label='Sexo', choices=SEXO, required=False)
-    cpf = forms.CharField(label='CPF', max_length=14, required=False)
-    telefone = forms.CharField(label='Telefone', max_length=20, required=False)
-
-    # ── Responsável ───────────────────────────────────────────────────────────
-    tem_responsavel = forms.BooleanField(
-        label='Possui responsável',
-        required=False,
-        initial=True,
-        widget=forms.CheckboxInput(attrs={
-            'class': 'toggle toggle-primary',
-            'role': 'switch',
-        }),
+    cpf             = forms.CharField(
+        label='CPF', max_length=14, required=False,
+        widget=forms.TextInput(attrs={'class': _INPUT, 'placeholder': '000.000.000-00'}),
     )
-    responsavel_legal = forms.CharField(
-        label='Nome do responsável', max_length=150, required=False,
+    rg              = forms.CharField(
+        label='RG', max_length=20, required=False,
+        widget=forms.TextInput(attrs={'class': _INPUT}),
     )
-    telefone_responsavel = forms.CharField(
-        label='Telefone do responsável', max_length=20, required=False,
+    turma           = forms.ModelChoiceField(
+        label='Turma', queryset=None, required=False, empty_label='— Sem turma —',
+        widget=forms.Select(attrs={'class': _SELECT}),
     )
-
-    # ── Vínculo escolar ───────────────────────────────────────────────────────
-    sala = forms.ModelChoiceField(
-        label='Turma',
-        queryset=Turma.objects.none(),
-        required=False,
-        empty_label='— Sem turma —',
-    )
-
-    # ── Acesso ao sistema ─────────────────────────────────────────────────────
-    email = forms.EmailField(label='E-mail de acesso')
-    password = forms.CharField(
-        label='Senha',
-        widget=forms.PasswordInput(render_value=False),
-        min_length=8,
+    ano_letivo      = forms.ModelChoiceField(
+        label='Ano Letivo', queryset=None, required=False, empty_label='— Selecione —',
+        widget=forms.Select(attrs={'class': _SELECT}),
     )
 
     def __init__(self, *args, escola=None, **kwargs):
         super().__init__(*args, **kwargs)
+        from apps.turma.models import Turma
+        from apps.ano_letivo.models import AnoLetivo
         if escola:
-            self.fields['sala'].queryset = (
-                Turma.objects.filter(escola=escola, ativo=True).order_by('nome')
-            )
+            self.fields['turma'].queryset      = Turma.objects.filter(escola=escola, ativo=True).order_by('nome')
+            self.fields['ano_letivo'].queryset = AnoLetivo.objects.filter(escola=escola).order_by('-ano')
+        else:
+            self.fields['turma'].queryset      = Turma.objects.none()
+            self.fields['ano_letivo'].queryset = Turma.objects.none()
 
     def clean(self):
-        cleaned = super().clean()
-        if not cleaned.get('tem_responsavel'):
-            cleaned['responsavel_legal'] = ''
-            cleaned['telefone_responsavel'] = ''
+        cleaned    = super().clean()
+        turma      = cleaned.get('turma')
+        ano_letivo = cleaned.get('ano_letivo')
+        if turma and not ano_letivo:
+            self.add_error('ano_letivo', 'Selecione o ano letivo ao vincular uma turma.')
+        if ano_letivo and not turma:
+            self.add_error('turma', 'Selecione a turma para o ano letivo informado.')
         return cleaned
 
 
-class AlunoEditForm(DaisyFormMixin, forms.ModelForm):
-    nome = forms.CharField(label='Nome completo', max_length=150)
-    email = forms.EmailField(label='E-mail de acesso', required=False)
-    tem_responsavel = forms.BooleanField(
-        label='Possui responsável',
-        required=False,
-        widget=forms.CheckboxInput(attrs={
-            'class': 'toggle toggle-primary',
-            'role': 'switch',
-        }),
-    )
-
+class EditarAlunoForm(forms.ModelForm):
     class Meta:
-        model = Aluno
-        fields = (
-            'cpf', 'data_nascimento', 'sexo',
-            'telefone', 'responsavel_legal', 'telefone_responsavel',
-            'sala', 'situacao',
-        )
+        model  = Aluno
+        fields = ('nome_completo', 'data_nascimento', 'cpf', 'rg')
         widgets = {
-            'data_nascimento': forms.DateInput(
-                attrs={'type': 'date'}, format='%Y-%m-%d',
-            ),
+            'nome_completo':   forms.TextInput(attrs={'class': _INPUT}),
+            'data_nascimento': forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}),
+            'cpf':             forms.TextInput(attrs={'class': _INPUT, 'placeholder': '000.000.000-00'}),
+            'rg':              forms.TextInput(attrs={'class': _INPUT}),
         }
 
+
+class MatriculaTurmaForm(forms.Form):
+    turma      = forms.ModelChoiceField(
+        label='Turma', queryset=None,
+        widget=forms.Select(attrs={'class': _SELECT}),
+    )
+    ano_letivo = forms.ModelChoiceField(
+        label='Ano Letivo', queryset=None,
+        widget=forms.Select(attrs={'class': _SELECT}),
+    )
+
     def __init__(self, *args, escola=None, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.instance and self.instance.pk:
-            self.fields['nome'].initial = self.instance.usuario.nome
-            self.fields['email'].initial = self.instance.usuario.email
-            self.fields['tem_responsavel'].initial = bool(self.instance.responsavel_legal)
+        from apps.turma.models import Turma
+        from apps.ano_letivo.models import AnoLetivo
         if escola:
-            self.fields['sala'].queryset = (
-                Turma.objects.filter(escola=escola, ativo=True).order_by('nome')
-            )
+            self.fields['turma'].queryset      = Turma.objects.filter(escola=escola, ativo=True).order_by('nome')
+            self.fields['ano_letivo'].queryset = AnoLetivo.objects.filter(escola=escola).order_by('-ano')
         else:
-            self.fields['sala'].queryset = Turma.objects.none()
-        self.fields['sala'].required = False
-        self.fields['sala'].empty_label = '— Sem turma —'
-        self.fields['cpf'].required = False
+            self.fields['turma'].queryset      = Turma.objects.none()
+            self.fields['ano_letivo'].queryset = Turma.objects.none()
 
-    def clean(self):
-        cleaned = super().clean()
-        if not cleaned.get('tem_responsavel'):
-            cleaned['responsavel_legal'] = ''
-            cleaned['telefone_responsavel'] = ''
-        return cleaned
+
+class TrocarTurmaForm(forms.Form):
+    nova_turma = forms.ModelChoiceField(
+        label='Nova Turma', queryset=None,
+        widget=forms.Select(attrs={'class': _SELECT}),
+    )
+
+    def __init__(self, *args, escola=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        from apps.turma.models import Turma
+        if escola:
+            self.fields['nova_turma'].queryset = Turma.objects.filter(escola=escola, ativo=True).order_by('nome')
+        else:
+            self.fields['nova_turma'].queryset = Turma.objects.none()

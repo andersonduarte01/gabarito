@@ -1,0 +1,109 @@
+{% extends "base/base_diretor.html" %}
+
+{% block titulo %}{% if editando %}Editar Turma{% else %}Nova Turma{% endif %} — {{ escola.nome }}{% endblock %}
+{% block page_title %}{% if editando %}Editar Turma{% else %}Nova Turma{% endif %}{% endblock %}
+
+{% block sidebar_nav %}
+{% include "diretor/_nav.html" with active="turmas" %}
+{% endblock %}
+
+{% block conteudo %}
+<div>
+
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-sm text-slate-400 mb-6">
+        <a href="{% url 'turma:lista' %}" class="hover:text-slate-600 dark:hover:text-slate-200">Turmas</a>
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+        <span class="text-slate-600 dark:text-slate-300">{% if editando %}Editar{{ turma }}{% else %}Nova Turma{% endif %}</span>
+    </div>
+
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-6">
+
+        <h2 class="text-base font-semibold text-slate-900 dark:text-white mb-6">
+            {% if editando %}Editar Turma{% else %}Nova Turma{% endif %}
+        </h2>
+
+        <form method="post" class="space-y-5">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-sm text-red-700 dark:text-red-400">
+                {% for erro in form.non_field_errors %}{{ erro }}{% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+                <div class="space-y-1.5">
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                        {{ form.ano_letivo.label }}
+                    </label>
+                    {{ form.ano_letivo }}
+                    {% if form.ano_letivo.errors %}
+                    <p class="text-xs text-red-500">{{ form.ano_letivo.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                        {{ form.serie.label }}
+                    </label>
+                    {{ form.serie }}
+                    {% if form.serie.errors %}
+                    <p class="text-xs text-red-500">{{ form.serie.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                        {{ form.nome.label }}
+                    </label>
+                    {{ form.nome }}
+                    {% if form.nome.help_text %}
+                    <p class="text-xs text-slate-400">{{ form.nome.help_text }}</p>
+                    {% endif %}
+                    {% if form.nome.errors %}
+                    <p class="text-xs text-red-500">{{ form.nome.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                        {{ form.turno.label }}
+                    </label>
+                    {{ form.turno }}
+                    {% if form.turno.errors %}
+                    <p class="text-xs text-red-500">{{ form.turno.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                        {{ form.capacidade.label }}
+                    </label>
+                    {{ form.capacidade }}
+                    {% if form.capacidade.errors %}
+                    <p class="text-xs text-red-500">{{ form.capacidade.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <a href="{% url 'turma:lista' %}"
+                   class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700
+                          text-sm font-medium text-slate-600 dark:text-slate-300
+                          hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                    Cancelar
+                </a>
+                <button type="submit"
+                        class="px-5 py-2 rounded-xl bg-[#0d6efd] hover:bg-[#0b5ed7]
+                               text-white text-sm font-medium transition-colors">
+                    {% if editando %}Salvar alterações{% else %}Criar Turma{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+
+</div>
+{% endblock %}

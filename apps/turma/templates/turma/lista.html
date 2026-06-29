@@ -1,0 +1,152 @@
+{% extends "base/base_diretor.html" %}
+
+{% block titulo %}Turmas — {{ escola.nome }}{% endblock %}
+{% block page_title %}Turmas{% endblock %}
+
+{% block sidebar_nav %}
+{% include "diretor/_nav.html" with active="turmas" %}
+{% endblock %}
+
+{% block conteudo %}
+<div>
+
+    <!-- Cabeçalho -->
+    <div class="flex items-start justify-between mb-6 gap-4">
+        <div>
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Turmas</h2>
+            <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
+                Agrupamentos de alunos por série, turno e ano letivo
+            </p>
+        </div>
+        {% if papel.tipo == 'DIRETOR' %}
+        <a href="{% url 'turma:criar' %}"
+           class="flex items-center gap-2 px-4 py-2 rounded-xl shrink-0
+                  bg-[#0d6efd] hover:bg-[#0b5ed7] text-white text-sm font-medium transition-colors">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Nova Turma</span>
+        </a>
+        {% endif %}
+    </div>
+
+    {% if grupos %}
+    <div class="flex flex-col gap-6">
+        {% for grupo in grupos %}
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
+
+            <!-- Cabeçalho do ano letivo -->
+            <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+                        <i data-lucide="calendar" class="w-3.5 h-3.5 text-indigo-500"></i>
+                    </div>
+                    <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300">
+                        Ano Letivo {{ grupo.ano_letivo.ano }}
+                    </h3>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-medium
+                        {% if grupo.ano_letivo.status == 'EM_ANDAMENTO' %}bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400
+                        {% elif grupo.ano_letivo.status == 'EM_PLANEJAMENTO' %}bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400
+                        {% else %}bg-slate-100 dark:bg-slate-700 text-slate-500{% endif %}">
+                        {{ grupo.ano_letivo.get_status_display }}
+                    </span>
+                    <span class="text-xs text-slate-400 dark:text-slate-500 font-medium">
+                        {{ grupo.turmas|length }} turma{{ grupo.turmas|length|pluralize:"s" }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Lista de turmas -->
+            <div class="divide-y divide-slate-100 dark:divide-slate-700">
+                {% for turma in grupo.turmas %}
+                <div class="flex items-center justify-between px-5 py-3.5 {% if not turma.ativo %}opacity-50{% endif %}">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center shrink-0">
+                            <i data-lucide="users" class="w-4 h-4 text-blue-500"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                                    {{ turma.serie.nome }} — {{ turma.nome }}
+                                </span>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
+                                    {{ turma.get_turno_display }}
+                                </span>
+                                {% if turma.serie.segmento %}
+                                <span class="text-xs text-slate-400 dark:text-slate-500">
+                                    {{ turma.serie.segmento.get_tipo_display }}
+                                </span>
+                                {% endif %}
+                                {% if not turma.ativo %}
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 dark:bg-slate-700 text-slate-400">
+                                    Inativa
+                                </span>
+                                {% endif %}
+                            </div>
+                            {% if turma.capacidade %}
+                            <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                                Capacidade: {{ turma.capacidade }} alunos
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-1 shrink-0">
+                        <a href="{% url 'turma:detalhe' turma.pk %}"
+                           class="p-1.5 text-slate-300 hover:text-[#0d6efd] rounded-md transition-colors"
+                           title="Ver detalhes">
+                            <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                        </a>
+                        {% if papel.tipo == 'DIRETOR' %}
+                        <a href="{% url 'turma:editar' turma.pk %}"
+                           class="p-1.5 text-slate-300 hover:text-[#0d6efd] rounded-md transition-colors"
+                           title="Editar">
+                            <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                        </a>
+                        {% if turma.ativo %}
+                        <form method="post" action="{% url 'turma:desativar' turma.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" title="Desativar"
+                                    class="p-1.5 text-slate-300 hover:text-amber-500 rounded-md transition-colors">
+                                <i data-lucide="eye-off" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </form>
+                        {% else %}
+                        <form method="post" action="{% url 'turma:reativar' turma.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" title="Reativar"
+                                    class="p-1.5 text-slate-300 hover:text-emerald-500 rounded-md transition-colors">
+                                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
+        <div class="flex flex-col items-center justify-center py-16 px-5 text-center">
+            <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center mb-4">
+                <i data-lucide="users" class="w-8 h-8 text-slate-300 dark:text-slate-500"></i>
+            </div>
+            <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-1">Nenhuma turma cadastrada</h3>
+            <p class="text-xs text-slate-400 dark:text-slate-500 max-w-xs leading-relaxed">
+                Certifique-se de ter um ano letivo e séries configurados antes de criar turmas.
+            </p>
+            {% if papel.tipo == 'DIRETOR' %}
+            <a href="{% url 'turma:criar' %}"
+               class="mt-4 text-sm text-[#0d6efd] hover:underline font-medium">
+                Criar primeira turma →
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

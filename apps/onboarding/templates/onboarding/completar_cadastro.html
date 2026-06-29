@@ -1,0 +1,127 @@
+{% extends "registration/base_auth.html" %}
+
+{% block titulo %}Completar Cadastro{% endblock %}
+{% block tema %}Bem-vindo ao EduCare{% endblock %}
+
+{% block subtitulo %}
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+    Defina sua senha e complete seu perfil como Diretor de
+    <strong class="text-slate-700 dark:text-slate-300">{{ convite.escola.nome }}</strong>.
+</p>
+{% endblock %}
+
+{% block conteudo %}
+<form method="post" novalidate class="space-y-5">
+    {% csrf_token %}
+
+    <!-- Senha -->
+    <div class="space-y-1.5">
+        <label for="{{ form.senha.id_for_label }}"
+               class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+            {{ form.senha.label }}
+        </label>
+        <div class="campo-senha relative">
+            {{ form.senha }}
+            <button type="button" onclick="toggleSenha(this)"
+                    class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600">
+                <i data-lucide="eye"      class="icon-show w-4 h-4"></i>
+                <i data-lucide="eye-off"  class="icon-hide w-4 h-4 hidden"></i>
+            </button>
+        </div>
+        {% if form.senha.errors %}
+        <p class="text-xs text-red-500">{{ form.senha.errors|join:", " }}</p>
+        {% endif %}
+    </div>
+
+    <!-- Confirmar senha -->
+    <div class="space-y-1.5">
+        <label for="{{ form.confirmar_senha.id_for_label }}"
+               class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+            {{ form.confirmar_senha.label }}
+        </label>
+        <div class="campo-senha relative">
+            {{ form.confirmar_senha }}
+            <button type="button" onclick="toggleSenha(this)"
+                    class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600">
+                <i data-lucide="eye"      class="icon-show w-4 h-4"></i>
+                <i data-lucide="eye-off"  class="icon-hide w-4 h-4 hidden"></i>
+            </button>
+        </div>
+        {% if form.confirmar_senha.errors %}
+        <p class="text-xs text-red-500">{{ form.confirmar_senha.errors|join:", " }}</p>
+        {% endif %}
+    </div>
+
+    <hr class="border-slate-100 dark:border-slate-700">
+
+    <!-- Cargo -->
+    <div class="space-y-1.5">
+        <label for="{{ form.cargo.id_for_label }}"
+               class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+            {{ form.cargo.label }}
+        </label>
+        {{ form.cargo }}
+        {% if form.cargo.errors %}
+        <p class="text-xs text-red-500">{{ form.cargo.errors|join:", " }}</p>
+        {% endif %}
+    </div>
+
+    <!-- CPF -->
+    <div class="space-y-1.5">
+        <label for="{{ form.cpf.id_for_label }}"
+               class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+            {{ form.cpf.label }}
+            <span class="text-slate-400 font-normal">(opcional)</span>
+        </label>
+        {{ form.cpf }}
+        {% if form.cpf.errors %}
+        <p class="text-xs text-red-500">{{ form.cpf.errors|join:", " }}</p>
+        {% endif %}
+    </div>
+
+    <!-- Telefone -->
+    <div class="space-y-1.5">
+        <label for="{{ form.telefone.id_for_label }}"
+               class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+            {{ form.telefone.label }}
+            <span class="text-slate-400 font-normal">(opcional)</span>
+        </label>
+        {{ form.telefone }}
+        {% if form.telefone.errors %}
+        <p class="text-xs text-red-500">{{ form.telefone.errors|join:", " }}</p>
+        {% endif %}
+    </div>
+
+    <!-- Data de nascimento -->
+    <div class="grid grid-cols-2 gap-4">
+        <div class="space-y-1.5">
+            <label for="{{ form.data_nascimento.id_for_label }}"
+                   class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                {{ form.data_nascimento.label }}
+                <span class="text-slate-400 font-normal">(opcional)</span>
+            </label>
+            {{ form.data_nascimento }}
+            {% if form.data_nascimento.errors %}
+            <p class="text-xs text-red-500">{{ form.data_nascimento.errors|join:", " }}</p>
+            {% endif %}
+        </div>
+        <div class="space-y-1.5">
+            <label for="{{ form.data_inicio.id_for_label }}"
+                   class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                {{ form.data_inicio.label }}
+                <span class="text-slate-400 font-normal">(opcional)</span>
+            </label>
+            {{ form.data_inicio }}
+            {% if form.data_inicio.errors %}
+            <p class="text-xs text-red-500">{{ form.data_inicio.errors|join:", " }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <button type="submit"
+            class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#0d6efd] hover:bg-[#0b5ed7] text-white text-sm font-semibold transition-colors">
+        <i data-lucide="check-circle" class="w-4 h-4"></i>
+        Concluir Cadastro
+    </button>
+</form>
+{% endblock %}

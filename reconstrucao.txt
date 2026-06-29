@@ -230,7 +230,7 @@ MÓDULOS — INFRAESTRUTURA E PLATAFORMA
 
 [ 02 ] ONBOARDING
 -----------------
-  Status:      [ DECISÕES VALIDADAS — aguardando implementação ]
+  Status:      [ IMPLEMENTADO — 2026-06-26 ]
   Descrição:   Fluxo de entrada de nova escola. Super Admin cria a escola,
                Diretor recebe convite e completa o cadastro.
   Depende de:  Core, Planos/Assinatura
@@ -293,7 +293,7 @@ MÓDULOS — INFRAESTRUTURA E PLATAFORMA
 
 [ 03 ] CONFIGURAÇÕES
 --------------------
-  Status:      [ DECISÕES VALIDADAS — aguardando implementação ]
+  Status:      [ IMPLEMENTADO — 2026-06-26 ]
   Descrição:   Parâmetros configuráveis por escola divididos por domínio.
                Afetam diretamente Avaliações, Boletim, Frequência e Financeiro.
   Depende de:  Core, Escola
@@ -345,7 +345,7 @@ MÓDULOS — INFRAESTRUTURA E PLATAFORMA
 
 [ 04 ] NOTIFICAÇÕES
 -------------------
-  Status:      [ DECISÕES VALIDADAS — aguardando implementação ]
+  Status:      [ IMPLEMENTADO — 2026-06-29 ]
   Descrição:   Camada transversal de notificações in-app. Disparada por
                eventos do sistema (nota lançada, boleto gerado, comunicado
                publicado, etc.). Email via API futuramente.
@@ -390,7 +390,7 @@ MÓDULOS — INFRAESTRUTURA E PLATAFORMA
 
 [ 05 ] AUDITORIA
 ----------------
-  Status:      [ DECISÕES VALIDADAS — aguardando implementação ]
+  Status:      [ IMPLEMENTADO — 2026-06-29 ]
   Descrição:   Log imutável de ações críticas por usuário. Quem fez o quê,
                quando e de qual escola. Requisito B2B com dados de menores.
   Depende de:  Core
@@ -493,7 +493,7 @@ MÓDULOS — ESTRUTURA ESCOLAR
 
 [ 07 ] DIRETOR
 --------------
-  Status:      [ DECISÕES VALIDADAS — aguardando implementação ]
+  Status:      [ IMPLEMENTADO — 2026-06-26 ]
   Descrição:   Perfil complementar do diretor. Múltiplos diretores por escola.
                Template pai próprio (base_diretor.html).
   Depende de:  Core, Escola
@@ -537,7 +537,7 @@ MÓDULOS — ESTRUTURA ESCOLAR
 
 [ 08 ] COLABORADOR
 ------------------
-  Status:      [ DECISÕES VALIDADAS — aguardando implementação ]
+  Status:      [ IMPLEMENTADO — 2026-06-29 ]
   Descrição:   Colaboradores administrativos da escola (secretaria, coordenação,
                etc.). Distintos de Professores. Template pai próprio (base_colaborador.html).
   Depende de:  Core, Escola
@@ -594,7 +594,7 @@ MÓDULOS — ESTRUTURA ESCOLAR
 
 [ 09 ] PROFESSOR
 ----------------
-  Status:      [ DECISÕES VALIDADAS — aguardando implementação ]
+  Status:      [ IMPLEMENTADO — 2026-06-29 ]
   Descrição:   Perfil do professor, formação acadêmica, vínculo com turmas
                e matérias, calendário semanal, carga horária.
                Template pai próprio (base_professor.html).
@@ -678,7 +678,7 @@ MÓDULOS — ESTRUTURA ESCOLAR
 
 [ 10 ] RESPONSÁVEIS
 -------------------
-  Status:      [ DECISÕES VALIDADAS — aguardando implementação ]
+  Status:      [ IMPLEMENTADO — 2026-06-29 ]
   Descrição:   Pais e responsáveis vinculados a alunos. Acesso a boletim,
                comunicados, financeiro escolar do filho. Template pai próprio.
   Depende de:  Core, Alunos
@@ -757,7 +757,7 @@ MÓDULOS — ORGANIZAÇÃO ACADÊMICA
 
 [ 11 ] ANO LETIVO (ANO CORRENTE)
 ---------------------------------
-  Status:      [ DECISÕES VALIDADAS — aguardando implementação ]
+  Status:      [ IMPLEMENTADO — 2026-06-29 ]
   Descrição:   Definição e controle do ano letivo ativo. Base temporal para
                turmas, avaliações, frequência e boletim.
   Depende de:  Core, Escola
@@ -804,7 +804,7 @@ MÓDULOS — ORGANIZAÇÃO ACADÊMICA
 
 [ 12 ] SÉRIES
 -------------
-  Status:      [ DECISÕES VALIDADAS — aguardando implementação ]
+  Status:      [ IMPLEMENTADO — 2026-06-29 ]
   Descrição:   Níveis de ensino (1º ano, 2º ano, etc.). Configuração por
                escola, vinculada ao segmento (fundamental, médio, etc.).
   Depende de:  Core, Escola
@@ -844,7 +844,7 @@ MÓDULOS — ORGANIZAÇÃO ACADÊMICA
 
 [ 13 ] TURMAS
 -------------
-  Status:      [ DECISÕES VALIDADAS — aguardando implementação ]
+  Status:      [ IMPLEMENTADO — 2026-06-29 ]
   Descrição:   Agrupamento de alunos por série, turno e ano letivo. Vínculo
                com professores e matérias.
   Depende de:  Core, Escola, Séries, Ano Letivo
@@ -907,7 +907,7 @@ MÓDULOS — ORGANIZAÇÃO ACADÊMICA
 
 [ 14 ] MATÉRIAS
 ---------------
-  Status:      [ DECISÕES VALIDADAS — aguardando implementação ]
+  Status:      [ IMPLEMENTADO — 2026-06-29 ]
   Descrição:   Disciplinas curriculares. Vínculo com série, turma e professor
                responsável. Base para avaliações e boletim.
   Depende de:  Core, Escola, Séries
@@ -965,7 +965,7 @@ MÓDULOS — VIDA ESCOLAR
 
 [ 15 ] ALUNOS
 -------------
-  Status:      [ DECISÕES VALIDADAS — aguardando implementação ]
+  Status:      [ IMPLEMENTADO — 2026-06-29 ]
   Descrição:   Cadastro completo do aluno, matrícula, vínculo com turma,
                responsáveis. Template pai próprio.
   Depende de:  Core, Escola, Turmas, Responsáveis
@@ -1040,7 +1040,7 @@ MÓDULOS — VIDA ESCOLAR
 
 [ 16 ] AVALIAÇÕES
 -----------------
-  Status:      [ DECISÕES VALIDADAS — aguardando implementação ]
+  Status:      [ IMPLEMENTADO — 2026-06-29 ]
   Descrição:   Criação de avaliações com duas modalidades: online (gabarito
                automático para múltipla escolha, discursiva corrigida pelo
                professor) ou presencial (PDF gerado pelo sistema, notas
@@ -1136,7 +1136,7 @@ MÓDULOS — VIDA ESCOLAR
 
 [ 17 ] BOLETIM
 --------------
-  Status:      [ DECISÕES VALIDADAS — aguardando implementação ]
+  Status:      [ IMPLEMENTADO — 2026-06-29 ]
   Descrição:   Consolidação de notas e frequência por aluno/matéria/período.
                Resultado final anual com conselho de classe. PDF sob demanda
                com identidade visual da escola.
@@ -1200,7 +1200,7 @@ MÓDULOS — VIDA ESCOLAR
 
 [ 18 ] FREQUÊNCIA
 -----------------
-  Status:      [ DECISÕES VALIDADAS — aguardando implementação ]
+  Status:      [ IMPLEMENTADO — 2026-06-29 ]
   Descrição:   Registro de presença/ausência por aula. Lançamento diário,
                semanal ou mensal conforme configuração da escola. Dois níveis
                de alerta de infrequência. Alimenta o Boletim.
@@ -1646,6 +1646,114 @@ DATA        MÓDULO          DECISÃO
 2026-06-25  CORE            IMPLEMENTADO — migrations limpas (banco recriado do zero)
 
 
+2026-06-26  ESCOLA          MODELO RECONSTRUÍDO — UnidadeEscolar com novo schema (nome, tipo PUBLICA/PRIVADA/FILANTROPICA, sem ativo, cores)
+2026-06-26  ESCOLA          SegmentoEscolar (INF/FI/FII/MED/TEC) e EnderecoEscolar (FK, principal bool) implementados
+2026-06-26  ESCOLA          EscolaService.criar() implementado — cria escola + chama assinatura_service.iniciar_trial()
+2026-06-26  DIRETOR         MODELO RECONSTRUÍDO — PerfilDiretor com FK para PapelVinculo (não Diretor/escola diretamente)
+2026-06-26  DIRETOR         CargoDiretor: TITULAR, SUBSTITUTO, ADJUNTO
+2026-06-26  DIRETOR         diretor_service.py implementado (criar, editar, desativar)
+2026-06-26  ONBOARDING      IMPLEMENTADO — ConviteOnboarding (token uuid, 72h, canal EMAIL/WHATSAPP)
+2026-06-26  ONBOARDING      onboarding_service: criar_escola_e_convite, reenviar_convite, validar_token, completar_onboarding
+2026-06-26  ONBOARDING      Views: ListarEscolasView, CriarEscolaView, ReenviarConviteView, CompletarOnboardingView, LinkInvalidoView
+2026-06-26  ONBOARDING      Templates: lista_escolas, form_criar_escola, completar_cadastro, link_invalido
+2026-06-26  ONBOARDING      Email via django filebased backend (dev); link construído via BASE_URL setting
+2026-06-26  GLOBAL          Todas migrations recriadas do zero (db.sqlite3 recriado limpo)
+2026-06-26  CONFIGURAÇÃO    IMPLEMENTADO — models: ConfiguracaoAcademica, ConfiguracaoFrequencia, ConfiguracaoProfessor
+2026-06-26  CONFIGURAÇÃO    configuracao_service: criar_configuracoes_padrao, atualizar_academica, atualizar_frequencia, atualizar_professor
+2026-06-26  CONFIGURAÇÃO    Views: ConfiguracaoAcademicaView, ConfiguracaoFrequenciaView, ConfiguracaoProfessorView (DiretorRequiredMixin)
+2026-06-26  CONFIGURAÇÃO    Templates: academica.html, frequencia.html, professor.html — sidebar compartilhada entre os 3
+2026-06-26  CONFIGURAÇÃO    EscolaService.criar() chama criar_configuracoes_padrao() via lazy import (evita circular)
+2026-06-26  CONFIGURAÇÃO    admin.py com Unfold: ConfiguracaoAcademicaAdmin, ConfiguracaoFrequenciaAdmin, ConfiguracaoProfessorAdmin
+2026-06-26  DIRETOR         IMPLEMENTADO — views: DashboardView, MeuPerfilView, EditarPerfilView, ListarDiretoresView, CriarDiretorView, DesativarDiretorView
+2026-06-26  DIRETOR         Forms: EditarPerfilDiretorForm (ModelForm) + CriarDiretorForm (Form)
+2026-06-26  DIRETOR         Templates: dashboard, meu_perfil, editar_perfil, listar_diretores, form_diretor, _nav (partial compartilhado)
+2026-06-26  DIRETOR         DashboardRedirectView atualizado: DIRETOR → diretor:dashboard
+2026-06-26  DIRETOR         KPIs do dashboard: 5 cards (Ano Letivo, Turmas, Alunos, Professores, Colaboradores) — expandidos conforme módulos são adicionados
+2026-06-26  DIRETOR         Banner GRACE no dashboard quando assinatura.status == GRACE
+
+2026-06-29  NOTIFICAÇÕES    IMPLEMENTADO — Notificacao(destinatario, titulo, mensagem, tipo, lida, criado_em)
+2026-06-29  NOTIFICAÇÕES    TipoNotificacao: ACADEMICA, FINANCEIRA, COMUNICADO, SISTEMA
+2026-06-29  NOTIFICAÇÕES    notificacao_service: criar, marcar_lida, marcar_todas_lidas, listar_nao_lidas, listar_todas, limpar_antigas
+2026-06-29  NOTIFICAÇÕES    Views: ListarNotificacoesView, MarcarLidaView, MarcarTodasLidasView — /notificacoes/
+2026-06-29  NOTIFICAÇÕES    context_processor: notificacoes_counter injeta notificacoes_nao_lidas em todos os templates
+2026-06-29  NOTIFICAÇÕES    Sininho com badge de contagem adicionado ao topbar de base_diretor.html
+2026-06-29  NOTIFICAÇÕES    Management command: limpar_notificacoes (remove lidas há +60 dias)
+2026-06-29  AUDITORIA       IMPLEMENTADO — LogAuditoria(usuario null, escola null, papel_tipo, acao, modelo, objeto_id, descricao, ip, criado_em)
+2026-06-29  AUDITORIA       AcaoAuditoria: CRIAR, EDITAR, DESATIVAR, REATIVAR, LOGIN, LOGOUT
+2026-06-29  AUDITORIA       auditoria_service: registrar(request, acao, objeto, descricao), listar_escola, listar_plataforma
+2026-06-29  AUDITORIA       LogAuditoria: imutável no admin (has_add/change/delete_permission=False)
+2026-06-29  AUDITORIA       View: LogAuditoriaView — /auditoria/ — filtra por acao e modelo, paginado 25/pág
+2026-06-29  AUDITORIA       Link "Auditoria" adicionado ao sidebar nav do Diretor (_nav.html)
+2026-06-29  AUDITORIA       Super Admin vê todos os logs via Unfold admin (seção Monitoramento)
+2026-06-29  ANO LETIVO      IMPLEMENTADO — AnoLetivo(escola, ano, data_inicio, data_fim, status, criado_por)
+2026-06-29  ANO LETIVO      StatusAnoLetivo: EM_PLANEJAMENTO → EM_ANDAMENTO → ENCERRADO (final)
+2026-06-29  ANO LETIVO      unique_together: ('escola', 'ano') — unicidade garantida no banco
+2026-06-29  ANO LETIVO      Unicidade de EM_ANDAMENTO por escola: enforced via select_for_update() no service
+2026-06-29  ANO LETIVO      PeriodoLetivo(ano_letivo, numero, nome, data_inicio, data_fim)
+2026-06-29  ANO LETIVO      Service: criar, iniciar, encerrar, criar_periodo, editar_periodo, remover_periodo, _verificar_sobreposicao
+2026-06-29  ANO LETIVO      Views: lista, criar, detalhe, iniciar, encerrar, CRUD de períodos — /ano-letivo/
+2026-06-29  ANO LETIVO      Permissões: DIRETOR (escrita), FUNCIONARIO (leitura) — leitura = _LeituraRequiredMixin
+2026-06-29  ANO LETIVO      Link "Ano Letivo" adicionado ao sidebar nav do Diretor
+2026-06-29  ANO LETIVO      Admin Unfold: AnoLetivoAdmin com PeriodoLetivoInline readonly
+
+2026-06-29  SÉRIES          IMPLEMENTADO — Serie(escola, segmento, nome, ordem, ativo)
+2026-06-29  SÉRIES          serie_service: criar_series_padrao, criar, editar, desativar, reativar
+2026-06-29  SÉRIES          Views: ListarSeriesView, CriarSerieView, EditarSerieView, DesativarSerieView, ReativarSerieView
+2026-06-29  SÉRIES          Templates: lista.html, form_serie.html — /series/
+2026-06-29  SÉRIES          criar_series_padrao() chamado por EscolaService.adicionar_segmento()
+
+2026-06-29  MATÉRIAS        IMPLEMENTADO — Materia(escola, nome, codigo null, ativo) + MateriaSerieConfig(serie, materia, ativo)
+2026-06-29  MATÉRIAS        materia_service: criar_materias_padrao, criar, editar, desativar, reativar, vincular_serie, desvincular_serie
+2026-06-29  MATÉRIAS        Views: ListarMateriasView, CriarMateriaView, DetalheMateriaView, EditarMateriaView, DesativarMateriaView, ReativarMateriaView, VincularSerieView, DesvincularSerieView
+2026-06-29  MATÉRIAS        Templates: lista.html, form_materia.html, detalhe.html — /materias/
+2026-06-29  MATÉRIAS        criar_materias_padrao() chamado por EscolaService.criar() (14 matérias BNCC)
+
+2026-06-29  TURMAS          IMPLEMENTADO — Turma(escola, ano_letivo, serie, nome, turno, capacidade, ativo)
+2026-06-29  TURMAS          Turno: MATUTINO, VESPERTINO, NOTURNO, INTEGRAL
+2026-06-29  TURMAS          turma_service: criar, editar, desativar, reativar
+2026-06-29  TURMAS          Views: ListarTurmasView, CriarTurmaView, DetalheTurmaView, EditarTurmaView, DesativarTurmaView, ReativarTurmaView
+2026-06-29  TURMAS          Templates: lista.html (agrupado por ano letivo), form_turma.html, detalhe.html — /turmas/
+2026-06-29  TURMAS          Leitura: DIRETOR + FUNCIONARIO | Escrita: DIRETOR apenas
+2026-06-29  TURMAS          ProfessorTurma, ProfessorMateriaTurma, PeriodoAula, HorarioAula: adiados para módulo Professor [09]
+2026-06-29  TURMAS          Link "Séries" e "Turmas" adicionados ao sidebar nav do Diretor (_nav.html)
+
+2026-06-29  COLABORADOR     IMPLEMENTADO — FuncaoEscolar(escola, nome, ativo) + PerfilColaborador(papel 1-1, funcao, endereco, cpf, rg, data_nascimento, telefone, foto, data_admissao, tipo_vinculo, pis)
+2026-06-29  COLABORADOR     TipoVinculoEmpregaticio: CLT, ESTATUTARIO, TEMPORARIO, AUTONOMO
+2026-06-29  COLABORADOR     colaborador_service: criar, editar, desativar, reativar, salvar_endereco
+2026-06-29  COLABORADOR     funcao_service: criar, editar, desativar, reativar
+2026-06-29  COLABORADOR     Views: ListarColaboradoresView, CriarColaboradorView, DetalheColaboradorView, EditarColaboradorView, DesativarColaboradorView, ReativarColaboradorView
+2026-06-29  COLABORADOR     Views Funções: ListarFuncoesView, CriarFuncaoView, EditarFuncaoView, DesativarFuncaoView, ReativarFuncaoView
+2026-06-29  COLABORADOR     Templates: lista.html, form_colaborador.html, detalhe.html, lista_funcoes.html, form_funcao.html — /colaboradores/
+2026-06-29  COLABORADOR     Leitura: DIRETOR + FUNCIONARIO | Escrita/Gestão: DIRETOR apenas
+2026-06-29  COLABORADOR     apps.funcao antigo substituído integralmente por FuncaoEscolar em apps.colaborador
+2026-06-29  COLABORADOR     Link "Colaboradores" adicionado ao sidebar nav do Diretor (_nav.html)
+2026-06-29  COLABORADOR     KPI total_colaboradores atualizado no DashboardView do Diretor
+
+2026-06-29  PROFESSOR       IMPLEMENTADO — PerfilProfessor(papel 1-1, endereco, cpf, rg, data_nascimento, telefone, foto, data_admissao, tipo_vinculo, registro_profissional)
+2026-06-29  PROFESSOR       NivelFormacao: GRADUACAO, ESPECIALIZACAO, MESTRADO, DOUTORADO, OUTRO
+2026-06-29  PROFESSOR       TipoVinculoProfessor: CLT, ESTATUTARIO, TEMPORARIO, AUTONOMO (choice local, independente de colaborador)
+2026-06-29  PROFESSOR       FormacaoAcademica(professor FK, nivel, curso, instituicao, ano_conclusao) — múltiplas por professor
+2026-06-29  PROFESSOR       professor_service: criar, editar, desativar, reativar, salvar_endereco, adicionar_formacao, remover_formacao
+2026-06-29  PROFESSOR       professor_service: vincular_turma → ProfessorTurma; vincular_materia_turma → ProfessorMateriaTurma (lazy import de apps.turma)
+2026-06-29  PROFESSOR       Views: ListarProfessoresView, CriarProfessorView, DetalheProfessorView, EditarProfessorView, DesativarProfessorView, ReativarProfessorView
+2026-06-29  PROFESSOR       Views: AdicionarFormacaoView, RemoverFormacaoView
+2026-06-29  PROFESSOR       Templates: lista.html, form_professor.html, detalhe.html — /professores/
+2026-06-29  PROFESSOR       Leitura: DIRETOR + FUNCIONARIO | Escrita/Gestão: DIRETOR apenas
+2026-06-29  PROFESSOR       Link "Professores" adicionado ao sidebar nav do Diretor (_nav.html)
+2026-06-29  PROFESSOR       ProfessorTurma, ProfessorMateriaTurma, PeriodoAula, DiaSemana, HorarioAula adicionados ao apps.turma (migration 0002)
+
+2026-06-29  ALUNOS          IMPLEMENTADO — Aluno(escola FK, usuario 1-1 null, endereco 1-1 null, matricula, nome_completo, data_nascimento, cpf, rg, foto, ativo)
+2026-06-29  ALUNOS          MatriculaTurma(aluno FK, turma FK, ano_letivo FK, data_matricula, situacao, ativo) + UniqueConstraint(aluno,ano_letivo, ativo=True)
+2026-06-29  ALUNOS          SituacaoMatricula: MATRICULADO, TRANSFERIDO, EVADIDO, CONCLUINTE
+2026-06-29  ALUNOS          matricula gerada automaticamente: f'{ano}{seq:04d}' por escola
+2026-06-29  ALUNOS          aluno_service: criar, editar, desativar, reativar, matricular, trocar_turma, transferir, evadir, concluir
+2026-06-29  ALUNOS          Views: ListarAlunosView, CriarAlunoView, DetalheAlunoView, EditarAlunoView, DesativarAlunoView, ReativarAlunoView
+2026-06-29  ALUNOS          Views: MatricularView, TrocarTurmaView, TransferirView, EvadiemView, ConcluirView
+2026-06-29  ALUNOS          Templates: lista.html, form_aluno.html, detalhe.html — /alunos/
+2026-06-29  ALUNOS          Leitura: DIRETOR + FUNCIONARIO | Escrita/Gestão: DIRETOR apenas
+2026-06-29  ALUNOS          Link "Alunos" adicionado ao sidebar nav do Diretor (_nav.html)
+2026-06-29  ALUNOS          KPI total_alunos atualizado no DashboardView (conta MatriculaTurma ativas)
+
 ================================================================================
-FIM DO ARQUIVO — última atualização: 2026-06-25
+FIM DO ARQUIVO — última atualização: 2026-06-29
 ================================================================================

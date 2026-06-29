@@ -1,0 +1,73 @@
+{% extends "base/base_diretor.html" %}
+
+{% block titulo %}Nova Aula — {{ escola.nome }}{% endblock %}
+{% block page_title %}Nova Aula{% endblock %}
+
+{% block sidebar_nav %}
+{% include "diretor/_nav.html" with active="frequencia" %}
+{% endblock %}
+
+{% block conteudo %}
+<div>
+
+    <div class="flex items-center gap-3 mb-6">
+        <a href="{% url 'frequencia:lista' %}"
+           class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-md transition-colors">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        </a>
+        <div>
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Registrar Nova Aula</h2>
+            <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">Preencha os dados e lance as presenças</p>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{{ form.turma.label }}</label>
+                    {{ form.turma }}
+                    {% if form.turma.errors %}<p class="mt-1 text-xs text-red-500">{{ form.turma.errors.0 }}</p>{% endif %}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{{ form.materia.label }}</label>
+                    {{ form.materia }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{{ form.data.label }}</label>
+                    {{ form.data }}
+                    {% if form.data.errors %}<p class="mt-1 text-xs text-red-500">{{ form.data.errors.0 }}</p>{% endif %}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{{ form.ano_letivo.label }}</label>
+                    {{ form.ano_letivo }}
+                    {% if form.ano_letivo.errors %}<p class="mt-1 text-xs text-red-500">{{ form.ano_letivo.errors.0 }}</p>{% endif %}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{{ form.periodo_letivo.label }}</label>
+                    {{ form.periodo_letivo }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{{ form.professor.label }}</label>
+                    {{ form.professor }}
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-3">
+            <a href="{% url 'frequencia:lista' %}"
+               class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300
+                      bg-slate-100 dark:bg-slate-700 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+                Cancelar
+            </a>
+            <button type="submit"
+                    class="px-5 py-2 text-sm font-medium bg-[#0d6efd] hover:bg-[#0b5ed7]
+                           text-white rounded-xl transition-colors">
+                Criar e Lançar Presenças →
+            </button>
+        </div>
+    </form>
+
+</div>
+{% endblock %}

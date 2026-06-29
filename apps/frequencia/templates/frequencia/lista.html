@@ -1,0 +1,114 @@
+{% extends "base/base_diretor.html" %}
+
+{% block titulo %}Frequência — {{ escola.nome }}{% endblock %}
+{% block page_title %}Frequência{% endblock %}
+
+{% block sidebar_nav %}
+{% include "diretor/_nav.html" with active="frequencia" %}
+{% endblock %}
+
+{% block conteudo %}
+<div>
+
+    <div class="flex items-start justify-between mb-6 gap-4">
+        <div>
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Registros de Frequência</h2>
+            <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">Aulas registradas e presenças</p>
+        </div>
+        <a href="{% url 'frequencia:criar' %}"
+           class="flex items-center gap-2 px-4 py-2 rounded-xl shrink-0
+                  bg-[#0d6efd] hover:bg-[#0b5ed7] text-white text-sm font-medium transition-colors">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            Nova Aula
+        </a>
+    </div>
+
+    <!-- Filtros -->
+    <form method="get" class="flex flex-wrap gap-3 mb-5">
+        <select name="turma"
+                class="px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600
+                       bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100
+                       focus:outline-none focus:ring-2 focus:ring-[#0d6efd]/40 focus:border-[#0d6efd]">
+            <option value="">Todas as turmas</option>
+            {% for t in turmas %}
+            <option value="{{ t.pk }}" {% if filtros.turma == t.pk|stringformat:"s" %}selected{% endif %}>{{ t.nome }}</option>
+            {% endfor %}
+        </select>
+        <input type="date" name="data" value="{{ filtros.data }}"
+               class="px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600
+                      bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100
+                      focus:outline-none focus:ring-2 focus:ring-[#0d6efd]/40 focus:border-[#0d6efd]">
+        <button type="submit"
+                class="px-4 py-2 text-sm font-medium bg-slate-100 dark:bg-slate-700
+                       text-slate-700 dark:text-slate-200 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+            Filtrar
+        </button>
+        {% if filtros.turma or filtros.data %}
+        <a href="{% url 'frequencia:lista' %}" class="px-4 py-2 text-sm text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">Limpar</a>
+        {% endif %}
+    </form>
+
+    {% if registros %}
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
+        <div class="divide-y divide-slate-100 dark:divide-slate-700">
+            {% for reg in registros %}
+            <div class="flex items-center justify-between px-5 py-3.5">
+                <div class="min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-sm font-semibold text-slate-800 dark:text-slate-100">{{ reg.turma.nome }}</span>
+                        {% if reg.materia %}
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-violet-100 dark:bg-violet-900/30 text-violet-600">{{ reg.materia.nome }}</span>
+                        {% endif %}
+                        {% if reg.periodo_letivo %}
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 dark:bg-slate-700 text-slate-500">{{ reg.periodo_letivo.nome }}</span>
+                        {% endif %}
+                    </div>
+                    <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                        {{ reg.data|date:"d/m/Y" }}
+                        {% if reg.professor %} · {{ reg.professor.papel.vinculo.usuario.nome }}{% endif %}
+                        · {{ reg.presencas.count }} alunos
+                    </p>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                    <a href="{% url 'frequencia:detalhe' reg.pk %}"
+                       class="p-1.5 text-slate-300 hover:text-[#0d6efd] rounded-md transition-colors" title="Ver">
+                        <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                    </a>
+                    <a href="{% url 'frequencia:lancar' reg.pk %}"
+                       class="p-1.5 text-slate-300 hover:text-emerald-500 rounded-md transition-colors" title="Lançar">
+                        <i data-lucide="clipboard-pen" class="w-3.5 h-3.5"></i>
+                    </a>
+                    {% if papel.tipo == 'DIRETOR' %}
+                    <form method="post" action="{% url 'frequencia:cancelar' reg.pk %}"
+                          onsubmit="return confirm('Cancelar esta aula e remover todos os registros?')">
+                        {% csrf_token %}
+                        <button type="submit"
+                                class="p-1.5 text-slate-300 hover:text-red-500 rounded-md transition-colors" title="Cancelar aula">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
+        <div class="flex flex-col items-center justify-center py-16 px-5 text-center">
+            <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center mb-4">
+                <i data-lucide="calendar-check" class="w-8 h-8 text-slate-300 dark:text-slate-500"></i>
+            </div>
+            <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-1">Nenhum registro encontrado</h3>
+            <p class="text-xs text-slate-400 dark:text-slate-500 max-w-xs leading-relaxed">
+                {% if filtros.turma or filtros.data %}Tente ajustar os filtros.{% else %}Registre a primeira aula.{% endif %}
+            </p>
+            <a href="{% url 'frequencia:criar' %}" class="mt-4 text-sm text-[#0d6efd] hover:underline font-medium">
+                Registrar aula →
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

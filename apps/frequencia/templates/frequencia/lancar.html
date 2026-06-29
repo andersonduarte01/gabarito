@@ -1,0 +1,135 @@
+{% extends "base/base_diretor.html" %}
+
+{% block titulo %}Lançar Presenças — {{ registro.turma.nome }}{% endblock %}
+{% block page_title %}Lançar Presenças{% endblock %}
+
+{% block sidebar_nav %}
+{% include "diretor/_nav.html" with active="frequencia" %}
+{% endblock %}
+
+{% block conteudo %}
+<div>
+
+    <div class="flex items-center gap-3 mb-6">
+        <a href="{% url 'frequencia:lista' %}"
+           class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-md transition-colors">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        </a>
+        <div>
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Lançar Presenças</h2>
+            <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
+                {{ registro.turma.nome }}
+                {% if registro.materia %} · {{ registro.materia.nome }}{% endif %}
+                · {{ registro.data|date:"d/m/Y" }}
+                {% if registro.periodo_letivo %} · {{ registro.periodo_letivo.nome }}{% endif %}
+            </p>
+        </div>
+    </div>
+
+    {% if alunos_list %}
+    <form method="post">
+        {% csrf_token %}
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden mb-5">
+            <div class="hidden md:grid px-5 py-3 border-b border-slate-100 dark:border-slate-700 grid-cols-12 gap-3">
+                <span class="col-span-5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Aluno</span>
+                <span class="col-span-2 text-xs font-semibold text-slate-500 uppercase tracking-wide text-center">Presente</span>
+                <span class="col-span-2 text-xs font-semibold text-slate-500 uppercase tracking-wide text-center">Justificado</span>
+                <span class="col-span-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Observação</span>
+            </div>
+            <div class="divide-y divide-slate-100 dark:divide-slate-700">
+                {% for aluno, presenca in alunos_list %}
+                {% with aid=aluno.pk %}
+                <div class="px-5 py-3 grid grid-cols-12 gap-3 items-center">
+                    <div class="col-span-12 md:col-span-5 flex items-center gap-3">
+                        <div class="w-7 h-7 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
+                            <span class="text-xs font-bold text-emerald-600">{{ aluno.nome_completo|slice:":1" }}</span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-slate-800 dark:text-slate-100">{{ aluno.nome_completo }}</p>
+                            <p class="text-xs text-slate-400">{{ aluno.matricula }}</p>
+                        </div>
+                    </div>
+                    <div class="col-span-4 md:col-span-2 flex justify-center">
+                        <label class="md:hidden text-[10px] text-slate-400 mr-1">Presente</label>
+                        <input type="checkbox" name="presente_{{ aid }}" id="p_{{ aid }}"
+                               {% if presenca and presenca.presente %}checked{% elif not presenca %}checked{% endif %}
+                               class="presente-cb w-4 h-4 rounded border-slate-300 text-[#0d6efd] focus:ring-[#0d6efd]/30"
+                               data-aid="{{ aid }}">
+                    </div>
+                    <div class="col-span-4 md:col-span-2 flex justify-center">
+                        <label class="md:hidden text-[10px] text-slate-400 mr-1">Just.</label>
+                        <input type="checkbox" name="justificado_{{ aid }}"
+                               {% if presenca and presenca.justificado %}checked{% endif %}
+                               class="just-cb w-4 h-4 rounded border-slate-300 text-amber-500 focus:ring-amber-400/30"
+                               data-aid="{{ aid }}"
+                               {% if presenca and presenca.presente or not presenca %}disabled{% endif %}>
+                    </div>
+                    <div class="col-span-4 md:col-span-3">
+                        <input type="text" name="obs_{{ aid }}"
+                               value="{% if presenca %}{{ presenca.observacao }}{% endif %}"
+                               placeholder="Obs."
+                               class="w-full px-2 py-1.5 text-xs bg-white dark:bg-slate-900
+                                      border border-slate-200 dark:border-slate-600 rounded-lg
+                                      text-slate-900 dark:text-slate-100 placeholder-slate-300
+                                      focus:outline-none focus:ring-2 focus:ring-[#0d6efd]/30 focus:border-[#0d6efd]">
+                    </div>
+                </div>
+                {% endwith %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="flex items-center justify-between">
+            <button type="button" id="marcar-todos"
+                    class="text-xs text-[#0d6efd] hover:underline">
+                Marcar todos como presentes
+            </button>
+            <div class="flex gap-3">
+                <a href="{% url 'frequencia:lista' %}"
+                   class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300
+                          bg-slate-100 dark:bg-slate-700 rounded-xl hover:bg-slate-200 transition-colors">
+                    Cancelar
+                </a>
+                <button type="submit"
+                        class="px-5 py-2 text-sm font-medium bg-[#0d6efd] hover:bg-[#0b5ed7]
+                               text-white rounded-xl transition-colors">
+                    Salvar Presenças
+                </button>
+            </div>
+        </div>
+    </form>
+
+    {% else %}
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
+        <div class="flex flex-col items-center justify-center py-16 text-center px-5">
+            <i data-lucide="users" class="w-10 h-10 text-slate-300 dark:text-slate-600 mb-4"></i>
+            <p class="text-sm text-slate-400 dark:text-slate-500">Nenhum aluno matriculado nesta turma.</p>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+// Presente → justificado só habilitado quando ausente
+document.querySelectorAll('.presente-cb').forEach(cb => {
+    const aid = cb.dataset.aid;
+    const justCb = document.querySelector(`.just-cb[data-aid="${aid}"]`);
+    function sync() {
+        if (justCb) {
+            justCb.disabled = cb.checked;
+            if (cb.checked) justCb.checked = false;
+        }
+    }
+    cb.addEventListener('change', sync);
+    sync();
+});
+
+document.getElementById('marcar-todos')?.addEventListener('click', () => {
+    document.querySelectorAll('.presente-cb').forEach(cb => {
+        cb.checked = true;
+        cb.dispatchEvent(new Event('change'));
+    });
+});
+</script>
+{% endblock %}

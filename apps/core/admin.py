@@ -11,6 +11,7 @@ class VinculoEscolaInline(TabularInline):
     extra           = 0
     fields          = ('escola', 'ativo', 'data_entrada')
     readonly_fields = ('data_entrada',)
+    show_change_link = True
 
 
 class PapelVinculoInline(TabularInline):

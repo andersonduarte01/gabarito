@@ -105,7 +105,7 @@ class TenantMiddleware:
         status = assinatura.status
 
         if status == StatusAssinatura.TRIAL:
-            if not assinatura.trial_valido():
+            if assinatura.data_inicio_trial and not assinatura.trial_valido():
                 assinatura_service.expirar_trial(assinatura)
                 return HttpResponseRedirect(reverse('planos:acesso_bloqueado'))
             return None

@@ -62,10 +62,12 @@
                 <dt class="text-slate-500 dark:text-slate-400">Ativado por</dt>
                 <dd class="font-medium text-slate-900 dark:text-white mt-0.5">{{ assinatura.ativado_por|default:"—" }}</dd>
             </div>
+            {% if assinatura.status == 'TRIAL' or assinatura.status == 'TRIAL_EXPIRADO' %}
             <div>
                 <dt class="text-slate-500 dark:text-slate-400">Início trial</dt>
                 <dd class="font-medium text-slate-900 dark:text-white mt-0.5">{{ assinatura.data_inicio_trial|date:"d/m/Y" }}</dd>
             </div>
+            {% endif %}
             <div>
                 <dt class="text-slate-500 dark:text-slate-400">Início assinatura</dt>
                 <dd class="font-medium text-slate-900 dark:text-white mt-0.5">{{ assinatura.data_inicio|date:"d/m/Y"|default:"—" }}</dd>
@@ -80,6 +82,7 @@
                 <dd class="font-medium text-yellow-600 dark:text-yellow-400 mt-0.5">{{ assinatura.data_grace_fim|date:"d/m/Y" }}</dd>
             </div>
             {% endif %}
+            {% if assinatura.status == 'TRIAL' or assinatura.status == 'TRIAL_EXPIRADO' %}
             <div>
                 <dt class="text-slate-500 dark:text-slate-400">Duração trial</dt>
                 <dd class="font-medium text-slate-900 dark:text-white mt-0.5">{{ assinatura.duracao_trial_dias }} dias</dd>
@@ -88,6 +91,7 @@
                 <dt class="text-slate-500 dark:text-slate-400">Limite alunos trial</dt>
                 <dd class="font-medium text-slate-900 dark:text-white mt-0.5">{{ assinatura.limite_alunos_trial }}</dd>
             </div>
+            {% endif %}
         </dl>
     </div>
 

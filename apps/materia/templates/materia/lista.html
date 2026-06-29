@@ -1,0 +1,130 @@
+{% extends "base/base_diretor.html" %}
+
+{% block titulo %}Materias — {{ escola.nome }}{% endblock %}
+{% block page_title %}Materias{% endblock %}
+
+{% block sidebar_nav %}
+{% include "diretor/_nav.html" with active="materias" %}
+{% endblock %}
+
+{% block conteudo %}
+<div>
+
+    <!-- ─── CABEÇALHO ─────────────────────────────────────────────────────── -->
+    <div class="flex items-start justify-between mb-6 gap-4">
+        <div>
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Materias</h2>
+            <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
+                Disciplinas curriculares da escola
+            </p>
+        </div>
+        {% if papel.tipo == 'DIRETOR' %}
+        <a href="{% url 'materia:criar' %}"
+           class="flex items-center gap-2 px-4 py-2 rounded-xl shrink-0
+                  bg-[#0d6efd] hover:bg-[#0b5ed7] text-white text-sm font-medium transition-colors">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Nova Materia</span>
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- ─── LISTA ─────────────────────────────────────────────────────────── -->
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700
+                rounded-2xl shadow-sm overflow-hidden">
+
+        {% if materias %}
+        <div class="divide-y divide-slate-100 dark:divide-slate-700">
+            {% for materia in materias %}
+            <div class="flex items-center gap-4 px-5 py-3.5
+                        {% if not materia.ativo %}opacity-50{% endif %}">
+
+                <!-- Ícone + nome -->
+                <div class="w-8 h-8 rounded-lg shrink-0 flex items-center justify-center
+                            {% if materia.ativo %}bg-violet-100 dark:bg-violet-900/30{% else %}bg-slate-100 dark:bg-slate-700{% endif %}">
+                    <i data-lucide="book-open"
+                       class="w-3.5 h-3.5 {% if materia.ativo %}text-violet-500{% else %}text-slate-400{% endif %}"></i>
+                </div>
+
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate">
+                        {{ materia.nome }}
+                    </p>
+                    {% if materia.codigo %}
+                    <p class="text-xs text-slate-400 dark:text-slate-500 font-mono">
+                        {{ materia.codigo }}
+                    </p>
+                    {% endif %}
+                </div>
+
+                <!-- Status -->
+                {% if not materia.ativo %}
+                <span class="text-[10px] px-2 py-0.5 rounded-full font-medium shrink-0
+                             bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500">
+                    Inativa
+                </span>
+                {% endif %}
+
+                <!-- Ações -->
+                <div class="flex items-center gap-0.5 shrink-0">
+                    <a href="{% url 'materia:detalhe' materia.pk %}"
+                       title="Series vinculadas"
+                       class="p-1.5 text-slate-300 hover:text-indigo-500 rounded-md transition-colors">
+                        <i data-lucide="git-branch" class="w-3.5 h-3.5"></i>
+                    </a>
+                    {% if papel.tipo == 'DIRETOR' %}
+                    <a href="{% url 'materia:editar' materia.pk %}"
+                       title="Editar"
+                       class="p-1.5 text-slate-300 hover:text-[#0d6efd] rounded-md transition-colors">
+                        <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </a>
+                    {% if materia.ativo %}
+                    <form method="post" action="{% url 'materia:desativar' materia.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" title="Desativar"
+                                class="p-1.5 text-slate-300 hover:text-amber-500 rounded-md transition-colors">
+                            <i data-lucide="eye-off" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </form>
+                    {% else %}
+                    <form method="post" action="{% url 'materia:reativar' materia.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" title="Reativar"
+                                class="p-1.5 text-slate-300 hover:text-emerald-500 rounded-md transition-colors">
+                            <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </form>
+                    {% endif %}
+                    {% endif %}
+                </div>
+
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <div class="flex flex-col items-center justify-center py-16 px-5 text-center">
+            <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-700
+                        flex items-center justify-center mb-4">
+                <i data-lucide="book-open" class="w-8 h-8 text-slate-300 dark:text-slate-500"></i>
+            </div>
+            <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                Nenhuma materia cadastrada
+            </h3>
+            <p class="text-xs text-slate-400 dark:text-slate-500 max-w-xs leading-relaxed">
+                As materias padrao BNCC sao criadas automaticamente ao configurar a escola.
+            </p>
+            {% if papel.tipo == 'DIRETOR' %}
+            <a href="{% url 'materia:criar' %}"
+               class="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium
+                      bg-[#0d6efd] hover:bg-[#0b5ed7] text-white transition-colors">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                Nova Materia
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+    </div>
+
+</div>
+{% endblock %}

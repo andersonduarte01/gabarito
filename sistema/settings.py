@@ -36,24 +36,29 @@ INSTALLED_APPS = [
     'apps.accounts',
     'apps.escola',
     'apps.planos',        # Módulo 01
+    'apps.onboarding',    # Módulo 02
+    'apps.diretor',       # Módulo 07 (modelo PerfilDiretor necessário para M02)
+    'apps.configuracao',   # Módulo 03
+    'apps.notificacao',    # Módulo 04
+    'apps.auditoria',      # Módulo 05
+    'apps.ano_letivo',     # Módulo 11
+    'apps.colaborador',    # Módulo 08
+    'apps.professor',      # Módulo 09
     # Apps aguardando implementação (ativados conforme módulos forem implementados)
-    # 'apps.onboarding',    # Módulo 02
-    # 'apps.configuracao',  # Módulo 03
-    # 'apps.notificacao',   # Módulo 04
-    # 'apps.auditoria',     # Módulo 05
-    # 'apps.diretor',       # Módulo 07
-    # 'apps.colaborador',   # Módulo 08
     # 'apps.professor',     # Módulo 09
     # 'apps.responsavel',   # Módulo 10
     # 'apps.ano_letivo',    # Módulo 11
-    # 'apps.serie',         # Módulo 12
-    # 'apps.turma',         # Módulo 13
-    # 'apps.materia',       # Módulo 14
-    # 'apps.aluno',         # Módulo 15
-    # 'apps.avaliacao',     # Módulo 16
+    'apps.serie',         # Módulo 12
+    'apps.turma',         # Módulo 13
+    'apps.materia',       # Módulo 14
+    'apps.responsavel',   # Módulo 10
+    'apps.aluno',         # Módulo 15
+    'apps.avaliacao',     # Módulo 16
+    'apps.boletim',       # Módulo 17
+    'apps.frequencia',    # Módulo 18
     # 'apps.boletim',       # Módulo 17
     # 'apps.frequencia',    # Módulo 18
-    # 'apps.financeiro',    # Módulo 19
+    'apps.financeiro',    # Módulo 19
     # 'apps.comunicado',    # Módulo 20
     # 'apps.relatorio',     # Módulo 21
 ]
@@ -83,6 +88,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'apps.notificacao.context_processors.notificacoes_counter',
             ],
         },
     },
@@ -321,9 +327,133 @@ UNFOLD = {
                         "link":  reverse_lazy("admin:escola_unidadeescolar_changelist"),
                     },
                     {
+                        "title": "Convites",
+                        "icon":  "mail",
+                        "link":  reverse_lazy("admin:onboarding_conviteonboarding_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": "Equipe Escolar",
+                "collapsible": False,
+                "items": [
+                    {
+                        "title": "Professores",
+                        "icon":  "school",
+                        "link":  reverse_lazy("admin:professor_perfilprofessor_changelist"),
+                    },
+                    {
+                        "title": "Colaboradores",
+                        "icon":  "groups",
+                        "link":  reverse_lazy("admin:colaborador_perfilcolaborador_changelist"),
+                    },
+                    {
+                        "title": "Funções",
+                        "icon":  "badge",
+                        "link":  reverse_lazy("admin:colaborador_funcaoescolar_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": "Acadêmico",
+                "collapsible": False,
+                "items": [
+                    {
                         "title": "Anos Letivos",
                         "icon":  "calendar_month",
-                        "link":  reverse_lazy("admin:escola_anoletivo_changelist"),
+                        "link":  reverse_lazy("admin:ano_letivo_anoletivo_changelist"),
+                    },
+                    {
+                        "title": "Séries",
+                        "icon":  "layers",
+                        "link":  reverse_lazy("admin:serie_serie_changelist"),
+                    },
+                    {
+                        "title": "Matérias",
+                        "icon":  "book_2",
+                        "link":  reverse_lazy("admin:materia_materia_changelist"),
+                    },
+                    {
+                        "title": "Alunos",
+                        "icon":  "group",
+                        "link":  reverse_lazy("admin:aluno_aluno_changelist"),
+                    },
+                    {
+                        "title": "Matrículas",
+                        "icon":  "assignment",
+                        "link":  reverse_lazy("admin:aluno_matriculaturma_changelist"),
+                    },
+                    {
+                        "title": "Responsáveis",
+                        "icon":  "family_restroom",
+                        "link":  reverse_lazy("admin:responsavel_perfilresponsavel_changelist"),
+                    },
+                    {
+                        "title": "Avaliações",
+                        "icon":  "quiz",
+                        "link":  reverse_lazy("admin:avaliacao_avaliacao_changelist"),
+                    },
+                    {
+                        "title": "Notas",
+                        "icon":  "grade",
+                        "link":  reverse_lazy("admin:avaliacao_notaaluno_changelist"),
+                    },
+                    {
+                        "title": "Resultados Períodos",
+                        "icon":  "bar_chart",
+                        "link":  reverse_lazy("admin:boletim_resultadoperiodo_changelist"),
+                    },
+                    {
+                        "title": "Resultados Anuais",
+                        "icon":  "emoji_events",
+                        "link":  reverse_lazy("admin:boletim_resultadoanual_changelist"),
+                    },
+                    {
+                        "title": "Frequência (Registros)",
+                        "icon":  "calendar_check",
+                        "link":  reverse_lazy("admin:frequencia_registrofrequencia_changelist"),
+                    },
+                    {
+                        "title": "Frequência (Presenças)",
+                        "icon":  "how_to_reg",
+                        "link":  reverse_lazy("admin:frequencia_presencaaluno_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": "Financeiro",
+                "collapsible": False,
+                "items": [
+                    {
+                        "title": "Planos",
+                        "icon":  "layers",
+                        "link":  reverse_lazy("admin:financeiro_planofinanceiro_changelist"),
+                    },
+                    {
+                        "title": "Cobranças",
+                        "icon":  "receipt_long",
+                        "link":  reverse_lazy("admin:financeiro_cobrancaaluno_changelist"),
+                    },
+                    {
+                        "title": "Config. Financeira",
+                        "icon":  "settings",
+                        "link":  reverse_lazy("admin:configuracao_configuracaofinanceira_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": "Monitoramento",
+                "collapsible": False,
+                "items": [
+                    {
+                        "title": "Notificações",
+                        "icon":  "notifications",
+                        "link":  reverse_lazy("admin:notificacao_notificacao_changelist"),
+                    },
+                    {
+                        "title": "Auditoria",
+                        "icon":  "policy",
+                        "link":  reverse_lazy("admin:auditoria_logauditoria_changelist"),
                     },
                 ],
             },

@@ -1,95 +1,74 @@
 from django import forms
-from django.core.exceptions import ValidationError
-from django.forms import TextInput, Textarea, DateInput, Select, IntegerField, HiddenInput, CharField, BooleanField
-from django.forms import Form
-from .models import FrequenciaAluno, Registro, Relatorio
+
+_INPUT = (
+    'w-full px-3 py-2 text-sm bg-white dark:bg-slate-800 '
+    'border border-slate-200 dark:border-slate-700 rounded-lg '
+    'text-slate-900 dark:text-slate-100 focus:outline-none '
+    'focus:ring-2 focus:ring-[#0d6efd]/30 focus:border-[#0d6efd]'
+)
+_SELECT = _INPUT
 
 
-class FrequenciaAlunoForm(forms.ModelForm):
-
-    class Meta:
-        model = FrequenciaAluno
-        fields = ('presente', 'observacao')
-        widgets = {
-            'observacao': TextInput(attrs={'class':'form-control'}),
-        }
-
-    def __init__(self, *args, **kwargs):
-        instance = kwargs.pop('instance', None)
-        super(FrequenciaAlunoForm, self).__init__(*args, **kwargs)
-        if instance:
-            self.instance = instance
-            self.fields['presente'].label = instance.aluno.nome
-            self.fields['presente'].initial = instance.presente
-            self.fields['observacao'].initial = instance.observacao
-
-
-class DateInput(forms.DateInput):
-    input_type = 'date'
-
-class RegistroForm(forms.ModelForm):
-    class Meta:
-        model = Registro
-        fields = ('data', 'data_fim', 'pratica', 'campo', 'objeto')
-        widgets = {
-            'data': DateInput(attrs={'class': 'form-control'}),
-            'data_fim': DateInput(attrs={'class': 'form-control'}),
-            'pratica': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
-            'campo': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
-            'objeto': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
-        }
-
-
-class RegistroForm(forms.ModelForm):
-    class Meta:
-        model = Registro
-        fields = ('data', 'data_fim', 'pratica', 'campo', 'objeto')
-        widgets = {
-            'data': DateInput(attrs={'class': 'form-control'}),
-            'data_fim': DateInput(attrs={'class': 'form-control'}),
-            'pratica': forms.Textarea(attrs={'rows': 6, 'class': 'form-control'}),
-            'campo': forms.Textarea(attrs={'rows': 6, 'class': 'form-control'}),
-            'objeto': forms.Textarea(attrs={'rows': 6, 'class': 'form-control'}),
-        }
-    def clean(self):
-        cleaned_data = super().clean()
-        data_inicio = cleaned_data.get("data")
-        data_fim = cleaned_data.get("data_fim")
-
-        if data_inicio and data_fim and data_inicio > data_fim:
-            raise ValidationError("A data de início não pode ser maior que a data de fim.")
-
-
-class RegistroUpdateForm(forms.ModelForm):
-    class Meta:
-        model = Registro
-        fields = ('data', 'data_fim', 'pratica', 'campo', 'objeto')
-        widgets = {
-            'data': TextInput(attrs={'class': 'form-control'}),
-            'data_fim': TextInput(attrs={'class': 'form-control'}),
-            'pratica': forms.Textarea(attrs={'rows': 6, 'class': 'form-control'}),
-            'campo': forms.Textarea(attrs={'rows': 6, 'class': 'form-control'}),
-            'objeto': forms.Textarea(attrs={'rows': 6, 'class': 'form-control'}),
-        }
-
-
-
-class RelatorioForm(forms.ModelForm):
-    class Meta:
-        model = Relatorio
-        fields = ('relatorio', )
-        widgets = {
-            'relatorio': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
-        }
-
-
-class FrequenciaForm(Form):
-    aluno_id = IntegerField(widget=HiddenInput)
-    nome = CharField(widget=HiddenInput())
-    presente = BooleanField(required=False)
-    observacao = CharField(
-        required=False,
-        max_length=255,
-        widget=TextInput(attrs={'class': 'form-control'})
+class RegistroFrequenciaForm(forms.Form):
+    turma          = forms.ModelChoiceField(
+        label='Turma', queryset=None,
+        widget=forms.Select(attrs={'class': _SELECT}),
+    )
+    materia        = forms.ModelChoiceField(
+        label='Matéria', queryset=None, required=False,
+        empty_label='— Sem matéria —',
+        widget=forms.Select(attrs={'class': _SELECT}),
+    )
+    professor      = forms.ModelChoiceField(
+        label='Professor', queryset=None, required=False,
+        empty_label='— Sem professor —',
+        widget=forms.Select(attrs={'class': _SELECT}),
+    )
+    ano_letivo     = forms.ModelChoiceField(
+        label='Ano Letivo', queryset=None,
+        widget=forms.Select(attrs={'class': _SELECT}),
+    )
+    periodo_letivo = forms.ModelChoiceField(
+        label='Período Letivo', queryset=None, required=False,
+        empty_label='— Selecione —',
+        widget=forms.Select(attrs={'class': _SELECT}),
+    )
+    data           = forms.DateField(
+        label='Data da Aula',
+        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}),
     )
 
+    def __init__(self, *args, escola=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        from apps.turma.models import Turma
+        from apps.materia.models import Materia
+        from apps.professor.models import PerfilProfessor
+        from apps.ano_letivo.models import AnoLetivo, PeriodoLetivo
+
+        if escola:
+            self.fields['turma'].queryset = (
+                Turma.objects.filter(escola=escola, ativo=True)
+                .select_related('serie', 'ano_letivo')
+                .order_by('nome')
+            )
+            self.fields['materia'].queryset = (
+                Materia.objects.filter(escola=escola, ativo=True).order_by('nome')
+            )
+            self.fields['professor'].queryset = (
+                PerfilProfessor.objects
+                .filter(papel__vinculo__escola=escola, papel__ativo=True)
+                .select_related('papel__vinculo__usuario')
+                .order_by('papel__vinculo__usuario__nome')
+            )
+            self.fields['ano_letivo'].queryset = (
+                AnoLetivo.objects.filter(escola=escola).order_by('-ano')
+            )
+            self.fields['periodo_letivo'].queryset = (
+                PeriodoLetivo.objects
+                .filter(ano_letivo__escola=escola)
+                .select_related('ano_letivo')
+                .order_by('ano_letivo__ano', 'numero')
+            )
+        else:
+            for f in ('turma', 'materia', 'professor', 'ano_letivo', 'periodo_letivo'):
+                self.fields[f].queryset = self.fields[f].queryset.__class__.objects.none()

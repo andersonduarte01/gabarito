@@ -1,267 +1,269 @@
-from datetime import datetime
-from time import timezone
+from decimal import Decimal, InvalidOperation
 
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.messages.views import SuccessMessageMixin
-from django.forms import modelformset_factory, RadioSelect
-from django.http import HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404, get_list_or_404
-from django.urls import reverse, reverse_lazy
+from django.contrib import messages
+from django.core.exceptions import PermissionDenied
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView, TemplateView
 
-from .correcao import correcao, alunos_prova, acertos_por_questao
-from .forms import RespostaForm, AvaliacaoForm, AvaliacaoUpdateForm, AvaliacaoQuestaoForm, QuestaoForm1, \
-    QuestaoFormEditar, AIRespostaForm
-from ..aluno.models import Aluno
-from ..avaliacao.models import Questao, Avaliacao, Resposta, Gabarito
-from ..escola.models import UnidadeEscolar
-from ..sala.models import Ano, Sala
+from .forms import AvaliacaoForm, OpcaoRespostaForm, QuestaoForm
+from .models import Avaliacao, NotaAluno, OpcaoResposta, Questao
+from .services import avaliacao_service
 
 
-class AvaliacaoListEscola(ListView):
-    model = Avaliacao
-    template_name = 'avaliacao/avaliacoes_escola.html'
-    context_object_name = 'avaliacoes'
+class _LeituraMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('accounts:login')
+        papel = getattr(request, 'papel', None)
+        if papel is None or papel.tipo not in ('DIRETOR', 'FUNCIONARIO'):
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
 
-    def get_queryset(self):
-        escola = UnidadeEscolar.objects.get(id=self.request.user.id)
-        return escola.avaliacao_escola.all().filter(data_encerramento__gte=datetime.now().date())
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['escola'] = self.request.user
-        return context
+    def _ctx(self, request, **extra):
+        return {'usuario': request.user, 'escola': request.escola, 'papel': request.papel, **extra}
 
 
-class AvaliacaoListSalas(LoginRequiredMixin, ListView):
-    model = Sala
-    template_name = 'avaliacao/avaliacao_salas.html'
-    context_object_name = 'salas'
+class _DiretorMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('accounts:login')
+        papel = getattr(request, 'papel', None)
+        if papel is None or papel.tipo != 'DIRETOR':
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
 
-    def get_queryset(self):
-        escola = UnidadeEscolar.objects.get(pk=self.request.user)
-        avaliacao = Avaliacao.objects.get(id=self.kwargs['id_avaliacao'])
-        return Sala.objects.filter(escola=escola, ano=avaliacao.ano)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        escola = UnidadeEscolar.objects.get(pk=self.request.user)
-        avaliacao = Avaliacao.objects.get(id=self.kwargs['id_avaliacao'])
-        context['escola'] = escola
-        context['avaliacao'] = avaliacao
-        return context
+    def _ctx(self, request, **extra):
+        return {'usuario': request.user, 'escola': request.escola, 'papel': request.papel, **extra}
 
 
+class ListarAvaliacoesView(_LeituraMixin, View):
+    template_name = 'avaliacao/lista.html'
+
+    def get(self, request):
+        escola = request.escola
+        qs = (
+            Avaliacao.objects
+            .filter(escola=escola)
+            .select_related('turma', 'materia', 'ano_letivo', 'periodo_letivo')
+            .order_by('-data_aplicacao', '-criado_em')
+        )
+        turma_id  = request.GET.get('turma', '')
+        tipo      = request.GET.get('tipo', '')
+        if turma_id:
+            qs = qs.filter(turma_id=turma_id)
+        if tipo:
+            qs = qs.filter(tipo=tipo)
+
+        from apps.turma.models import Turma
+        from .models import TipoAvaliacao
+        turmas = Turma.objects.filter(escola=escola, ativo=True).order_by('nome')
+        return render(request, self.template_name, self._ctx(
+            request,
+            avaliacoes=qs,
+            turmas=turmas,
+            tipo_choices=TipoAvaliacao.choices,
+            filtros={'turma': turma_id, 'tipo': tipo},
+        ))
 
 
-class AvaliacaoAlunos(LoginRequiredMixin, ListView):
-    model = Aluno
-    template_name = 'avaliacao/avaliacao_alunos.html'
+class CriarAvaliacaoView(_DiretorMixin, View):
+    template_name = 'avaliacao/form_avaliacao.html'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        avaliacao = Avaliacao.objects.get(pk=self.kwargs['avaliacao_id'])
-        sala = Sala.objects.get(pk=self.kwargs['sala_id'])
-        alunos = Aluno.objects.filter(sala=self.kwargs['sala_id'])
-        escola = get_object_or_404(UnidadeEscolar, slug=sala.escola.slug)
-        gabaritos, alunos_avaliar, questoes = alunos_prova(avaliacao=avaliacao, alunos=alunos)
-        context['escola'] = escola
-        context['avaliacao'] = avaliacao
-        context['alunos'] = alunos_avaliar
-        context['sala'] = sala
-        context['questoes'] = questoes
-        context['gabaritos'] = gabaritos
-        return context
+    def get(self, request):
+        form = AvaliacaoForm(escola=request.escola)
+        return render(request, self.template_name, self._ctx(request, form=form, editando=False))
 
-
-# # Administrador
-
-def responderProvaAdm(request, aluno_id, avaliacao_id, slug):
-    avaliacao = get_object_or_404(Avaliacao, pk=avaliacao_id)
-    aluno = get_object_or_404(Aluno, pk=aluno_id)
-    questoes = Questao.objects.filter(avaliacao=avaliacao)
-    QuestaoFormSet = modelformset_factory(Questao, form=AIRespostaForm, extra=0)
-
-    if request.method == 'POST':
-        formset = QuestaoFormSet(request.POST, request.FILES, queryset=questoes)
-        if formset.is_valid():
-            gabarito_resposta = Gabarito.objects.create(avaliacao=avaliacao, aluno=aluno)
-            for form in formset:
-                opcao_selecionada = form.cleaned_data.get('resposta')
-                questao = form.save(commit=False)
-                if opcao_selecionada == questao.opcao_certa:
-                    resp = Resposta.objects.create(resposta=opcao_selecionada,
-                                                   gabarito=gabarito_resposta, questao=questao, acertou=True)
-                else:
-                    resp = Resposta.objects.create(resposta=opcao_selecionada,
-                                                   gabarito=gabarito_resposta, questao=questao)
-            gabarito_resposta.concluido = True
-            gabarito_resposta.save()
-            formset.save()
-            url = reverse_lazy('escola:escola_avaliar_alunos',
-                               kwargs={'slug': aluno.sala.escola.slug, 'avaliacao_id': avaliacao.id,
-                                       'sala_id': aluno.sala.id})
-            return HttpResponseRedirect(url)
-    else:
-        formset = QuestaoFormSet(queryset=questoes)
-    return render(request, 'avaliacao/avaliar_aluno_adm.html',
-                  {'formset': formset, 'avaliacao': avaliacao, 'aluno': aluno})
-
-
-def criarAvaliacao(request):
-    if request.method == 'POST':
-        form = AvaliacaoForm(request.POST)
+    def post(self, request):
+        form = AvaliacaoForm(request.POST, escola=request.escola)
         if form.is_valid():
-            avaliacao = form.save()
-            url = reverse_lazy('escola:painel_escola')
-            return HttpResponseRedirect(url)
-    else:
-        form = AvaliacaoForm()
-
-    context = {'form': form}
-    return render(request, 'avaliacao/adicionar_avaliacao.html', context)
-
-
-class EditarAvaliacao(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
-    model = Avaliacao
-    form_class = AvaliacaoUpdateForm
-    template_name = 'avaliacao/adicionar_avaliacao.html'
-    success_message = 'Avaliação atualizada!'
-    success_url = reverse_lazy('escola:painel_escola')
-
-
-class EditarQuestao(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
-    model = Questao
-    fields = ('questao','texto', 'imagem_prova', 'opcao_um', 'opcao_dois', 'opcao_tres', 'opcao_quatro', 'opcao_certa')
-    template_name = 'avaliacao/editar_questao.html'
-    success_message = 'Questão atualizada!'
-
-    def form_valid(self, form):
-        form.save()
-        questao = Questao.objects.get(id=self.kwargs['pk'])
-        url = reverse_lazy('avaliacao:lista_questoes', kwargs={'pk': questao.avaliacao.id })
-        return HttpResponseRedirect(url)
+            cd = form.cleaned_data
+            avaliacao = avaliacao_service.criar(request.escola, {
+                'turma':          cd['turma'],
+                'materia':        cd['materia'],
+                'professor':      cd.get('professor'),
+                'ano_letivo':     cd['ano_letivo'],
+                'periodo_letivo': cd.get('periodo_letivo'),
+                'titulo':         cd['titulo'],
+                'tipo':           cd['tipo'],
+                'modalidade':     cd['modalidade'],
+                'data_aplicacao': cd.get('data_aplicacao'),
+                'nota_maxima':    cd['nota_maxima'],
+                'peso':           cd['peso'],
+            })
+            messages.success(request, 'Avaliação criada com sucesso.')
+            return redirect('avaliacao:detalhe', pk=avaliacao.pk)
+        return render(request, self.template_name, self._ctx(request, form=form, editando=False))
 
 
-class DeletarQuestao(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
-    model = Questao
-    success_message = 'Questao removida com sucesso!'
+class DetalheAvaliacaoView(_LeituraMixin, View):
+    template_name = 'avaliacao/detalhe.html'
 
-    def get_object(self, queryset=None):
-        return Questao.objects.get(pk=self.kwargs['pk'])
+    def get(self, request, pk):
+        avaliacao = get_object_or_404(
+            Avaliacao.objects.select_related(
+                'turma', 'materia', 'ano_letivo', 'periodo_letivo', 'professor__papel__vinculo__usuario',
+            ).prefetch_related('questoes__opcoes'),
+            pk=pk, escola=request.escola,
+        )
+        questao_form = QuestaoForm()
+        opcao_form   = OpcaoRespostaForm()
 
-    def get_success_url(self):
-        questao = Questao.objects.get(pk=self.kwargs['pk'])
-        return reverse_lazy('avaliacao:lista_questoes', kwargs={'pk': questao.avaliacao.id})
+        from apps.aluno.models import MatriculaTurma
+        matriculas = (
+            MatriculaTurma.objects
+            .filter(turma=avaliacao.turma, ano_letivo=avaliacao.ano_letivo, ativo=True)
+            .select_related('aluno')
+            .order_by('aluno__nome_completo')
+        )
+        notas = {n.aluno_id: n for n in avaliacao.notas.all()}
+        notas_list = [(mat, notas.get(mat.aluno_id)) for mat in matriculas]
 
-
-class ListaAvaliacoes(LoginRequiredMixin, ListView):
-    model = Avaliacao
-    template_name = 'avaliacao/lista_avaliacoes.html'
-    context_object_name = 'avaliacoes'
-
-    def get_queryset(self):
-        return Avaliacao.objects.all()
-
-
-class AddQuestao(LoginRequiredMixin, SuccessMessageMixin, CreateView):
-    model = Questao
-    fields = ('avaliacao', 'texto', 'imagem_prova', 'questao', 'opcao_um', 'opcao_dois', 'opcao_tres', 'opcao_quatro', 'opcao_certa')
-    template_name = 'avaliacao/adicionar_questao.html'
-    success_message = 'questão cadastrada com sucesso.'
-    success_url = reverse_lazy('escola:painel_escola')
-
-
-class ListaQuestoes(LoginRequiredMixin, ListView):
-    model = Questao
-    template_name = 'avaliacao/lista_questoes.html'
-    context_object_name = 'questoes'
-
-    def get_queryset(self):
-        avaliacao = Avaliacao.objects.get(pk=self.kwargs['pk'])
-        return Questao.objects.filter(avaliacao=avaliacao)
+        return render(request, self.template_name, self._ctx(
+            request,
+            avaliacao=avaliacao,
+            questao_form=questao_form,
+            opcao_form=opcao_form,
+            notas_list=notas_list,
+        ))
 
 
-def iniciarAvaliacao(request, avaliacao_id, aluno_id):
-    avaliacao = get_object_or_404(Avaliacao, pk=avaliacao_id)
-    aluno = get_object_or_404(Aluno, pk=aluno_id)
-    questoes = Questao.objects.filter(avaliacao=avaliacao)
-    QuestaoFormSet = modelformset_factory(Questao, form=QuestaoForm1, extra=0)
+class EditarAvaliacaoView(_DiretorMixin, View):
+    template_name = 'avaliacao/form_avaliacao.html'
 
-    if request.method == 'POST':
-        formset = QuestaoFormSet(request.POST, request.FILES, queryset=questoes)
+    def _get(self, request, pk):
+        return get_object_or_404(Avaliacao, pk=pk, escola=request.escola)
 
-        if formset.is_valid():
-            gabarito_resposta = Gabarito.objects.create(avaliacao=avaliacao, aluno=aluno)
-            for form in formset:
-                opcao_selecionada = form.cleaned_data.get('opcao')
-                questao = form.save(commit=False)
-                if opcao_selecionada == questao.opcao_certa:
-                    resp = Resposta.objects.create(resposta=opcao_selecionada,
-                                                   gabarito=gabarito_resposta, questao=questao, acertou=True)
-                else:
-                    resp = Resposta.objects.create(resposta=opcao_selecionada,
-                                                   gabarito=gabarito_resposta, questao=questao)
-            gabarito_resposta.concluido = True
-            gabarito_resposta.save()
-            formset.save()
-            url = reverse_lazy('avaliacao:avaliar_alunos',
-                               kwargs={'avaliacao_id': avaliacao.id, 'sala_id': aluno.sala.id})
-            return HttpResponseRedirect(url)
-    else:
-        formset = QuestaoFormSet(queryset=questoes)
-    return render(request, 'avaliacao/avaliar_iniciar.html', {'formset': formset, 'avaliacao': avaliacao, 'aluno': aluno})
+    def get(self, request, pk):
+        avaliacao = self._get(request, pk)
+        form = AvaliacaoForm(escola=request.escola, instance=avaliacao)
+        return render(request, self.template_name, self._ctx(
+            request, form=form, editando=True, avaliacao=avaliacao,
+        ))
 
-
-def RefazerAvaliacao(request, gabarito_id):
-    gabarito = get_object_or_404(Gabarito, id=gabarito_id)
-    avaliacao = get_object_or_404(Avaliacao, pk=gabarito.avaliacao.id)
-    aluno = get_object_or_404(Aluno, pk=gabarito.aluno.id)
-    questoes = Questao.objects.filter(avaliacao=avaliacao)
-    QuestaoFormSet = modelformset_factory(Questao, form=QuestaoForm1, extra=0)
-
-    if request.method == 'POST':
-        formset = QuestaoFormSet(request.POST, request.FILES, queryset=questoes)
-
-        if formset.is_valid():
-            gabarito_resposta = get_object_or_404(Gabarito, id=gabarito_id)
-            print(formset)
-            for form in formset:
-                opcao_selecionada = form.cleaned_data.get('opcao')
-                questao = form.save(commit=False)
-                resp = get_object_or_404(Resposta, questao=questao, gabarito=gabarito)
-                if opcao_selecionada == questao.opcao_certa:
-                    resp.resposta = opcao_selecionada
-                    resp.acertou = True
-
-                else:
-                    resp.resposta = opcao_selecionada
-                    resp.acertou = False
-                resp.save()
-            gabarito_resposta.concluido = True
-            gabarito_resposta.save()
-            formset.save()
-            url = reverse_lazy('avaliacao:avaliar_alunos',
-                               kwargs={'avaliacao_id': avaliacao.id, 'sala_id': aluno.sala.id})
-            return HttpResponseRedirect(url)
-    else:
-        formset = QuestaoFormSet(queryset=questoes)
-    return render(request, 'avaliacao/avaliar_refazer.html', {'formset': formset, 'avaliacao': avaliacao, 'aluno': aluno})
+    def post(self, request, pk):
+        avaliacao = self._get(request, pk)
+        form = AvaliacaoForm(request.POST, escola=request.escola)
+        if form.is_valid():
+            cd = form.cleaned_data
+            avaliacao_service.editar(avaliacao, {
+                'turma':          cd['turma'],
+                'materia':        cd['materia'],
+                'professor':      cd.get('professor'),
+                'ano_letivo':     cd['ano_letivo'],
+                'periodo_letivo': cd.get('periodo_letivo'),
+                'titulo':         cd['titulo'],
+                'tipo':           cd['tipo'],
+                'modalidade':     cd['modalidade'],
+                'data_aplicacao': cd.get('data_aplicacao'),
+                'nota_maxima':    cd['nota_maxima'],
+                'peso':           cd['peso'],
+            })
+            messages.success(request, 'Avaliação atualizada.')
+            return redirect('avaliacao:detalhe', pk=avaliacao.pk)
+        return render(request, self.template_name, self._ctx(
+            request, form=form, editando=True, avaliacao=avaliacao,
+        ))
 
 
-class VerGabarito(LoginRequiredMixin, TemplateView):
-    template_name = 'avaliacao/ver_gabarito.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        gabarito = Gabarito.objects.get(id=self.kwargs['gabarito_id'])
-        respostas = correcao(gabarito=gabarito)
-        aluno = Aluno.objects.get(id=gabarito.aluno.id)
-        context['respostas'] = respostas
-        context['aluno'] = aluno
-        context['gabarito'] = gabarito
-        return context
+class PublicarView(_DiretorMixin, View):
+    def post(self, request, pk):
+        avaliacao = get_object_or_404(Avaliacao, pk=pk, escola=request.escola)
+        avaliacao_service.publicar(avaliacao)
+        messages.success(request, 'Avaliação publicada.')
+        return redirect('avaliacao:detalhe', pk=pk)
 
 
+class DespublicarView(_DiretorMixin, View):
+    def post(self, request, pk):
+        avaliacao = get_object_or_404(Avaliacao, pk=pk, escola=request.escola)
+        avaliacao_service.despublicar(avaliacao)
+        messages.success(request, 'Avaliação despublicada.')
+        return redirect('avaliacao:detalhe', pk=pk)
 
+
+class AdicionarQuestaoView(_DiretorMixin, View):
+    def post(self, request, pk):
+        avaliacao = get_object_or_404(Avaliacao, pk=pk, escola=request.escola)
+        form = QuestaoForm(request.POST)
+        if form.is_valid():
+            try:
+                avaliacao_service.adicionar_questao(avaliacao, form.cleaned_data)
+                messages.success(request, 'Questão adicionada.')
+            except Exception as exc:
+                messages.error(request, f'Erro: {exc}')
+        else:
+            messages.error(request, 'Dados da questão inválidos.')
+        return redirect('avaliacao:detalhe', pk=pk)
+
+
+class RemoverQuestaoView(_DiretorMixin, View):
+    def post(self, request, pk, questao_pk):
+        avaliacao = get_object_or_404(Avaliacao, pk=pk, escola=request.escola)
+        questao   = get_object_or_404(Questao, pk=questao_pk, avaliacao=avaliacao)
+        avaliacao_service.remover_questao(questao)
+        messages.success(request, f'Questão {questao.numero} removida.')
+        return redirect('avaliacao:detalhe', pk=pk)
+
+
+class AdicionarOpcaoView(_DiretorMixin, View):
+    def post(self, request, pk, questao_pk):
+        avaliacao = get_object_or_404(Avaliacao, pk=pk, escola=request.escola)
+        questao   = get_object_or_404(Questao, pk=questao_pk, avaliacao=avaliacao)
+        form = OpcaoRespostaForm(request.POST)
+        if form.is_valid():
+            try:
+                avaliacao_service.adicionar_opcao(questao, form.cleaned_data)
+                messages.success(request, 'Opção adicionada.')
+            except Exception as exc:
+                messages.error(request, f'Erro: {exc}')
+        else:
+            messages.error(request, 'Dados da opção inválidos.')
+        return redirect('avaliacao:detalhe', pk=pk)
+
+
+class LancarNotasView(_DiretorMixin, View):
+    template_name = 'avaliacao/lancar_notas.html'
+
+    def _get_avaliacao(self, request, pk):
+        return get_object_or_404(Avaliacao, pk=pk, escola=request.escola)
+
+    def get(self, request, pk):
+        avaliacao = self._get_avaliacao(request, pk)
+        from apps.aluno.models import MatriculaTurma
+        matriculas = (
+            MatriculaTurma.objects
+            .filter(turma=avaliacao.turma, ano_letivo=avaliacao.ano_letivo, ativo=True)
+            .select_related('aluno')
+            .order_by('aluno__nome_completo')
+        )
+        notas = {n.aluno_id: n for n in avaliacao.notas.all()}
+        notas_list = [(mat, notas.get(mat.aluno_id)) for mat in matriculas]
+        return render(request, self.template_name, self._ctx(
+            request, avaliacao=avaliacao, notas_list=notas_list,
+        ))
+
+    def post(self, request, pk):
+        avaliacao = self._get_avaliacao(request, pk)
+        from apps.aluno.models import MatriculaTurma
+        matriculas = (
+            MatriculaTurma.objects
+            .filter(turma=avaliacao.turma, ano_letivo=avaliacao.ano_letivo, ativo=True)
+            .select_related('aluno')
+        )
+        entradas = []
+        for mat in matriculas:
+            aluno_id = mat.aluno_id
+            ausente  = bool(request.POST.get(f'ausente_{aluno_id}'))
+            obs      = request.POST.get(f'obs_{aluno_id}', '').strip()
+            raw_nota = request.POST.get(f'nota_{aluno_id}', '').strip()
+            nota = None
+            if not ausente and raw_nota:
+                try:
+                    nota = Decimal(raw_nota.replace(',', '.'))
+                except InvalidOperation:
+                    pass
+            entradas.append({'aluno_id': aluno_id, 'nota': nota, 'ausente': ausente, 'observacao': obs})
+
+        count = avaliacao_service.lancar_notas_em_massa(avaliacao, entradas)
+        messages.success(request, f'{count} notas salvas.')
+        return redirect('avaliacao:detalhe', pk=pk)

@@ -30,6 +30,40 @@
                 document.documentElement.classList.add('dark');
         })();
     </script>
+    <script>
+        /* Aplica estado recolhido antes do render para evitar flash */
+        (function () {
+            if (localStorage.getItem('sidebar-desktop-state') === 'collapsed')
+                document.body.classList.add('sidebar-collapsed');
+        })();
+    </script>
+    <style>
+        /* ── Transições suaves ── */
+        aside#sidebar { transition: width 0.2s ease, transform 0.2s ease; }
+        #main-content  { transition: margin-left 0.2s ease; }
+
+        /* ── Sidebar recolhido (desktop only) ── */
+        @media (min-width: 1024px) {
+            body.sidebar-collapsed aside#sidebar { width: 4rem; }
+            body.sidebar-collapsed #main-content { margin-left: 4rem; }
+        }
+
+        /* Labels e links ── */
+        body.sidebar-collapsed aside#sidebar .sidebar-label    { display: none; }
+        body.sidebar-collapsed aside#sidebar .sidebar-nav-link {
+            justify-content: center;
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+            gap: 0;
+        }
+        body.sidebar-collapsed aside#sidebar #sidebar-logo-area { justify-content: center; padding-left: 0; padding-right: 0; }
+
+        /* ── Toasts ── */
+        @keyframes toast-in  { from { opacity:0; transform:translateX(calc(100% + 1rem)); } to { opacity:1; transform:translateX(0); } }
+        @keyframes toast-out { from { opacity:1; transform:translateX(0); } to { opacity:0; transform:translateX(calc(100% + 1rem)); } }
+        .toast-enter { animation: toast-in  0.28s ease forwards; }
+        .toast-leave { animation: toast-out 0.25s ease forwards; }
+    </style>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     {% block extra_head %}{% endblock %}
 </head>
@@ -41,59 +75,51 @@
 
     <!-- ─── SIDEBAR ─── -->
     <aside id="sidebar"
-           class="fixed inset-y-0 left-0 z-50 flex flex-col w-64 bg-white dark:bg-slate-800
+           class="fixed inset-y-0 left-0 z-30 flex flex-col w-64 bg-white dark:bg-slate-800
                   border-r border-slate-200 dark:border-slate-700 shadow-sm
-                  transform -translate-x-full lg:translate-x-0 transition-transform duration-200">
+                  transform -translate-x-full lg:translate-x-0">
 
         <!-- Logo -->
-        <div class="flex items-center gap-3 px-5 h-16 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
-            <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-[#0d6efd] text-white">
+        <div id="sidebar-logo-area"
+             class="flex items-center gap-3 px-4 h-16 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
+            <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-[#0d6efd] text-white shrink-0">
                 <i data-lucide="graduation-cap" class="w-4 h-4"></i>
             </div>
-            <div class="min-w-0">
+            <div id="sidebar-logo-text" class="sidebar-label min-w-0 flex-1">
                 <p class="text-sm font-bold text-slate-900 dark:text-white truncate">
-                    {{ escola.nome_escola|default:"EduCare" }}
+                    {{ escola.nome|default:"EduCare" }}
                 </p>
                 <p class="text-xs text-slate-400 truncate">Diretor</p>
             </div>
         </div>
 
         <!-- Navegação -->
-        <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+        <nav class="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 space-y-1">
             {% block sidebar_nav %}
-            <a href="#" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-colors">
+            <a href="#"
+               title="Dashboard"
+               class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium
+                      text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700
+                      hover:text-slate-900 dark:hover:text-white transition-colors">
                 <i data-lucide="layout-dashboard" class="w-4 h-4 flex-shrink-0"></i>
-                Dashboard
+                <span class="sidebar-label">Dashboard</span>
             </a>
             {% endblock %}
         </nav>
-
-        <!-- Usuário -->
-        <div class="px-3 py-3 border-t border-slate-200 dark:border-slate-700 flex-shrink-0">
-            <div class="flex items-center gap-3 px-2">
-                <div class="w-8 h-8 rounded-full bg-[#0d6efd] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                    {{ usuario.primeiro_nome|first|upper }}
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-xs font-medium text-slate-900 dark:text-white truncate">{{ usuario.nome }}</p>
-                    <p class="text-xs text-slate-400 truncate">{{ usuario.email }}</p>
-                </div>
-                <a href="{% url 'accounts:logout' %}" title="Sair"
-                   class="text-slate-400 hover:text-red-500 transition-colors flex-shrink-0">
-                    <i data-lucide="log-out" class="w-4 h-4"></i>
-                </a>
-            </div>
-        </div>
     </aside>
 
     <!-- ─── CONTEÚDO ─── -->
-    <div class="flex flex-col flex-1 min-w-0 lg:ml-64">
+    <div id="main-content" class="flex flex-col flex-1 min-w-0 lg:ml-64">
 
         <!-- Top bar -->
-        <header class="flex items-center h-16 px-4 lg:px-6 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
-            <!-- Hamburguer mobile -->
-            <button onclick="toggleSidebar()"
-                    class="lg:hidden mr-4 p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
+        <header class="flex items-center h-16 px-4 lg:px-6 bg-white dark:bg-slate-800
+                       border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
+
+            <!-- Hamburguer: mobile abre overlay, desktop colapsa sidebar -->
+            <button onclick="toggleMenuButton()"
+                    class="mr-4 p-2 rounded-lg text-slate-400
+                           hover:text-slate-600 hover:bg-slate-100
+                           dark:hover:bg-slate-700 transition-all">
                 <i data-lucide="menu" class="w-5 h-5"></i>
             </button>
 
@@ -103,36 +129,116 @@
             </h1>
 
             <div class="flex items-center gap-2 ml-4">
+
+                <!-- Sininho de notificações -->
+                <a href="{% url 'notificacao:lista' %}"
+                   class="relative p-2 rounded-lg text-slate-400 hover:text-slate-600
+                          dark:text-slate-500 dark:hover:text-slate-300
+                          hover:bg-slate-100 dark:hover:bg-slate-700 transition-all"
+                   aria-label="Notificações">
+                    <i data-lucide="bell" class="w-4 h-4"></i>
+                    {% if notificacoes_nao_lidas %}
+                    <span class="absolute top-1 right-1 flex items-center justify-center
+                                 w-4 h-4 text-[10px] font-bold text-white
+                                 bg-red-500 rounded-full leading-none">
+                        {% if notificacoes_nao_lidas > 9 %}9+{% else %}{{ notificacoes_nao_lidas }}{% endif %}
+                    </span>
+                    {% endif %}
+                </a>
+
                 <!-- Dark mode toggle -->
                 <button onclick="toggleDarkMode()"
-                        class="p-2 rounded-lg text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all"
+                        class="p-2 rounded-lg text-slate-400 hover:text-slate-600
+                               dark:text-slate-500 dark:hover:text-slate-300
+                               hover:bg-slate-100 dark:hover:bg-slate-700 transition-all"
                         aria-label="Alternar tema">
                     <i data-lucide="sun"  id="icon-sun"  class="w-4 h-4"></i>
                     <i data-lucide="moon" id="icon-moon" class="w-4 h-4 hidden"></i>
                 </button>
 
                 {% block extra_topbar %}{% endblock %}
+
+                <!-- ─── User dropdown (Flowbite) ─── -->
+                <button id="user-menu-button"
+                        data-dropdown-toggle="user-menu-dropdown"
+                        data-dropdown-placement="bottom-end"
+                        data-dropdown-offset-distance="8"
+                        class="flex items-center gap-2 px-2.5 py-1.5 rounded-xl
+                               text-slate-700 dark:text-slate-300
+                               hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                    <div class="w-7 h-7 rounded-full bg-[#0d6efd] flex items-center justify-center
+                                text-white text-xs font-bold shrink-0">
+                        {{ usuario.primeiro_nome|first|upper }}
+                    </div>
+                    <span class="hidden sm:block text-sm font-medium max-w-[120px] truncate">
+                        {{ usuario.primeiro_nome }}
+                    </span>
+                    <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
+                </button>
+
+                <!-- Dropdown panel — z-[35] fica abaixo do backdrop do Flowbite (z-40) -->
+                <div id="user-menu-dropdown"
+                     class="z-[35] hidden w-64
+                            bg-white dark:bg-slate-800
+                            border border-slate-200 dark:border-slate-700
+                            rounded-2xl shadow-lg overflow-hidden">
+
+                    <!-- Header: nome + email -->
+                    <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
+                        <p class="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                            {{ usuario.nome }}
+                        </p>
+                        <p class="text-xs text-slate-400 truncate mt-0.5">{{ usuario.email }}</p>
+                    </div>
+
+                    <!-- Trocar escola / papel (desativado) -->
+                    <div class="p-1.5 border-b border-slate-100 dark:border-slate-700">
+                        <span class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm
+                                     text-slate-300 dark:text-slate-600 cursor-not-allowed select-none">
+                            <i data-lucide="repeat-2" class="w-4 h-4 shrink-0"></i>
+                            Trocar escola / papel
+                        </span>
+                    </div>
+
+                    <!-- Links do usuário -->
+                    <div class="p-1.5 border-b border-slate-100 dark:border-slate-700 space-y-0.5">
+                        <a href="{% url 'diretor:meu_perfil' %}"
+                           class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm
+                                  text-slate-700 dark:text-slate-300
+                                  hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                            <i data-lucide="user-circle" class="w-4 h-4 shrink-0"></i>
+                            Meu Perfil
+                        </a>
+                        <span class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm
+                                     text-slate-300 dark:text-slate-600 cursor-not-allowed select-none">
+                            <i data-lucide="building-2" class="w-4 h-4 shrink-0"></i>
+                            Perfil da Escola
+                        </span>
+                        <a href="{% url 'configuracao:academica' %}"
+                           class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm
+                                  text-slate-700 dark:text-slate-300
+                                  hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                            <i data-lucide="settings" class="w-4 h-4 shrink-0"></i>
+                            Configurações
+                        </a>
+                    </div>
+
+                    <!-- Sair → abre modal Flowbite -->
+                    <div class="p-1.5">
+                        <button data-modal-target="modal-sair"
+                                data-modal-toggle="modal-sair"
+                                class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm
+                                       text-red-600 dark:text-red-400
+                                       hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                            <i data-lucide="log-out" class="w-4 h-4 shrink-0"></i>
+                            Sair
+                        </button>
+                    </div>
+                </div>
+                <!-- ─── /User dropdown ─── -->
+
             </div>
         </header>
-
-        <!-- Mensagens -->
-        {% if messages %}
-        <div class="px-4 lg:px-6 pt-4 space-y-2">
-            {% for message in messages %}
-            <div class="flex items-center gap-3 text-sm px-4 py-3 rounded-xl border
-                {% if message.tags == 'error' %}bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-700 dark:text-red-400
-                {% elif message.tags == 'success' %}bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400
-                {% elif message.tags == 'warning' %}bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800 text-yellow-700 dark:text-yellow-400
-                {% else %}bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400{% endif %}">
-                <i data-lucide="info" class="w-4 h-4 shrink-0"></i>
-                <span>{{ message }}</span>
-                <button onclick="this.closest('div').remove()" class="ml-auto text-current opacity-60 hover:opacity-100">
-                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
-                </button>
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
 
         <!-- Conteúdo -->
         <main class="flex-1 overflow-y-auto px-4 lg:px-6 py-6">
@@ -141,20 +247,102 @@
     </div>
 </div>
 
-<!-- Overlay mobile -->
+<!-- Overlay mobile sidebar — z-[25] fica abaixo do sidebar (z-30) -->
 <div id="sidebar-overlay"
      onclick="toggleSidebar()"
-     class="fixed inset-0 z-40 bg-black/50 hidden lg:hidden"></div>
+     class="fixed inset-0 z-[25] bg-black/50 hidden lg:hidden"></div>
+
+<!-- ─── Modal: confirmar saída — z-[100] sobrepõe tudo ─── -->
+<div id="modal-sair"
+     tabindex="-1"
+     aria-hidden="true"
+     class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-[100]
+            justify-center items-center w-full md:inset-0 h-full max-h-full">
+    <div class="relative w-full max-w-sm p-4">
+        <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl">
+
+            <!-- Fechar (canto) -->
+            <button type="button"
+                    data-modal-hide="modal-sair"
+                    class="absolute top-3 right-3 p-1.5 rounded-lg text-slate-400
+                           hover:text-slate-600 hover:bg-slate-100
+                           dark:hover:bg-slate-700 dark:hover:text-slate-300 transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+
+            <!-- Corpo -->
+            <div class="px-6 pt-8 pb-6 text-center">
+                <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30
+                            flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="log-out" class="w-6 h-6 text-red-500"></i>
+                </div>
+                <h3 class="text-base font-semibold text-slate-900 dark:text-white">
+                    Sair do sistema?
+                </h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    Você será desconectado da sua conta.
+                </p>
+            </div>
+
+            <!-- Ações -->
+            <div class="flex border-t border-slate-100 dark:border-slate-700">
+                <button type="button"
+                        data-modal-hide="modal-sair"
+                        class="flex-1 px-4 py-3 text-sm font-medium
+                               text-slate-700 dark:text-slate-300
+                               hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                    Cancelar
+                </button>
+                <div class="w-px bg-slate-100 dark:bg-slate-700"></div>
+                <form method="post" action="{% url 'accounts:logout' %}" class="flex-1">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="w-full px-4 py-3 text-sm font-semibold
+                                   text-red-600 dark:text-red-400
+                                   hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                        Confirmar saída
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ─── Toast container ─── -->
+<div id="toast-container"
+     class="fixed top-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none"></div>
+
+<!-- Dados das mensagens Django para o sistema de toasts -->
+{% if messages %}
+<div id="toast-queue" class="hidden" aria-hidden="true">
+    {% for message in messages %}
+    <span data-tag="{{ message.tags }}" data-text="{{ message|escapejs }}"></span>
+    {% endfor %}
+</div>
+{% endif %}
 
 <script>
+/* ── Hamburguer unificado ── */
+function toggleMenuButton() {
+    if (window.innerWidth >= 1024) {
+        var collapsed = document.body.classList.toggle('sidebar-collapsed');
+        localStorage.setItem('sidebar-desktop-state', collapsed ? 'collapsed' : 'expanded');
+    } else {
+        toggleSidebar();
+    }
+}
+
+/* ── Sidebar mobile (overlay) ── */
 function toggleSidebar() {
-    var sidebar  = document.getElementById('sidebar');
-    var overlay  = document.getElementById('sidebar-overlay');
-    var isOpen   = !sidebar.classList.contains('-translate-x-full');
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebar-overlay');
+    var isOpen  = !sidebar.classList.contains('-translate-x-full');
     sidebar.classList.toggle('-translate-x-full', isOpen);
     overlay.classList.toggle('hidden', isOpen);
 }
 
+/* ── Dark mode ── */
 function toggleDarkMode() {
     var html = document.documentElement;
     var sun  = document.getElementById('icon-sun');
@@ -172,7 +360,9 @@ function toggleDarkMode() {
     }
 }
 
+/* ── Inicialização ── */
 (function () {
+    /* ícones dark mode */
     var sun  = document.getElementById('icon-sun');
     var moon = document.getElementById('icon-moon');
     if (document.documentElement.classList.contains('dark')) {
@@ -180,8 +370,50 @@ function toggleDarkMode() {
         moon.classList.remove('hidden');
     }
 })();
+
+/* ── Toasts ── */
+var _TOAST_CFG = {
+    success: { cls: 'bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300', icon: 'check-circle-2' },
+    error:   { cls: 'bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300',     icon: 'x-circle' },
+    warning: { cls: 'bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300', icon: 'alert-triangle' },
+    info:    { cls: 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300',   icon: 'info' },
+};
+
+function _dismissToast(el) {
+    if (!el || !el.parentElement) return;
+    clearTimeout(el._toastTimer);
+    el.classList.remove('toast-enter');
+    el.classList.add('toast-leave');
+    setTimeout(function () { el.parentElement && el.parentElement.removeChild(el); }, 280);
+}
+
+function _showToast(tag, text) {
+    var cfg       = _TOAST_CFG[tag] || _TOAST_CFG.info;
+    var container = document.getElementById('toast-container');
+    var el        = document.createElement('div');
+    el.className  = 'toast-enter pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg min-w-[260px] max-w-xs ' + cfg.cls;
+    el.innerHTML  =
+        '<i data-lucide="' + cfg.icon + '" class="w-4 h-4 shrink-0"></i>' +
+        '<span class="flex-1 text-sm font-medium leading-snug">' + text + '</span>' +
+        '<button class="ml-1 opacity-50 hover:opacity-100 transition-opacity shrink-0" aria-label="Fechar">' +
+        '<i data-lucide="x" class="w-3.5 h-3.5"></i></button>';
+    el.querySelector('button').addEventListener('click', function () { _dismissToast(el); });
+    container.appendChild(el);
+    if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [el] });
+    el._toastTimer = setTimeout(function () { _dismissToast(el); }, 4500);
+}
+
+function _showQueuedToasts() {
+    var queue = document.getElementById('toast-queue');
+    if (!queue) return;
+    var items = queue.querySelectorAll('[data-text]');
+    items.forEach(function (item, i) {
+        setTimeout(function () { _showToast(item.dataset.tag, item.dataset.text); }, i * 120);
+    });
+}
 </script>
-<script>lucide.createIcons();</script>
+<script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+<script>lucide.createIcons(); _showQueuedToasts();</script>
 {% block extra_scripts %}{% endblock %}
 </body>
 </html>

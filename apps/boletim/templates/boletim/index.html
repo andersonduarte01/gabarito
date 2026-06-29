@@ -1,0 +1,72 @@
+{% extends "base/base_diretor.html" %}
+
+{% block titulo %}Boletim — {{ escola.nome }}{% endblock %}
+{% block page_title %}Boletim{% endblock %}
+
+{% block sidebar_nav %}
+{% include "diretor/_nav.html" with active="boletim" %}
+{% endblock %}
+
+{% block conteudo %}
+<div>
+
+    <div class="flex items-start justify-between mb-6 gap-4">
+        <div>
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Boletim Escolar</h2>
+            <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">Selecione o ano letivo e a turma</p>
+        </div>
+    </div>
+
+    <!-- Filtro de ano -->
+    <form method="get" class="flex flex-wrap gap-3 mb-6">
+        <select name="ano_letivo"
+                onchange="this.form.submit()"
+                class="px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600
+                       bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100
+                       focus:outline-none focus:ring-2 focus:ring-[#0d6efd]/40 focus:border-[#0d6efd]">
+            <option value="">Selecione o ano letivo</option>
+            {% for ano in anos %}
+            <option value="{{ ano.pk }}" {% if ano_id == ano.pk|stringformat:"s" %}selected{% endif %}>
+                {{ ano.ano }} — {{ ano.get_status_display }}
+            </option>
+            {% endfor %}
+        </select>
+    </form>
+
+    {% if ano_selecionado %}
+    {% if turmas %}
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
+        <div class="divide-y divide-slate-100 dark:divide-slate-700">
+            {% for turma in turmas %}
+            <a href="{% url 'boletim:turma' turma.pk %}"
+               class="flex items-center justify-between px-5 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                <div>
+                    <p class="text-sm font-semibold text-slate-800 dark:text-slate-100">{{ turma.nome }}</p>
+                    <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                        {{ turma.serie.nome }} · {{ turma.get_turno_display }}
+                    </p>
+                </div>
+                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 shrink-0"></i>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
+        <div class="flex flex-col items-center justify-center py-16 text-center">
+            <i data-lucide="users" class="w-10 h-10 text-slate-300 dark:text-slate-600 mb-4"></i>
+            <p class="text-sm text-slate-400 dark:text-slate-500">Nenhuma turma encontrada para {{ ano_selecionado.ano }}.</p>
+        </div>
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
+        <div class="flex flex-col items-center justify-center py-16 text-center">
+            <i data-lucide="book-open" class="w-10 h-10 text-slate-300 dark:text-slate-600 mb-4"></i>
+            <p class="text-sm text-slate-400 dark:text-slate-500">Selecione um ano letivo para ver as turmas.</p>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

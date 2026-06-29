@@ -1,0 +1,160 @@
+{% extends "base/base_diretor.html" %}
+
+{% block titulo %}Boletim — {{ aluno.nome_completo }}{% endblock %}
+{% block page_title %}Boletim{% endblock %}
+
+{% block sidebar_nav %}
+{% include "diretor/_nav.html" with active="boletim" %}
+{% endblock %}
+
+{% block conteudo %}
+<div>
+
+    <div class="flex items-center gap-3 mb-6">
+        {% if matricula %}
+        <a href="{% url 'boletim:turma' matricula.turma_id %}"
+           class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-md transition-colors">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        </a>
+        {% else %}
+        <a href="{% url 'boletim:index' %}"
+           class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-md transition-colors">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        </a>
+        {% endif %}
+        <div class="flex-1">
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">{{ aluno.nome_completo }}</h2>
+            <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
+                Matrícula: {{ aluno.matricula }}
+                {% if matricula %} · {{ matricula.turma.nome }} · {{ ano_letivo.ano }}{% endif %}
+            </p>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+            <a href="{% url 'boletim:pdf' aluno.pk ano_letivo.pk %}"
+               target="_blank"
+               class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium
+                      bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300
+                      rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+                <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
+                PDF
+            </a>
+            <a href="{% url 'aluno:detalhe' aluno.pk %}"
+               class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium
+                      bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300
+                      rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+                <i data-lucide="user" class="w-3.5 h-3.5"></i>
+                Ver Aluno
+            </a>
+        </div>
+    </div>
+
+    {% if linhas %}
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden mb-6">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-slate-100 dark:border-slate-700">
+                        <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Matéria</th>
+                        {% for p in periodos %}
+                        <th class="text-center px-3 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide whitespace-nowrap">{{ p.nome }}</th>
+                        {% endfor %}
+                        <th class="text-center px-3 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Média</th>
+                        <th class="text-center px-3 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Freq.</th>
+                        <th class="text-center px-5 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Situação</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+                    {% for linha in linhas %}
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                        <td class="px-5 py-3 font-medium text-slate-800 dark:text-slate-100">{{ linha.materia.nome }}</td>
+                        {% for rp in linha.periodos %}
+                        <td class="px-3 py-3 text-center">
+                            {% if rp %}
+                                {% if rp.media_periodo is not None %}
+                                <span class="font-semibold {% if rp.situacao_periodo == 'APROVADO' %}text-emerald-600{% elif rp.situacao_periodo == 'RECUPERACAO' %}text-amber-600{% elif rp.situacao_periodo == 'REPROVADO' %}text-red-600{% else %}text-slate-500{% endif %}">
+                                    {{ rp.media_periodo }}
+                                </span>
+                                {% else %}
+                                <span class="text-slate-300 dark:text-slate-600">—</span>
+                                {% endif %}
+                            {% else %}
+                            <span class="text-slate-300 dark:text-slate-600">—</span>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                        <!-- Média anual -->
+                        <td class="px-3 py-3 text-center">
+                            {% if linha.anual and linha.anual.media_anual is not None %}
+                            <span class="font-bold {% if linha.anual.situacao_final == 'APROVADO' or linha.anual.situacao_final == 'APROVADO_CONSELHO' %}text-emerald-600{% else %}text-red-600{% endif %}">
+                                {{ linha.anual.media_anual }}
+                            </span>
+                            {% else %}
+                            <span class="text-slate-300 dark:text-slate-600">—</span>
+                            {% endif %}
+                        </td>
+                        <!-- Frequência anual -->
+                        <td class="px-3 py-3 text-center text-slate-500 dark:text-slate-400 text-xs">
+                            {% if linha.anual %}
+                            {{ linha.anual.frequencia_anual }}%
+                            {% else %}
+                            —
+                            {% endif %}
+                        </td>
+                        <!-- Situação final -->
+                        <td class="px-5 py-3 text-center">
+                            {% if linha.anual %}
+                                {% if linha.anual.situacao_final == 'APROVADO' %}
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600">Aprovado</span>
+                                {% elif linha.anual.situacao_final == 'APROVADO_CONSELHO' %}
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-600">Conselho</span>
+                                {% elif linha.anual.situacao_final == 'REPROVADO' %}
+                                <div class="flex items-center justify-center gap-1.5 flex-col">
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-red-100 dark:bg-red-900/30 text-red-600">Reprovado</span>
+                                    {% if papel.tipo == 'DIRETOR' %}
+                                    <form method="post" action="{% url 'boletim:aprovar_conselho' linha.anual.pk %}">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                                class="text-[10px] text-[#0d6efd] hover:underline"
+                                                onclick="return confirm('Aprovar por conselho?')">
+                                            Conselho →
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            {% else %}
+                            <span class="text-slate-300 dark:text-slate-600 text-xs">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Legenda situações de período -->
+    <div class="flex flex-wrap gap-3 text-xs text-slate-500 dark:text-slate-400">
+        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Aprovado no período</span>
+        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-500"></span> Em recuperação</span>
+        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-500"></span> Reprovado no período</span>
+        <span class="flex items-center gap-1 ml-4 text-slate-400">* Frequência provisória — módulo de frequência não ativo</span>
+    </div>
+
+    {% else %}
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
+        <div class="flex flex-col items-center justify-center py-16 text-center px-5">
+            <i data-lucide="clipboard-list" class="w-10 h-10 text-slate-300 dark:text-slate-600 mb-4"></i>
+            <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-1">Nenhuma avaliação lançada</h3>
+            <p class="text-xs text-slate-400 dark:text-slate-500 max-w-xs leading-relaxed">
+                O boletim será gerado automaticamente conforme as notas forem lançadas nas avaliações.
+            </p>
+            <a href="{% url 'avaliacao:lista' %}" class="mt-4 text-sm text-[#0d6efd] hover:underline">
+                Ver avaliações →
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends "base/base_diretor.html" %}
+
+{% block titulo %}Diretores — {{ escola.nome }}{% endblock %}
+{% block page_title %}Diretores{% endblock %}
+
+{% block sidebar_nav %}
+{% include "diretor/_nav.html" with active="diretores" %}
+{% endblock %}
+
+{% block conteudo %}
+<div>
+
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Diretores</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                Gerenciar diretores de {{ escola.nome }}.
+            </p>
+        </div>
+        <a href="{% url 'diretor:criar_diretor' %}"
+           class="flex items-center gap-2 px-4 py-2 rounded-xl
+                  bg-[#0d6efd] hover:bg-[#0b5ed7] text-white text-sm font-medium transition-colors">
+            <i data-lucide="user-plus" class="w-4 h-4"></i>
+            Adicionar
+        </a>
+    </div>
+
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+        <div class="divide-y divide-slate-100 dark:divide-slate-700">
+            {% for d in diretores %}
+            <div class="flex items-center gap-4 px-5 py-4">
+                {# Avatar #}
+                <div class="w-10 h-10 rounded-full bg-[#0d6efd]/10 flex items-center justify-center
+                            text-[#0d6efd] font-bold text-sm shrink-0">
+                    {{ d.usuario.nome|first|upper }}
+                </div>
+
+                {# Info #}
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <p class="text-sm font-semibold text-slate-900 dark:text-white">
+                            {{ d.usuario.nome }}
+                        </p>
+                        <span class="text-xs px-2 py-0.5 rounded-full font-medium
+                            {% if d.cargo == 'TITULAR' %}
+                                bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300
+                            {% elif d.cargo == 'SUBSTITUTO' %}
+                                bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300
+                            {% else %}
+                                bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300
+                            {% endif %}">
+                            {{ d.get_cargo_display }}
+                        </span>
+                        {% if not d.papel.ativo %}
+                        <span class="text-xs px-2 py-0.5 rounded-full
+                                     bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400">
+                            Inativo
+                        </span>
+                        {% endif %}
+                    </div>
+                    <p class="text-xs text-slate-400 mt-0.5 truncate">{{ d.usuario.email }}</p>
+                </div>
+
+                {# Ação #}
+                {% if d.papel == papel %}
+                <span class="text-xs text-[#0d6efd] font-medium shrink-0">você</span>
+                {% elif d.papel.ativo %}
+                <form method="post" action="{% url 'diretor:desativar_diretor' d.pk %}"
+                      onsubmit="return confirm('Desativar {{ d.usuario.nome }}?')">
+                    {% csrf_token %}
+                    <button type="submit" title="Desativar"
+                            class="p-1.5 text-slate-300 hover:text-red-500 dark:text-slate-600
+                                   dark:hover:text-red-400 transition-colors rounded-lg
+                                   hover:bg-red-50 dark:hover:bg-red-900/20">
+                        <i data-lucide="user-x" class="w-4 h-4"></i>
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="px-5 py-14 text-center">
+                <i data-lucide="users" class="w-10 h-10 text-slate-200 dark:text-slate-600 mx-auto mb-3"></i>
+                <p class="text-sm text-slate-500 dark:text-slate-400">
+                    Nenhum diretor cadastrado.
+                </p>
+                <a href="{% url 'diretor:criar_diretor' %}"
+                   class="text-sm text-[#0d6efd] mt-2 inline-block hover:underline">
+                    Adicionar o primeiro →
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -96,7 +96,7 @@ class DashboardRedirectView(View):
 
     # Atualizado à medida que os módulos são implementados
     DESTINOS = {
-        TipoVinculo.DIRETOR:     'core:inicio',   # módulo 07
+        TipoVinculo.DIRETOR:     'diretor:dashboard',  # módulo 07
         TipoVinculo.FUNCIONARIO: 'core:inicio',   # módulo 08
         TipoVinculo.PROFESSOR:   'core:inicio',   # módulo 09
         TipoVinculo.ALUNO:       'core:inicio',   # módulo 15

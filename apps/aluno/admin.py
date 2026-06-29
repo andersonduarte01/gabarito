@@ -1,14 +1,28 @@
 from django.contrib import admin
-from .models import Aluno
+from unfold.admin import ModelAdmin, TabularInline
+
+from .models import Aluno, MatriculaTurma
+
+
+class MatriculaTurmaInline(TabularInline):
+    model  = MatriculaTurma
+    extra  = 0
+    fields = ('turma', 'ano_letivo', 'situacao', 'ativo', 'data_matricula')
+    readonly_fields = ('data_matricula',)
 
 
 @admin.register(Aluno)
-class AlunoAdmin(admin.ModelAdmin):
-    list_display = ('get_nome', 'escola', 'sala', 'situacao', 'sexo')
-    list_filter = ('escola', 'situacao', 'sexo', 'sala')
-    search_fields = ('usuario__nome', 'usuario__email', 'cpf', 'responsavel_legal')
-    raw_id_fields = ('usuario',)
+class AlunoAdmin(ModelAdmin):
+    list_display   = ('nome_completo', 'matricula', 'escola', 'ativo', 'criado_em')
+    list_filter    = ('escola', 'ativo')
+    search_fields  = ('nome_completo', 'matricula', 'cpf')
+    readonly_fields = ('matricula', 'criado_em', 'atualizado_em')
+    inlines        = [MatriculaTurmaInline]
 
-    @admin.display(description='Nome', ordering='usuario__nome')
-    def get_nome(self, obj):
-        return obj.usuario.nome
+
+@admin.register(MatriculaTurma)
+class MatriculaTurmaAdmin(ModelAdmin):
+    list_display  = ('aluno', 'turma', 'ano_letivo', 'situacao', 'ativo', 'data_matricula')
+    list_filter   = ('situacao', 'ativo', 'ano_letivo')
+    search_fields = ('aluno__nome_completo', 'aluno__matricula')
+    readonly_fields = ('data_matricula',)

@@ -1,0 +1,159 @@
+{% extends "base/base_diretor.html" %}
+
+{% block titulo %}Séries — {{ escola.nome }}{% endblock %}
+{% block page_title %}Séries{% endblock %}
+
+{% block sidebar_nav %}
+{% include "diretor/_nav.html" with active="series" %}
+{% endblock %}
+
+{% block conteudo %}
+<div>
+
+    <!-- ─── CABEÇALHO ─────────────────────────────────────────────────────── -->
+    <div class="flex items-start justify-between mb-6 gap-4">
+        <div>
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Séries</h2>
+            <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
+                Níveis de ensino organizados por segmento
+            </p>
+        </div>
+        {% if papel.tipo == 'DIRETOR' %}
+        <a href="{% url 'serie:criar' %}"
+           class="flex items-center gap-2 px-4 py-2 rounded-xl shrink-0
+                  bg-[#0d6efd] hover:bg-[#0b5ed7] text-white text-sm font-medium transition-colors">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Nova Série</span>
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- ─── CONTEÚDO ──────────────────────────────────────────────────────── -->
+    {% if dados %}
+    <div class="flex flex-col gap-5">
+        {% for item in dados %}
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700
+                    rounded-2xl shadow-sm overflow-hidden">
+
+            <!-- Cabeçalho do segmento -->
+            <div class="flex items-center justify-between px-5 py-4
+                        border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/30
+                                flex items-center justify-center">
+                        <i data-lucide="layers" class="w-3.5 h-3.5 text-blue-500"></i>
+                    </div>
+                    <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                        {{ item.segmento.get_tipo_display }}
+                    </h3>
+                    <span class="text-xs text-slate-400 dark:text-slate-500 font-medium">
+                        {{ item.total }} série{{ item.total|pluralize:"s" }}
+                    </span>
+                </div>
+                {% if papel.tipo == 'DIRETOR' %}
+                <a href="{% url 'serie:criar' %}?segmento={{ item.segmento.pk }}"
+                   class="flex items-center gap-1 text-xs text-[#0d6efd] hover:underline font-medium">
+                    <i data-lucide="plus" class="w-3 h-3"></i>
+                    Adicionar
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Lista de séries -->
+            {% if item.series %}
+            <div class="divide-y divide-slate-100 dark:divide-slate-700">
+                {% for serie in item.series %}
+                <div class="flex items-center justify-between px-5 py-3.5
+                            {% if not serie.ativo %}opacity-50{% endif %}">
+                    <div class="flex items-center gap-3">
+                        <!-- Número de ordem -->
+                        <span class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-700
+                                     flex items-center justify-center
+                                     text-xs font-bold text-slate-500 dark:text-slate-400 shrink-0">
+                            {{ serie.ordem }}
+                        </span>
+                        <span class="text-sm font-medium text-slate-700 dark:text-slate-200">
+                            {{ serie.nome }}
+                        </span>
+                        {% if not serie.ativo %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium
+                                     bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500">
+                            Inativa
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    {% if papel.tipo == 'DIRETOR' %}
+                    <div class="flex items-center gap-0.5 shrink-0">
+                        <a href="{% url 'serie:editar' serie.pk %}"
+                           title="Editar"
+                           class="p-1.5 text-slate-300 hover:text-[#0d6efd] rounded-md transition-colors">
+                            <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                        </a>
+                        {% if serie.ativo %}
+                        <form method="post" action="{% url 'serie:desativar' serie.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" title="Desativar"
+                                    class="p-1.5 text-slate-300 hover:text-amber-500 rounded-md transition-colors">
+                                <i data-lucide="eye-off" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </form>
+                        {% else %}
+                        <form method="post" action="{% url 'serie:reativar' serie.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" title="Reativar"
+                                    class="p-1.5 text-slate-300 hover:text-emerald-500 rounded-md transition-colors">
+                                <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="flex flex-col items-center justify-center py-10 px-5 text-center">
+                <i data-lucide="layers" class="w-8 h-8 text-slate-200 dark:text-slate-600 mb-2"></i>
+                <p class="text-sm text-slate-400 dark:text-slate-500">
+                    Nenhuma série para este segmento.
+                </p>
+                {% if papel.tipo == 'DIRETOR' %}
+                <a href="{% url 'serie:criar' %}?segmento={{ item.segmento.pk }}"
+                   class="mt-2 text-sm text-[#0d6efd] hover:underline">
+                    Adicionar série →
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <!-- Sem segmentos cadastrados -->
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700
+                rounded-2xl shadow-sm">
+        <div class="flex flex-col items-center justify-center py-16 px-5 text-center">
+            <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-700
+                        flex items-center justify-center mb-4">
+                <i data-lucide="layers" class="w-8 h-8 text-slate-300 dark:text-slate-500"></i>
+            </div>
+            <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                Nenhum segmento configurado
+            </h3>
+            <p class="text-xs text-slate-400 dark:text-slate-500 max-w-xs leading-relaxed">
+                Configure os segmentos de ensino da escola antes de cadastrar séries.
+                As séries padrão são criadas automaticamente ao adicionar cada segmento.
+            </p>
+            <a href="{% url 'escola:perfil' %}"
+               class="mt-4 text-sm text-[#0d6efd] hover:underline font-medium">
+                Ir para perfil da escola →
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

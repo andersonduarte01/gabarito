@@ -1,0 +1,190 @@
+{% extends "base/base_diretor.html" %}
+
+{% block titulo %}Ano Letivo {{ ano.ano }}{% endblock %}
+{% block page_title %}Ano Letivo {{ ano.ano }}{% endblock %}
+
+{% block sidebar_nav %}
+    {% include "diretor/_nav.html" with active="ano_letivo" %}
+{% endblock %}
+
+{% block conteudo %}
+<div class="space-y-5">
+
+    <!-- Voltar -->
+    <a href="{% url 'ano_letivo:lista' %}"
+       class="inline-flex items-center gap-1.5 text-sm text-slate-500
+              hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        Anos Letivos
+    </a>
+
+    <!-- Card do Ano -->
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+
+            <!-- Info -->
+            <div class="space-y-3">
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl font-bold text-slate-900 dark:text-white">{{ ano.ano }}</span>
+                    {% if ano.status == 'EM_ANDAMENTO' %}
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
+                                 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                        Em Andamento
+                    </span>
+                    {% elif ano.status == 'EM_PLANEJAMENTO' %}
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
+                                 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                        Em Planejamento
+                    </span>
+                    {% else %}
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
+                                 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
+                        <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                        Encerrado
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="flex items-center gap-6 text-sm text-slate-500 dark:text-slate-400">
+                    <span class="flex items-center gap-1.5">
+                        <i data-lucide="calendar" class="w-4 h-4"></i>
+                        {{ ano.data_inicio|date:"d/m/Y" }} — {{ ano.data_fim|date:"d/m/Y" }}
+                    </span>
+                    {% if ano.criado_por %}
+                    <span class="flex items-center gap-1.5">
+                        <i data-lucide="user" class="w-4 h-4"></i>
+                        Criado por {{ ano.criado_por.primeiro_nome }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Ações de transição (apenas Diretor) -->
+            {% if eh_diretor %}
+            <div class="flex items-center gap-2 shrink-0">
+                {% if ano.status == 'EM_PLANEJAMENTO' %}
+                <form method="post" action="{% url 'ano_letivo:iniciar' ano.pk %}">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl
+                                   bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-colors">
+                        <i data-lucide="play" class="w-4 h-4"></i>
+                        Iniciar Ano Letivo
+                    </button>
+                </form>
+                {% elif ano.status == 'EM_ANDAMENTO' %}
+                <form method="post" action="{% url 'ano_letivo:encerrar' ano.pk %}"
+                      onsubmit="return confirm('Confirma o encerramento do ano letivo {{ ano.ano }}? Esta ação não pode ser desfeita.')">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl
+                                   bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition-colors">
+                        <i data-lucide="flag" class="w-4 h-4"></i>
+                        Encerrar Ano Letivo
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Períodos Letivos -->
+    <div class="space-y-3">
+        <div class="flex items-center justify-between">
+            <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                Períodos Letivos
+                <span class="ml-1.5 text-xs font-normal text-slate-400">({{ periodos|length }})</span>
+            </h2>
+            {% if eh_diretor and not ano.encerrado %}
+            <a href="{% url 'ano_letivo:criar_periodo' ano.pk %}"
+               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium
+                      bg-[#0d6efd] hover:bg-[#0b5ed7] text-white transition-colors">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                Adicionar Período
+            </a>
+            {% endif %}
+        </div>
+
+        {% if periodos %}
+        <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60">
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide w-12">Nº</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Nome</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Início</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Fim</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Duração</th>
+                        {% if eh_diretor and not ano.encerrado %}
+                        <th class="text-right px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Ações</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+                    {% for p in periodos %}
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
+                        <td class="px-4 py-3">
+                            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full
+                                         bg-[#0d6efd]/10 text-[#0d6efd] text-xs font-bold">
+                                {{ p.numero }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 font-medium text-slate-800 dark:text-slate-100">
+                            {{ p.nome }}
+                        </td>
+                        <td class="px-4 py-3 text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                            {{ p.data_inicio|date:"d/m/Y" }}
+                        </td>
+                        <td class="px-4 py-3 text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                            {{ p.data_fim|date:"d/m/Y" }}
+                        </td>
+                        <td class="px-4 py-3 text-slate-400 text-xs whitespace-nowrap">
+                            {{ p.data_inicio|timesince:p.data_fim }}
+                        </td>
+                        {% if eh_diretor and not ano.encerrado %}
+                        <td class="px-4 py-3 text-right">
+                            <div class="flex items-center justify-end gap-1">
+                                <a href="{% url 'ano_letivo:editar_periodo' ano.pk p.pk %}"
+                                   class="p-1.5 rounded-lg text-slate-400 hover:text-[#0d6efd]
+                                          hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                   title="Editar">
+                                    <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                                </a>
+                                <form method="post" action="{% url 'ano_letivo:remover_periodo' ano.pk p.pk %}"
+                                      onsubmit="return confirm('Remover o período {{ p.nome }}?')">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                            class="p-1.5 rounded-lg text-slate-400 hover:text-red-500
+                                                   hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                            title="Remover">
+                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% else %}
+        <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700
+                    border-dashed p-8 text-center">
+            <p class="text-sm text-slate-400">Nenhum período letivo cadastrado.</p>
+            {% if eh_diretor and not ano.encerrado %}
+            <a href="{% url 'ano_letivo:criar_periodo' ano.pk %}"
+               class="inline-flex items-center gap-1.5 mt-3 text-sm text-[#0d6efd] hover:underline font-medium">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                Adicionar primeiro período
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

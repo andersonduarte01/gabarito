@@ -17,6 +17,8 @@ def trial_valido(assinatura: AssinaturaEscola) -> bool:
     """True se o trial ainda está dentro do prazo de dias."""
     if assinatura.status != StatusAssinatura.TRIAL:
         return False
+    if not assinatura.data_inicio_trial:
+        return False
     prazo = assinatura.data_inicio_trial + timedelta(days=assinatura.duracao_trial_dias)
     return date.today() <= prazo
 

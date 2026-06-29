@@ -1,111 +1,83 @@
 from django.db import models
 
-from apps.core.validators import validate_cpf, validate_telefone, normalizar_cpf, normalizar_telefone
+
+class TipoVinculoEmpregaticio(models.TextChoices):
+    CLT         = 'CLT',         'CLT'
+    ESTATUTARIO = 'ESTATUTARIO', 'Estatutário'
+    TEMPORARIO  = 'TEMPORARIO',  'Temporário'
+    AUTONOMO    = 'AUTONOMO',    'Autônomo'
 
 
-class Colaborador(models.Model):
-    usuario = models.OneToOneField(
-        'core.Usuario',
-        on_delete=models.CASCADE,
-        related_name='colaborador',
-        verbose_name='Usuário',
-    )
+class FuncaoEscolar(models.Model):
     escola = models.ForeignKey(
         'escola.UnidadeEscolar',
         on_delete=models.CASCADE,
-        related_name='colaboradores',
+        related_name='funcoes',
         verbose_name='Escola',
     )
-    funcao = models.ForeignKey(
-        'funcao.Funcao',
+    nome  = models.CharField('Nome', max_length=100)
+    ativo = models.BooleanField('Ativo', default=True)
+
+    class Meta:
+        verbose_name        = 'Função Escolar'
+        verbose_name_plural = 'Funções Escolares'
+        unique_together     = ('escola', 'nome')
+        ordering            = ['nome']
+
+    def __str__(self):
+        return self.nome
+
+
+class PerfilColaborador(models.Model):
+    papel           = models.OneToOneField(
+        'core.PapelVinculo',
+        on_delete=models.CASCADE,
+        related_name='perfil_colaborador',
+        verbose_name='Papel',
+    )
+    funcao          = models.ForeignKey(
+        FuncaoEscolar,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name='colaboradores',
         verbose_name='Função',
     )
-    cpf = models.CharField(
-        verbose_name='CPF',
-        max_length=11,
-        blank=True,
-        validators=[validate_cpf],
-    )
-    telefone = models.CharField(
-        verbose_name='Telefone',
-        max_length=11,
-        blank=True,
-        validators=[validate_telefone],
-    )
-    foto = models.ImageField(
-        verbose_name='Foto',
-        upload_to='colaboradores/',
+    endereco        = models.OneToOneField(
+        'core.Endereco',
+        on_delete=models.SET_NULL,
         null=True,
         blank=True,
+        related_name='perfil_colaborador',
+        verbose_name='Endereço',
     )
-    ativo = models.BooleanField(verbose_name='Ativo', default=True)
-    criado_em = models.DateTimeField(auto_now_add=True)
+    cpf             = models.CharField('CPF', max_length=14, blank=True)
+    rg              = models.CharField('RG', max_length=20, blank=True)
+    data_nascimento = models.DateField('Data de Nascimento', null=True, blank=True)
+    telefone        = models.CharField('Telefone', max_length=20, blank=True)
+    foto            = models.ImageField('Foto', upload_to='colaboradores/fotos/', null=True, blank=True)
+    data_admissao   = models.DateField('Data de Admissão', null=True, blank=True)
+    tipo_vinculo    = models.CharField(
+        'Tipo de Vínculo',
+        max_length=20,
+        choices=TipoVinculoEmpregaticio.choices,
+        default=TipoVinculoEmpregaticio.CLT,
+    )
+    pis             = models.CharField('PIS/PASEP', max_length=20, blank=True)
+    criado_em       = models.DateTimeField('Criado em', auto_now_add=True)
+    atualizado_em   = models.DateTimeField('Atualizado em', auto_now=True)
 
     class Meta:
-        verbose_name = 'Colaborador'
-        verbose_name_plural = 'Colaboradores'
-        ordering = ['usuario__nome']
+        verbose_name        = 'Perfil do Colaborador'
+        verbose_name_plural = 'Perfis de Colaboradores'
 
     def __str__(self):
-        return self.usuario.nome
+        return f'{self.papel.usuario.nome} — {self.papel.escola}'
 
-    def save(self, *args, **kwargs):
-        if self.cpf:
-            self.cpf = normalizar_cpf(self.cpf)
-        if self.telefone:
-            self.telefone = normalizar_telefone(self.telefone)
-        super().save(*args, **kwargs)
+    @property
+    def escola(self):
+        return self.papel.escola
 
-
-class Professor(models.Model):
-    usuario = models.OneToOneField(
-        'core.Usuario',
-        on_delete=models.CASCADE,
-        related_name='professor',
-        verbose_name='Usuário',
-    )
-    escola = models.ForeignKey(
-        'escola.UnidadeEscolar',
-        on_delete=models.CASCADE,
-        related_name='professores',
-        verbose_name='Escola',
-    )
-    cpf = models.CharField(
-        verbose_name='CPF',
-        max_length=11,
-        blank=True,
-        validators=[validate_cpf],
-    )
-    telefone = models.CharField(
-        verbose_name='Telefone',
-        max_length=11,
-        blank=True,
-        validators=[validate_telefone],
-    )
-    foto = models.ImageField(
-        verbose_name='Foto',
-        upload_to='professores/',
-        null=True,
-        blank=True,
-    )
-    ativo = models.BooleanField(verbose_name='Ativo', default=True)
-    criado_em = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        verbose_name = 'Professor'
-        verbose_name_plural = 'Professores'
-        ordering = ['usuario__nome']
-
-    def __str__(self):
-        return self.usuario.nome
-
-    def save(self, *args, **kwargs):
-        if self.cpf:
-            self.cpf = normalizar_cpf(self.cpf)
-        if self.telefone:
-            self.telefone = normalizar_telefone(self.telefone)
-        super().save(*args, **kwargs)
+    @property
+    def usuario(self):
+        return self.papel.usuario

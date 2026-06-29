@@ -1,7 +1,7 @@
 from django.contrib import admin
 from unfold.admin import ModelAdmin, TabularInline
 
-from .models import AssinaturaEscola, HistoricoAssinatura, Modulo, ModuloEscola, Plano
+from .models import AssinaturaEscola, HistoricoAssinatura, Modulo, ModuloEscola, Plano, StatusAssinatura
 
 
 class ModuloEscolaInline(TabularInline):
@@ -36,9 +36,55 @@ class PlanoAdmin(ModelAdmin):
 class AssinaturaEscolaAdmin(ModelAdmin):
     list_display    = ('escola', 'plano', 'status', 'data_vencimento', 'atualizado_em')
     list_filter     = ('status',)
-    search_fields   = ('escola__nome_escola',)
+    search_fields   = ('escola__nome',)
     readonly_fields = ('atualizado_em',)
     inlines         = [ModuloEscolaInline, HistoricoAssinaturaInline]
+
+    def get_fieldsets(self, request, obj=None):
+        if obj is None:
+            # Novo registro: exibe todos os campos — admin escolhe o que preencher
+            return [
+                ('Assinatura', {
+                    'fields': ('escola', 'plano', 'status'),
+                }),
+                ('Vigência (plano pago)', {
+                    'fields': ('data_inicio', 'data_vencimento', 'data_grace_fim', 'ativado_por'),
+                    'description': 'Preencha ao criar uma assinatura já ativa.',
+                }),
+                ('Trial', {
+                    'fields': ('data_inicio_trial', 'duracao_trial_dias', 'limite_alunos_trial'),
+                    'description': 'Deixe em branco se a escola já possui plano pago.',
+                }),
+                ('Auditoria', {
+                    'fields': ('atualizado_em',),
+                }),
+            ]
+
+        status_trial = {StatusAssinatura.TRIAL, StatusAssinatura.TRIAL_EXPIRADO}
+        if obj.status in status_trial:
+            return [
+                ('Assinatura', {
+                    'fields': ('escola', 'plano', 'status'),
+                }),
+                ('Trial', {
+                    'fields': ('data_inicio_trial', 'duracao_trial_dias', 'limite_alunos_trial'),
+                }),
+                ('Auditoria', {
+                    'fields': ('atualizado_em',),
+                }),
+            ]
+
+        return [
+            ('Assinatura', {
+                'fields': ('escola', 'plano', 'status'),
+            }),
+            ('Vigência', {
+                'fields': ('data_inicio', 'data_vencimento', 'data_grace_fim', 'ativado_por'),
+            }),
+            ('Auditoria', {
+                'fields': ('atualizado_em',),
+            }),
+        ]
 
 
 @admin.register(HistoricoAssinatura)

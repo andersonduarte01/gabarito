@@ -1,170 +1,118 @@
-from datetime import date
-
 from django.db import models
+from django.db.models import Q, UniqueConstraint
 from django.utils.text import slugify
 
-from apps.core.validators import validate_cnpj, validate_telefone, normalizar_cnpj, normalizar_telefone
+
+class TipoInstituicao(models.TextChoices):
+    PUBLICA      = 'PUBLICA',      'Pública'
+    PRIVADA      = 'PRIVADA',      'Privada'
+    FILANTROPICA = 'FILANTROPICA', 'Filantrópica'
+
+
+class TipoSegmento(models.TextChoices):
+    INF = 'INF', 'Infantil'
+    FI  = 'FI',  'Fundamental I'
+    FII = 'FII', 'Fundamental II'
+    MED = 'MED', 'Médio'
+    TEC = 'TEC', 'Técnico'
 
 
 class UnidadeEscolar(models.Model):
-
-    MUNICIPAL = 'MUN'
-    ESTADUAL  = 'EST'
-    FEDERAL   = 'FED'
-    PRIVADA   = 'PRIV'
-
-    TIPO_CHOICES = [
-        (MUNICIPAL, 'Municipal'),
-        (ESTADUAL,  'Estadual'),
-        (FEDERAL,   'Federal'),
-        (PRIVADA,   'Privada'),
-    ]
-
-    nome_escola  = models.CharField(verbose_name='Nome da Escola', max_length=200)
-    slug         = models.SlugField(verbose_name='Slug', max_length=220, unique=True, blank=True)
-    tipo         = models.CharField(
-        verbose_name='Tipo',
-        max_length=4,
-        choices=TIPO_CHOICES,
-        default=MUNICIPAL,
+    nome           = models.CharField('Nome', max_length=200)
+    nome_curto     = models.CharField('Nome Curto', max_length=60, blank=True)
+    cnpj           = models.CharField('CNPJ', max_length=18, blank=True)
+    slug           = models.SlugField('Slug', max_length=220, unique=True, blank=True)
+    tipo           = models.CharField(
+        'Tipo',
+        max_length=15,
+        choices=TipoInstituicao.choices,
+        default=TipoInstituicao.PRIVADA,
     )
-    logo_escola  = models.ImageField(
-        verbose_name='Logo',
-        upload_to='Imagens/Logo',
-        null=True,
-        blank=True,
-    )
-    inep         = models.CharField(verbose_name='Código INEP', max_length=20, null=True, blank=True)
-    cnpj         = models.CharField(
-        verbose_name='CNPJ',
-        max_length=14,
-        null=True,
-        blank=True,
-        validators=[validate_cnpj],
-    )
-    telefone     = models.CharField(
-        verbose_name='Telefone',
-        max_length=20,
-        blank=True,
-        validators=[validate_telefone],
-    )
-    email        = models.EmailField(verbose_name='Email', blank=True)
-    site         = models.URLField(verbose_name='Site', blank=True)
-    ativo        = models.BooleanField(verbose_name='Ativa', default=True)
-    criado_em    = models.DateTimeField(verbose_name='Criada em', auto_now_add=True)
-    atualizado_em = models.DateTimeField(verbose_name='Atualizada em', auto_now=True)
+    municipio      = models.CharField('Município', max_length=100, blank=True)
+    uf             = models.CharField('UF', max_length=2, blank=True)
+    telefone       = models.CharField('Telefone', max_length=20, blank=True)
+    email          = models.EmailField('E-mail', blank=True)
+    site           = models.URLField('Site', blank=True)
+    logo           = models.ImageField('Logo', upload_to='escolas/logos/', null=True, blank=True)
+    cor_primaria   = models.CharField('Cor Primária', max_length=7, default='#0d6efd')
+    cor_secundaria = models.CharField('Cor Secundária', max_length=7, default='#6c757d')
+    cor_acento     = models.CharField('Cor Acento', max_length=7, default='#0dcaf0')
+    criado_em      = models.DateTimeField('Criado em', auto_now_add=True)
+    atualizado_em  = models.DateTimeField('Atualizado em', auto_now=True)
 
     class Meta:
-        verbose_name = 'Escola'
-        verbose_name_plural = 'Escolas'
-        ordering = ['nome_escola']
+        verbose_name        = 'Unidade Escolar'
+        verbose_name_plural = 'Unidades Escolares'
+        ordering            = ['nome']
 
     def __str__(self):
-        return self.nome_escola
+        return self.nome
 
     def save(self, *args, **kwargs):
-        if self.cnpj:
-            self.cnpj = normalizar_cnpj(self.cnpj)
-        if self.telefone:
-            self.telefone = normalizar_telefone(self.telefone)
         if not self.slug:
             self.slug = self._gerar_slug()
         super().save(*args, **kwargs)
 
     def _gerar_slug(self) -> str:
-        base = slugify(self.nome_escola)
-        slug = base
+        base     = slugify(self.nome)
+        slug     = base
         contador = 1
-        while UnidadeEscolar.objects.filter(slug=slug).exists():
+        while UnidadeEscolar.objects.filter(slug=slug).exclude(pk=self.pk).exists():
             slug = f'{base}-{contador}'
             contador += 1
         return slug
 
-    def tem_logo(self) -> bool:
-        return bool(self.logo_escola)
 
-    @property
-    def endereco(self):
-        return getattr(self, '_endereco_cache', None) or EnderecoEscolar.objects.filter(escola=self).first()
+class SegmentoEscolar(models.Model):
+    escola = models.ForeignKey(
+        UnidadeEscolar,
+        on_delete=models.CASCADE,
+        related_name='segmentos',
+        verbose_name='Escola',
+    )
+    tipo   = models.CharField('Tipo', max_length=5, choices=TipoSegmento.choices)
 
-    @property
-    def ano_letivo_corrente(self):
-        return self.anos_letivos.filter(corrente=True).first()
+    class Meta:
+        verbose_name        = 'Segmento Escolar'
+        verbose_name_plural = 'Segmentos Escolares'
+        unique_together     = ('escola', 'tipo')
+
+    def __str__(self):
+        return f'{self.get_tipo_display()} — {self.escola}'
 
 
 class EnderecoEscolar(models.Model):
-    escola       = models.OneToOneField(
+    escola      = models.ForeignKey(
         UnidadeEscolar,
         on_delete=models.CASCADE,
-        related_name='endereco_obj',
+        related_name='enderecos',
         verbose_name='Escola',
     )
-    rua          = models.CharField(verbose_name='Rua', max_length=100)
-    numero       = models.CharField(verbose_name='Número', max_length=20)
-    complemento  = models.CharField(verbose_name='Complemento', max_length=200, blank=True)
-    bairro       = models.CharField(verbose_name='Bairro', max_length=100)
-    cep          = models.CharField(verbose_name='CEP', max_length=10)
-    cidade       = models.CharField(verbose_name='Cidade', max_length=100)
-    estado       = models.CharField(verbose_name='Estado', max_length=30)
-
-    class Meta:
-        verbose_name = 'Endereço'
-        verbose_name_plural = 'Endereços'
-
-    def __str__(self):
-        return f'{self.rua}, {self.numero} — {self.cidade}/{self.estado}'
-
-
-class AnoLetivo(models.Model):
-    escola    = models.ForeignKey(
-        UnidadeEscolar,
-        on_delete=models.CASCADE,
-        related_name='anos_letivos',
-        verbose_name='Escola',
+    nome        = models.CharField(
+        'Identificação',
+        max_length=100,
+        blank=True,
+        help_text='Ex: Sede, Anexo, Quadra',
     )
-    ano       = models.IntegerField(verbose_name='Ano Letivo')
-    inicio    = models.DateField(verbose_name='Início')
-    fim       = models.DateField(verbose_name='Fim')
-    corrente  = models.BooleanField(verbose_name='Ano Corrente', default=False)
-    descricao = models.TextField(verbose_name='Descrição', blank=True)
+    principal   = models.BooleanField('Principal', default=False)
+    cep         = models.CharField('CEP', max_length=9, blank=True)
+    logradouro  = models.CharField('Logradouro', max_length=200)
+    numero      = models.CharField('Número', max_length=20)
+    complemento = models.CharField('Complemento', max_length=100, blank=True)
+    bairro      = models.CharField('Bairro', max_length=100)
+    municipio   = models.CharField('Município', max_length=100)
+    uf          = models.CharField('UF', max_length=2)
 
     class Meta:
-        verbose_name = 'Ano Letivo'
-        verbose_name_plural = 'Anos Letivos'
-        unique_together = ('escola', 'ano')
-        ordering = ['-ano']
+        verbose_name        = 'Endereço Escolar'
+        verbose_name_plural = 'Endereços Escolares'
+        constraints = [
+            UniqueConstraint(
+                fields=['escola'],
+                condition=Q(principal=True),
+                name='unique_endereco_principal_por_escola',
+            ),
+        ]
 
     def __str__(self):
-        return f'{self.ano} — {self.escola.nome_escola}'
-
-    def save(self, *args, **kwargs):
-        if self.corrente:
-            AnoLetivo.objects.filter(escola=self.escola, corrente=True).exclude(pk=self.pk).update(corrente=False)
-        super().save(*args, **kwargs)
-
-    @property
-    def status(self):
-        hoje = date.today()
-        if hoje < self.inicio:
-            return 'futuro'
-        if hoje > self.fim:
-            return 'encerrado'
-        return 'em_curso'
-
-    @property
-    def status_display(self):
-        return {'futuro': 'Futuro', 'em_curso': 'Em curso', 'encerrado': 'Encerrado'}[self.status]
-
-    @property
-    def duracao_dias(self):
-        return (self.fim - self.inicio).days
-
-    @property
-    def percentual_decorrido(self):
-        if self.status == 'futuro':
-            return 0
-        if self.status == 'encerrado':
-            return 100
-        hoje = date.today()
-        total = self.duracao_dias or 1
-        return min(100, round((hoje - self.inicio).days * 100 / total))
+        return f'{self.logradouro}, {self.numero} — {self.municipio}/{self.uf}'

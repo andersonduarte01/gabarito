@@ -1,0 +1,135 @@
+{% extends "base/base_diretor.html" %}
+
+{% block titulo %}{% if editando %}Editar Avaliação{% else %}Nova Avaliação{% endif %} — {{ escola.nome }}{% endblock %}
+{% block page_title %}{% if editando %}Editar Avaliação{% else %}Nova Avaliação{% endif %}{% endblock %}
+
+{% block sidebar_nav %}
+{% include "diretor/_nav.html" with active="avaliacoes" %}
+{% endblock %}
+
+{% block conteudo %}
+<div>
+
+    <div class="flex items-center gap-3 mb-6">
+        <a href="{% if editando %}{% url 'avaliacao:detalhe' avaliacao.pk %}{% else %}{% url 'avaliacao:lista' %}{% endif %}"
+           class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-md transition-colors">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        </a>
+        <div>
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
+                {% if editando %}Editar Avaliação{% else %}Nova Avaliação{% endif %}
+            </h2>
+            <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
+                {% if editando %}{{ avaliacao.titulo }}{% else %}Preencha os dados da avaliação{% endif %}
+            </p>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="grid grid-cols-1 gap-6">
+
+            <!-- Identificação -->
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-6">
+                <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+                    <i data-lucide="file-text" class="w-4 h-4 text-[#0d6efd]"></i>
+                    Identificação
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="md:col-span-3">
+                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{{ form.titulo.label }}</label>
+                        {{ form.titulo }}
+                        {% if form.titulo.errors %}<p class="mt-1 text-xs text-red-500">{{ form.titulo.errors.0 }}</p>{% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{{ form.tipo.label }}</label>
+                        {{ form.tipo }}
+                        {% if form.tipo.errors %}<p class="mt-1 text-xs text-red-500">{{ form.tipo.errors.0 }}</p>{% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{{ form.modalidade.label }}</label>
+                        {{ form.modalidade }}
+                        {% if form.modalidade.errors %}<p class="mt-1 text-xs text-red-500">{{ form.modalidade.errors.0 }}</p>{% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{{ form.data_aplicacao.label }}</label>
+                        {{ form.data_aplicacao }}
+                        {% if form.data_aplicacao.errors %}<p class="mt-1 text-xs text-red-500">{{ form.data_aplicacao.errors.0 }}</p>{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Turma e Matéria -->
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-6">
+                <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+                    <i data-lucide="users" class="w-4 h-4 text-[#0d6efd]"></i>
+                    Turma e Matéria
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{{ form.turma.label }}</label>
+                        {{ form.turma }}
+                        {% if form.turma.errors %}<p class="mt-1 text-xs text-red-500">{{ form.turma.errors.0 }}</p>{% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{{ form.materia.label }}</label>
+                        {{ form.materia }}
+                        {% if form.materia.errors %}<p class="mt-1 text-xs text-red-500">{{ form.materia.errors.0 }}</p>{% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{{ form.professor.label }}</label>
+                        {{ form.professor }}
+                        {% if form.professor.errors %}<p class="mt-1 text-xs text-red-500">{{ form.professor.errors.0 }}</p>{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Período e Pontuação -->
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-6">
+                <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+                    <i data-lucide="calendar" class="w-4 h-4 text-[#0d6efd]"></i>
+                    Período e Pontuação
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{{ form.ano_letivo.label }}</label>
+                        {{ form.ano_letivo }}
+                        {% if form.ano_letivo.errors %}<p class="mt-1 text-xs text-red-500">{{ form.ano_letivo.errors.0 }}</p>{% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{{ form.periodo_letivo.label }}</label>
+                        {{ form.periodo_letivo }}
+                        {% if form.periodo_letivo.errors %}<p class="mt-1 text-xs text-red-500">{{ form.periodo_letivo.errors.0 }}</p>{% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{{ form.nota_maxima.label }}</label>
+                        {{ form.nota_maxima }}
+                        {% if form.nota_maxima.errors %}<p class="mt-1 text-xs text-red-500">{{ form.nota_maxima.errors.0 }}</p>{% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{{ form.peso.label }}</label>
+                        {{ form.peso }}
+                        {% if form.peso.errors %}<p class="mt-1 text-xs text-red-500">{{ form.peso.errors.0 }}</p>{% endif %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="flex justify-end gap-3 mt-6">
+            <a href="{% if editando %}{% url 'avaliacao:detalhe' avaliacao.pk %}{% else %}{% url 'avaliacao:lista' %}{% endif %}"
+               class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300
+                      bg-slate-100 dark:bg-slate-700 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+                Cancelar
+            </a>
+            <button type="submit"
+                    class="px-5 py-2 text-sm font-medium bg-[#0d6efd] hover:bg-[#0b5ed7]
+                           text-white rounded-xl transition-colors">
+                {% if editando %}Salvar alterações{% else %}Criar avaliação{% endif %}
+            </button>
+        </div>
+    </form>
+
+</div>
+{% endblock %}

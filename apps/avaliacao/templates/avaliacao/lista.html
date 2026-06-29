@@ -1,0 +1,121 @@
+{% extends "base/base_diretor.html" %}
+
+{% block titulo %}Avaliações — {{ escola.nome }}{% endblock %}
+{% block page_title %}Avaliações{% endblock %}
+
+{% block sidebar_nav %}
+{% include "diretor/_nav.html" with active="avaliacoes" %}
+{% endblock %}
+
+{% block conteudo %}
+<div>
+
+    <div class="flex items-start justify-between mb-6 gap-4">
+        <div>
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Avaliações</h2>
+            <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">Provas, trabalhos e atividades</p>
+        </div>
+        {% if papel.tipo == 'DIRETOR' %}
+        <a href="{% url 'avaliacao:criar' %}"
+           class="flex items-center gap-2 px-4 py-2 rounded-xl shrink-0
+                  bg-[#0d6efd] hover:bg-[#0b5ed7] text-white text-sm font-medium transition-colors">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            Nova Avaliação
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Filtros -->
+    <form method="get" class="flex flex-wrap gap-3 mb-5">
+        <select name="turma"
+                class="px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600
+                       bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100
+                       focus:outline-none focus:ring-2 focus:ring-[#0d6efd]/40 focus:border-[#0d6efd]">
+            <option value="">Todas as turmas</option>
+            {% for t in turmas %}
+            <option value="{{ t.pk }}" {% if filtros.turma == t.pk|stringformat:"s" %}selected{% endif %}>{{ t.nome }}</option>
+            {% endfor %}
+        </select>
+        <select name="tipo"
+                class="px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600
+                       bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100
+                       focus:outline-none focus:ring-2 focus:ring-[#0d6efd]/40 focus:border-[#0d6efd]">
+            <option value="">Todos os tipos</option>
+            {% for value, label in tipo_choices %}
+            <option value="{{ value }}" {% if filtros.tipo == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit"
+                class="px-4 py-2 text-sm font-medium bg-slate-100 dark:bg-slate-700
+                       text-slate-700 dark:text-slate-200 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+            Filtrar
+        </button>
+        {% if filtros.turma or filtros.tipo %}
+        <a href="{% url 'avaliacao:lista' %}" class="px-4 py-2 text-sm text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">Limpar</a>
+        {% endif %}
+    </form>
+
+    {% if avaliacoes %}
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
+        <div class="divide-y divide-slate-100 dark:divide-slate-700">
+            {% for av in avaliacoes %}
+            <div class="flex items-center justify-between px-5 py-3.5">
+                <div class="min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-sm font-semibold text-slate-800 dark:text-slate-100">{{ av.titulo }}</span>
+                        {% if av.publicada %}
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600">Publicada</span>
+                        {% else %}
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-600">Rascunho</span>
+                        {% endif %}
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 dark:bg-slate-700 text-slate-500">{{ av.get_tipo_display }}</span>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-600">{{ av.get_modalidade_display }}</span>
+                    </div>
+                    <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                        {{ av.turma.nome }} · {{ av.materia.nome }}
+                        {% if av.data_aplicacao %} · {{ av.data_aplicacao|date:"d/m/Y" }}{% endif %}
+                        {% if av.periodo_letivo %} · {{ av.periodo_letivo.nome }}{% endif %}
+                    </p>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                    <a href="{% url 'avaliacao:detalhe' av.pk %}"
+                       class="p-1.5 text-slate-300 hover:text-[#0d6efd] rounded-md transition-colors" title="Detalhes">
+                        <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                    </a>
+                    {% if papel.tipo == 'DIRETOR' %}
+                    <a href="{% url 'avaliacao:lancar_notas' av.pk %}"
+                       class="p-1.5 text-slate-300 hover:text-emerald-500 rounded-md transition-colors" title="Lançar notas">
+                        <i data-lucide="clipboard-pen" class="w-3.5 h-3.5"></i>
+                    </a>
+                    <a href="{% url 'avaliacao:editar' av.pk %}"
+                       class="p-1.5 text-slate-300 hover:text-[#0d6efd] rounded-md transition-colors" title="Editar">
+                        <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% else %}
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
+        <div class="flex flex-col items-center justify-center py-16 px-5 text-center">
+            <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center mb-4">
+                <i data-lucide="clipboard-list" class="w-8 h-8 text-slate-300 dark:text-slate-500"></i>
+            </div>
+            <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-1">Nenhuma avaliação encontrada</h3>
+            <p class="text-xs text-slate-400 dark:text-slate-500 max-w-xs leading-relaxed">
+                {% if filtros.turma or filtros.tipo %}Tente ajustar os filtros.{% else %}Crie a primeira avaliação da escola.{% endif %}
+            </p>
+            {% if papel.tipo == 'DIRETOR' and not filtros.turma and not filtros.tipo %}
+            <a href="{% url 'avaliacao:criar' %}" class="mt-4 text-sm text-[#0d6efd] hover:underline font-medium">
+                Criar primeira avaliação →
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

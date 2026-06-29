@@ -1,0 +1,245 @@
+{% extends "base/base_diretor.html" %}
+
+{% block titulo %}{{ perfil.usuario.nome }} — Professor{% endblock %}
+{% block page_title %}Professor{% endblock %}
+
+{% block sidebar_nav %}
+{% include "diretor/_nav.html" with active="professores" %}
+{% endblock %}
+
+{% block conteudo %}
+<div>
+
+    <div class="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500 mb-6">
+        <a href="{% url 'professor:lista' %}" class="hover:text-[#0d6efd] transition-colors">Professores</a>
+        <i data-lucide="chevron-right" class="w-3 h-3"></i>
+        <span class="text-slate-600 dark:text-slate-300">{{ perfil.usuario.nome }}</span>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Coluna principal -->
+        <div class="lg:col-span-2 space-y-6">
+
+            <!-- Identificação -->
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-6">
+                <div class="flex items-start justify-between gap-4 mb-5">
+                    <div class="flex items-center gap-4">
+                        {% if perfil.foto %}
+                        <img src="{{ perfil.foto.url }}" alt="{{ perfil.usuario.nome }}"
+                             class="w-14 h-14 rounded-full object-cover">
+                        {% else %}
+                        <div class="w-14 h-14 rounded-full bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center">
+                            <i data-lucide="graduation-cap" class="w-7 h-7 text-violet-400"></i>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <h2 class="text-base font-bold text-slate-800 dark:text-slate-100">{{ perfil.usuario.nome }}</h2>
+                            <p class="text-sm text-slate-400 dark:text-slate-500">{{ perfil.usuario.email }}</p>
+                            <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400">
+                                {{ perfil.get_tipo_vinculo_display }}
+                            </span>
+                        </div>
+                    </div>
+                    {% if papel.tipo == 'DIRETOR' %}
+                    <a href="{% url 'professor:editar' perfil.pk %}"
+                       class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium
+                              border border-slate-200 dark:border-slate-700 rounded-lg
+                              text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shrink-0">
+                        <i data-lucide="pencil" class="w-3 h-3"></i>
+                        Editar
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    {% if perfil.registro_profissional %}
+                    <div>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mb-0.5">Registro Profissional</p>
+                        <p class="text-sm font-medium text-slate-700 dark:text-slate-200">{{ perfil.registro_profissional }}</p>
+                    </div>
+                    {% endif %}
+                    {% if perfil.data_admissao %}
+                    <div>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mb-0.5">Data de Admissão</p>
+                        <p class="text-sm font-medium text-slate-700 dark:text-slate-200">{{ perfil.data_admissao|date:"d/m/Y" }}</p>
+                    </div>
+                    {% endif %}
+                    {% if perfil.telefone %}
+                    <div>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mb-0.5">Telefone</p>
+                        <p class="text-sm font-medium text-slate-700 dark:text-slate-200">{{ perfil.telefone }}</p>
+                    </div>
+                    {% endif %}
+                    {% if perfil.cpf %}
+                    <div>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mb-0.5">CPF</p>
+                        <p class="text-sm font-medium text-slate-700 dark:text-slate-200">{{ perfil.cpf }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Formação Acadêmica -->
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-6">
+                <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+                    <i data-lucide="book-open" class="w-4 h-4 text-slate-400"></i>
+                    Formação Acadêmica
+                </h3>
+
+                {% if perfil.formacoes.all %}
+                <div class="space-y-2 mb-5">
+                    {% for f in perfil.formacoes.all %}
+                    <div class="flex items-start justify-between gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-700/50">
+                        <div>
+                            <p class="text-sm font-medium text-slate-700 dark:text-slate-200">
+                                {{ f.get_nivel_display }} — {{ f.curso }}
+                            </p>
+                            <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                                {{ f.instituicao }}{% if f.ano_conclusao %} · {{ f.ano_conclusao }}{% endif %}
+                            </p>
+                        </div>
+                        {% if papel.tipo == 'DIRETOR' %}
+                        <form method="post" action="{% url 'professor:formacao_remover' perfil.pk f.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" title="Remover"
+                                    class="p-1.5 text-slate-300 hover:text-red-500 rounded-md transition-colors shrink-0">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-sm text-slate-400 dark:text-slate-500 italic mb-5">Nenhuma formação cadastrada.</p>
+                {% endif %}
+
+                {% if papel.tipo == 'DIRETOR' %}
+                <details class="group">
+                    <summary class="cursor-pointer text-xs text-[#0d6efd] font-medium hover:underline list-none flex items-center gap-1">
+                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                        Adicionar formação
+                    </summary>
+                    <form method="post" action="{% url 'professor:formacao_adicionar' perfil.pk %}" class="mt-4 space-y-3">
+                        {% csrf_token %}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Nível *</label>
+                                {{ formacao_form.nivel }}
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Ano de Conclusão</label>
+                                {{ formacao_form.ano_conclusao }}
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Curso *</label>
+                                {{ formacao_form.curso }}
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Instituição *</label>
+                                {{ formacao_form.instituicao }}
+                            </div>
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="submit"
+                                    class="px-4 py-2 text-xs font-medium text-white bg-[#0d6efd] hover:bg-[#0b5ed7] rounded-lg transition-colors">
+                                Salvar formação
+                            </button>
+                        </div>
+                    </form>
+                </details>
+                {% endif %}
+            </div>
+
+            <!-- Turmas/Matérias (placeholder para M09 vincular) -->
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-6">
+                <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+                    <i data-lucide="layout-grid" class="w-4 h-4 text-slate-400"></i>
+                    Turmas e Matérias
+                </h3>
+                {% if perfil.professor_materia_turmas.all %}
+                <div class="divide-y divide-slate-100 dark:divide-slate-700">
+                    {% for vmt in perfil.professor_materia_turmas.all %}
+                    <div class="py-2.5 flex items-center gap-3">
+                        <div class="w-2 h-2 rounded-full bg-violet-400 shrink-0"></div>
+                        <span class="text-sm text-slate-700 dark:text-slate-200">
+                            {{ vmt.materia.nome }} — {{ vmt.turma }}
+                        </span>
+                        <span class="text-xs text-slate-400 dark:text-slate-500">{{ vmt.turma.ano_letivo.ano }}</span>
+                        {% if not vmt.ativo %}<span class="text-xs text-slate-300">Inativo</span>{% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% elif perfil.professor_turmas.all %}
+                <div class="divide-y divide-slate-100 dark:divide-slate-700">
+                    {% for pt in perfil.professor_turmas.all %}
+                    <div class="py-2.5 flex items-center gap-3">
+                        <div class="w-2 h-2 rounded-full bg-violet-400 shrink-0"></div>
+                        <span class="text-sm text-slate-700 dark:text-slate-200">
+                            Responsável — {{ pt.turma }}
+                        </span>
+                        <span class="text-xs text-slate-400 dark:text-slate-500">{{ pt.ano_letivo.ano }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-sm text-slate-400 dark:text-slate-500 italic">
+                    Nenhuma turma ou matéria vinculada ainda.
+                </p>
+                {% endif %}
+            </div>
+
+        </div>
+
+        <!-- Coluna lateral -->
+        <div class="space-y-4">
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-5">
+                <h3 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">Status</h3>
+                <div class="flex items-center gap-2">
+                    {% if perfil.papel.ativo %}
+                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    <span class="text-sm font-medium text-emerald-600 dark:text-emerald-400">Ativo</span>
+                    {% else %}
+                    <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+                    <span class="text-sm font-medium text-slate-400">Inativo</span>
+                    {% endif %}
+                </div>
+                {% if papel.tipo == 'DIRETOR' %}
+                <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+                    {% if perfil.papel.ativo %}
+                    <form method="post" action="{% url 'professor:desativar' perfil.pk %}">
+                        {% csrf_token %}
+                        <button type="submit"
+                                class="w-full px-3 py-2 text-xs font-medium text-amber-600 dark:text-amber-400
+                                       border border-amber-200 dark:border-amber-800 rounded-lg
+                                       hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors">
+                            Desativar professor
+                        </button>
+                    </form>
+                    {% else %}
+                    <form method="post" action="{% url 'professor:reativar' perfil.pk %}">
+                        {% csrf_token %}
+                        <button type="submit"
+                                class="w-full px-3 py-2 text-xs font-medium text-emerald-600 dark:text-emerald-400
+                                       border border-emerald-200 dark:border-emerald-800 rounded-lg
+                                       hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors">
+                            Reativar professor
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-5">
+                <h3 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">Registro</h3>
+                <p class="text-xs text-slate-400 dark:text-slate-500">
+                    Cadastrado em {{ perfil.criado_em|date:"d/m/Y" }}
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
