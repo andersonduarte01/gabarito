@@ -14,7 +14,7 @@ class _AuthMixin:
         return super().dispatch(request, *args, **kwargs)
 
     def _ctx(self, request):
-        return {'usuario': request.user, 'escola': getattr(request, 'escola', None)}
+        return {'usuario': request.user, 'escola': getattr(request, 'escola', None), 'papel': getattr(request, 'papel', None)}
 
 
 class ListarNotificacoesView(_AuthMixin, View):

@@ -11,9 +11,13 @@ def criar(escola, usuario_dados: dict, perfil_dados: dict, criado_por) -> Perfil
     from django.contrib.auth import get_user_model
     User = get_user_model()
 
-    usuario, _ = User.objects.get_or_create(
+    if User.objects.filter(email=usuario_dados['email']).exists():
+        raise ValueError('Já existe um usuário cadastrado com este e-mail.')
+
+    usuario = User.objects.create_user(
         email=usuario_dados['email'],
-        defaults={'nome': usuario_dados['nome'], 'is_active': True},
+        nome=usuario_dados['nome'],
+        password=usuario_dados['senha'],
     )
 
     vinculo = vinculo_service.criar_vinculo(usuario, escola)
@@ -28,6 +32,7 @@ def criar(escola, usuario_dados: dict, perfil_dados: dict, criado_por) -> Perfil
         data_admissao=perfil_dados.get('data_admissao'),
         tipo_vinculo=perfil_dados.get('tipo_vinculo', 'CLT'),
         registro_profissional=perfil_dados.get('registro_profissional', ''),
+        foto=perfil_dados.get('foto'),
     )
     return perfil
 

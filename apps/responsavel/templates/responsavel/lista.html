@@ -4,7 +4,11 @@
 {% block page_title %}Responsáveis{% endblock %}
 
 {% block sidebar_nav %}
+{% if papel.tipo == 'COLABORADOR' %}
+{% include "colaborador/_nav.html" with active="responsaveis" %}
+{% else %}
 {% include "diretor/_nav.html" with active="responsaveis" %}
+{% endif %}
 {% endblock %}
 
 {% block conteudo %}
@@ -13,11 +17,8 @@
     <div class="flex items-start justify-between mb-6 gap-4">
         <div>
             <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Responsáveis</h2>
-            <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
-                Pais e responsáveis dos alunos
-            </p>
+            <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">Pais e responsáveis dos alunos</p>
         </div>
-        {% if papel.tipo == 'DIRETOR' %}
         <div class="flex items-center gap-2 shrink-0">
             <a href="{% url 'responsavel:criar' %}?tipo=acesso"
                class="flex items-center gap-2 px-4 py-2 rounded-xl
@@ -32,7 +33,6 @@
                 Só contato
             </a>
         </div>
-        {% endif %}
     </div>
 
     {% if responsaveis %}
@@ -64,12 +64,10 @@
                        class="p-1.5 text-slate-300 hover:text-[#0d6efd] rounded-md transition-colors" title="Ver detalhes">
                         <i data-lucide="eye" class="w-3.5 h-3.5"></i>
                     </a>
-                    {% if papel.tipo == 'DIRETOR' %}
                     <a href="{% url 'responsavel:editar' resp.pk %}"
                        class="p-1.5 text-slate-300 hover:text-[#0d6efd] rounded-md transition-colors" title="Editar">
                         <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                     </a>
-                    {% endif %}
                 </div>
             </div>
             {% endfor %}
@@ -86,12 +84,10 @@
             <p class="text-xs text-slate-400 dark:text-slate-500 max-w-xs leading-relaxed">
                 Cadastre os pais e responsáveis dos alunos.
             </p>
-            {% if papel.tipo == 'DIRETOR' %}
             <a href="{% url 'responsavel:criar' %}?tipo=acesso"
                class="mt-4 text-sm text-[#0d6efd] hover:underline font-medium">
                 Cadastrar primeiro responsável →
             </a>
-            {% endif %}
         </div>
     </div>
     {% endif %}

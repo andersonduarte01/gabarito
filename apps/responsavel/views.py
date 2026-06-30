@@ -8,12 +8,16 @@ from .models import PerfilResponsavel, VinculoResponsavelAluno
 from .services import responsavel_service
 
 
+_ESCRITA = ('DIRETOR', 'FUNCIONARIO')
+_LEITURA = ('DIRETOR', 'FUNCIONARIO')
+
+
 class _LeituraMixin:
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('accounts:login')
         papel = getattr(request, 'papel', None)
-        if papel is None or papel.tipo not in ('DIRETOR', 'FUNCIONARIO'):
+        if papel is None or papel.tipo not in _LEITURA:
             raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
 
@@ -21,12 +25,12 @@ class _LeituraMixin:
         return {'usuario': request.user, 'escola': request.escola, 'papel': request.papel, **extra}
 
 
-class _DiretorMixin:
+class _EscritaMixin:
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('accounts:login')
         papel = getattr(request, 'papel', None)
-        if papel is None or papel.tipo != 'DIRETOR':
+        if papel is None or papel.tipo not in _ESCRITA:
             raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
 
@@ -49,7 +53,7 @@ class ListarResponsaveisView(_LeituraMixin, View):
         return render(request, self.template_name, self._ctx(request, responsaveis=responsaveis))
 
 
-class CriarResponsavelView(_DiretorMixin, View):
+class CriarResponsavelView(_EscritaMixin, View):
     template_name = 'responsavel/form_responsavel.html'
 
     def get(self, request):
@@ -60,15 +64,19 @@ class CriarResponsavelView(_DiretorMixin, View):
     def post(self, request):
         tipo = request.POST.get('tipo', 'acesso')
         form_cls = CriarResponsavelForm if tipo == 'acesso' else CriarSemAcessoForm
-        form = form_cls(request.POST)
+        form = form_cls(request.POST, request.FILES)
         if form.is_valid():
             cd = form.cleaned_data
             try:
                 if tipo == 'acesso':
+                    perfil_dados = {
+                        k: v for k, v in cd.items()
+                        if k not in ('nome', 'email', 'senha', 'confirmar_senha')
+                    }
                     responsavel_service.criar(
                         escola=request.escola,
-                        usuario_dados={'nome': cd['nome'], 'email': cd['email']},
-                        perfil_dados={k: v for k, v in cd.items() if k not in ('nome', 'email')},
+                        usuario_dados={'nome': cd['nome'], 'email': cd['email'], 'senha': cd.get('senha')},
+                        perfil_dados=perfil_dados,
                     )
                 else:
                     responsavel_service.criar_sem_acesso(perfil_dados=cd)
@@ -96,7 +104,7 @@ class DetalheResponsavelView(_LeituraMixin, View):
         ))
 
 
-class EditarResponsavelView(_DiretorMixin, View):
+class EditarResponsavelView(_EscritaMixin, View):
     template_name = 'responsavel/form_responsavel.html'
 
     def _get(self, request, pk):
@@ -114,7 +122,7 @@ class EditarResponsavelView(_DiretorMixin, View):
 
     def post(self, request, pk):
         responsavel = self._get(request, pk)
-        form = EditarResponsavelForm(request.POST, instance=responsavel)
+        form = EditarResponsavelForm(request.POST, request.FILES, instance=responsavel)
         if form.is_valid():
             responsavel_service.editar(responsavel, form.cleaned_data)
             messages.success(request, 'Responsável atualizado.')
@@ -124,7 +132,7 @@ class EditarResponsavelView(_DiretorMixin, View):
         ))
 
 
-class VincularAlunoView(_DiretorMixin, View):
+class VincularAlunoView(_EscritaMixin, View):
     def post(self, request, pk):
         responsavel = get_object_or_404(
             PerfilResponsavel, pk=pk,
@@ -151,7 +159,7 @@ class VincularAlunoView(_DiretorMixin, View):
         return redirect('responsavel:detalhe', pk=responsavel.pk)
 
 
-class DesvincularAlunoView(_DiretorMixin, View):
+class DesvincularAlunoView(_EscritaMixin, View):
     def post(self, request, pk, vinculo_pk):
         responsavel = get_object_or_404(
             PerfilResponsavel, pk=pk,

@@ -23,9 +23,24 @@ _INPUT = (
     'focus:ring-2 focus:ring-[#0d6efd]/30 focus:border-[#0d6efd]'
 )
 _SELECT = _INPUT
+_FILE = (
+    'w-full text-sm text-slate-600 dark:text-slate-400 '
+    'border border-slate-200 dark:border-slate-700 rounded-lg '
+    'bg-white dark:bg-slate-800 cursor-pointer '
+    'file:cursor-pointer file:border-0 file:mr-3 file:px-4 file:py-2 '
+    'file:text-sm file:font-medium '
+    'file:bg-slate-100 file:text-slate-600 '
+    'dark:file:bg-slate-700 dark:file:text-slate-300 '
+    'file:hover:bg-slate-200 dark:file:hover:bg-slate-600 '
+    'file:transition-colors'
+)
 
 
 class CriarColaboradorForm(forms.Form):
+    foto            = forms.ImageField(
+        required=False, label='Foto',
+        widget=forms.FileInput(attrs={'class': _FILE}),
+    )
     nome            = forms.CharField(
         max_length=150, label='Nome completo',
         widget=forms.TextInput(attrs={'class': _INPUT, 'placeholder': 'Nome completo'}),
@@ -54,7 +69,7 @@ class CriarColaboradorForm(forms.Form):
     )
     data_nascimento = forms.DateField(
         required=False, label='Data de Nascimento',
-        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}),
+        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}, format='%Y-%m-%d'),
     )
     telefone        = forms.CharField(
         max_length=20, required=False, label='Telefone',
@@ -62,12 +77,28 @@ class CriarColaboradorForm(forms.Form):
     )
     data_admissao   = forms.DateField(
         required=False, label='Data de Admissão',
-        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}),
+        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}, format='%Y-%m-%d'),
     )
     pis             = forms.CharField(
         max_length=20, required=False, label='PIS/PASEP',
         widget=forms.TextInput(attrs={'class': _INPUT}),
     )
+    senha           = forms.CharField(
+        label='Senha', min_length=8,
+        widget=forms.PasswordInput(attrs={'class': _INPUT, 'placeholder': 'Mínimo 8 caracteres'}),
+    )
+    confirmar_senha = forms.CharField(
+        label='Confirmar senha',
+        widget=forms.PasswordInput(attrs={'class': _INPUT, 'placeholder': 'Repita a senha'}),
+    )
+
+    def clean(self):
+        cleaned = super().clean()
+        senha = cleaned.get('senha')
+        confirmar = cleaned.get('confirmar_senha')
+        if senha and confirmar and senha != confirmar:
+            self.add_error('confirmar_senha', 'As senhas não conferem.')
+        return cleaned
 
     def __init__(self, *args, escola=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -87,16 +118,17 @@ class EditarColaboradorForm(forms.ModelForm):
 
     class Meta:
         model  = PerfilColaborador
-        fields = ['funcao', 'tipo_vinculo', 'cpf', 'rg',
+        fields = ['foto', 'funcao', 'tipo_vinculo', 'cpf', 'rg',
                   'data_nascimento', 'telefone', 'data_admissao', 'pis']
         widgets = {
+            'foto':            forms.FileInput(attrs={'class': _FILE}),
             'funcao':          forms.Select(attrs={'class': _SELECT}),
             'tipo_vinculo':    forms.Select(attrs={'class': _SELECT}),
             'cpf':             forms.TextInput(attrs={'class': _INPUT, 'placeholder': '000.000.000-00'}),
             'rg':              forms.TextInput(attrs={'class': _INPUT}),
-            'data_nascimento': forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}),
+            'data_nascimento': forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}, format='%Y-%m-%d'),
             'telefone':        forms.TextInput(attrs={'class': _INPUT, 'placeholder': '(00) 00000-0000'}),
-            'data_admissao':   forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}),
+            'data_admissao':   forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}, format='%Y-%m-%d'),
             'pis':             forms.TextInput(attrs={'class': _INPUT}),
         }
 
@@ -129,6 +161,25 @@ class EnderecoPerfilForm(forms.ModelForm):
             'bairro':      forms.TextInput(attrs={'class': _INPUT}),
             'municipio':   forms.TextInput(attrs={'class': _INPUT}),
         }
+
+
+class AlterarSenhaColaboradorForm(forms.Form):
+    nova_senha      = forms.CharField(
+        label='Nova senha', min_length=8,
+        widget=forms.PasswordInput(attrs={'class': _INPUT, 'placeholder': 'Mínimo 8 caracteres'}),
+    )
+    confirmar_senha = forms.CharField(
+        label='Confirmar nova senha',
+        widget=forms.PasswordInput(attrs={'class': _INPUT, 'placeholder': 'Repita a nova senha'}),
+    )
+
+    def clean(self):
+        cleaned = super().clean()
+        nova = cleaned.get('nova_senha')
+        confirmar = cleaned.get('confirmar_senha')
+        if nova and confirmar and nova != confirmar:
+            self.add_error('confirmar_senha', 'As senhas não conferem.')
+        return cleaned
 
 
 class FuncaoEscolarForm(forms.Form):

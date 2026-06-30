@@ -1,0 +1,138 @@
+{% extends "base/base_diretor.html" %}
+
+{% block titulo %}Relatórios — {{ escola.nome }}{% endblock %}
+{% block page_title %}Relatórios{% endblock %}
+
+{% block sidebar_nav %}
+{% include "diretor/_nav.html" with active="relatorios" %}
+{% endblock %}
+
+{% block conteudo %}
+<div>
+    <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-6">Relatórios</h2>
+
+    <!-- Pedagógicos -->
+    <h3 class="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3">Pedagógicos</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
+
+        <a href="{% url 'relatorio:desempenho_turma' %}"
+           class="flex items-start gap-4 p-4 rounded-2xl border border-slate-100 dark:border-slate-700
+                  bg-white dark:bg-slate-800 hover:shadow-md hover:border-[#0d6efd]/30 transition-all">
+            <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+                <i data-lucide="bar-chart-2" class="w-5 h-5 text-blue-600 dark:text-blue-400"></i>
+            </div>
+            <div>
+                <p class="font-medium text-slate-900 dark:text-white text-sm">Desempenho por Turma</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Médias, aprovados, recuperação e reprovados por matéria</p>
+            </div>
+        </a>
+
+        <a href="{% url 'relatorio:frequencia_turma' %}"
+           class="flex items-start gap-4 p-4 rounded-2xl border border-slate-100 dark:border-slate-700
+                  bg-white dark:bg-slate-800 hover:shadow-md hover:border-[#0d6efd]/30 transition-all">
+            <div class="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
+                <i data-lucide="calendar-check" class="w-5 h-5 text-green-600 dark:text-green-400"></i>
+            </div>
+            <div>
+                <p class="font-medium text-slate-900 dark:text-white text-sm">Frequência por Turma</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Presenças, faltas e percentual por aluno no período</p>
+            </div>
+        </a>
+
+        <a href="{% url 'relatorio:alunos_em_risco' %}"
+           class="flex items-start gap-4 p-4 rounded-2xl border border-slate-100 dark:border-slate-700
+                  bg-white dark:bg-slate-800 hover:shadow-md hover:border-[#0d6efd]/30 transition-all">
+            <div class="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0">
+                <i data-lucide="alert-triangle" class="w-5 h-5 text-red-600 dark:text-red-400"></i>
+            </div>
+            <div>
+                <p class="font-medium text-slate-900 dark:text-white text-sm">Alunos em Risco</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Alunos em recuperação, reprovados ou com baixa frequência</p>
+            </div>
+        </a>
+
+        <a href="{% url 'relatorio:boletim_lote' %}"
+           class="flex items-start gap-4 p-4 rounded-2xl border border-slate-100 dark:border-slate-700
+                  bg-white dark:bg-slate-800 hover:shadow-md hover:border-[#0d6efd]/30 transition-all">
+            <div class="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center shrink-0">
+                <i data-lucide="file-text" class="w-5 h-5 text-violet-600 dark:text-violet-400"></i>
+            </div>
+            <div>
+                <p class="font-medium text-slate-900 dark:text-white text-sm">Boletim em Lote</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">PDF com boletim de todos os alunos de uma turma</p>
+            </div>
+        </a>
+
+    </div>
+
+    <!-- Gestão (apenas diretor) -->
+    {% if papel.tipo == 'DIRETOR' %}
+    <h3 class="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3">Gestão</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
+
+        <a href="{% url 'relatorio:desempenho_professor' %}"
+           class="flex items-start gap-4 p-4 rounded-2xl border border-slate-100 dark:border-slate-700
+                  bg-white dark:bg-slate-800 hover:shadow-md hover:border-[#0d6efd]/30 transition-all">
+            <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
+                <i data-lucide="graduation-cap" class="w-5 h-5 text-amber-600 dark:text-amber-400"></i>
+            </div>
+            <div>
+                <p class="font-medium text-slate-900 dark:text-white text-sm">Desempenho por Professor</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Médias por professor e turma — sinaliza quando ≥50% abaixo do mínimo</p>
+                <span class="inline-block mt-1 px-1.5 py-0.5 rounded text-xs bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">Exclusivo Diretor</span>
+            </div>
+        </a>
+
+    </div>
+    {% endif %}
+
+    <!-- Administrativos -->
+    <h3 class="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3">Administrativos</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
+
+        <a href="{% url 'relatorio:inadimplencia' %}"
+           class="flex items-start gap-4 p-4 rounded-2xl border border-slate-100 dark:border-slate-700
+                  bg-white dark:bg-slate-800 hover:shadow-md hover:border-[#0d6efd]/30 transition-all">
+            <div class="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center shrink-0">
+                <i data-lucide="circle-alert" class="w-5 h-5 text-orange-600 dark:text-orange-400"></i>
+            </div>
+            <div>
+                <p class="font-medium text-slate-900 dark:text-white text-sm">Inadimplência</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Cobranças vencidas por aluno e turma</p>
+            </div>
+        </a>
+
+        <a href="{% url 'relatorio:extrato_financeiro' %}"
+           class="flex items-start gap-4 p-4 rounded-2xl border border-slate-100 dark:border-slate-700
+                  bg-white dark:bg-slate-800 hover:shadow-md hover:border-[#0d6efd]/30 transition-all">
+            <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
+                <i data-lucide="receipt" class="w-5 h-5 text-emerald-600 dark:text-emerald-400"></i>
+            </div>
+            <div>
+                <p class="font-medium text-slate-900 dark:text-white text-sm">Extrato Financeiro</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Cobranças por período com totais por status</p>
+            </div>
+        </a>
+
+    </div>
+
+    <!-- Últimos gerados -->
+    {% if recentes %}
+    <h3 class="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3">Últimos gerados</h3>
+    <div class="flex flex-col gap-2">
+        {% for rel in recentes %}
+        <div class="flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm">
+            <span class="text-slate-700 dark:text-slate-200">{{ rel.get_tipo_display }}</span>
+            <div class="flex items-center gap-3">
+                <span class="text-xs text-slate-400">{{ rel.gerado_em|date:"d/m/Y H:i" }}</span>
+                {% if rel.arquivo %}
+                <a href="{{ rel.arquivo.url }}" class="text-[#0d6efd] hover:underline text-xs" download>Baixar</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

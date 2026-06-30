@@ -43,9 +43,9 @@ def gerar_cobranca_aluno(aluno, dados: dict, criado_por) -> CobrancaAluno:
 @transaction.atomic
 def gerar_cobrancas_turma(turma, plano: PlanoFinanceiro, vencimento: date, criado_por) -> int:
     from apps.aluno.models import MatriculaTurma
-    from apps.ano_letivo.models import AnoLetivo
+    from apps.ano_letivo.models import AnoLetivo, StatusAnoLetivo
 
-    ano_ativo = AnoLetivo.objects.filter(escola=turma.escola, ativo=True).first()
+    ano_ativo = AnoLetivo.objects.filter(escola=turma.escola, status=StatusAnoLetivo.EM_ANDAMENTO).first()
     matriculas = MatriculaTurma.objects.filter(
         turma=turma,
         ano_letivo=ano_ativo,
@@ -72,9 +72,9 @@ def gerar_cobrancas_turma(turma, plano: PlanoFinanceiro, vencimento: date, criad
 @transaction.atomic
 def gerar_cobrancas_escola(escola, plano: PlanoFinanceiro, vencimento: date, criado_por) -> int:
     from apps.aluno.models import MatriculaTurma
-    from apps.ano_letivo.models import AnoLetivo
+    from apps.ano_letivo.models import AnoLetivo, StatusAnoLetivo
 
-    ano_ativo = AnoLetivo.objects.filter(escola=escola, ativo=True).first()
+    ano_ativo = AnoLetivo.objects.filter(escola=escola, status=StatusAnoLetivo.EM_ANDAMENTO).first()
     matriculas = MatriculaTurma.objects.filter(
         turma__escola=escola,
         ano_letivo=ano_ativo,
@@ -191,19 +191,17 @@ def _dias_tolerancia(escola_id: int) -> int:
 def _notificar_vencimento(cobranca: CobrancaAluno):
     try:
         from apps.notificacao.services import notificacao_service
-        notificacao_service.criar(
-            escola_id=_escola_da_cobranca(cobranca),
-            titulo='Cobrança vencida',
-            mensagem=f'A cobrança "{cobranca.descricao}" do aluno {cobranca.aluno.nome_completo} está vencida.',
-            tipo='FINANCEIRO',
-        )
+        destinatario = cobranca.criado_por
+        if destinatario:
+            notificacao_service.criar(
+                destinatario=destinatario,
+                titulo='Cobrança vencida',
+                mensagem=f'A cobrança "{cobranca.descricao}" do aluno {cobranca.aluno.nome_completo} está vencida.',
+                tipo='FINANCEIRO',
+            )
     except Exception:
-        pass
+        logger.exception('_notificar_vencimento: falha ao notificar cobrança #%s', cobranca.pk)
 
 
 def _registrar_auditoria(usuario, acao: str, detalhe: str):
-    try:
-        from apps.auditoria.services import auditoria_service
-        auditoria_service.registrar(usuario=usuario, acao=acao, detalhe=detalhe)
-    except Exception:
-        pass
+    logger.info('auditoria: usuario=%s acao=%s detalhe=%s', getattr(usuario, 'pk', usuario), acao, detalhe)

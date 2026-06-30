@@ -9,38 +9,73 @@ _INPUT = (
     'focus:ring-2 focus:ring-[#0d6efd]/30 focus:border-[#0d6efd]'
 )
 _SELECT = _INPUT
+_FILE = (
+    'w-full text-sm text-slate-600 dark:text-slate-400 '
+    'border border-slate-200 dark:border-slate-700 rounded-lg '
+    'bg-white dark:bg-slate-800 cursor-pointer '
+    'file:cursor-pointer file:border-0 file:mr-3 file:px-4 file:py-2 '
+    'file:text-sm file:font-medium '
+    'file:bg-slate-100 file:text-slate-600 '
+    'dark:file:bg-slate-700 dark:file:text-slate-300 '
+    'file:hover:bg-slate-200 dark:file:hover:bg-slate-600 '
+    'file:transition-colors'
+)
 
 
 class CriarResponsavelForm(forms.Form):
     """Responsável com acesso ao sistema."""
+    foto            = forms.ImageField(
+        label='Foto', required=False,
+        widget=forms.FileInput(attrs={'class': _FILE}),
+    )
     nome            = forms.CharField(
         label='Nome Completo', max_length=200,
         widget=forms.TextInput(attrs={'class': _INPUT, 'placeholder': 'Nome completo'}),
+    )
+    telefone        = forms.CharField(
+        label='Telefone', max_length=20, required=False,
+        widget=forms.TextInput(attrs={'class': _INPUT, 'placeholder': '(00) 00000-0000'}),
+    )
+    cpf             = forms.CharField(
+        label='CPF', max_length=14, required=False,
+        widget=forms.TextInput(attrs={'class': _INPUT, 'placeholder': '000.000.000-00'}),
+    )
+    rg              = forms.CharField(
+        label='RG', max_length=20, required=False,
+        widget=forms.TextInput(attrs={'class': _INPUT}),
+    )
+    data_nascimento = forms.DateField(
+        label='Data de Nascimento', required=False,
+        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}, format='%Y-%m-%d'),
     )
     email           = forms.EmailField(
         label='E-mail',
         widget=forms.EmailInput(attrs={'class': _INPUT, 'placeholder': 'email@exemplo.com'}),
     )
-    telefone        = forms.CharField(
-        label='Telefone', max_length=20, required=False,
-        widget=forms.TextInput(attrs={'class': _INPUT, 'placeholder': '(00) 00000-0000'}),
+    senha           = forms.CharField(
+        label='Senha',
+        widget=forms.PasswordInput(attrs={'class': _INPUT, 'placeholder': 'Senha de acesso'}),
     )
-    cpf             = forms.CharField(
-        label='CPF', max_length=14, required=False,
-        widget=forms.TextInput(attrs={'class': _INPUT, 'placeholder': '000.000.000-00'}),
+    confirmar_senha = forms.CharField(
+        label='Confirmar senha',
+        widget=forms.PasswordInput(attrs={'class': _INPUT, 'placeholder': 'Repita a senha'}),
     )
-    rg              = forms.CharField(
-        label='RG', max_length=20, required=False,
-        widget=forms.TextInput(attrs={'class': _INPUT}),
-    )
-    data_nascimento = forms.DateField(
-        label='Data de Nascimento', required=False,
-        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}),
-    )
+
+    def clean(self):
+        cleaned = super().clean()
+        s1 = cleaned.get('senha')
+        s2 = cleaned.get('confirmar_senha')
+        if s1 and s2 and s1 != s2:
+            self.add_error('confirmar_senha', 'As senhas não conferem.')
+        return cleaned
 
 
 class CriarSemAcessoForm(forms.Form):
     """Responsável sem login — apenas contato."""
+    foto            = forms.ImageField(
+        label='Foto', required=False,
+        widget=forms.FileInput(attrs={'class': _FILE}),
+    )
     nome            = forms.CharField(
         label='Nome Completo', max_length=200,
         widget=forms.TextInput(attrs={'class': _INPUT, 'placeholder': 'Nome completo'}),
@@ -59,20 +94,21 @@ class CriarSemAcessoForm(forms.Form):
     )
     data_nascimento = forms.DateField(
         label='Data de Nascimento', required=False,
-        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}),
+        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}, format='%Y-%m-%d'),
     )
 
 
 class EditarResponsavelForm(forms.ModelForm):
     class Meta:
         model   = PerfilResponsavel
-        fields  = ('nome', 'telefone', 'cpf', 'rg', 'data_nascimento')
+        fields  = ('foto', 'nome', 'telefone', 'cpf', 'rg', 'data_nascimento')
         widgets = {
+            'foto':            forms.FileInput(attrs={'class': _FILE}),
             'nome':            forms.TextInput(attrs={'class': _INPUT}),
             'telefone':        forms.TextInput(attrs={'class': _INPUT, 'placeholder': '(00) 00000-0000'}),
             'cpf':             forms.TextInput(attrs={'class': _INPUT, 'placeholder': '000.000.000-00'}),
             'rg':              forms.TextInput(attrs={'class': _INPUT}),
-            'data_nascimento': forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}),
+            'data_nascimento': forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}, format='%Y-%m-%d'),
         }
 
 

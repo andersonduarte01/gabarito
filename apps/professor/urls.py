@@ -8,6 +8,7 @@ urlpatterns = [
     path('criar/',                                       views.CriarProfessorView.as_view(),     name='criar'),
     path('<int:pk>/',                                    views.DetalheProfessorView.as_view(),   name='detalhe'),
     path('<int:pk>/editar/',                             views.EditarProfessorView.as_view(),    name='editar'),
+    path('<int:pk>/alterar-senha/',                      views.AlterarSenhaProfessorView.as_view(), name='alterar_senha'),
     path('<int:pk>/desativar/',                          views.DesativarProfessorView.as_view(), name='desativar'),
     path('<int:pk>/reativar/',                           views.ReativarProfessorView.as_view(),  name='reativar'),
     path('<int:pk>/formacao/adicionar/',                 views.AdicionarFormacaoView.as_view(),  name='formacao_adicionar'),

@@ -22,204 +22,143 @@
     <form method="post" enctype="multipart/form-data" class="space-y-5">
         {% csrf_token %}
 
-        <!-- Identificação -->
-        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
-            <div class="flex items-center gap-2 px-6 py-4 border-b border-slate-100 dark:border-slate-700">
-                <div class="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/30
-                            flex items-center justify-center">
-                    <i data-lucide="building-2" class="w-3.5 h-3.5 text-blue-500"></i>
+        <!-- Dados da escola -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 px-6 py-5 space-y-4">
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        Nome completo <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.nome }}
+                    {% if form.nome.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.nome.errors.0 }}</p>
+                    {% endif %}
                 </div>
-                <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
-                    Identificação
-                </h2>
-            </div>
-            <div class="px-6 py-5">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-                    <div class="sm:col-span-2">
-                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
-                            Nome completo <span class="text-red-500">*</span>
-                        </label>
-                        {{ form.nome }}
-                        {% if form.nome.errors %}
-                        <p class="text-xs text-red-500 mt-1">{{ form.nome.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
-                            Nome curto / Sigla
-                        </label>
-                        {{ form.nome_curto }}
-                        {% if form.nome_curto.errors %}
-                        <p class="text-xs text-red-500 mt-1">{{ form.nome_curto.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
-                            Tipo de instituição
-                        </label>
-                        {{ form.tipo }}
-                        {% if form.tipo.errors %}
-                        <p class="text-xs text-red-500 mt-1">{{ form.tipo.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-
-                    <div class="sm:col-span-2">
-                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
-                            CNPJ
-                        </label>
-                        {{ form.cnpj }}
-                        {% if form.cnpj.errors %}
-                        <p class="text-xs text-red-500 mt-1">{{ form.cnpj.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        Nome curto / Sigla
+                    </label>
+                    {{ form.nome_curto }}
+                    {% if form.nome_curto.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.nome_curto.errors.0 }}</p>
+                    {% endif %}
                 </div>
-            </div>
-        </div>
-
-        <!-- Contato -->
-        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
-            <div class="flex items-center gap-2 px-6 py-4 border-b border-slate-100 dark:border-slate-700">
-                <div class="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/30
-                            flex items-center justify-center">
-                    <i data-lucide="phone" class="w-3.5 h-3.5 text-emerald-500"></i>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        Tipo de instituição
+                    </label>
+                    {{ form.tipo }}
+                    {% if form.tipo.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.tipo.errors.0 }}</p>
+                    {% endif %}
                 </div>
-                <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
-                    Contato
-                </h2>
-            </div>
-            <div class="px-6 py-5">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-                    <div>
-                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
-                            Telefone
-                        </label>
-                        {{ form.telefone }}
-                        {% if form.telefone.errors %}
-                        <p class="text-xs text-red-500 mt-1">{{ form.telefone.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
-                            E-mail institucional
-                        </label>
-                        {{ form.email }}
-                        {% if form.email.errors %}
-                        <p class="text-xs text-red-500 mt-1">{{ form.email.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-
-                    <div class="sm:col-span-2">
-                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
-                            Site
-                        </label>
-                        {{ form.site }}
-                        {% if form.site.errors %}
-                        <p class="text-xs text-red-500 mt-1">{{ form.site.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        CNPJ
+                    </label>
+                    {{ form.cnpj }}
+                    {% if form.cnpj.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.cnpj.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        Telefone
+                    </label>
+                    {{ form.telefone }}
+                    {% if form.telefone.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.telefone.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        E-mail institucional
+                    </label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.email.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        Site
+                    </label>
+                    {{ form.site }}
+                    {% if form.site.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.site.errors.0 }}</p>
+                    {% endif %}
                 </div>
             </div>
-        </div>
 
-        <!-- Logotipo -->
-        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
-            <div class="flex items-center gap-2 px-6 py-4 border-b border-slate-100 dark:border-slate-700">
-                <div class="w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-900/30
-                            flex items-center justify-center">
-                    <i data-lucide="image" class="w-3.5 h-3.5 text-indigo-500"></i>
+            <div class="flex items-start gap-4 pt-2 border-t border-slate-100 dark:border-slate-700">
+                <div class="w-16 h-16 rounded-xl border border-slate-200 dark:border-slate-700
+                            bg-slate-50 dark:bg-slate-700/50 overflow-hidden flex items-center justify-center shrink-0">
+                    {% if escola.logo %}
+                        <img src="{{ escola.logo.url }}" alt="{{ escola.nome }}"
+                             class="w-full h-full object-contain p-1">
+                    {% else %}
+                        <i data-lucide="image" class="w-7 h-7 text-slate-300 dark:text-slate-600"></i>
+                    {% endif %}
                 </div>
-                <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
-                    Logotipo
-                </h2>
-            </div>
-            <div class="px-6 py-5">
-                <div class="flex items-start gap-4">
-                    <div class="w-16 h-16 rounded-xl border border-slate-200 dark:border-slate-700
-                                bg-slate-50 dark:bg-slate-700/50 overflow-hidden flex items-center justify-center shrink-0">
-                        {% if escola.logo %}
-                            <img src="{{ escola.logo.url }}" alt="{{ escola.nome }}"
-                                 class="w-full h-full object-contain p-1">
-                        {% else %}
-                            <i data-lucide="image" class="w-7 h-7 text-slate-300 dark:text-slate-600"></i>
-                        {% endif %}
-                    </div>
-                    <div class="flex-1">
-                        {{ form.logo }}
-                        {% if form.logo.errors %}
-                        <p class="text-xs text-red-500 mt-1">{{ form.logo.errors.0 }}</p>
-                        {% endif %}
-                        <p class="text-xs text-slate-400 mt-2">PNG ou JPG. Recomendado 256×256 px.</p>
-                    </div>
+                <div class="flex-1">
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        Logotipo
+                    </label>
+                    {{ form.logo }}
+                    {% if form.logo.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.logo.errors.0 }}</p>
+                    {% endif %}
+                    <p class="text-xs text-slate-400 mt-2">PNG ou JPG. Recomendado 256×256 px.</p>
                 </div>
             </div>
+
         </div>
 
         <!-- Identidade Visual -->
-        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
-            <div class="flex items-center gap-2 px-6 py-4 border-b border-slate-100 dark:border-slate-700">
-                <div class="w-7 h-7 rounded-lg bg-purple-100 dark:bg-purple-900/30
-                            flex items-center justify-center">
-                    <i data-lucide="palette" class="w-3.5 h-3.5 text-purple-500"></i>
+        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 px-6 py-5">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        Cor Primária
+                    </label>
+                    <div class="flex items-center gap-2">
+                        {{ form.cor_primaria }}
+                        <span class="text-xs font-mono text-slate-500 dark:text-slate-400" id="label-cor-primaria">
+                            {{ escola.cor_primaria }}
+                        </span>
+                    </div>
+                    {% if form.cor_primaria.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.cor_primaria.errors.0 }}</p>
+                    {% endif %}
                 </div>
-                <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
-                    Identidade Visual
-                </h2>
-            </div>
-            <div class="px-6 py-5">
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-
-                    <div>
-                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
-                            Cor Primária
-                        </label>
-                        <div class="flex items-center gap-2">
-                            {{ form.cor_primaria }}
-                            <span class="text-xs font-mono text-slate-500 dark:text-slate-400" id="label-cor-primaria">
-                                {{ escola.cor_primaria }}
-                            </span>
-                        </div>
-                        {% if form.cor_primaria.errors %}
-                        <p class="text-xs text-red-500 mt-1">{{ form.cor_primaria.errors.0 }}</p>
-                        {% endif %}
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        Cor Secundária
+                    </label>
+                    <div class="flex items-center gap-2">
+                        {{ form.cor_secundaria }}
+                        <span class="text-xs font-mono text-slate-500 dark:text-slate-400" id="label-cor-secundaria">
+                            {{ escola.cor_secundaria }}
+                        </span>
                     </div>
-
-                    <div>
-                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
-                            Cor Secundária
-                        </label>
-                        <div class="flex items-center gap-2">
-                            {{ form.cor_secundaria }}
-                            <span class="text-xs font-mono text-slate-500 dark:text-slate-400" id="label-cor-secundaria">
-                                {{ escola.cor_secundaria }}
-                            </span>
-                        </div>
-                        {% if form.cor_secundaria.errors %}
-                        <p class="text-xs text-red-500 mt-1">{{ form.cor_secundaria.errors.0 }}</p>
-                        {% endif %}
+                    {% if form.cor_secundaria.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.cor_secundaria.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        Cor Acento
+                    </label>
+                    <div class="flex items-center gap-2">
+                        {{ form.cor_acento }}
+                        <span class="text-xs font-mono text-slate-500 dark:text-slate-400" id="label-cor-acento">
+                            {{ escola.cor_acento }}
+                        </span>
                     </div>
-
-                    <div>
-                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
-                            Cor Acento
-                        </label>
-                        <div class="flex items-center gap-2">
-                            {{ form.cor_acento }}
-                            <span class="text-xs font-mono text-slate-500 dark:text-slate-400" id="label-cor-acento">
-                                {{ escola.cor_acento }}
-                            </span>
-                        </div>
-                        {% if form.cor_acento.errors %}
-                        <p class="text-xs text-red-500 mt-1">{{ form.cor_acento.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-
+                    {% if form.cor_acento.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.cor_acento.errors.0 }}</p>
+                    {% endif %}
                 </div>
             </div>
         </div>

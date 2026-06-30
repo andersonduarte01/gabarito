@@ -119,7 +119,7 @@ class ListarAssinaturasView(PlatformAdminRequiredMixin, View):
         assinaturas = (
             AssinaturaEscola.objects
             .select_related('escola', 'plano', 'ativado_por')
-            .order_by('escola__nome_escola')
+            .order_by('escola__nome')
         )
         return render(request, self.template_name, {
             'assinaturas': assinaturas,

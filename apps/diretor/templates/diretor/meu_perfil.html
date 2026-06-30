@@ -39,12 +39,17 @@
     <div class="absolute -bottom-16 left-6 md:left-10 flex items-end gap-5">
 
         <div class="ring-4 ring-white dark:ring-slate-900 rounded-3xl shadow-xl shrink-0">
+            {% if perfil and perfil.foto %}
+            <img src="{{ perfil.foto.url }}" alt="{{ usuario.nome }}"
+                 class="w-28 h-28 md:w-32 md:h-32 rounded-3xl object-cover">
+            {% else %}
             <div class="w-28 h-28 md:w-32 md:h-32 rounded-3xl
                         bg-gradient-to-br from-[#0d6efd] to-blue-700
                         flex items-center justify-center
                         text-white text-5xl font-bold select-none">
                 {{ usuario.nome|first|upper }}
             </div>
+            {% endif %}
         </div>
 
         <!-- Nome + cargo (md+) -->

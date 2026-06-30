@@ -137,7 +137,7 @@ MÓDULOS — INFRAESTRUTURA E PLATAFORMA
 
 [ 01 ] PLANOS / ASSINATURA SAAS
 --------------------------------
-  Status:      [ DECISÕES VALIDADAS — aguardando implementação ]
+  Status:      [ IMPLEMENTADO — 2026-06-29 ]
   Descrição:   Gestão de assinaturas das escolas no EduCare. Planos definidos
                por módulos ativos. Ativação manual pelo Super Admin.
                Sem integração de gateway de pagamento neste módulo.
@@ -444,7 +444,7 @@ MÓDULOS — ESTRUTURA ESCOLAR
 
 [ 06 ] ESCOLA
 -------------
-  Status:      [ DECISÕES VALIDADAS — aguardando implementação ]
+  Status:      [ IMPLEMENTADO — 2026-06-29 ]
   Descrição:   Dados cadastrais, segmentos de ensino, múltiplos endereços e
                identidade visual por escola. Ponto central do tenant.
   Depende de:  Core, Planos/Assinatura
@@ -1277,7 +1277,7 @@ MÓDULOS — GESTÃO E COMUNICAÇÃO
 
 [ 19 ] FINANCEIRO ESCOLAR
 --------------------------
-  Status:      [ DECISÕES VALIDADAS — aguardando implementação ]
+  Status:      [ IMPLEMENTADO — 2026-06-29 ]
   Descrição:   Cobranças da escola para alunos/responsáveis. Mensalidades,
                taxas, boletos, controle de inadimplência. Integração Mercado
                Pago (extensível para outros gateways). Pagamentos físicos
@@ -1753,6 +1753,41 @@ DATA        MÓDULO          DECISÃO
 2026-06-29  ALUNOS          Leitura: DIRETOR + FUNCIONARIO | Escrita/Gestão: DIRETOR apenas
 2026-06-29  ALUNOS          Link "Alunos" adicionado ao sidebar nav do Diretor (_nav.html)
 2026-06-29  ALUNOS          KPI total_alunos atualizado no DashboardView (conta MatriculaTurma ativas)
+
+2026-06-29  COMUNICADOS     IMPLEMENTADO — Comunicado(escola, autor, titulo, corpo, tipo, destinatarios, turmas M2M, publicada)
+2026-06-29  COMUNICADOS     TipoComunicado: GERAL, CONVOCACAO, AVISO, ADVERTENCIA, ELOGIO, OUTRO
+2026-06-29  COMUNICADOS     DestinatarioComunicado: TODOS, TURMAS, RESPONSAVEIS, ALUNOS
+2026-06-29  COMUNICADOS     LeituraComunicado(comunicado FK, usuario FK, lido_em) — unique_together
+2026-06-29  COMUNICADOS     comunicado_service: criar, publicar (notifica destinatários), registrar_leitura, listar_nao_lidos
+2026-06-29  COMUNICADOS     Views: ListarComunicadosView, CriarComunicadoView, DetalheComunicadoView, EditarComunicadoView, PublicarComunicadoView, DespublicarComunicadoView, ExcluirComunicadoView
+2026-06-29  COMUNICADOS     Professor pode criar comunicados apenas para suas turmas (filtro no form + validação de escopo)
+2026-06-29  COMUNICADOS     Templates: lista.html, form_comunicado.html, detalhe.html (grid 2/3+1/3 com leituras) — /comunicados/
+2026-06-29  COMUNICADOS     Link "Comunicados" adicionado ao sidebar nav do Diretor (_nav.html)
+
+2026-06-29  AGENDA          IMPLEMENTADO — Evento(escola, autor, titulo, descricao, tipo, data_inicio, hora_inicio, data_fim, hora_fim, local, destinatarios, turmas M2M, publicada)
+2026-06-29  AGENDA          TipoEvento: REUNIAO, PROVA, EXCURSAO, FESTIVIDADE, OUTRO
+2026-06-29  AGENDA          LeituraEvento(evento FK, usuario FK, lido_em) — unique_together
+2026-06-29  AGENDA          evento_service: criar, publicar (notifica destinatários), registrar_leitura
+2026-06-29  AGENDA          Views: ListarEventosView, CriarEventoView, DetalheEventoView, EditarEventoView, PublicarEventoView, DespublicarEventoView, ExcluirEventoView
+2026-06-29  AGENDA          Apenas DIRETOR + COLABORADOR criam/editam/excluem eventos — PROFESSOR tem acesso de leitura
+2026-06-29  AGENDA          Templates: lista.html (data destacada em card), form_evento.html (datas/horários), detalhe.html — /agenda/
+2026-06-29  AGENDA          Link "Agenda" adicionado ao sidebar nav do Diretor (_nav.html)
+2026-06-29  AGENDA          Migration 0001_initial aplicada (Evento + LeituraEvento)
+2026-06-29  COMUNICADOS     Migration 0001_initial aplicada (Comunicado + LeituraComunicado)
+
+2026-06-29  RELATÓRIOS      IMPLEMENTADO — TipoRelatorio (8 tipos) + PeriodicidadeRelatorio + RelatorioAgendado + RelatorioGerado
+2026-06-29  RELATÓRIOS      relatorio_service: gerar_desempenho_turma, gerar_frequencia_turma, gerar_frequencia_aluno, gerar_alunos_em_risco
+2026-06-29  RELATÓRIOS      relatorio_service: gerar_boletim_lote (PDF via WeasyPrint), gerar_desempenho_professor (DIRETOR only)
+2026-06-29  RELATÓRIOS      relatorio_service: gerar_inadimplencia, gerar_extrato_financeiro, executar_agendados
+2026-06-29  RELATÓRIOS      _exportar_xlsx (openpyxl) e _exportar_pdf (WeasyPrint) helpers internos — formato: html/pdf/xlsx
+2026-06-29  RELATÓRIOS      Views: IndexRelatoriosView (catálogo), DesempenhoTurmaView, FrequenciaTurmaView, AlunosEmRiscoView
+2026-06-29  RELATÓRIOS      Views: BoletimLoteView, DesempenhoProfessorView (_DiretorMixin), InadimplenciaView, ExtratoFinanceiroView
+2026-06-29  RELATÓRIOS      Templates: index.html (catálogo 3 seções), 7 templates de resultado on-screen, pdf/boletim_lote.html (WeasyPrint)
+2026-06-29  RELATÓRIOS      Management command: executar_relatorios_agendados — para todas as escolas ativas
+2026-06-29  RELATÓRIOS      Admin Unfold: RelatorioAgendadoAdmin + RelatorioGeradoAdmin (readonly)
+2026-06-29  RELATÓRIOS      Link "Relatórios" adicionado ao sidebar nav do Diretor (_nav.html)
+2026-06-29  RELATÓRIOS      URL: /relatorios/ (namespace=relatorio), migration 0001_initial aplicada
+2026-06-29  RELATÓRIOS      DesempenhoProfessor: sinaliza turma com ≥50% alunos abaixo do mínimo (alerta vermelho)
 
 ================================================================================
 FIM DO ARQUIVO — última atualização: 2026-06-29

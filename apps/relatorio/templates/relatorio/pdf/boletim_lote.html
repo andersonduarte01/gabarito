@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<style>
+  @page { margin: 1.5cm; size: A4; }
+  body { font-family: Arial, sans-serif; font-size: 11px; color: #1e293b; }
+  .boletim { page-break-after: always; margin-bottom: 0; }
+  .boletim:last-child { page-break-after: avoid; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; border-bottom: 2px solid #0d6efd; padding-bottom: 8px; }
+  .escola-nome { font-size: 14px; font-weight: bold; color: #0d6efd; }
+  .aluno-info { margin-bottom: 10px; background: #f8fafc; padding: 8px 10px; border-radius: 6px; }
+  .aluno-nome { font-size: 13px; font-weight: bold; }
+  table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+  th { background: #0d6efd; color: white; padding: 5px 8px; text-align: center; font-size: 10px; }
+  th:first-child { text-align: left; }
+  td { padding: 4px 8px; border-bottom: 1px solid #e2e8f0; font-size: 10px; }
+  td:first-child { font-weight: 500; }
+  td:not(:first-child) { text-align: center; }
+  .aprovado { color: #16a34a; font-weight: bold; }
+  .recuperacao { color: #d97706; font-weight: bold; }
+  .reprovado { color: #dc2626; font-weight: bold; }
+  .em_curso { color: #64748b; }
+</style>
+</head>
+<body>
+{% for boletim in boletins %}
+<div class="boletim">
+  <div class="header">
+    <div>
+      <div class="escola-nome">{{ escola.nome }}</div>
+      <div>{{ turma.nome }} — Ano Letivo {{ ano_letivo.ano }}</div>
+    </div>
+    <div style="text-align:right">
+      <strong>BOLETIM ESCOLAR</strong>
+    </div>
+  </div>
+  <div class="aluno-info">
+    <div class="aluno-nome">{{ boletim.aluno.nome_completo }}</div>
+    <div>Matrícula: {{ boletim.aluno.matricula }}</div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Matéria</th>
+        {% for p in periodos %}<th>{{ p.nome }}</th>{% endfor %}
+        <th>Média Anual</th>
+        <th>Situação</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for mat_nome, por_periodo in boletim.materias_map.items %}
+      <tr>
+        <td>{{ mat_nome }}</td>
+        {% for p in periodos %}
+        <td>
+          {% with r=por_periodo|default_if_none:"" %}
+            {% if r %}{{ r.media_periodo|default:"—" }}{% else %}—{% endif %}
+          {% endwith %}
+        </td>
+        {% endfor %}
+        <td>
+          {% with anual=boletim.anual_map|default_if_none:"" %}
+            {% if anual %}{{ anual.media_anual|default:"—" }}{% else %}—{% endif %}
+          {% endwith %}
+        </td>
+        <td>
+          {% with anual=boletim.anual_map|default_if_none:"" %}
+            {% if anual %}
+              <span class="{{ anual.situacao_final|lower }}">{{ anual.get_situacao_final_display }}</span>
+            {% else %}—{% endif %}
+          {% endwith %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endfor %}
+</body>
+</html>

@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
 from apps.core.services.usuario_service import editar as editar_usuario, trocar_email
-from .forms import CriarProfessorForm, EditarProfessorForm, EnderecoPerfilForm, FormacaoAcademicaForm
+from .forms import AlterarSenhaProfessorForm, CriarProfessorForm, EditarProfessorForm, EnderecoPerfilForm, FormacaoAcademicaForm
 from .models import FormacaoAcademica, PerfilProfessor
 from .services import professor_service
 
@@ -56,14 +56,14 @@ class CriarProfessorView(_DiretorMixin, View):
         return render(request, self.template_name, self._ctx(request, form=form, editando=False))
 
     def post(self, request):
-        form = CriarProfessorForm(request.POST)
+        form = CriarProfessorForm(request.POST, request.FILES)
         if form.is_valid():
             cd = form.cleaned_data
             try:
                 professor_service.criar(
                     escola=request.escola,
-                    usuario_dados={'nome': cd['nome'], 'email': cd['email']},
-                    perfil_dados={k: v for k, v in cd.items() if k not in ('nome', 'email')},
+                    usuario_dados={'nome': cd['nome'], 'email': cd['email'], 'senha': cd['senha']},
+                    perfil_dados={k: v for k, v in cd.items() if k not in ('nome', 'email', 'senha', 'confirmar_senha')},
                     criado_por=request.user,
                 )
                 messages.success(request, 'Professor cadastrado com sucesso.')
@@ -106,7 +106,7 @@ class EditarProfessorView(_DiretorMixin, View):
 
     def post(self, request, pk):
         perfil = self._get_perfil(request, pk)
-        form = EditarProfessorForm(request.POST, instance=perfil, usuario=perfil.usuario)
+        form = EditarProfessorForm(request.POST, request.FILES, instance=perfil, usuario=perfil.usuario)
         if form.is_valid():
             novo_nome  = form.cleaned_data.pop('nome')
             novo_email = form.cleaned_data.pop('email')
@@ -119,6 +119,30 @@ class EditarProfessorView(_DiretorMixin, View):
         return render(request, self.template_name, self._ctx(
             request, form=form, editando=True, perfil=perfil,
         ))
+
+
+class AlterarSenhaProfessorView(_DiretorMixin, View):
+    template_name = 'professor/alterar_senha.html'
+
+    def _get_perfil(self, request, pk):
+        return get_object_or_404(
+            PerfilProfessor, pk=pk, papel__vinculo__escola=request.escola,
+        )
+
+    def get(self, request, pk):
+        perfil = self._get_perfil(request, pk)
+        form = AlterarSenhaProfessorForm()
+        return render(request, self.template_name, self._ctx(request, form=form, perfil=perfil))
+
+    def post(self, request, pk):
+        perfil = self._get_perfil(request, pk)
+        form = AlterarSenhaProfessorForm(request.POST)
+        if form.is_valid():
+            perfil.usuario.set_password(form.cleaned_data['nova_senha'])
+            perfil.usuario.save(update_fields=['password'])
+            messages.success(request, 'Senha alterada com sucesso.')
+            return redirect('professor:detalhe', pk=perfil.pk)
+        return render(request, self.template_name, self._ctx(request, form=form, perfil=perfil))
 
 
 class DesativarProfessorView(_DiretorMixin, View):

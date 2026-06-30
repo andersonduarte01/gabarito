@@ -9,6 +9,7 @@ urlpatterns = [
     path('criar/',                      views.CriarColaboradorView.as_view(),    name='criar'),
     path('<int:pk>/',                   views.DetalheColaboradorView.as_view(),  name='detalhe'),
     path('<int:pk>/editar/',            views.EditarColaboradorView.as_view(),   name='editar'),
+    path('<int:pk>/alterar-senha/',     views.AlterarSenhaColaboradorView.as_view(), name='alterar_senha'),
     path('<int:pk>/desativar/',         views.DesativarColaboradorView.as_view(), name='desativar'),
     path('<int:pk>/reativar/',          views.ReativarColaboradorView.as_view(), name='reativar'),
 

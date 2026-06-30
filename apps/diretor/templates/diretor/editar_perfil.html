@@ -21,8 +21,16 @@
 
     <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
 
-        <form method="post" class="px-6 py-5 space-y-6">
+        <form method="post" enctype="multipart/form-data" class="px-6 py-5 space-y-6">
             {% csrf_token %}
+
+            <!-- Foto -->
+            <div>
+                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">Foto</label>
+                {{ form.foto }}
+                {% if form.foto.errors %}<p class="text-xs text-red-500 mt-1">{{ form.foto.errors.0 }}</p>{% endif %}
+            </div>
+
             <div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="sm:col-span-2">

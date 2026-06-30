@@ -59,8 +59,9 @@ INSTALLED_APPS = [
     # 'apps.boletim',       # Módulo 17
     # 'apps.frequencia',    # Módulo 18
     'apps.financeiro',    # Módulo 19
-    # 'apps.comunicado',    # Módulo 20
-    # 'apps.relatorio',     # Módulo 21
+    'apps.comunicado',    # Módulo 20
+    'apps.agenda',        # Módulo 20
+    'apps.relatorio',     # Módulo 21
 ]
 
 MIDDLEWARE = [

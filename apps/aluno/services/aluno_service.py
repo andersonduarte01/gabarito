@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
 
@@ -98,3 +99,20 @@ def evadir(matricula: MatriculaTurma) -> MatriculaTurma:
 @transaction.atomic
 def concluir(matricula: MatriculaTurma) -> MatriculaTurma:
     return _encerrar_matricula(matricula, SituacaoMatricula.CONCLUINTE)
+
+
+@transaction.atomic
+def ativar_acesso(aluno: Aluno, email: str, senha: str) -> Aluno:
+    from apps.core.services import usuario_service, vinculo_service
+
+    User = get_user_model()
+    if User.objects.filter(email=email).exists():
+        raise ValueError('Já existe um usuário cadastrado com este e-mail.')
+
+    usuario = usuario_service.criar(email=email, nome=aluno.nome_completo, password=senha)
+    aluno.usuario = usuario
+    aluno.save(update_fields=['usuario'])
+
+    vinculo = vinculo_service.criar_vinculo(usuario, aluno.escola)
+    vinculo_service.adicionar_papel(vinculo, 'ALUNO')
+    return aluno

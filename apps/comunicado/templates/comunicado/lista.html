@@ -1,0 +1,126 @@
+{% extends "base/base_diretor.html" %}
+
+{% block titulo %}Comunicados — {{ escola.nome }}{% endblock %}
+{% block page_title %}Comunicados{% endblock %}
+
+{% block sidebar_nav %}
+{% include "diretor/_nav.html" with active="comunicados" %}
+{% endblock %}
+
+{% block conteudo %}
+<div>
+
+    <div class="flex items-start justify-between mb-5 gap-4 flex-wrap">
+        <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Comunicados</h2>
+        <a href="{% url 'comunicado:criar' %}"
+           class="flex items-center gap-2 px-4 py-2 rounded-xl shrink-0
+                  bg-[#0d6efd] hover:bg-[#0b5ed7] text-white text-sm font-medium transition-colors">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            Novo Comunicado
+        </a>
+    </div>
+
+    <!-- Filtros -->
+    <form method="get" class="flex flex-wrap gap-3 mb-5">
+        <select name="tipo"
+                class="px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600
+                       bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100
+                       focus:outline-none focus:ring-2 focus:ring-[#0d6efd]/40 focus:border-[#0d6efd]">
+            <option value="">Todos os tipos</option>
+            {% for val, label in tipos %}
+            <option value="{{ val }}" {% if tipo_filtro == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <select name="status"
+                class="px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600
+                       bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100
+                       focus:outline-none focus:ring-2 focus:ring-[#0d6efd]/40 focus:border-[#0d6efd]">
+            <option value="">Todos</option>
+            <option value="publicado" {% if status_filtro == 'publicado' %}selected{% endif %}>Publicados</option>
+            <option value="rascunho" {% if status_filtro == 'rascunho' %}selected{% endif %}>Rascunhos</option>
+        </select>
+        <button type="submit"
+                class="px-4 py-2 text-sm font-medium bg-slate-100 dark:bg-slate-700
+                       text-slate-700 dark:text-slate-200 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+            Filtrar
+        </button>
+        {% if tipo_filtro or status_filtro %}
+        <a href="{% url 'comunicado:lista' %}" class="px-4 py-2 text-sm text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">Limpar</a>
+        {% endif %}
+    </form>
+
+    {% if page.object_list %}
+    <div class="flex flex-col gap-2">
+        {% for comunicado in page.object_list %}
+        <div class="flex items-start justify-between gap-4 p-4 rounded-2xl
+                    border border-slate-100 dark:border-slate-700
+                    bg-white dark:bg-slate-800 hover:shadow-sm transition-shadow">
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1 flex-wrap">
+                    <a href="{% url 'comunicado:detalhe' comunicado.pk %}"
+                       class="font-medium text-slate-900 dark:text-white hover:text-[#0d6efd] transition-colors truncate">
+                        {{ comunicado.titulo }}
+                    </a>
+                    {% if comunicado.publicada %}
+                    <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">Publicado</span>
+                    {% else %}
+                    <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">Rascunho</span>
+                    {% endif %}
+                    <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                        {{ comunicado.get_tipo_display }}
+                    </span>
+                </div>
+                <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-1">{{ comunicado.corpo|truncatewords:15 }}</p>
+                <div class="flex items-center gap-3 mt-1 text-xs text-slate-400">
+                    <span>{{ comunicado.get_destinatarios_display }}</span>
+                    <span>·</span>
+                    <span>{{ comunicado.criado_em|date:"d/m/Y H:i" }}</span>
+                    {% if comunicado.publicada %}
+                    <span>·</span>
+                    <span>{{ comunicado.leituras.count }} leitura{{ comunicado.leituras.count|pluralize:"s" }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="flex items-center gap-1 shrink-0">
+                <a href="{% url 'comunicado:detalhe' comunicado.pk %}"
+                   class="p-2 rounded-lg text-slate-400 hover:text-[#0d6efd] hover:bg-[#0d6efd]/10 transition-colors"
+                   title="Ver">
+                    <i data-lucide="eye" class="w-4 h-4"></i>
+                </a>
+                <a href="{% url 'comunicado:editar' comunicado.pk %}"
+                   class="p-2 rounded-lg text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
+                   title="Editar">
+                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Paginação -->
+    {% if page.has_other_pages %}
+    <div class="flex items-center justify-center gap-2 mt-6">
+        {% if page.has_previous %}
+        <a href="?page={{ page.previous_page_number }}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}{% if status_filtro %}&status={{ status_filtro }}{% endif %}"
+           class="px-3 py-1.5 text-sm rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors">Anterior</a>
+        {% endif %}
+        <span class="text-sm text-slate-500 dark:text-slate-400">{{ page.number }} de {{ page.paginator.num_pages }}</span>
+        {% if page.has_next %}
+        <a href="?page={{ page.next_page_number }}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}{% if status_filtro %}&status={{ status_filtro }}{% endif %}"
+           class="px-3 py-1.5 text-sm rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors">Próxima</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="flex flex-col items-center justify-center py-16 text-center">
+        <div class="w-14 h-14 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center mb-4">
+            <i data-lucide="megaphone" class="w-6 h-6 text-slate-400"></i>
+        </div>
+        <p class="text-slate-500 dark:text-slate-400 text-sm">Nenhum comunicado encontrado.</p>
+        <a href="{% url 'comunicado:criar' %}" class="mt-3 text-sm text-[#0d6efd] hover:underline">Criar o primeiro comunicado</a>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

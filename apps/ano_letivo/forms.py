@@ -20,12 +20,12 @@ class AnoLetivoForm(forms.Form):
     data_inicio = forms.DateField(
         label='Data de Início',
         input_formats=_DATE_FORMATS,
-        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}),
+        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}, format='%Y-%m-%d'),
     )
     data_fim = forms.DateField(
         label='Data de Fim',
         input_formats=_DATE_FORMATS,
-        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}),
+        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}, format='%Y-%m-%d'),
     )
 
     def clean(self):
@@ -52,12 +52,12 @@ class PeriodoLetivoForm(forms.Form):
     data_inicio = forms.DateField(
         label='Data de Início',
         input_formats=_DATE_FORMATS,
-        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}),
+        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}, format='%Y-%m-%d'),
     )
     data_fim = forms.DateField(
         label='Data de Fim',
         input_formats=_DATE_FORMATS,
-        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}),
+        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}, format='%Y-%m-%d'),
     )
 
     def clean(self):

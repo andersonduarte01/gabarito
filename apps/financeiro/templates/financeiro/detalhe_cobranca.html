@@ -4,7 +4,11 @@
 {% block page_title %}Financeiro{% endblock %}
 
 {% block sidebar_nav %}
+{% if papel.tipo == 'COLABORADOR' %}
+{% include "colaborador/_nav.html" with active="financeiro" %}
+{% else %}
 {% include "diretor/_nav.html" with active="financeiro" %}
+{% endif %}
 {% endblock %}
 
 {% block conteudo %}
@@ -98,7 +102,6 @@
             </button>
         </form>
         {% endif %}
-        {% if papel.tipo == 'DIRETOR' %}
         <form method="post" action="{% url 'financeiro:cancelar_cobranca' cobranca.pk %}"
               onsubmit="return confirm('Cancelar esta cobrança? Esta ação não pode ser desfeita.')">
             {% csrf_token %}
@@ -109,7 +112,6 @@
                 Cancelar Cobrança
             </button>
         </form>
-        {% endif %}
     </div>
     {% endif %}
 

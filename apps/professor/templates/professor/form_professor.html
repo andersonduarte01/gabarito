@@ -16,92 +16,102 @@
         <span class="text-slate-600 dark:text-slate-300">{% if editando %}Editar{% else %}Novo{% endif %}</span>
     </div>
 
-    <form method="post" class="space-y-6">
+    <form method="post" enctype="multipart/form-data" class="space-y-6">
         {% csrf_token %}
 
-        <!-- Dados de Acesso -->
-        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-6">
-            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
-                <i data-lucide="user" class="w-4 h-4 text-slate-400"></i>
-                Dados de Acesso
-            </h3>
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm px-6 py-5">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                        {{ form.foto.label }}
+                    </label>
+                    {{ form.foto }}
+                    {% if form.foto.errors %}<p class="text-xs text-red-500 mt-1">{{ form.foto.errors.0 }}</p>{% endif %}
+                </div>
+
+                <div class="md:col-span-2">
                     <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
                         {{ form.nome.label }} <span class="text-red-400">*</span>
                     </label>
                     {{ form.nome }}
                     {% if form.nome.errors %}<p class="text-xs text-red-500 mt-1">{{ form.nome.errors.0 }}</p>{% endif %}
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                        {{ form.email.label }} <span class="text-red-400">*</span>
-                    </label>
-                    {{ form.email }}
-                    {% if form.email.errors %}<p class="text-xs text-red-500 mt-1">{{ form.email.errors.0 }}</p>{% endif %}
-                </div>
-            </div>
-        </div>
 
-        <!-- Dados Profissionais -->
-        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-6">
-            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
-                <i data-lucide="graduation-cap" class="w-4 h-4 text-slate-400"></i>
-                Dados Profissionais
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
                         {{ form.tipo_vinculo.label }} <span class="text-red-400">*</span>
                     </label>
                     {{ form.tipo_vinculo }}
                 </div>
+
                 <div>
                     <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
                         {{ form.registro_profissional.label }}
                     </label>
                     {{ form.registro_profissional }}
                 </div>
+
                 <div>
                     <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
                         {{ form.data_admissao.label }}
                     </label>
                     {{ form.data_admissao }}
                 </div>
+
                 <div>
                     <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
                         {{ form.telefone.label }}
                     </label>
                     {{ form.telefone }}
                 </div>
-            </div>
-        </div>
 
-        <!-- Dados Pessoais -->
-        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-6">
-            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
-                <i data-lucide="id-card" class="w-4 h-4 text-slate-400"></i>
-                Dados Pessoais
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
                         {{ form.cpf.label }}
                     </label>
                     {{ form.cpf }}
                 </div>
+
                 <div>
                     <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
                         {{ form.rg.label }}
                     </label>
                     {{ form.rg }}
                 </div>
+
                 <div>
                     <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
                         {{ form.data_nascimento.label }}
                     </label>
                     {{ form.data_nascimento }}
                 </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                        {{ form.email.label }} <span class="text-red-400">*</span>
+                    </label>
+                    {{ form.email }}
+                    {% if form.email.errors %}<p class="text-xs text-red-500 mt-1">{{ form.email.errors.0 }}</p>{% endif %}
+                </div>
+
+                {% if not editando %}
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                        {{ form.senha.label }} <span class="text-red-400">*</span>
+                    </label>
+                    {{ form.senha }}
+                    {% if form.senha.errors %}<p class="text-xs text-red-500 mt-1">{{ form.senha.errors.0 }}</p>{% endif %}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                        {{ form.confirmar_senha.label }} <span class="text-red-400">*</span>
+                    </label>
+                    {{ form.confirmar_senha }}
+                    {% if form.confirmar_senha.errors %}<p class="text-xs text-red-500 mt-1">{{ form.confirmar_senha.errors.0 }}</p>{% endif %}
+                </div>
+                {% endif %}
+
             </div>
         </div>
 
@@ -113,13 +123,14 @@
 
         <div class="flex items-center justify-end gap-3">
             <a href="{% if editando and perfil %}{% url 'professor:detalhe' perfil.pk %}{% else %}{% url 'professor:lista' %}{% endif %}"
-               class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300
-                      border border-slate-200 dark:border-slate-700 rounded-xl
-                      hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+               class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200
+                      dark:bg-slate-700 dark:hover:bg-slate-600
+                      text-slate-600 dark:text-slate-300 text-sm font-medium transition-colors">
                 Cancelar
             </a>
             <button type="submit"
-                    class="px-5 py-2 text-sm font-medium text-white bg-[#0d6efd] hover:bg-[#0b5ed7] rounded-xl transition-colors">
+                    class="px-5 py-2.5 rounded-xl bg-[#0d6efd] hover:bg-[#0b5ed7]
+                           text-white text-sm font-medium transition-colors">
                 {% if editando %}Salvar alterações{% else %}Cadastrar professor{% endif %}
             </button>
         </div>

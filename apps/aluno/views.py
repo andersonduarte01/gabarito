@@ -4,9 +4,12 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
-from .forms import CriarAlunoForm, EditarAlunoForm, MatriculaTurmaForm, TrocarTurmaForm
+from .forms import AtivarAcessoForm, CriarAlunoForm, EditarAlunoForm, MatriculaTurmaForm, TrocarTurmaForm, VincularResponsavelForm
 from .models import Aluno, MatriculaTurma
 from .services import aluno_service
+
+_ESCRITA = ('DIRETOR', 'FUNCIONARIO')
+_LEITURA = ('DIRETOR', 'FUNCIONARIO')
 
 
 class _LeituraMixin:
@@ -14,7 +17,7 @@ class _LeituraMixin:
         if not request.user.is_authenticated:
             return redirect('accounts:login')
         papel = getattr(request, 'papel', None)
-        if papel is None or papel.tipo not in ('DIRETOR', 'FUNCIONARIO'):
+        if papel is None or papel.tipo not in _LEITURA:
             raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
 
@@ -22,12 +25,12 @@ class _LeituraMixin:
         return {'usuario': request.user, 'escola': request.escola, 'papel': request.papel, **extra}
 
 
-class _DiretorMixin:
+class _EscritaMixin:
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('accounts:login')
         papel = getattr(request, 'papel', None)
-        if papel is None or papel.tipo != 'DIRETOR':
+        if papel is None or papel.tipo not in _ESCRITA:
             raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
 
@@ -69,7 +72,7 @@ class ListarAlunosView(_LeituraMixin, View):
         ))
 
 
-class CriarAlunoView(_DiretorMixin, View):
+class CriarAlunoView(_EscritaMixin, View):
     template_name = 'aluno/form_aluno.html'
 
     def get(self, request):
@@ -77,7 +80,7 @@ class CriarAlunoView(_DiretorMixin, View):
         return render(request, self.template_name, self._ctx(request, form=form, editando=False))
 
     def post(self, request):
-        form = CriarAlunoForm(request.POST, escola=request.escola)
+        form = CriarAlunoForm(request.POST, request.FILES, escola=request.escola)
         if form.is_valid():
             cd = form.cleaned_data
             try:
@@ -86,6 +89,7 @@ class CriarAlunoView(_DiretorMixin, View):
                     'data_nascimento': cd.get('data_nascimento'),
                     'cpf':             cd.get('cpf', ''),
                     'rg':              cd.get('rg', ''),
+                    'foto':            cd.get('foto'),
                     'turma':           cd.get('turma'),
                     'ano_letivo':      cd.get('ano_letivo'),
                 })
@@ -106,14 +110,17 @@ class DetalheAlunoView(_LeituraMixin, View):
             ),
             pk=pk, escola=request.escola,
         )
-        mat_form   = MatriculaTurmaForm(escola=request.escola)
-        troca_form = TrocarTurmaForm(escola=request.escola)
+        mat_form           = MatriculaTurmaForm(escola=request.escola)
+        troca_form         = TrocarTurmaForm(escola=request.escola)
+        acesso_form        = AtivarAcessoForm()
+        vincular_resp_form = VincularResponsavelForm(escola=request.escola)
         return render(request, self.template_name, self._ctx(
             request, aluno=aluno, mat_form=mat_form, troca_form=troca_form,
+            acesso_form=acesso_form, vincular_resp_form=vincular_resp_form,
         ))
 
 
-class EditarAlunoView(_DiretorMixin, View):
+class EditarAlunoView(_EscritaMixin, View):
     template_name = 'aluno/form_aluno.html'
 
     def _get_aluno(self, request, pk):
@@ -126,7 +133,7 @@ class EditarAlunoView(_DiretorMixin, View):
 
     def post(self, request, pk):
         aluno = self._get_aluno(request, pk)
-        form  = EditarAlunoForm(request.POST, instance=aluno)
+        form  = EditarAlunoForm(request.POST, request.FILES, instance=aluno)
         if form.is_valid():
             aluno_service.editar(aluno, form.cleaned_data)
             messages.success(request, 'Aluno atualizado com sucesso.')
@@ -134,7 +141,7 @@ class EditarAlunoView(_DiretorMixin, View):
         return render(request, self.template_name, self._ctx(request, form=form, editando=True, aluno=aluno))
 
 
-class DesativarAlunoView(_DiretorMixin, View):
+class DesativarAlunoView(_EscritaMixin, View):
     def post(self, request, pk):
         aluno = get_object_or_404(Aluno, pk=pk, escola=request.escola)
         aluno_service.desativar(aluno)
@@ -142,7 +149,7 @@ class DesativarAlunoView(_DiretorMixin, View):
         return redirect('aluno:lista')
 
 
-class ReativarAlunoView(_DiretorMixin, View):
+class ReativarAlunoView(_EscritaMixin, View):
     def post(self, request, pk):
         aluno = get_object_or_404(Aluno, pk=pk, escola=request.escola)
         aluno_service.reativar(aluno)
@@ -150,7 +157,7 @@ class ReativarAlunoView(_DiretorMixin, View):
         return redirect('aluno:lista')
 
 
-class MatricularView(_DiretorMixin, View):
+class MatricularView(_EscritaMixin, View):
     def post(self, request, pk):
         aluno = get_object_or_404(Aluno, pk=pk, escola=request.escola)
         form  = MatriculaTurmaForm(request.POST, escola=request.escola)
@@ -165,7 +172,7 @@ class MatricularView(_DiretorMixin, View):
         return redirect('aluno:detalhe', pk=aluno.pk)
 
 
-class TrocarTurmaView(_DiretorMixin, View):
+class TrocarTurmaView(_EscritaMixin, View):
     def post(self, request, mat_pk):
         matricula = get_object_or_404(
             MatriculaTurma, pk=mat_pk, aluno__escola=request.escola, ativo=True,
@@ -179,7 +186,7 @@ class TrocarTurmaView(_DiretorMixin, View):
         return redirect('aluno:detalhe', pk=matricula.aluno_id)
 
 
-class TransferirView(_DiretorMixin, View):
+class TransferirView(_EscritaMixin, View):
     def post(self, request, mat_pk):
         matricula = get_object_or_404(
             MatriculaTurma, pk=mat_pk, aluno__escola=request.escola, ativo=True,
@@ -189,7 +196,7 @@ class TransferirView(_DiretorMixin, View):
         return redirect('aluno:lista')
 
 
-class EvadiemView(_DiretorMixin, View):
+class EvadiemView(_EscritaMixin, View):
     def post(self, request, mat_pk):
         matricula = get_object_or_404(
             MatriculaTurma, pk=mat_pk, aluno__escola=request.escola, ativo=True,
@@ -199,7 +206,7 @@ class EvadiemView(_DiretorMixin, View):
         return redirect('aluno:lista')
 
 
-class ConcluirView(_DiretorMixin, View):
+class ConcluirView(_EscritaMixin, View):
     def post(self, request, mat_pk):
         matricula = get_object_or_404(
             MatriculaTurma, pk=mat_pk, aluno__escola=request.escola, ativo=True,
@@ -207,3 +214,46 @@ class ConcluirView(_DiretorMixin, View):
         aluno_service.concluir(matricula)
         messages.success(request, f'{matricula.aluno.nome_completo} marcado(a) como concluinte.')
         return redirect('aluno:detalhe', pk=matricula.aluno_id)
+
+
+class AtivarAcessoView(_EscritaMixin, View):
+    def post(self, request, pk):
+        aluno = get_object_or_404(Aluno, pk=pk, escola=request.escola)
+        if aluno.usuario_id:
+            messages.warning(request, f'{aluno.nome_completo} já possui acesso ao sistema.')
+            return redirect('aluno:detalhe', pk=aluno.pk)
+        form = AtivarAcessoForm(request.POST)
+        if form.is_valid():
+            try:
+                aluno_service.ativar_acesso(aluno, form.cleaned_data['email'], form.cleaned_data['senha'])
+                messages.success(request, f'Acesso ativado para {aluno.nome_completo}.')
+            except ValueError as exc:
+                messages.error(request, str(exc))
+        else:
+            messages.error(request, 'Dados inválidos.')
+        return redirect('aluno:detalhe', pk=aluno.pk)
+
+
+class VincularResponsavelAlunoView(_EscritaMixin, View):
+    def post(self, request, pk):
+        aluno = get_object_or_404(Aluno, pk=pk, escola=request.escola)
+        form  = VincularResponsavelForm(request.POST, escola=request.escola)
+        if form.is_valid():
+            cd = form.cleaned_data
+            try:
+                from apps.responsavel.services import responsavel_service
+                responsavel_service.vincular_aluno(
+                    perfil=cd['responsavel'],
+                    aluno=aluno,
+                    dados={
+                        'parentesco':             cd['parentesco'],
+                        'responsavel_principal':  cd['responsavel_principal'],
+                        'responsavel_financeiro': cd['responsavel_financeiro'],
+                    },
+                )
+                messages.success(request, f'{cd["responsavel"].nome} vinculado(a) com sucesso.')
+            except Exception as exc:
+                messages.error(request, f'Erro: {exc}')
+        else:
+            messages.error(request, 'Dados inválidos.')
+        return redirect('aluno:detalhe', pk=aluno.pk)

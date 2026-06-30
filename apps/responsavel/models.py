@@ -24,6 +24,7 @@ class PerfilResponsavel(models.Model):
     rg              = models.CharField('RG', max_length=20, blank=True)
     data_nascimento = models.DateField('Data de Nascimento', null=True, blank=True)
     telefone        = models.CharField('Telefone', max_length=20, blank=True)
+    foto            = models.ImageField('Foto', upload_to='responsaveis/fotos/', null=True, blank=True)
     endereco        = models.OneToOneField(
         'core.Endereco',
         on_delete=models.SET_NULL,

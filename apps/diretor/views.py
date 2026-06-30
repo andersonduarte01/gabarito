@@ -116,7 +116,7 @@ class EditarPerfilView(DiretorRequiredMixin, View):
 
     def post(self, request):
         perfil = self._get_perfil(request)
-        form   = EditarPerfilDiretorForm(request.POST, instance=perfil, usuario=request.user)
+        form   = EditarPerfilDiretorForm(request.POST, request.FILES, instance=perfil, usuario=request.user)
         if form.is_valid():
             novo_nome  = form.cleaned_data.pop('nome')
             novo_email = form.cleaned_data.pop('email')
@@ -187,15 +187,16 @@ class CriarDiretorView(DiretorRequiredMixin, View):
         return render(request, self.template_name, self._ctx(request, form=form))
 
     def post(self, request):
-        form = CriarDiretorForm(request.POST)
+        form = CriarDiretorForm(request.POST, request.FILES)
         if form.is_valid():
             try:
                 usuario_dados = {
                     'nome':  form.cleaned_data['nome'],
                     'email': form.cleaned_data['email'],
+                    'senha': form.cleaned_data['senha'],
                 }
                 perfil_dados = {k: v for k, v in form.cleaned_data.items()
-                                if k not in ('nome', 'email')}
+                                if k not in ('nome', 'email', 'senha', 'confirmar_senha')}
                 criar(
                     escola=request.escola,
                     usuario_dados=usuario_dados,

@@ -2,7 +2,9 @@ from decimal import Decimal, InvalidOperation
 
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.views import View
 
 from .forms import AvaliacaoForm, OpcaoRespostaForm, QuestaoForm
@@ -219,6 +221,37 @@ class AdicionarOpcaoView(_DiretorMixin, View):
         else:
             messages.error(request, 'Dados da opção inválidos.')
         return redirect('avaliacao:detalhe', pk=pk)
+
+
+class ExportarPdfView(_LeituraMixin, View):
+    def get(self, request, pk):
+        avaliacao = get_object_or_404(
+            Avaliacao.objects
+            .select_related(
+                'turma', 'materia', 'ano_letivo', 'periodo_letivo',
+                'professor__papel__vinculo__usuario', 'escola',
+            )
+            .prefetch_related('questoes__opcoes'),
+            pk=pk, escola=request.escola,
+        )
+        questoes = avaliacao.questoes.all()
+
+        try:
+            from weasyprint import HTML
+        except ImportError:
+            return HttpResponse('WeasyPrint não instalado.', status=500)
+
+        html = render_to_string(
+            'avaliacao/avaliacao_pdf.html',
+            {'avaliacao': avaliacao, 'escola': request.escola, 'questoes': questoes},
+            request=request,
+        )
+        pdf = HTML(string=html, base_url=request.build_absolute_uri('/')).write_pdf()
+
+        nome = avaliacao.titulo[:50].replace(' ', '-').lower()
+        response = HttpResponse(pdf, content_type='application/pdf')
+        response['Content-Disposition'] = f'inline; filename="avaliacao-{nome}.pdf"'
+        return response
 
 
 class LancarNotasView(_DiretorMixin, View):

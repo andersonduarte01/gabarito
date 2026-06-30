@@ -24,6 +24,17 @@ _INPUT = (
     'focus:ring-2 focus:ring-[#0d6efd]/30 focus:border-[#0d6efd]'
 )
 _SELECT = _INPUT
+_FILE = (
+    'w-full text-sm text-slate-600 dark:text-slate-400 '
+    'border border-slate-200 dark:border-slate-700 rounded-lg '
+    'bg-white dark:bg-slate-800 cursor-pointer '
+    'file:cursor-pointer file:border-0 file:mr-3 file:px-4 file:py-2 '
+    'file:text-sm file:font-medium '
+    'file:bg-slate-100 file:text-slate-600 '
+    'dark:file:bg-slate-700 dark:file:text-slate-300 '
+    'file:hover:bg-slate-200 dark:file:hover:bg-slate-600 '
+    'file:transition-colors'
+)
 
 
 class EditarPerfilDiretorForm(forms.ModelForm):
@@ -38,16 +49,17 @@ class EditarPerfilDiretorForm(forms.ModelForm):
 
     class Meta:
         model  = PerfilDiretor
-        fields = ['cargo', 'cpf', 'data_nascimento', 'telefone',
+        fields = ['foto', 'cargo', 'cpf', 'data_nascimento', 'telefone',
                   'numero_ato', 'data_ato', 'data_inicio']
         widgets = {
+            'foto':            forms.FileInput(attrs={'class': _FILE}),
             'cargo':           forms.Select(attrs={'class': _SELECT}),
             'cpf':             forms.TextInput(attrs={'class': _INPUT, 'placeholder': '000.000.000-00'}),
-            'data_nascimento': forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}),
+            'data_nascimento': forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}, format='%Y-%m-%d'),
             'telefone':        forms.TextInput(attrs={'class': _INPUT, 'placeholder': '(00) 00000-0000'}),
             'numero_ato':      forms.TextInput(attrs={'class': _INPUT, 'placeholder': 'Nº do ato de nomeação'}),
-            'data_ato':        forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}),
-            'data_inicio':     forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}),
+            'data_ato':        forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}, format='%Y-%m-%d'),
+            'data_inicio':     forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}, format='%Y-%m-%d'),
         }
 
     def __init__(self, *args, usuario=None, **kwargs):
@@ -66,6 +78,18 @@ class CriarDiretorForm(forms.Form):
         label='E-mail',
         widget=forms.EmailInput(attrs={'class': _INPUT, 'placeholder': 'email@escola.com.br'}),
     )
+    senha           = forms.CharField(
+        label='Senha', min_length=8,
+        widget=forms.PasswordInput(attrs={'class': _INPUT, 'placeholder': 'Mínimo 8 caracteres'}),
+    )
+    confirmar_senha = forms.CharField(
+        label='Confirmar senha',
+        widget=forms.PasswordInput(attrs={'class': _INPUT, 'placeholder': 'Repita a senha'}),
+    )
+    foto            = forms.ImageField(
+        required=False, label='Foto',
+        widget=forms.FileInput(attrs={'class': _FILE}),
+    )
     cargo           = forms.ChoiceField(
         choices=CargoDiretor.choices, label='Cargo',
         widget=forms.Select(attrs={'class': _SELECT}),
@@ -80,12 +104,20 @@ class CriarDiretorForm(forms.Form):
     )
     data_nascimento = forms.DateField(
         required=False, label='Data de Nascimento',
-        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}),
+        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}, format='%Y-%m-%d'),
     )
     data_inicio     = forms.DateField(
         required=False, label='Data de Início no Cargo',
-        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}),
+        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}, format='%Y-%m-%d'),
     )
+
+    def clean(self):
+        cleaned = super().clean()
+        senha = cleaned.get('senha')
+        confirmar = cleaned.get('confirmar_senha')
+        if senha and confirmar and senha != confirmar:
+            self.add_error('confirmar_senha', 'As senhas não conferem.')
+        return cleaned
 
 
 class EnderecoPerfilForm(forms.ModelForm):

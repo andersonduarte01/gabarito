@@ -21,7 +21,7 @@ class _DiretorRequiredMixin:
         return super().dispatch(request, *args, **kwargs)
 
     def _ctx(self, request):
-        return {'usuario': request.user, 'escola': request.escola}
+        return {'usuario': request.user, 'escola': request.escola, 'papel': request.papel}
 
 
 class _LeituraRequiredMixin:
@@ -34,7 +34,7 @@ class _LeituraRequiredMixin:
         return super().dispatch(request, *args, **kwargs)
 
     def _ctx(self, request):
-        return {'usuario': request.user, 'escola': request.escola}
+        return {'usuario': request.user, 'escola': request.escola, 'papel': request.papel}
 
 
 class ListarAnoLetivoView(_LeituraRequiredMixin, View):

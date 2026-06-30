@@ -9,16 +9,31 @@ _INPUT = (
     'focus:ring-2 focus:ring-[#0d6efd]/30 focus:border-[#0d6efd]'
 )
 _SELECT = _INPUT
+_FILE = (
+    'w-full text-sm text-slate-600 dark:text-slate-400 '
+    'border border-slate-200 dark:border-slate-700 rounded-lg '
+    'bg-white dark:bg-slate-800 cursor-pointer '
+    'file:cursor-pointer file:border-0 file:mr-3 file:px-4 file:py-2 '
+    'file:text-sm file:font-medium '
+    'file:bg-slate-100 file:text-slate-600 '
+    'dark:file:bg-slate-700 dark:file:text-slate-300 '
+    'file:hover:bg-slate-200 dark:file:hover:bg-slate-600 '
+    'file:transition-colors'
+)
 
 
 class CriarAlunoForm(forms.Form):
+    foto            = forms.ImageField(
+        label='Foto', required=False,
+        widget=forms.FileInput(attrs={'class': _FILE}),
+    )
     nome_completo   = forms.CharField(
         label='Nome Completo', max_length=200,
         widget=forms.TextInput(attrs={'class': _INPUT, 'placeholder': 'Nome completo do aluno'}),
     )
     data_nascimento = forms.DateField(
         label='Data de Nascimento', required=False,
-        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}),
+        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}, format='%Y-%m-%d'),
     )
     cpf             = forms.CharField(
         label='CPF', max_length=14, required=False,
@@ -62,10 +77,11 @@ class CriarAlunoForm(forms.Form):
 class EditarAlunoForm(forms.ModelForm):
     class Meta:
         model  = Aluno
-        fields = ('nome_completo', 'data_nascimento', 'cpf', 'rg')
+        fields = ('foto', 'nome_completo', 'data_nascimento', 'cpf', 'rg')
         widgets = {
+            'foto':            forms.FileInput(attrs={'class': _FILE}),
             'nome_completo':   forms.TextInput(attrs={'class': _INPUT}),
-            'data_nascimento': forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}),
+            'data_nascimento': forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}, format='%Y-%m-%d'),
             'cpf':             forms.TextInput(attrs={'class': _INPUT, 'placeholder': '000.000.000-00'}),
             'rg':              forms.TextInput(attrs={'class': _INPUT}),
         }
@@ -91,6 +107,62 @@ class MatriculaTurmaForm(forms.Form):
         else:
             self.fields['turma'].queryset      = Turma.objects.none()
             self.fields['ano_letivo'].queryset = Turma.objects.none()
+
+
+class AtivarAcessoForm(forms.Form):
+    email = forms.EmailField(
+        label='E-mail',
+        widget=forms.EmailInput(attrs={'class': _INPUT, 'placeholder': 'email@exemplo.com'}),
+    )
+    senha = forms.CharField(
+        label='Senha',
+        widget=forms.PasswordInput(attrs={'class': _INPUT, 'placeholder': 'Senha de acesso'}),
+    )
+    confirmar_senha = forms.CharField(
+        label='Confirmar senha',
+        widget=forms.PasswordInput(attrs={'class': _INPUT, 'placeholder': 'Repita a senha'}),
+    )
+
+    def clean(self):
+        cleaned = super().clean()
+        s1 = cleaned.get('senha')
+        s2 = cleaned.get('confirmar_senha')
+        if s1 and s2 and s1 != s2:
+            self.add_error('confirmar_senha', 'As senhas não conferem.')
+        return cleaned
+
+
+class VincularResponsavelForm(forms.Form):
+    responsavel = forms.ModelChoiceField(
+        label='Responsável', queryset=None, empty_label='— Selecione —',
+        widget=forms.Select(attrs={'class': _SELECT}),
+    )
+    parentesco = forms.ChoiceField(
+        label='Parentesco', choices=[],
+        widget=forms.Select(attrs={'class': _SELECT}),
+    )
+    responsavel_principal = forms.BooleanField(
+        label='Responsável principal', required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'w-4 h-4 rounded border-slate-300 text-[#0d6efd]'}),
+    )
+    responsavel_financeiro = forms.BooleanField(
+        label='Responsável financeiro', required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'w-4 h-4 rounded border-slate-300 text-[#0d6efd]'}),
+    )
+
+    def __init__(self, *args, escola=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        from apps.responsavel.models import Parentesco, PerfilResponsavel
+        self.fields['parentesco'].choices = Parentesco.choices
+        if escola:
+            self.fields['responsavel'].queryset = (
+                PerfilResponsavel.objects
+                .filter(vinculos_aluno__aluno__escola=escola)
+                .distinct()
+                .order_by('nome')
+            )
+        else:
+            self.fields['responsavel'].queryset = PerfilResponsavel.objects.none()
 
 
 class TrocarTurmaForm(forms.Form):

@@ -4,7 +4,11 @@
 {% block page_title %}{% if editando %}Editar Aluno{% else %}Novo Aluno{% endif %}{% endblock %}
 
 {% block sidebar_nav %}
+{% if papel.tipo == 'FUNCIONARIO' %}
+{% include "colaborador/_nav.html" with active="alunos" %}
+{% else %}
 {% include "diretor/_nav.html" with active="alunos" %}
+{% endif %}
 {% endblock %}
 
 {% block conteudo %}
@@ -22,92 +26,108 @@
         {% endif %}
     </div>
 
-    <form method="post" class="space-y-6">
+    {% if form.non_field_errors %}
+    <div class="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 mb-4">
+        {% for error in form.non_field_errors %}
+        <p class="text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
 
-        <!-- Dados Pessoais -->
-        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-6">
-            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
-                <i data-lucide="user" class="w-4 h-4 text-slate-400"></i>
-                Dados Pessoais
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 px-6 pt-6 pb-2">
+
+                <!-- Foto (linha inteira) -->
                 <div class="md:col-span-2">
-                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        {{ form.foto.label }}
+                    </label>
+                    {{ form.foto }}
+                </div>
+
+                <!-- Nome completo (linha inteira) -->
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
                         {{ form.nome_completo.label }} <span class="text-red-400">*</span>
                     </label>
                     {{ form.nome_completo }}
-                    {% if form.nome_completo.errors %}<p class="text-xs text-red-500 mt-1">{{ form.nome_completo.errors.0 }}</p>{% endif %}
+                    {% if form.nome_completo.errors %}<p class="mt-1 text-xs text-red-500">{{ form.nome_completo.errors.0 }}</p>{% endif %}
                 </div>
+
+                <!-- Data de nascimento -->
                 <div>
-                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
                         {{ form.data_nascimento.label }}
                     </label>
                     {{ form.data_nascimento }}
-                    {% if form.data_nascimento.errors %}<p class="text-xs text-red-500 mt-1">{{ form.data_nascimento.errors.0 }}</p>{% endif %}
+                    {% if form.data_nascimento.errors %}<p class="mt-1 text-xs text-red-500">{{ form.data_nascimento.errors.0 }}</p>{% endif %}
                 </div>
+
+                <!-- CPF -->
                 <div>
-                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
                         {{ form.cpf.label }}
                     </label>
                     {{ form.cpf }}
-                    {% if form.cpf.errors %}<p class="text-xs text-red-500 mt-1">{{ form.cpf.errors.0 }}</p>{% endif %}
+                    {% if form.cpf.errors %}<p class="mt-1 text-xs text-red-500">{{ form.cpf.errors.0 }}</p>{% endif %}
                 </div>
+
+                <!-- RG -->
                 <div>
-                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
                         {{ form.rg.label }}
                     </label>
                     {{ form.rg }}
-                    {% if form.rg.errors %}<p class="text-xs text-red-500 mt-1">{{ form.rg.errors.0 }}</p>{% endif %}
+                    {% if form.rg.errors %}<p class="mt-1 text-xs text-red-500">{{ form.rg.errors.0 }}</p>{% endif %}
                 </div>
-            </div>
-        </div>
 
-        {% if not editando %}
-        <!-- Matrícula Inicial -->
-        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-6">
-            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1 flex items-center gap-2">
-                <i data-lucide="book-open" class="w-4 h-4 text-slate-400"></i>
-                Matrícula Inicial
-            </h3>
-            <p class="text-xs text-slate-400 dark:text-slate-500 mb-4">Opcional — pode ser feita depois na ficha do aluno.</p>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {% if not editando %}
+                <!-- Separador matrícula inicial -->
+                <div class="md:col-span-2 pt-2 border-t border-slate-100 dark:border-slate-700">
+                    <p class="text-xs text-slate-400 dark:text-slate-500">
+                        Matrícula inicial — opcional, pode ser feita depois na ficha do aluno.
+                    </p>
+                </div>
+
+                <!-- Ano Letivo -->
                 <div>
-                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
                         {{ form.ano_letivo.label }}
                     </label>
                     {{ form.ano_letivo }}
-                    {% if form.ano_letivo.errors %}<p class="text-xs text-red-500 mt-1">{{ form.ano_letivo.errors.0 }}</p>{% endif %}
+                    {% if form.ano_letivo.errors %}<p class="mt-1 text-xs text-red-500">{{ form.ano_letivo.errors.0 }}</p>{% endif %}
                 </div>
+
+                <!-- Turma -->
                 <div>
-                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
                         {{ form.turma.label }}
                     </label>
                     {{ form.turma }}
-                    {% if form.turma.errors %}<p class="text-xs text-red-500 mt-1">{{ form.turma.errors.0 }}</p>{% endif %}
+                    {% if form.turma.errors %}<p class="mt-1 text-xs text-red-500">{{ form.turma.errors.0 }}</p>{% endif %}
                 </div>
+                {% endif %}
+
+            </div>
+
+            <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 dark:border-slate-700 mt-2">
+                <a href="{% if editando and aluno %}{% url 'aluno:detalhe' aluno.pk %}{% else %}{% url 'aluno:lista' %}{% endif %}"
+                   class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200
+                          dark:bg-slate-700 dark:hover:bg-slate-600
+                          text-slate-600 dark:text-slate-300 text-sm font-medium transition-colors">
+                    Cancelar
+                </a>
+                <button type="submit"
+                        class="px-5 py-2.5 rounded-xl bg-[#0d6efd] hover:bg-[#0b5ed7]
+                               text-white text-sm font-medium transition-colors">
+                    {% if editando %}Salvar alterações{% else %}Cadastrar aluno{% endif %}
+                </button>
             </div>
         </div>
-        {% endif %}
 
-        {% if form.non_field_errors %}
-        <div class="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-sm text-red-600 dark:text-red-400">
-            {{ form.non_field_errors }}
-        </div>
-        {% endif %}
-
-        <div class="flex items-center justify-end gap-3">
-            <a href="{% if editando and aluno %}{% url 'aluno:detalhe' aluno.pk %}{% else %}{% url 'aluno:lista' %}{% endif %}"
-               class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300
-                      border border-slate-200 dark:border-slate-700 rounded-xl
-                      hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                Cancelar
-            </a>
-            <button type="submit"
-                    class="px-5 py-2 text-sm font-medium text-white bg-[#0d6efd] hover:bg-[#0b5ed7] rounded-xl transition-colors">
-                {% if editando %}Salvar alterações{% else %}Cadastrar aluno{% endif %}
-            </button>
-        </div>
     </form>
 
 </div>

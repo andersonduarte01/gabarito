@@ -4,7 +4,11 @@
 {% block page_title %}Turmas{% endblock %}
 
 {% block sidebar_nav %}
+{% if papel.tipo == 'COLABORADOR' %}
+{% include "colaborador/_nav.html" with active="turmas" %}
+{% else %}
 {% include "diretor/_nav.html" with active="turmas" %}
+{% endif %}
 {% endblock %}
 
 {% block conteudo %}

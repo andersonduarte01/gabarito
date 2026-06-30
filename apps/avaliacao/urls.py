@@ -13,5 +13,6 @@ urlpatterns = [
     path('<int:pk>/questao/adicionar/',                         views.AdicionarQuestaoView.as_view(), name='questao_adicionar'),
     path('<int:pk>/questao/<int:questao_pk>/remover/',          views.RemoverQuestaoView.as_view(),   name='questao_remover'),
     path('<int:pk>/questao/<int:questao_pk>/opcao/adicionar/',  views.AdicionarOpcaoView.as_view(),   name='opcao_adicionar'),
+    path('<int:pk>/exportar-pdf/',                              views.ExportarPdfView.as_view(),      name='exportar_pdf'),
     path('<int:pk>/lancar-notas/',                              views.LancarNotasView.as_view(),      name='lancar_notas'),
 ]

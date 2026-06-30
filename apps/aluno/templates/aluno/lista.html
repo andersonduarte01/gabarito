@@ -4,7 +4,11 @@
 {% block page_title %}Alunos{% endblock %}
 
 {% block sidebar_nav %}
+{% if papel.tipo == 'COLABORADOR' %}
+{% include "colaborador/_nav.html" with active="alunos" %}
+{% else %}
 {% include "diretor/_nav.html" with active="alunos" %}
+{% endif %}
 {% endblock %}
 
 {% block conteudo %}
@@ -13,18 +17,14 @@
     <div class="flex items-start justify-between mb-6 gap-4">
         <div>
             <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Alunos</h2>
-            <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
-                Corpo discente da escola
-            </p>
+            <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">Corpo discente da escola</p>
         </div>
-        {% if papel.tipo == 'DIRETOR' %}
         <a href="{% url 'aluno:criar' %}"
            class="flex items-center gap-2 px-4 py-2 rounded-xl shrink-0
                   bg-[#0d6efd] hover:bg-[#0b5ed7] text-white text-sm font-medium transition-colors">
             <i data-lucide="plus" class="w-4 h-4"></i>
             <span>Novo Aluno</span>
         </a>
-        {% endif %}
     </div>
 
     <!-- Filtros -->
@@ -67,7 +67,6 @@
     <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
         <div class="divide-y divide-slate-100 dark:divide-slate-700">
             {% for aluno in alunos %}
-            {% with mat_ativa=aluno.matriculas.all|dictsort:"ativo" %}
             <div class="flex items-center justify-between px-5 py-3.5 {% if not aluno.ativo %}opacity-50{% endif %}">
                 <div class="flex items-center gap-3 min-w-0">
                     {% if aluno.foto %}
@@ -108,7 +107,6 @@
                        title="Ver detalhes">
                         <i data-lucide="eye" class="w-3.5 h-3.5"></i>
                     </a>
-                    {% if papel.tipo == 'DIRETOR' %}
                     <a href="{% url 'aluno:editar' aluno.pk %}"
                        class="p-1.5 text-slate-300 hover:text-[#0d6efd] rounded-md transition-colors"
                        title="Editar">
@@ -131,10 +129,8 @@
                         </button>
                     </form>
                     {% endif %}
-                    {% endif %}
                 </div>
             </div>
-            {% endwith %}
             {% endfor %}
         </div>
     </div>
@@ -153,7 +149,7 @@
                 Cadastre os alunos da escola para começar.
                 {% endif %}
             </p>
-            {% if papel.tipo == 'DIRETOR' and not filtros.q and not filtros.ativo and not filtros.turma %}
+            {% if not filtros.q and not filtros.ativo and not filtros.turma %}
             <a href="{% url 'aluno:criar' %}"
                class="mt-4 text-sm text-[#0d6efd] hover:underline font-medium">
                 Cadastrar primeiro aluno →

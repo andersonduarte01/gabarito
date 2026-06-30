@@ -119,6 +119,33 @@
     <span class="sidebar-label">Financeiro</span>
 </a>
 
+<a href="{% url 'comunicado:lista' %}"
+   title="Comunicados"
+   class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+          {% if a == 'comunicados' %}bg-[#0d6efd]/10 text-[#0d6efd] dark:bg-[#0d6efd]/20
+          {% else %}text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white{% endif %}">
+    <i data-lucide="megaphone" class="w-4 h-4 shrink-0"></i>
+    <span class="sidebar-label">Comunicados</span>
+</a>
+
+<a href="{% url 'agenda:lista' %}"
+   title="Agenda"
+   class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+          {% if a == 'agenda' %}bg-[#0d6efd]/10 text-[#0d6efd] dark:bg-[#0d6efd]/20
+          {% else %}text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white{% endif %}">
+    <i data-lucide="calendar-days" class="w-4 h-4 shrink-0"></i>
+    <span class="sidebar-label">Agenda</span>
+</a>
+
+<a href="{% url 'relatorio:index' %}"
+   title="Relatórios"
+   class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+          {% if a == 'relatorios' %}bg-[#0d6efd]/10 text-[#0d6efd] dark:bg-[#0d6efd]/20
+          {% else %}text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white{% endif %}">
+    <i data-lucide="chart-bar" class="w-4 h-4 shrink-0"></i>
+    <span class="sidebar-label">Relatórios</span>
+</a>
+
 <div class="my-2 border-t border-slate-100 dark:border-slate-700"></div>
 
 <a href="{% url 'diretor:meu_perfil' %}"

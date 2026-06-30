@@ -10,6 +10,17 @@ _INPUT = (
     'focus:ring-2 focus:ring-[#0d6efd]/30 focus:border-[#0d6efd]'
 )
 _SELECT = _INPUT
+_FILE = (
+    'w-full text-sm text-slate-600 dark:text-slate-400 '
+    'border border-slate-200 dark:border-slate-700 rounded-lg '
+    'bg-white dark:bg-slate-800 cursor-pointer '
+    'file:cursor-pointer file:border-0 file:mr-3 file:px-4 file:py-2 '
+    'file:text-sm file:font-medium '
+    'file:bg-slate-100 file:text-slate-600 '
+    'dark:file:bg-slate-700 dark:file:text-slate-300 '
+    'file:hover:bg-slate-200 dark:file:hover:bg-slate-600 '
+    'file:transition-colors'
+)
 
 _ESTADOS_BR = [
     ('', 'Selecione'),
@@ -26,6 +37,10 @@ _ESTADOS_BR = [
 
 
 class CriarProfessorForm(forms.Form):
+    foto                  = forms.ImageField(
+        required=False, label='Foto',
+        widget=forms.FileInput(attrs={'class': _FILE}),
+    )
     nome                  = forms.CharField(
         max_length=150, label='Nome completo',
         widget=forms.TextInput(attrs={'class': _INPUT, 'placeholder': 'Nome completo'}),
@@ -52,7 +67,7 @@ class CriarProfessorForm(forms.Form):
     )
     data_nascimento       = forms.DateField(
         required=False, label='Data de Nascimento',
-        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}),
+        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}, format='%Y-%m-%d'),
     )
     telefone              = forms.CharField(
         max_length=20, required=False, label='Telefone',
@@ -60,8 +75,24 @@ class CriarProfessorForm(forms.Form):
     )
     data_admissao         = forms.DateField(
         required=False, label='Data de Admissão',
-        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}),
+        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}, format='%Y-%m-%d'),
     )
+    senha                 = forms.CharField(
+        label='Senha', min_length=8,
+        widget=forms.PasswordInput(attrs={'class': _INPUT, 'placeholder': 'Mínimo 8 caracteres'}),
+    )
+    confirmar_senha       = forms.CharField(
+        label='Confirmar senha',
+        widget=forms.PasswordInput(attrs={'class': _INPUT, 'placeholder': 'Repita a senha'}),
+    )
+
+    def clean(self):
+        cleaned = super().clean()
+        senha = cleaned.get('senha')
+        confirmar = cleaned.get('confirmar_senha')
+        if senha and confirmar and senha != confirmar:
+            self.add_error('confirmar_senha', 'As senhas não conferem.')
+        return cleaned
 
 
 class EditarProfessorForm(forms.ModelForm):
@@ -76,16 +107,17 @@ class EditarProfessorForm(forms.ModelForm):
 
     class Meta:
         model  = PerfilProfessor
-        fields = ['tipo_vinculo', 'registro_profissional', 'cpf', 'rg',
+        fields = ['foto', 'tipo_vinculo', 'registro_profissional', 'cpf', 'rg',
                   'data_nascimento', 'telefone', 'data_admissao']
         widgets = {
+            'foto':                  forms.FileInput(attrs={'class': _FILE}),
             'tipo_vinculo':          forms.Select(attrs={'class': _SELECT}),
             'registro_profissional': forms.TextInput(attrs={'class': _INPUT}),
             'cpf':                   forms.TextInput(attrs={'class': _INPUT, 'placeholder': '000.000.000-00'}),
             'rg':                    forms.TextInput(attrs={'class': _INPUT}),
-            'data_nascimento':       forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}),
+            'data_nascimento':       forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}, format='%Y-%m-%d'),
             'telefone':              forms.TextInput(attrs={'class': _INPUT, 'placeholder': '(00) 00000-0000'}),
-            'data_admissao':         forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}),
+            'data_admissao':         forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}, format='%Y-%m-%d'),
         }
 
     def __init__(self, *args, usuario=None, **kwargs):
@@ -93,6 +125,25 @@ class EditarProfessorForm(forms.ModelForm):
         if usuario is not None:
             self.fields['nome'].initial  = usuario.nome
             self.fields['email'].initial = usuario.email
+
+
+class AlterarSenhaProfessorForm(forms.Form):
+    nova_senha      = forms.CharField(
+        label='Nova senha', min_length=8,
+        widget=forms.PasswordInput(attrs={'class': _INPUT, 'placeholder': 'Mínimo 8 caracteres'}),
+    )
+    confirmar_senha = forms.CharField(
+        label='Confirmar nova senha',
+        widget=forms.PasswordInput(attrs={'class': _INPUT, 'placeholder': 'Repita a nova senha'}),
+    )
+
+    def clean(self):
+        cleaned = super().clean()
+        nova = cleaned.get('nova_senha')
+        confirmar = cleaned.get('confirmar_senha')
+        if nova and confirmar and nova != confirmar:
+            self.add_error('confirmar_senha', 'As senhas não conferem.')
+        return cleaned
 
 
 class FormacaoAcademicaForm(forms.ModelForm):

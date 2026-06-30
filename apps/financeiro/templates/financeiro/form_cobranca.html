@@ -4,7 +4,11 @@
 {% block page_title %}Financeiro{% endblock %}
 
 {% block sidebar_nav %}
+{% if papel.tipo == 'FUNCIONARIO' %}
+{% include "colaborador/_nav.html" with active="financeiro" %}
+{% else %}
 {% include "diretor/_nav.html" with active="financeiro" %}
+{% endif %}
 {% endblock %}
 
 {% block conteudo %}
@@ -21,73 +25,90 @@
     <form method="post">
         {% csrf_token %}
 
-        <!-- Aluno -->
-        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-6 mb-4">
-            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
-                <i data-lucide="user" class="w-4 h-4 text-slate-400"></i>
-                Aluno
-            </h3>
-            <div>
-                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Selecionar Aluno</label>
-                <select name="aluno_id" required
-                        class="w-full px-3 py-2 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700
-                               rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none
-                               focus:ring-2 focus:ring-[#0d6efd]/30 focus:border-[#0d6efd]">
-                    <option value="">— Selecione um aluno —</option>
-                    {% for a in alunos %}
-                    <option value="{{ a.pk }}" {% if aluno_pre and aluno_pre.pk == a.pk %}selected{% endif %}>
-                        {{ a.nome_completo }} ({{ a.matricula }})
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-        </div>
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 px-6 pt-6 pb-2">
 
-        <!-- Cobrança -->
-        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-6 mb-4">
-            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
-                <i data-lucide="receipt" class="w-4 h-4 text-slate-400"></i>
-                Dados da Cobrança
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Aluno (linha inteira) -->
                 <div class="md:col-span-2">
-                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{{ form.descricao.label }}</label>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        Aluno <span class="text-red-400">*</span>
+                    </label>
+                    <select name="aluno_id" required
+                            class="w-full px-3 py-2 text-sm bg-white dark:bg-slate-800
+                                   border border-slate-200 dark:border-slate-700 rounded-lg
+                                   text-slate-900 dark:text-slate-100 focus:outline-none
+                                   focus:ring-2 focus:ring-[#0d6efd]/30 focus:border-[#0d6efd]">
+                        <option value="">— Selecione um aluno —</option>
+                        {% for a in alunos %}
+                        <option value="{{ a.pk }}" {% if aluno_pre and aluno_pre.pk == a.pk %}selected{% endif %}>
+                            {{ a.nome_completo }} ({{ a.matricula }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Descrição (linha inteira) -->
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        {{ form.descricao.label }} <span class="text-red-400">*</span>
+                    </label>
                     {{ form.descricao }}
-                    {% if form.descricao.errors %}<p class="text-xs text-red-500 mt-1">{{ form.descricao.errors.0 }}</p>{% endif %}
+                    {% if form.descricao.errors %}<p class="mt-1 text-xs text-red-500">{{ form.descricao.errors.0 }}</p>{% endif %}
                 </div>
+
+                <!-- Valor -->
                 <div>
-                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{{ form.valor.label }}</label>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        {{ form.valor.label }} <span class="text-red-400">*</span>
+                    </label>
                     {{ form.valor }}
-                    {% if form.valor.errors %}<p class="text-xs text-red-500 mt-1">{{ form.valor.errors.0 }}</p>{% endif %}
+                    {% if form.valor.errors %}<p class="mt-1 text-xs text-red-500">{{ form.valor.errors.0 }}</p>{% endif %}
                 </div>
+
+                <!-- Vencimento -->
                 <div>
-                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{{ form.vencimento.label }}</label>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        {{ form.vencimento.label }} <span class="text-red-400">*</span>
+                    </label>
                     {{ form.vencimento }}
-                    {% if form.vencimento.errors %}<p class="text-xs text-red-500 mt-1">{{ form.vencimento.errors.0 }}</p>{% endif %}
+                    {% if form.vencimento.errors %}<p class="mt-1 text-xs text-red-500">{{ form.vencimento.errors.0 }}</p>{% endif %}
                 </div>
+
+                <!-- Plano Financeiro -->
                 <div>
-                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{{ form.plano_financeiro.label }}</label>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        {{ form.plano_financeiro.label }}
+                    </label>
                     {{ form.plano_financeiro }}
+                    {% if form.plano_financeiro.errors %}<p class="mt-1 text-xs text-red-500">{{ form.plano_financeiro.errors.0 }}</p>{% endif %}
                 </div>
+
+                <!-- Gateway -->
                 <div>
-                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{{ form.gateway.label }}</label>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        {{ form.gateway.label }} <span class="text-red-400">*</span>
+                    </label>
                     {{ form.gateway }}
+                    {% if form.gateway.errors %}<p class="mt-1 text-xs text-red-500">{{ form.gateway.errors.0 }}</p>{% endif %}
                 </div>
+
+            </div>
+
+            <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 dark:border-slate-700 mt-2">
+                <a href="{% url 'financeiro:lista_cobrancas' %}"
+                   class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200
+                          dark:bg-slate-700 dark:hover:bg-slate-600
+                          text-slate-600 dark:text-slate-300 text-sm font-medium transition-colors">
+                    Cancelar
+                </a>
+                <button type="submit"
+                        class="px-5 py-2.5 rounded-xl bg-[#0d6efd] hover:bg-[#0b5ed7]
+                               text-white text-sm font-medium transition-colors">
+                    Gerar Cobrança
+                </button>
             </div>
         </div>
 
-        <!-- Footer -->
-        <div class="flex items-center justify-end gap-3">
-            <a href="{% url 'financeiro:lista_cobrancas' %}"
-               class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300
-                      border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                Cancelar
-            </a>
-            <button type="submit"
-                    class="px-5 py-2 text-sm font-medium text-white bg-[#0d6efd] rounded-xl hover:bg-[#0b5ed7] transition-colors">
-                Gerar Cobrança
-            </button>
-        </div>
     </form>
 
 </div>

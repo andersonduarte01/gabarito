@@ -27,6 +27,19 @@ class _LeituraMixin:
         return {'usuario': request.user, 'escola': request.escola, 'papel': request.papel, **extra}
 
 
+class _EscritaMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('accounts:login')
+        papel = getattr(request, 'papel', None)
+        if papel is None or papel.tipo not in ('DIRETOR', 'FUNCIONARIO'):
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+    def _ctx(self, request, **extra):
+        return {'usuario': request.user, 'escola': request.escola, 'papel': request.papel, **extra}
+
+
 class _DiretorMixin:
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -184,7 +197,7 @@ class PagarManualView(_LeituraMixin, View):
         return redirect('financeiro:detalhe_cobranca', pk=pk)
 
 
-class CancelarCobrancaView(_DiretorMixin, View):
+class CancelarCobrancaView(_EscritaMixin, View):
     def post(self, request, pk):
         cobranca = get_object_or_404(
             CobrancaAluno,

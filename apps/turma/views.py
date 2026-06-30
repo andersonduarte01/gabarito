@@ -13,7 +13,7 @@ class _LeituraMixin:
         if not request.user.is_authenticated:
             return redirect('accounts:login')
         papel = getattr(request, 'papel', None)
-        if papel is None or papel.tipo not in ('DIRETOR', 'FUNCIONARIO'):
+        if papel is None or papel.tipo not in ('DIRETOR', 'COLABORADOR'):
             raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
 

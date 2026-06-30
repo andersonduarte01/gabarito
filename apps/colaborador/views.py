@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
 from apps.core.services.usuario_service import editar as editar_usuario, trocar_email
-from .forms import CriarColaboradorForm, EditarColaboradorForm, EnderecoPerfilForm, FuncaoEscolarForm
+from .forms import AlterarSenhaColaboradorForm, CriarColaboradorForm, EditarColaboradorForm, EnderecoPerfilForm, FuncaoEscolarForm
 from .models import FuncaoEscolar, PerfilColaborador
 from .services import colaborador_service, funcao_service
 
@@ -65,14 +65,14 @@ class CriarColaboradorView(_DiretorMixin, View):
         ))
 
     def post(self, request):
-        form = CriarColaboradorForm(request.POST, escola=request.escola)
+        form = CriarColaboradorForm(request.POST, request.FILES, escola=request.escola)
         if form.is_valid():
             cd = form.cleaned_data
             try:
                 colaborador_service.criar(
                     escola=request.escola,
-                    usuario_dados={'nome': cd['nome'], 'email': cd['email']},
-                    perfil_dados={k: v for k, v in cd.items() if k not in ('nome', 'email')},
+                    usuario_dados={'nome': cd['nome'], 'email': cd['email'], 'senha': cd['senha']},
+                    perfil_dados={k: v for k, v in cd.items() if k not in ('nome', 'email', 'senha', 'confirmar_senha')},
                     criado_por=request.user,
                 )
                 messages.success(request, 'Colaborador cadastrado com sucesso.')
@@ -117,7 +117,7 @@ class EditarColaboradorView(_DiretorMixin, View):
     def post(self, request, pk):
         perfil = self._get_perfil(request, pk)
         form = EditarColaboradorForm(
-            request.POST, instance=perfil, escola=request.escola, usuario=perfil.usuario,
+            request.POST, request.FILES, instance=perfil, escola=request.escola, usuario=perfil.usuario,
         )
         if form.is_valid():
             novo_nome  = form.cleaned_data.pop('nome')
@@ -131,6 +131,30 @@ class EditarColaboradorView(_DiretorMixin, View):
         return render(request, self.template_name, self._ctx(
             request, form=form, editando=True, perfil=perfil,
         ))
+
+
+class AlterarSenhaColaboradorView(_DiretorMixin, View):
+    template_name = 'colaborador/alterar_senha.html'
+
+    def _get_perfil(self, request, pk):
+        return get_object_or_404(
+            PerfilColaborador, pk=pk, papel__vinculo__escola=request.escola,
+        )
+
+    def get(self, request, pk):
+        perfil = self._get_perfil(request, pk)
+        form = AlterarSenhaColaboradorForm()
+        return render(request, self.template_name, self._ctx(request, form=form, perfil=perfil))
+
+    def post(self, request, pk):
+        perfil = self._get_perfil(request, pk)
+        form = AlterarSenhaColaboradorForm(request.POST)
+        if form.is_valid():
+            perfil.usuario.set_password(form.cleaned_data['nova_senha'])
+            perfil.usuario.save(update_fields=['password'])
+            messages.success(request, 'Senha alterada com sucesso.')
+            return redirect('colaborador:detalhe', pk=perfil.pk)
+        return render(request, self.template_name, self._ctx(request, form=form, perfil=perfil))
 
 
 class DesativarColaboradorView(_DiretorMixin, View):

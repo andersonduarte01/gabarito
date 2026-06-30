@@ -7,13 +7,17 @@ from apps.diretor.models import CargoDiretor, PerfilDiretor
 
 @transaction.atomic
 def criar(escola, usuario_dados: dict, perfil_dados: dict, criado_por) -> PerfilDiretor:
-    """Cria ou reutiliza Usuario + VinculoEscola + PapelVinculo(DIRETOR) + PerfilDiretor."""
+    """Cria Usuario + VinculoEscola + PapelVinculo(DIRETOR) + PerfilDiretor."""
     from django.contrib.auth import get_user_model
     User = get_user_model()
 
-    usuario, _ = User.objects.get_or_create(
+    if User.objects.filter(email=usuario_dados['email']).exists():
+        raise ValueError('Já existe um usuário cadastrado com este e-mail.')
+
+    usuario = User.objects.create_user(
         email=usuario_dados['email'],
-        defaults={'nome': usuario_dados['nome'], 'is_active': True},
+        nome=usuario_dados['nome'],
+        password=usuario_dados['senha'],
     )
 
     vinculo = vinculo_service.criar_vinculo(usuario, escola)
@@ -26,6 +30,7 @@ def criar(escola, usuario_dados: dict, perfil_dados: dict, criado_por) -> Perfil
         data_nascimento=perfil_dados.get('data_nascimento'),
         telefone=perfil_dados.get('telefone', ''),
         data_inicio=perfil_dados.get('data_inicio'),
+        foto=perfil_dados.get('foto'),
     )
     return perfil
 

@@ -20,80 +20,99 @@
     </div>
 
     <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
-        <form method="post" class="px-6 py-5 space-y-6">
+        <form method="post" enctype="multipart/form-data" class="px-6 py-5 space-y-6">
             {% csrf_token %}
+
+            <!-- Foto -->
             <div>
-                <div class="grid grid-cols-1 gap-4">
-                    <div>
-                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
-                            Nome completo <span class="text-red-400">*</span>
-                        </label>
-                        {{ form.nome }}
-                        {% if form.nome.errors %}
-                        <p class="text-xs text-red-500 mt-1">{{ form.nome.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
-                            E-mail <span class="text-red-400">*</span>
-                        </label>
-                        {{ form.email }}
-                        {% if form.email.errors %}
-                        <p class="text-xs text-red-500 mt-1">{{ form.email.errors.0 }}</p>
-                        {% endif %}
-                    </div>
+                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">Foto</label>
+                {{ form.foto }}
+                {% if form.foto.errors %}<p class="text-xs text-red-500 mt-1">{{ form.foto.errors.0 }}</p>{% endif %}
+            </div>
+
+            <div class="grid grid-cols-1 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        Nome completo <span class="text-red-400">*</span>
+                    </label>
+                    {{ form.nome }}
+                    {% if form.nome.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.nome.errors.0 }}</p>
+                    {% endif %}
                 </div>
             </div>
-            <div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
-                            Cargo <span class="text-red-400">*</span>
-                        </label>
-                        {{ form.cargo }}
-                        {% if form.cargo.errors %}
-                        <p class="text-xs text-red-500 mt-1">{{ form.cargo.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
-                            Data de Início
-                        </label>
-                        {{ form.data_inicio }}
-                        {% if form.data_inicio.errors %}
-                        <p class="text-xs text-red-500 mt-1">{{ form.data_inicio.errors.0 }}</p>
-                        {% endif %}
-                    </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        Cargo <span class="text-red-400">*</span>
+                    </label>
+                    {{ form.cargo }}
+                    {% if form.cargo.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.cargo.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        Data de Início
+                    </label>
+                    {{ form.data_inicio }}
+                    {% if form.data_inicio.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.data_inicio.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">CPF</label>
+                    {{ form.cpf }}
+                    {% if form.cpf.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.cpf.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">Telefone</label>
+                    {{ form.telefone }}
+                    {% if form.telefone.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.telefone.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        Data de Nascimento
+                    </label>
+                    {{ form.data_nascimento }}
+                    {% if form.data_nascimento.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.data_nascimento.errors.0 }}</p>
+                    {% endif %}
                 </div>
             </div>
-            <div>
-                <h3 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">
-                    Dados pessoais <span class="font-normal normal-case">(opcional)</span>
-                </h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">CPF</label>
-                        {{ form.cpf }}
-                        {% if form.cpf.errors %}
-                        <p class="text-xs text-red-500 mt-1">{{ form.cpf.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">Telefone</label>
-                        {{ form.telefone }}
-                        {% if form.telefone.errors %}
-                        <p class="text-xs text-red-500 mt-1">{{ form.telefone.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
-                            Data de Nascimento
-                        </label>
-                        {{ form.data_nascimento }}
-                        {% if form.data_nascimento.errors %}
-                        <p class="text-xs text-red-500 mt-1">{{ form.data_nascimento.errors.0 }}</p>
-                        {% endif %}
-                    </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        E-mail <span class="text-red-400">*</span>
+                    </label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.email.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        Senha <span class="text-red-400">*</span>
+                    </label>
+                    {{ form.senha }}
+                    {% if form.senha.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.senha.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                        Confirmar senha <span class="text-red-400">*</span>
+                    </label>
+                    {{ form.confirmar_senha }}
+                    {% if form.confirmar_senha.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.confirmar_senha.errors.0 }}</p>
+                    {% endif %}
                 </div>
             </div>
 

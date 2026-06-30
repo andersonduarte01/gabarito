@@ -13,6 +13,7 @@ def criar(escola, usuario_dados: dict, perfil_dados: dict) -> PerfilResponsavel:
     email = usuario_dados['email']
     nome  = usuario_dados['nome']
 
+    senha = usuario_dados.get('senha')
     usuario = User.objects.filter(email=email).first()
     if usuario:
         perfil, _ = PerfilResponsavel.objects.get_or_create(
@@ -21,7 +22,10 @@ def criar(escola, usuario_dados: dict, perfil_dados: dict) -> PerfilResponsavel:
         )
     else:
         usuario = User.objects.create(email=email, nome=nome, is_active=True)
-        usuario.set_unusable_password()
+        if senha:
+            usuario.set_password(senha)
+        else:
+            usuario.set_unusable_password()
         usuario.save(update_fields=['password'])
         perfil = PerfilResponsavel.objects.create(usuario=usuario, nome=nome, **{
             k: v for k, v in perfil_dados.items() if k != 'nome'
