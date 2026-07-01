@@ -90,6 +90,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'apps.notificacao.context_processors.notificacoes_counter',
+                'apps.core.context_processors.base_template',
             ],
         },
     },

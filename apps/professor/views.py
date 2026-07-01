@@ -35,6 +35,100 @@ class _DiretorMixin:
         return {'usuario': request.user, 'escola': request.escola, 'papel': request.papel, **extra}
 
 
+class _ProfessorMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('accounts:login')
+        papel = getattr(request, 'papel', None)
+        if papel is None or papel.tipo != 'PROFESSOR':
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+    def _ctx(self, request, **extra):
+        return {'usuario': request.user, 'escola': request.escola, 'papel': request.papel, **extra}
+
+
+class DashboardProfessorView(_ProfessorMixin, View):
+    template_name = 'professor/dashboard.html'
+
+    def get(self, request):
+        import datetime
+        from apps.turma.models import ProfessorMateriaTurma
+        from apps.aluno.models import MatriculaTurma, SituacaoMatricula
+        from apps.ano_letivo.models import AnoLetivo
+        from apps.comunicado.models import Comunicado
+        from apps.agenda.models import Evento
+
+        try:
+            perfil = request.papel.perfil_professor
+        except Exception:
+            perfil = None
+
+        ano_letivo = AnoLetivo.objects.filter(escola=request.escola, status='EM_ANDAMENTO').first()
+
+        atribuicoes = ProfessorMateriaTurma.objects.none()
+        total_turmas = 0
+        total_materias = 0
+        total_alunos = 0
+
+        if perfil and ano_letivo:
+            atribuicoes = (
+                ProfessorMateriaTurma.objects
+                .filter(professor=perfil, ano_letivo=ano_letivo, ativo=True)
+                .select_related('turma', 'materia')
+                .order_by('turma__nome', 'materia__nome')
+            )
+            turma_ids = atribuicoes.values_list('turma_id', flat=True).distinct()
+            total_turmas = turma_ids.count()
+            total_materias = atribuicoes.values('materia').distinct().count()
+            total_alunos = (
+                MatriculaTurma.objects
+                .filter(
+                    turma_id__in=turma_ids,
+                    ano_letivo=ano_letivo,
+                    situacao=SituacaoMatricula.MATRICULADO,
+                )
+                .values('aluno').distinct().count()
+            )
+
+        comunicados_recentes = (
+            Comunicado.objects
+            .filter(escola=request.escola)
+            .order_by('-criado_em')[:5]
+        )
+        proximos_eventos = (
+            Evento.objects
+            .filter(escola=request.escola, data_inicio__gte=datetime.date.today())
+            .order_by('data_inicio')[:4]
+        )
+
+        return render(request, self.template_name, self._ctx(
+            request,
+            perfil=perfil,
+            ano_letivo=ano_letivo,
+            total_turmas=total_turmas,
+            total_materias=total_materias,
+            total_alunos=total_alunos,
+            atribuicoes=atribuicoes,
+            comunicados_recentes=comunicados_recentes,
+            proximos_eventos=proximos_eventos,
+            active_nav='dashboard',
+        ))
+
+
+class MeuPerfilProfessorView(_ProfessorMixin, View):
+    template_name = 'professor/meu_perfil.html'
+
+    def get(self, request):
+        try:
+            perfil = request.papel.perfil_professor
+        except Exception:
+            perfil = None
+        return render(request, self.template_name, self._ctx(
+            request, perfil=perfil, active_nav='perfil',
+        ))
+
+
 class ListarProfessoresView(_LeituraMixin, View):
     template_name = 'professor/lista.html'
 

@@ -24,11 +24,11 @@ class ConfiguracaoAcademicaView(DiretorRequiredMixin, View):
     template_name = 'configuracao/academica.html'
 
     def get(self, request):
-        form = AcademicaForm(instance=request.escola.configuracao_academica)
+        form = AcademicaForm(instance=configuracao_service.obter_academica(request.escola))
         return render(request, self.template_name, {**self._ctx(request), 'form': form})
 
     def post(self, request):
-        form = AcademicaForm(request.POST, instance=request.escola.configuracao_academica)
+        form = AcademicaForm(request.POST, instance=configuracao_service.obter_academica(request.escola))
         if form.is_valid():
             configuracao_service.atualizar_academica(request.escola, form.cleaned_data)
             messages.success(request, 'Configurações acadêmicas salvas.')
@@ -40,11 +40,11 @@ class ConfiguracaoFrequenciaView(DiretorRequiredMixin, View):
     template_name = 'configuracao/frequencia.html'
 
     def get(self, request):
-        form = FrequenciaForm(instance=request.escola.configuracao_frequencia)
+        form = FrequenciaForm(instance=configuracao_service.obter_frequencia(request.escola))
         return render(request, self.template_name, {**self._ctx(request), 'form': form})
 
     def post(self, request):
-        form = FrequenciaForm(request.POST, instance=request.escola.configuracao_frequencia)
+        form = FrequenciaForm(request.POST, instance=configuracao_service.obter_frequencia(request.escola))
         if form.is_valid():
             configuracao_service.atualizar_frequencia(request.escola, form.cleaned_data)
             messages.success(request, 'Configurações de frequência salvas.')
@@ -56,11 +56,11 @@ class ConfiguracaoProfessorView(DiretorRequiredMixin, View):
     template_name = 'configuracao/professor.html'
 
     def get(self, request):
-        form = ProfessorForm(instance=request.escola.configuracao_professor)
+        form = ProfessorForm(instance=configuracao_service.obter_professor(request.escola))
         return render(request, self.template_name, {**self._ctx(request), 'form': form})
 
     def post(self, request):
-        form = ProfessorForm(request.POST, instance=request.escola.configuracao_professor)
+        form = ProfessorForm(request.POST, instance=configuracao_service.obter_professor(request.escola))
         if form.is_valid():
             configuracao_service.atualizar_professor(request.escola, form.cleaned_data)
             messages.success(request, 'Configurações de professor salvas.')

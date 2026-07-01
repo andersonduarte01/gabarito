@@ -4,6 +4,10 @@ from . import views
 app_name = 'colaborador'
 
 urlpatterns = [
+    # Portal do Funcionário
+    path('dashboard/',   views.DashboardFuncionarioView.as_view(), name='dashboard'),
+    path('meu-perfil/',  views.MeuPerfilColaboradorView.as_view(), name='meu_perfil'),
+
     # Colaboradores
     path('',                            views.ListarColaboradoresView.as_view(), name='lista'),
     path('criar/',                      views.CriarColaboradorView.as_view(),    name='criar'),

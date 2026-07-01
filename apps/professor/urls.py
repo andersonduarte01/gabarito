@@ -4,6 +4,8 @@ from . import views
 app_name = 'professor'
 
 urlpatterns = [
+    path('dashboard/',   views.DashboardProfessorView.as_view(),  name='dashboard'),
+    path('meu-perfil/',  views.MeuPerfilProfessorView.as_view(),  name='meu_perfil'),
     path('',                                             views.ListarProfessoresView.as_view(),  name='lista'),
     path('criar/',                                       views.CriarProfessorView.as_view(),     name='criar'),
     path('<int:pk>/',                                    views.DetalheProfessorView.as_view(),   name='detalhe'),

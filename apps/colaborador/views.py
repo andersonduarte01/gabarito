@@ -9,6 +9,19 @@ from .models import FuncaoEscolar, PerfilColaborador
 from .services import colaborador_service, funcao_service
 
 
+class _FuncionarioMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('accounts:login')
+        papel = getattr(request, 'papel', None)
+        if papel is None or papel.tipo != 'FUNCIONARIO':
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+    def _ctx(self, request, **extra):
+        return {'usuario': request.user, 'escola': request.escola, 'papel': request.papel, **extra}
+
+
 class _LeituraMixin:
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -247,3 +260,85 @@ class ReativarFuncaoView(_DiretorMixin, View):
         funcao_service.reativar(funcao)
         messages.success(request, f'Função "{funcao.nome}" reativada.')
         return redirect('colaborador:funcoes')
+
+
+# ---------------------------------------------------------------------------
+# Portal do Funcionário
+# ---------------------------------------------------------------------------
+
+class DashboardFuncionarioView(_FuncionarioMixin, View):
+    template_name = 'colaborador/dashboard.html'
+
+    def get(self, request):
+        escola = request.escola
+
+        from apps.aluno.models import MatriculaTurma
+        from apps.turma.models import Turma
+        from apps.professor.models import PerfilProfessor
+        from apps.financeiro.models import CobrancaAluno, StatusCobranca
+        from apps.comunicado.models import Comunicado
+        from apps.agenda.models import Evento
+        from apps.ano_letivo.models import AnoLetivo, StatusAnoLetivo
+        from django.utils import timezone
+
+        total_alunos = MatriculaTurma.objects.filter(turma__escola=escola, ativo=True).count()
+        total_turmas = Turma.objects.filter(escola=escola, ativo=True).count()
+        total_professores = (
+            PerfilProfessor.objects
+            .filter(papel__vinculo__escola=escola, papel__ativo=True)
+            .count()
+        )
+        cobrancas_pendentes = CobrancaAluno.objects.filter(
+            aluno__escola=escola,
+            status__in=[StatusCobranca.PENDENTE, StatusCobranca.VENCIDO],
+        ).count()
+
+        ano_letivo = (
+            AnoLetivo.objects
+            .filter(escola=escola, status=StatusAnoLetivo.EM_ANDAMENTO)
+            .first()
+        )
+
+        comunicados_recentes = (
+            Comunicado.objects
+            .filter(escola=escola, publicada=True)
+            .order_by('-criado_em')[:5]
+        )
+
+        hoje = timezone.localdate()
+        proximos_eventos = (
+            Evento.objects
+            .filter(escola=escola, publicada=True, data_inicio__gte=hoje)
+            .order_by('data_inicio')[:4]
+        )
+
+        try:
+            perfil = request.papel.perfil_colaborador
+        except PerfilColaborador.DoesNotExist:
+            perfil = None
+
+        return render(request, self.template_name, self._ctx(
+            request,
+            active_nav='dashboard',
+            perfil=perfil,
+            ano_letivo=ano_letivo,
+            total_alunos=total_alunos,
+            total_turmas=total_turmas,
+            total_professores=total_professores,
+            cobrancas_pendentes=cobrancas_pendentes,
+            comunicados_recentes=comunicados_recentes,
+            proximos_eventos=proximos_eventos,
+        ))
+
+
+class MeuPerfilColaboradorView(_FuncionarioMixin, View):
+    template_name = 'colaborador/meu_perfil.html'
+
+    def get(self, request):
+        try:
+            perfil = request.papel.perfil_colaborador
+        except PerfilColaborador.DoesNotExist:
+            perfil = None
+        return render(request, self.template_name, self._ctx(
+            request, active_nav='perfil', perfil=perfil,
+        ))

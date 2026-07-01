@@ -1,0 +1,172 @@
+{% extends base_template %}
+
+{% block titulo %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block conteudo %}
+
+<div class="mb-6">
+    <h2 class="text-xl font-bold text-slate-900 dark:text-white">
+        Olá, {{ usuario.primeiro_nome }}
+    </h2>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+        Professor — {{ escola.nome }}
+    </p>
+</div>
+
+{# ── KPIs ─────────────────────────────────────────────────────────────────── #}
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Ano Letivo</span>
+            <div class="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
+                <i data-lucide="calendar" class="w-3.5 h-3.5 text-blue-500"></i>
+            </div>
+        </div>
+        {% if ano_letivo %}
+            <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ ano_letivo.ano }}</p>
+            <p class="text-xs text-slate-400 mt-1">{{ ano_letivo.get_status_display }}</p>
+        {% else %}
+            <p class="text-xl font-bold text-slate-300 dark:text-slate-600">—</p>
+            <p class="text-xs text-slate-400 mt-1">Não configurado</p>
+        {% endif %}
+    </div>
+
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Turmas</span>
+            <div class="w-7 h-7 rounded-lg bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center">
+                <i data-lucide="door-open" class="w-3.5 h-3.5 text-purple-500"></i>
+            </div>
+        </div>
+        <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ total_turmas }}</p>
+        <p class="text-xs text-slate-400 mt-1">este ano</p>
+    </div>
+
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Matérias</span>
+            <div class="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center">
+                <i data-lucide="book" class="w-3.5 h-3.5 text-amber-500"></i>
+            </div>
+        </div>
+        <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ total_materias }}</p>
+        <p class="text-xs text-slate-400 mt-1">lecionadas</p>
+    </div>
+
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Alunos</span>
+            <div class="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center">
+                <i data-lucide="users" class="w-3.5 h-3.5 text-emerald-500"></i>
+            </div>
+        </div>
+        <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ total_alunos }}</p>
+        <p class="text-xs text-slate-400 mt-1">matriculados</p>
+    </div>
+
+</div>
+
+{# ── Minhas atribuições ───────────────────────────────────────────────────── #}
+{% if atribuicoes %}
+<div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 mb-5">
+    <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-700">
+        <h3 class="text-sm font-semibold text-slate-800 dark:text-white">Minhas Turmas e Matérias</h3>
+        <p class="text-xs text-slate-400 mt-0.5">{{ ano_letivo.ano }}</p>
+    </div>
+    <div class="divide-y divide-slate-50 dark:divide-slate-700/50">
+        {% for a in atribuicoes %}
+        <div class="flex items-center gap-3 px-5 py-3">
+            <div class="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-900/30
+                        flex items-center justify-center shrink-0">
+                <i data-lucide="book-open" class="w-3.5 h-3.5 text-purple-500"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-slate-800 dark:text-white">{{ a.materia.nome }}</p>
+                <p class="text-xs text-slate-400">{{ a.turma.nome }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{# ── Grid inferior ─────────────────────────────────────────────────────────── #}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+    {# Comunicados recentes #}
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-700">
+            <div>
+                <h3 class="text-sm font-semibold text-slate-800 dark:text-white">Comunicados Recentes</h3>
+                <p class="text-xs text-slate-400 mt-0.5">Últimos publicados</p>
+            </div>
+            <a href="{% url 'comunicado:lista' %}"
+               class="text-xs font-medium text-[#0d6efd] hover:text-[#0b5ed7] transition-colors">
+                Ver todos →
+            </a>
+        </div>
+        <div class="divide-y divide-slate-50 dark:divide-slate-700/50">
+            {% for c in comunicados_recentes %}
+            <a href="{% url 'comunicado:detalhe' c.pk %}"
+               class="flex items-start gap-3 px-5 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                <div class="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/30
+                            flex items-center justify-center shrink-0 mt-0.5">
+                    <i data-lucide="megaphone" class="w-3.5 h-3.5 text-indigo-500"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-slate-800 dark:text-white truncate">{{ c.titulo }}</p>
+                    <p class="text-xs text-slate-400 mt-0.5">{{ c.criado_em|date:"d/m/Y" }}</p>
+                </div>
+            </a>
+            {% empty %}
+            <div class="px-5 py-8 text-center">
+                <i data-lucide="megaphone" class="w-8 h-8 text-slate-200 dark:text-slate-600 mx-auto mb-2"></i>
+                <p class="text-sm text-slate-400">Nenhum comunicado publicado.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {# Próximos eventos #}
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-700">
+            <div>
+                <h3 class="text-sm font-semibold text-slate-800 dark:text-white">Próximos Eventos</h3>
+                <p class="text-xs text-slate-400 mt-0.5">A partir de hoje</p>
+            </div>
+            <a href="{% url 'agenda:lista' %}"
+               class="text-xs font-medium text-[#0d6efd] hover:text-[#0b5ed7] transition-colors">
+                Ver agenda →
+            </a>
+        </div>
+        <div class="divide-y divide-slate-50 dark:divide-slate-700/50">
+            {% for e in proximos_eventos %}
+            <a href="{% url 'agenda:detalhe' e.pk %}"
+               class="flex items-start gap-3 px-5 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                <div class="flex flex-col items-center justify-center w-10 h-10 rounded-xl shrink-0
+                            bg-blue-50 dark:bg-blue-900/30 text-[#0d6efd]">
+                    <span class="text-[10px] font-bold leading-none uppercase">{{ e.data_inicio|date:"M" }}</span>
+                    <span class="text-base font-extrabold leading-tight">{{ e.data_inicio|date:"d" }}</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-slate-800 dark:text-white truncate">{{ e.titulo }}</p>
+                    <p class="text-xs text-slate-400 mt-0.5">
+                        {% if e.hora_inicio %}{{ e.hora_inicio|time:"H:i" }}{% endif %}
+                        {% if e.local %} · {{ e.local }}{% endif %}
+                    </p>
+                </div>
+            </a>
+            {% empty %}
+            <div class="px-5 py-8 text-center">
+                <i data-lucide="calendar-x" class="w-8 h-8 text-slate-200 dark:text-slate-600 mx-auto mb-2"></i>
+                <p class="text-sm text-slate-400">Nenhum evento próximo.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

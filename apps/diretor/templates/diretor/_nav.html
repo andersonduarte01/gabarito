@@ -1,6 +1,6 @@
 {% with a=active %}
 
-<a href="{% url 'diretor:dashboard' %}"
+<a href="{% if papel.tipo == 'FUNCIONARIO' %}{% url 'colaborador:dashboard' %}{% else %}{% url 'diretor:dashboard' %}{% endif %}"
    title="Dashboard"
    class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
           {% if a == 'dashboard' %}bg-[#0d6efd]/10 text-[#0d6efd] dark:bg-[#0d6efd]/20
@@ -9,6 +9,7 @@
     <span class="sidebar-label">Dashboard</span>
 </a>
 
+{% if papel.tipo == 'DIRETOR' %}
 <a href="{% url 'diretor:listar_diretores' %}"
    title="Diretores"
    class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
@@ -17,6 +18,7 @@
     <i data-lucide="users" class="w-4 h-4 shrink-0"></i>
     <span class="sidebar-label">Diretores</span>
 </a>
+{% endif %}
 
 <a href="{% url 'escola:perfil' %}"
    title="Escola"
@@ -148,7 +150,7 @@
 
 <div class="my-2 border-t border-slate-100 dark:border-slate-700"></div>
 
-<a href="{% url 'diretor:meu_perfil' %}"
+<a href="{% if papel.tipo == 'FUNCIONARIO' %}{% url 'colaborador:meu_perfil' %}{% else %}{% url 'diretor:meu_perfil' %}{% endif %}"
    title="Meu Perfil"
    class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
           {% if a == 'perfil' %}bg-[#0d6efd]/10 text-[#0d6efd] dark:bg-[#0d6efd]/20

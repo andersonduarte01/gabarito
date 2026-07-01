@@ -15,8 +15,23 @@ def criar_configuracoes_padrao(escola) -> None:
     ConfiguracaoProfessor.objects.get_or_create(escola=escola)
 
 
+def obter_academica(escola) -> ConfiguracaoAcademica:
+    config, _ = ConfiguracaoAcademica.objects.get_or_create(escola=escola)
+    return config
+
+
+def obter_frequencia(escola) -> ConfiguracaoFrequencia:
+    config, _ = ConfiguracaoFrequencia.objects.get_or_create(escola=escola)
+    return config
+
+
+def obter_professor(escola) -> ConfiguracaoProfessor:
+    config, _ = ConfiguracaoProfessor.objects.get_or_create(escola=escola)
+    return config
+
+
 def atualizar_academica(escola, dados: dict) -> ConfiguracaoAcademica:
-    config = escola.configuracao_academica
+    config = obter_academica(escola)
     for campo, valor in dados.items():
         setattr(config, campo, valor)
     config.save()
@@ -24,7 +39,7 @@ def atualizar_academica(escola, dados: dict) -> ConfiguracaoAcademica:
 
 
 def atualizar_frequencia(escola, dados: dict) -> ConfiguracaoFrequencia:
-    config = escola.configuracao_frequencia
+    config = obter_frequencia(escola)
     for campo, valor in dados.items():
         setattr(config, campo, valor)
     config.save()
@@ -32,7 +47,7 @@ def atualizar_frequencia(escola, dados: dict) -> ConfiguracaoFrequencia:
 
 
 def atualizar_professor(escola, dados: dict) -> ConfiguracaoProfessor:
-    config = escola.configuracao_professor
+    config = obter_professor(escola)
     for campo, valor in dados.items():
         setattr(config, campo, valor)
     config.save()

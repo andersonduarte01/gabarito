@@ -1,66 +1,64 @@
-{% extends "base/base_diretor.html" %}
+{% extends base_template %}
 
 {% block titulo %}Configurações de Professor{% endblock %}
-
-{% block page_title %}Configurações de Professor{% endblock %}
+{% block page_title %}Configurações{% endblock %}
 
 {% block sidebar_nav %}
-<a href="{% url 'configuracao:academica' %}"
-   class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-colors">
-    <i data-lucide="graduation-cap" class="w-4 h-4 flex-shrink-0"></i>
-    Acadêmico
-</a>
-<a href="{% url 'configuracao:frequencia' %}"
-   class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-colors">
-    <i data-lucide="calendar-check" class="w-4 h-4 flex-shrink-0"></i>
-    Frequência
-</a>
-<a href="{% url 'configuracao:professor' %}"
-   class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white">
-    <i data-lucide="user-check" class="w-4 h-4 flex-shrink-0"></i>
-    Professor
-</a>
+{% include "diretor/_nav.html" with active="" %}
 {% endblock %}
 
 {% block conteudo %}
-<div class="max-w-2xl">
+<div>
 
-    <!-- Cabeçalho -->
-    <div class="mb-6">
-        <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Configurações de Professor</h2>
-        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Defina limites de carga horária para os professores da escola.
-        </p>
+    <!-- Tabs de seção -->
+    <div class="flex gap-1 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-1 mb-6 w-fit">
+        <a href="{% url 'configuracao:academica' %}"
+           class="px-4 py-2 rounded-lg text-sm font-medium transition-colors
+                  text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+            <i data-lucide="graduation-cap" class="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5"></i>
+            Acadêmico
+        </a>
+        <a href="{% url 'configuracao:frequencia' %}"
+           class="px-4 py-2 rounded-lg text-sm font-medium transition-colors
+                  text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+            <i data-lucide="calendar-check" class="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5"></i>
+            Frequência
+        </a>
+        <a href="{% url 'configuracao:professor' %}"
+           class="px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-[#0d6efd] text-white">
+            <i data-lucide="user-check" class="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5"></i>
+            Professor
+        </a>
     </div>
 
-    <form method="post">
+    <form method="post" class="space-y-5">
         {% csrf_token %}
-        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
-            <div class="px-6 py-5">
-                <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">Carga Horária</h3>
-                <div class="max-w-xs">
+
+        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 px-6 py-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                <div>
                     <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
                         Carga horária máxima semanal (horas)
                     </label>
                     {{ form.carga_horaria_maxima_semanal }}
-                    <p class="text-xs text-slate-400 mt-1">
-                        Teto de alerta — não bloqueia a criação de aulas.
-                    </p>
+                    <p class="text-xs text-slate-400 mt-1">Teto de alerta — não bloqueia a criação de aulas.</p>
                     {% if form.carga_horaria_maxima_semanal.errors %}
                     <p class="text-xs text-red-500 mt-1">{{ form.carga_horaria_maxima_semanal.errors.0 }}</p>
                     {% endif %}
                 </div>
+
             </div>
         </div>
 
-        <!-- Ações -->
-        <div class="flex justify-end mt-4">
+        <div class="flex items-center justify-end gap-3 pt-1">
             <button type="submit"
-                    class="px-5 py-2.5 rounded-xl bg-[#0d6efd] hover:bg-[#0b5ed7] text-white text-sm font-medium transition-colors">
+                    class="px-5 py-2.5 rounded-xl bg-[#0d6efd] hover:bg-[#0b5ed7]
+                           text-white text-sm font-medium transition-colors">
                 Salvar configurações
             </button>
         </div>
-    </form>
 
+    </form>
 </div>
 {% endblock %}
