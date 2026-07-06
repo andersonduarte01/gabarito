@@ -1,0 +1,100 @@
+{% extends base_template %}
+
+{% block titulo %}Segmentos — {{ escola.nome }}{% endblock %}
+{% block page_title %}Segmentos{% endblock %}
+
+{% block sidebar_nav %}
+{% include "diretor/_nav.html" with active="segmentos" %}
+{% endblock %}
+
+{% block conteudo %}
+
+<!-- ─── CABEÇALHO ─────────────────────────────────────────────────────────── -->
+<div class="flex items-start justify-between mb-6 gap-4">
+    <div>
+        <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Segmentos</h2>
+        <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
+            Etapas de ensino da escola (Infantil, Fundamental, Médio…)
+        </p>
+    </div>
+</div>
+
+<!-- ─── CARD PRINCIPAL ────────────────────────────────────────────────────── -->
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700
+            rounded-2xl shadow-sm overflow-hidden">
+
+    {% if segmentos %}
+    <div class="divide-y divide-slate-100 dark:divide-slate-700">
+        {% for seg in segmentos %}
+        <div class="flex items-center justify-between px-5 py-3.5">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-900/30
+                            flex items-center justify-center shrink-0">
+                    <i data-lucide="layers" class="w-3.5 h-3.5 text-rose-500"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                        {{ seg.get_tipo_display }}
+                    </p>
+                    <p class="text-xs text-slate-400 dark:text-slate-500">
+                        {{ seg.series.count }} série{{ seg.series.count|pluralize:"s" }}
+                    </p>
+                </div>
+            </div>
+            <form method="post" action="{% url 'escola:remover_segmento' seg.pk %}"
+                  onsubmit="return confirm('Remover {{ seg.get_tipo_display }}?')">
+                {% csrf_token %}
+                <button type="submit" title="Remover"
+                        class="p-1.5 text-slate-300 hover:text-red-500 rounded-md transition-colors">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="flex flex-col items-center justify-center py-14 px-5 text-center">
+        <div class="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-700
+                    flex items-center justify-center mb-3">
+            <i data-lucide="layers" class="w-7 h-7 text-slate-300 dark:text-slate-500"></i>
+        </div>
+        <p class="text-sm font-medium text-slate-500 dark:text-slate-400">
+            Nenhum segmento definido.
+        </p>
+        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1 max-w-xs leading-relaxed">
+            Adicione os segmentos de ensino da escola abaixo.
+        </p>
+    </div>
+    {% endif %}
+
+    <!-- Rodapé: adicionar ou completo -->
+    <div class="px-5 py-4 border-t border-slate-100 dark:border-slate-700
+                bg-slate-50 dark:bg-slate-800/60">
+        {% if tem_disponivel %}
+        <form method="post" action="{% url 'escola:segmentos' %}"
+              class="flex items-center gap-3">
+            {% csrf_token %}
+            <div class="flex-1">
+                {{ form.tipo }}
+                {% if form.tipo.errors %}
+                <p class="text-xs text-red-500 mt-1">{{ form.tipo.errors.0 }}</p>
+                {% endif %}
+            </div>
+            <button type="submit"
+                    class="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium
+                           bg-[#0d6efd] hover:bg-[#0b5ed7] text-white transition-colors shrink-0">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                Adicionar
+            </button>
+        </form>
+        {% else %}
+        <p class="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
+            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-500 shrink-0"></i>
+            Todos os segmentos disponíveis foram adicionados.
+        </p>
+        {% endif %}
+    </div>
+
+</div>
+
+{% endblock %}

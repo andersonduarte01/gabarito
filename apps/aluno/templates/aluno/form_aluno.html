@@ -113,6 +113,67 @@
 
             </div>
 
+            {% if not editando %}
+            <!-- ── Responsável (opcional) ─────────────────────────────────── -->
+            <div class="px-6 pt-2 pb-4">
+                <button type="button"
+                        onclick="toggleResp(this)"
+                        class="flex items-center gap-2 text-sm font-medium text-[#0d6efd] hover:underline">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    Adicionar responsável
+                </button>
+                <div id="resp-section" class="hidden mt-4 space-y-4">
+                    <div class="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-700">
+                        <div class="w-7 h-7 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
+                            <i data-lucide="heart-handshake" class="w-3.5 h-3.5 text-violet-500"></i>
+                        </div>
+                        <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Responsável</p>
+                        <span class="text-xs text-slate-400">(opcional)</span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                                {{ form.resp_nome.label }}
+                            </label>
+                            {{ form.resp_nome }}
+                            {% if form.resp_nome.errors %}<p class="mt-1 text-xs text-red-500">{{ form.resp_nome.errors.0 }}</p>{% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                                {{ form.resp_telefone.label }}
+                            </label>
+                            {{ form.resp_telefone }}
+                            {% if form.resp_telefone.errors %}<p class="mt-1 text-xs text-red-500">{{ form.resp_telefone.errors.0 }}</p>{% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                                {{ form.resp_cpf.label }}
+                            </label>
+                            {{ form.resp_cpf }}
+                            {% if form.resp_cpf.errors %}<p class="mt-1 text-xs text-red-500">{{ form.resp_cpf.errors.0 }}</p>{% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                                {{ form.resp_parentesco.label }}
+                            </label>
+                            {{ form.resp_parentesco }}
+                            {% if form.resp_parentesco.errors %}<p class="mt-1 text-xs text-red-500">{{ form.resp_parentesco.errors.0 }}</p>{% endif %}
+                        </div>
+                        <div class="flex flex-col gap-2 justify-end">
+                            <label class="flex items-center gap-2 cursor-pointer select-none text-sm text-slate-600 dark:text-slate-300">
+                                {{ form.resp_principal }}
+                                {{ form.resp_principal.label }}
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer select-none text-sm text-slate-600 dark:text-slate-300">
+                                {{ form.resp_financeiro }}
+                                {{ form.resp_financeiro.label }}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
             <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 dark:border-slate-700 mt-2">
                 <a href="{% if editando and aluno %}{% url 'aluno:detalhe' aluno.pk %}{% else %}{% url 'aluno:lista' %}{% endif %}"
                    class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200
@@ -129,6 +190,34 @@
         </div>
 
     </form>
+
+<script>
+function toggleResp(btn) {
+    var section = document.getElementById('resp-section');
+    var isHidden = section.classList.contains('hidden');
+    section.classList.toggle('hidden');
+    btn.innerHTML = isHidden
+        ? '<i data-lucide="minus-circle" class="w-4 h-4"></i> Remover responsável'
+        : '<i data-lucide="plus-circle" class="w-4 h-4"></i> Adicionar responsável';
+    lucide.createIcons();
+}
+// Se form voltou com erros nos campos resp_, manter seção aberta
+(function() {
+    var respFields = document.querySelectorAll('[name^="resp_"]');
+    var hasError = Array.from(respFields).some(function(f) {
+        return f.closest('.sm\\:col-span-2, div') && document.querySelector('.text-red-500');
+    });
+    {% if form.resp_nome.errors or form.resp_parentesco.errors %}
+    var s = document.getElementById('resp-section');
+    if (s) s.classList.remove('hidden');
+    var b = document.querySelector('[onclick="toggleResp(this)"]');
+    if (b) {
+        b.innerHTML = '<i data-lucide="minus-circle" class="w-4 h-4"></i> Remover responsável';
+        lucide.createIcons();
+    }
+    {% endif %}
+})();
+</script>
 
 </div>
 {% endblock %}

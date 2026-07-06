@@ -1,19 +1,396 @@
-{% extends 'base/base_diretor.html' %}
-{# Template pai do Responsável #}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="pt-br" class="">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block titulo %}Painel{% endblock %} — EduCare</title>
 
-{% block titulo %}{% block titulo_resp %}Painel{% endblock %}{% endblock %}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            DEFAULT: '{{ escola.cor_primaria|default:"#0d6efd" }}',
+                            50:  '#eff6ff',
+                            600: '#0b5ed7',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        (function () {
+            var s = localStorage.getItem('educare-theme');
+            if (s === 'dark' || (!s && window.matchMedia('(prefers-color-scheme: dark)').matches))
+                document.documentElement.classList.add('dark');
+        })();
+    </script>
+    <script>
+        (function () {
+            if (localStorage.getItem('sidebar-desktop-state') === 'collapsed')
+                document.body.classList.add('sidebar-collapsed');
+        })();
+    </script>
+    <style>
+        aside#sidebar { transition: width 0.2s ease, transform 0.2s ease; }
+        #main-content  { transition: margin-left 0.2s ease; }
 
-{% block sidebar_nav %}
-<a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-colors">
-    <i data-lucide="layout-dashboard" class="w-4 h-4 flex-shrink-0"></i>
-    Dashboard
-</a>
-<a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-colors">
-    <i data-lucide="users" class="w-4 h-4 flex-shrink-0"></i>
-    Meus Filhos
-</a>
-<a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-colors">
-    <i data-lucide="receipt" class="w-4 h-4 flex-shrink-0"></i>
-    Financeiro
-</a>
-{% endblock %}
+        @media (min-width: 1024px) {
+            body.sidebar-collapsed aside#sidebar { width: 4rem; }
+            body.sidebar-collapsed #main-content { margin-left: 4rem; }
+        }
+
+        body.sidebar-collapsed aside#sidebar .sidebar-label    { display: none; }
+        body.sidebar-collapsed aside#sidebar .sidebar-nav-link {
+            justify-content: center;
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+            gap: 0;
+        }
+        body.sidebar-collapsed aside#sidebar #sidebar-logo-area { justify-content: center; padding-left: 0; padding-right: 0; }
+        body.sidebar-collapsed aside#sidebar #escola-card { justify-content: center; gap: 0; padding: 0.5rem; }
+
+        @keyframes toast-in  { from { opacity:0; transform:translateX(calc(100% + 1rem)); } to { opacity:1; transform:translateX(0); } }
+        @keyframes toast-out { from { opacity:1; transform:translateX(0); } to { opacity:0; transform:translateX(calc(100% + 1rem)); } }
+        .toast-enter { animation: toast-in  0.28s ease forwards; }
+        .toast-leave { animation: toast-out 0.25s ease forwards; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body class="min-h-screen bg-slate-100 dark:bg-slate-900 antialiased transition-colors duration-200">
+
+<div class="flex h-screen overflow-hidden">
+
+    <!-- ─── SIDEBAR ─── -->
+    <aside id="sidebar"
+           class="fixed inset-y-0 left-0 z-30 flex flex-col w-64 bg-white dark:bg-slate-800
+                  border-r border-slate-200 dark:border-slate-700 shadow-sm
+                  transform -translate-x-full lg:translate-x-0">
+
+        <!-- Logo -->
+        <div id="sidebar-logo-area"
+             class="flex items-center gap-3 px-4 h-16 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
+            <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-violet-600 text-white shrink-0">
+                <i data-lucide="heart-handshake" class="w-4 h-4"></i>
+            </div>
+            <div id="sidebar-logo-text" class="sidebar-label min-w-0 flex-1">
+                <p class="text-sm font-bold text-slate-900 dark:text-white truncate">
+                    {{ escola.nome|default:"EduCare" }}
+                </p>
+                <p class="text-xs text-slate-400 truncate">Responsável</p>
+            </div>
+        </div>
+
+        <!-- Card da escola -->
+        <div class="px-3 py-3 border-b border-slate-100 dark:border-slate-700 shrink-0">
+            <div id="escola-card"
+                 class="flex items-center gap-3 bg-violet-50 dark:bg-violet-900/20
+                        border border-violet-100 dark:border-violet-900/40 rounded-2xl p-3
+                        transition-all">
+                <div class="shrink-0">
+                    {% if escola.logo %}
+                    <img src="{{ escola.logo.url }}" alt="{{ escola.nome }}"
+                         class="w-10 h-10 rounded-xl object-cover">
+                    {% else %}
+                    <div class="w-10 h-10 rounded-xl bg-violet-600 flex items-center justify-center">
+                        <i data-lucide="graduation-cap" class="w-5 h-5 text-white"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="sidebar-label min-w-0 flex-1">
+                    <p class="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate">
+                        {{ escola.nome|default:"EduCare" }}
+                    </p>
+                    <div class="flex items-center gap-1.5 mt-0.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 animate-pulse"></span>
+                        <p class="text-xs text-slate-400 dark:text-slate-500">Online agora</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navegação -->
+        <nav class="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 space-y-1">
+            {% include "responsavel/_nav.html" with active=active_nav %}
+        </nav>
+    </aside>
+
+    <!-- ─── CONTEÚDO ─── -->
+    <div id="main-content" class="flex flex-col flex-1 min-w-0 lg:ml-64">
+
+        <!-- Top bar -->
+        <header class="flex items-center h-16 px-4 lg:px-6 bg-white dark:bg-slate-800
+                       border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
+
+            <button onclick="toggleMenuButton()"
+                    class="mr-4 p-2 rounded-lg text-slate-400
+                           hover:text-slate-600 hover:bg-slate-100
+                           dark:hover:bg-slate-700 transition-all">
+                <i data-lucide="menu" class="w-5 h-5"></i>
+            </button>
+
+            <h1 class="text-base font-semibold text-slate-900 dark:text-white flex-1 truncate">
+                {% block page_title %}{% endblock %}
+            </h1>
+
+            <div class="flex items-center gap-2 ml-4">
+
+                <!-- Sininho -->
+                <a href="{% url 'notificacao:lista' %}"
+                   class="relative p-2 rounded-lg text-slate-400 hover:text-slate-600
+                          dark:text-slate-500 dark:hover:text-slate-300
+                          hover:bg-slate-100 dark:hover:bg-slate-700 transition-all"
+                   aria-label="Notificações">
+                    <i data-lucide="bell" class="w-4 h-4"></i>
+                    {% if notificacoes_nao_lidas %}
+                    <span class="absolute top-1 right-1 flex items-center justify-center
+                                 w-4 h-4 text-[10px] font-bold text-white
+                                 bg-red-500 rounded-full leading-none">
+                        {% if notificacoes_nao_lidas > 9 %}9+{% else %}{{ notificacoes_nao_lidas }}{% endif %}
+                    </span>
+                    {% endif %}
+                </a>
+
+                <!-- Dark mode -->
+                <button onclick="toggleDarkMode()"
+                        class="p-2 rounded-lg text-slate-400 hover:text-slate-600
+                               dark:text-slate-500 dark:hover:text-slate-300
+                               hover:bg-slate-100 dark:hover:bg-slate-700 transition-all"
+                        aria-label="Alternar tema">
+                    <i data-lucide="sun"  id="icon-sun"  class="w-4 h-4"></i>
+                    <i data-lucide="moon" id="icon-moon" class="w-4 h-4 hidden"></i>
+                </button>
+
+                {% block extra_topbar %}{% endblock %}
+
+                <!-- User dropdown -->
+                <button id="user-menu-button"
+                        data-dropdown-toggle="user-menu-dropdown"
+                        data-dropdown-placement="bottom-end"
+                        data-dropdown-offset-distance="8"
+                        class="flex items-center gap-2 px-2.5 py-1.5 rounded-xl
+                               text-slate-700 dark:text-slate-300
+                               hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                    {% if usuario.perfil_responsavel.foto %}
+                    <img src="{{ usuario.perfil_responsavel.foto.url }}" alt="{{ usuario.primeiro_nome }}"
+                         class="w-7 h-7 rounded-full object-cover shrink-0">
+                    {% else %}
+                    <div class="w-7 h-7 rounded-full bg-violet-600 flex items-center justify-center
+                                text-white text-xs font-bold shrink-0">
+                        {{ usuario.primeiro_nome|first|upper }}
+                    </div>
+                    {% endif %}
+                    <span class="hidden sm:block text-sm font-medium max-w-[120px] truncate">
+                        {{ usuario.primeiro_nome }}
+                    </span>
+                    <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
+                </button>
+
+                <div id="user-menu-dropdown"
+                     class="z-[35] hidden w-64
+                            bg-white dark:bg-slate-800
+                            border border-slate-200 dark:border-slate-700
+                            rounded-2xl shadow-lg overflow-hidden">
+
+                    <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
+                        <p class="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                            {{ usuario.nome }}
+                        </p>
+                        <p class="text-xs text-slate-400 truncate mt-0.5">{{ usuario.email }}</p>
+                    </div>
+
+                    <div class="p-1.5 border-b border-slate-100 dark:border-slate-700">
+                        <span class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm
+                                     text-slate-300 dark:text-slate-600 cursor-not-allowed select-none">
+                            <i data-lucide="repeat-2" class="w-4 h-4 shrink-0"></i>
+                            Trocar escola / papel
+                        </span>
+                    </div>
+
+                    <div class="p-1.5 border-b border-slate-100 dark:border-slate-700 space-y-0.5">
+                        <a href="{% url 'responsavel:portal_perfil' %}"
+                           class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm
+                                  text-slate-700 dark:text-slate-300
+                                  hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                            <i data-lucide="user-circle" class="w-4 h-4 shrink-0"></i>
+                            Meu Perfil
+                        </a>
+                    </div>
+
+                    <div class="p-1.5">
+                        <button data-modal-target="modal-sair"
+                                data-modal-toggle="modal-sair"
+                                class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm
+                                       text-red-600 dark:text-red-400
+                                       hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                            <i data-lucide="log-out" class="w-4 h-4 shrink-0"></i>
+                            Sair
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </header>
+
+        <!-- Conteúdo -->
+        <main class="flex-1 overflow-y-auto px-4 lg:px-6 py-6">
+            {% block conteudo %}{% endblock %}
+        </main>
+    </div>
+</div>
+
+<!-- Overlay mobile -->
+<div id="sidebar-overlay"
+     onclick="toggleSidebar()"
+     class="fixed inset-0 z-[25] bg-black/50 hidden lg:hidden"></div>
+
+<!-- Modal: confirmar saída -->
+<div id="modal-sair"
+     tabindex="-1"
+     aria-hidden="true"
+     class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-[100]
+            justify-center items-center w-full md:inset-0 h-full max-h-full">
+    <div class="relative w-full max-w-sm p-4">
+        <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl">
+            <button type="button"
+                    data-modal-hide="modal-sair"
+                    class="absolute top-3 right-3 p-1.5 rounded-lg text-slate-400
+                           hover:text-slate-600 hover:bg-slate-100
+                           dark:hover:bg-slate-700 dark:hover:text-slate-300 transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+            <div class="px-6 pt-8 pb-6 text-center">
+                <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30
+                            flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="log-out" class="w-6 h-6 text-red-500"></i>
+                </div>
+                <h3 class="text-base font-semibold text-slate-900 dark:text-white">Sair do sistema?</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    Você será desconectado da sua conta.
+                </p>
+            </div>
+            <div class="flex border-t border-slate-100 dark:border-slate-700">
+                <button type="button"
+                        data-modal-hide="modal-sair"
+                        class="flex-1 px-4 py-3 text-sm font-medium
+                               text-slate-700 dark:text-slate-300
+                               hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                    Cancelar
+                </button>
+                <div class="w-px bg-slate-100 dark:bg-slate-700"></div>
+                <form method="post" action="{% url 'accounts:logout' %}" class="flex-1">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="w-full px-4 py-3 text-sm font-semibold
+                                   text-red-600 dark:text-red-400
+                                   hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                        Confirmar saída
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast container -->
+<div id="toast-container"
+     class="fixed top-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none"></div>
+
+{% if messages %}
+<div id="toast-queue" class="hidden" aria-hidden="true">
+    {% for message in messages %}
+    <span data-tag="{{ message.tags }}" data-text="{{ message|escapejs }}"></span>
+    {% endfor %}
+</div>
+{% endif %}
+
+<script>
+function toggleMenuButton() {
+    if (window.innerWidth >= 1024) {
+        var collapsed = document.body.classList.toggle('sidebar-collapsed');
+        localStorage.setItem('sidebar-desktop-state', collapsed ? 'collapsed' : 'expanded');
+    } else {
+        toggleSidebar();
+    }
+}
+function toggleSidebar() {
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebar-overlay');
+    var isOpen  = !sidebar.classList.contains('-translate-x-full');
+    sidebar.classList.toggle('-translate-x-full', isOpen);
+    overlay.classList.toggle('hidden', isOpen);
+}
+function toggleDarkMode() {
+    var html = document.documentElement;
+    var sun  = document.getElementById('icon-sun');
+    var moon = document.getElementById('icon-moon');
+    if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.setItem('educare-theme', 'light');
+        sun.classList.remove('hidden');
+        moon.classList.add('hidden');
+    } else {
+        html.classList.add('dark');
+        localStorage.setItem('educare-theme', 'dark');
+        sun.classList.add('hidden');
+        moon.classList.remove('hidden');
+    }
+}
+(function () {
+    var sun  = document.getElementById('icon-sun');
+    var moon = document.getElementById('icon-moon');
+    if (document.documentElement.classList.contains('dark')) {
+        sun.classList.add('hidden');
+        moon.classList.remove('hidden');
+    }
+})();
+
+var _TOAST_CFG = {
+    success: { cls: 'bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300', icon: 'check-circle-2' },
+    error:   { cls: 'bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300',     icon: 'x-circle' },
+    warning: { cls: 'bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300', icon: 'alert-triangle' },
+    info:    { cls: 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300',   icon: 'info' },
+};
+function _dismissToast(el) {
+    if (!el || !el.parentElement) return;
+    clearTimeout(el._toastTimer);
+    el.classList.remove('toast-enter');
+    el.classList.add('toast-leave');
+    setTimeout(function () { el.parentElement && el.parentElement.removeChild(el); }, 280);
+}
+function _showToast(tag, text) {
+    var cfg       = _TOAST_CFG[tag] || _TOAST_CFG.info;
+    var container = document.getElementById('toast-container');
+    var el        = document.createElement('div');
+    el.className  = 'toast-enter pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg min-w-[260px] max-w-xs ' + cfg.cls;
+    el.innerHTML  =
+        '<i data-lucide="' + cfg.icon + '" class="w-4 h-4 shrink-0"></i>' +
+        '<span class="flex-1 text-sm font-medium leading-snug">' + text + '</span>' +
+        '<button class="ml-1 opacity-50 hover:opacity-100 transition-opacity shrink-0" aria-label="Fechar">' +
+        '<i data-lucide="x" class="w-3.5 h-3.5"></i></button>';
+    el.querySelector('button').addEventListener('click', function () { _dismissToast(el); });
+    container.appendChild(el);
+    if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [el] });
+    el._toastTimer = setTimeout(function () { _dismissToast(el); }, 4500);
+}
+function _showQueuedToasts() {
+    var queue = document.getElementById('toast-queue');
+    if (!queue) return;
+    var items = queue.querySelectorAll('[data-text]');
+    items.forEach(function (item, i) {
+        setTimeout(function () { _showToast(item.dataset.tag, item.dataset.text); }, i * 120);
+    });
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+<script>lucide.createIcons(); _showQueuedToasts();</script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

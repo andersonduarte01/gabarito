@@ -21,6 +21,7 @@ urlpatterns = [
     path('funcoes/',                    views.ListarFuncoesView.as_view(),       name='funcoes'),
     path('funcoes/criar/',              views.CriarFuncaoView.as_view(),         name='funcao_criar'),
     path('funcoes/<int:pk>/editar/',    views.EditarFuncaoView.as_view(),        name='funcao_editar'),
-    path('funcoes/<int:pk>/desativar/', views.DesativarFuncaoView.as_view(),     name='funcao_desativar'),
-    path('funcoes/<int:pk>/reativar/',  views.ReativarFuncaoView.as_view(),      name='funcao_reativar'),
+    path('funcoes/<int:pk>/desativar/',   views.DesativarFuncaoView.as_view(),      name='funcao_desativar'),
+    path('funcoes/<int:pk>/reativar/',    views.ReativarFuncaoView.as_view(),       name='funcao_reativar'),
+    path('funcoes/<int:pk>/permissoes/',  views.PermissoesFuncaoView.as_view(),     name='funcao_permissoes'),
 ]

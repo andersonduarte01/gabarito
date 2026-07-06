@@ -18,7 +18,7 @@ def criar(escola, usuario_dados: dict, perfil_dados: dict) -> PerfilResponsavel:
     if usuario:
         perfil, _ = PerfilResponsavel.objects.get_or_create(
             usuario=usuario,
-            defaults={'nome': nome, **{k: v for k, v in perfil_dados.items() if k != 'nome'}},
+            defaults={'nome': nome, 'escola': escola, **{k: v for k, v in perfil_dados.items() if k != 'nome'}},
         )
     else:
         usuario = User.objects.create(email=email, nome=nome, is_active=True)
@@ -27,9 +27,10 @@ def criar(escola, usuario_dados: dict, perfil_dados: dict) -> PerfilResponsavel:
         else:
             usuario.set_unusable_password()
         usuario.save(update_fields=['password'])
-        perfil = PerfilResponsavel.objects.create(usuario=usuario, nome=nome, **{
-            k: v for k, v in perfil_dados.items() if k != 'nome'
-        })
+        perfil = PerfilResponsavel.objects.create(
+            usuario=usuario, nome=nome, escola=escola,
+            **{k: v for k, v in perfil_dados.items() if k != 'nome'},
+        )
 
     vinculo = vinculo_service.criar_vinculo(usuario, escola)
     vinculo_service.adicionar_papel(vinculo, TipoVinculo.RESPONSAVEL)
@@ -37,9 +38,9 @@ def criar(escola, usuario_dados: dict, perfil_dados: dict) -> PerfilResponsavel:
 
 
 @transaction.atomic
-def criar_sem_acesso(perfil_dados: dict) -> PerfilResponsavel:
+def criar_sem_acesso(escola, perfil_dados: dict) -> PerfilResponsavel:
     """Cria responsável sem login — apenas dados de contato."""
-    return PerfilResponsavel.objects.create(usuario=None, **perfil_dados)
+    return PerfilResponsavel.objects.create(usuario=None, escola=escola, **perfil_dados)
 
 
 def editar(perfil: PerfilResponsavel, dados: dict) -> PerfilResponsavel:
@@ -52,6 +53,11 @@ def editar(perfil: PerfilResponsavel, dados: dict) -> PerfilResponsavel:
 @transaction.atomic
 def desativar(papel, desativado_por=None) -> None:
     from apps.core.services.vinculo_service import remover_papel
+    try:
+        perfil = PerfilResponsavel.objects.get(usuario=papel.vinculo.usuario)
+        VinculoResponsavelAluno.objects.filter(responsavel=perfil).update(ativo=False)
+    except (PerfilResponsavel.DoesNotExist, AttributeError):
+        pass
     remover_papel(papel)
 
 

@@ -1,0 +1,218 @@
+{% extends "base/base_aluno.html" %}
+
+{% block titulo %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block conteudo %}
+
+{# ── Boas-vindas ──────────────────────────────────────────────────────────── #}
+<div class="mb-6">
+    <h2 class="text-xl font-bold text-slate-900 dark:text-white">
+        Olá, {{ aluno.nome_completo|default:usuario.primeiro_nome }}
+    </h2>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+        {% if matricula_ativa %}
+            {{ matricula_ativa.turma.nome }} — {{ matricula_ativa.turma.serie.nome }} — {{ escola.nome }}
+        {% else %}
+            {{ escola.nome }}
+        {% endif %}
+    </p>
+</div>
+
+{# ── KPIs ─────────────────────────────────────────────────────────────────── #}
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Matrícula</span>
+            <div class="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center">
+                <i data-lucide="hash" class="w-3.5 h-3.5 text-emerald-600"></i>
+            </div>
+        </div>
+        <p class="text-lg font-bold text-slate-900 dark:text-white font-mono">
+            {{ aluno.matricula|default:"—" }}
+        </p>
+        <p class="text-xs text-slate-400 mt-1">número</p>
+    </div>
+
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Turma</span>
+            <div class="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
+                <i data-lucide="door-open" class="w-3.5 h-3.5 text-blue-500"></i>
+            </div>
+        </div>
+        {% if matricula_ativa %}
+        <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ matricula_ativa.turma.nome }}</p>
+        <p class="text-xs text-slate-400 mt-1">{{ matricula_ativa.turma.get_turno_display }}</p>
+        {% else %}
+        <p class="text-xl font-bold text-slate-300 dark:text-slate-600">—</p>
+        <p class="text-xs text-slate-400 mt-1">Sem matrícula ativa</p>
+        {% endif %}
+    </div>
+
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Frequência</span>
+            <div class="w-7 h-7 rounded-lg {% if freq_media and freq_media < 75 %}bg-red-50 dark:bg-red-900/30{% else %}bg-emerald-50 dark:bg-emerald-900/30{% endif %} flex items-center justify-center">
+                <i data-lucide="calendar-check" class="w-3.5 h-3.5 {% if freq_media and freq_media < 75 %}text-red-500{% else %}text-emerald-600{% endif %}"></i>
+            </div>
+        </div>
+        {% if freq_media %}
+        <p class="text-2xl font-bold {% if freq_media < 75 %}text-red-600 dark:text-red-400{% else %}text-slate-900 dark:text-white{% endif %}">
+            {{ freq_media|floatformat:1 }}%
+        </p>
+        {% else %}
+        <p class="text-xl font-bold text-slate-300 dark:text-slate-600">—</p>
+        {% endif %}
+        <p class="text-xs text-slate-400 mt-1">média geral</p>
+    </div>
+
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Ano Letivo</span>
+            <div class="w-7 h-7 rounded-lg bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center">
+                <i data-lucide="calendar" class="w-3.5 h-3.5 text-purple-500"></i>
+            </div>
+        </div>
+        {% if ano_letivo %}
+        <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ ano_letivo.ano }}</p>
+        <p class="text-xs text-slate-400 mt-1">{{ ano_letivo.get_status_display }}</p>
+        {% else %}
+        <p class="text-xl font-bold text-slate-300 dark:text-slate-600">—</p>
+        <p class="text-xs text-slate-400 mt-1">Não configurado</p>
+        {% endif %}
+    </div>
+
+</div>
+
+{# ── Grid inferior ─────────────────────────────────────────────────────────── #}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+    {# Boletim resumido — período mais recente #}
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-700">
+            <div>
+                <h3 class="text-sm font-semibold text-slate-800 dark:text-white">Boletim</h3>
+                <p class="text-xs text-slate-400 mt-0.5">
+                    {% if periodo_atual %}{{ periodo_atual.nome }}{% else %}Sem período ativo{% endif %}
+                </p>
+            </div>
+            <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center">
+                <i data-lucide="book-open-check" class="w-4 h-4 text-emerald-600"></i>
+            </div>
+        </div>
+        <div class="divide-y divide-slate-50 dark:divide-slate-700/50">
+            {% for r in resultados_periodo %}
+            <div class="flex items-center gap-3 px-5 py-3">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-slate-800 dark:text-white truncate">
+                        {{ r.materia.nome }}
+                    </p>
+                    {% if r.media_periodo is not None %}
+                    <p class="text-xs text-slate-400 mt-0.5">Média: {{ r.media_periodo|floatformat:1 }}</p>
+                    {% else %}
+                    <p class="text-xs text-slate-400 mt-0.5">Sem notas lançadas</p>
+                    {% endif %}
+                </div>
+                <span class="text-xs font-semibold px-2.5 py-1 rounded-full shrink-0
+                    {% if r.situacao_periodo == 'APROVADO' %}bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400
+                    {% elif r.situacao_periodo == 'RECUPERACAO' %}bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400
+                    {% elif r.situacao_periodo == 'REPROVADO' %}bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400
+                    {% else %}bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300{% endif %}">
+                    {{ r.get_situacao_periodo_display }}
+                </span>
+            </div>
+            {% empty %}
+            <div class="px-5 py-10 text-center">
+                <i data-lucide="book-open" class="w-8 h-8 text-slate-200 dark:text-slate-600 mx-auto mb-2"></i>
+                <p class="text-sm text-slate-400">Nenhum resultado disponível.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {# Coluna direita: avaliações + comunicados #}
+    <div class="flex flex-col gap-5">
+
+        {# Próximas avaliações #}
+        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-700">
+                <div>
+                    <h3 class="text-sm font-semibold text-slate-800 dark:text-white">Próximas Avaliações</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Publicadas para sua turma</p>
+                </div>
+                <div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
+                    <i data-lucide="clipboard-list" class="w-4 h-4 text-blue-500"></i>
+                </div>
+            </div>
+            <div class="divide-y divide-slate-50 dark:divide-slate-700/50">
+                {% for av in avaliacoes_proximas %}
+                <div class="flex items-start gap-3 px-5 py-3.5">
+                    <div class="flex flex-col items-center justify-center w-10 h-10 rounded-xl shrink-0
+                                bg-blue-50 dark:bg-blue-900/30 text-blue-600">
+                        {% if av.data_aplicacao %}
+                        <span class="text-[10px] font-bold leading-none uppercase">
+                            {{ av.data_aplicacao|date:"M" }}
+                        </span>
+                        <span class="text-base font-extrabold leading-tight">
+                            {{ av.data_aplicacao|date:"d" }}
+                        </span>
+                        {% else %}
+                        <i data-lucide="calendar-x" class="w-4 h-4"></i>
+                        {% endif %}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-slate-800 dark:text-white truncate">
+                            {{ av.titulo }}
+                        </p>
+                        <p class="text-xs text-slate-400 mt-0.5">
+                            {{ av.materia.nome }} · {{ av.get_tipo_display }}
+                        </p>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="px-5 py-8 text-center">
+                    <i data-lucide="check-circle" class="w-8 h-8 text-slate-200 dark:text-slate-600 mx-auto mb-2"></i>
+                    <p class="text-sm text-slate-400">Nenhuma avaliação próxima.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {# Comunicados recentes #}
+        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-700">
+                <div>
+                    <h3 class="text-sm font-semibold text-slate-800 dark:text-white">Comunicados</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Últimos publicados</p>
+                </div>
+                <div class="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
+                    <i data-lucide="megaphone" class="w-4 h-4 text-indigo-500"></i>
+                </div>
+            </div>
+            <div class="divide-y divide-slate-50 dark:divide-slate-700/50">
+                {% for c in comunicados_recentes %}
+                <div class="flex items-start gap-3 px-5 py-3.5">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/30
+                                flex items-center justify-center shrink-0 mt-0.5">
+                        <i data-lucide="megaphone" class="w-3.5 h-3.5 text-indigo-500"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-slate-800 dark:text-white truncate">{{ c.titulo }}</p>
+                        <p class="text-xs text-slate-400 mt-0.5">{{ c.criado_em|date:"d/m/Y" }}</p>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="px-5 py-8 text-center">
+                    <i data-lucide="megaphone" class="w-8 h-8 text-slate-200 dark:text-slate-600 mx-auto mb-2"></i>
+                    <p class="text-sm text-slate-400">Nenhum comunicado publicado.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

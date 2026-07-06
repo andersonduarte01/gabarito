@@ -8,6 +8,18 @@ from .models import ResultadoAnual, ResultadoPeriodo
 from .services import boletim_service
 
 
+def _turma_ids_professor(papel):
+    try:
+        from apps.turma.models import ProfessorMateriaTurma
+        return list(
+            ProfessorMateriaTurma.objects
+            .filter(professor=papel.perfil_professor, ativo=True)
+            .values_list('turma_id', flat=True)
+        )
+    except Exception:
+        return []
+
+
 class _LeituraMixin:
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -52,12 +64,12 @@ class BoletimIndexView(_LeituraMixin, View):
         if ano_id:
             try:
                 ano_selecionado = anos.get(pk=ano_id)
-                turmas = (
-                    Turma.objects
-                    .filter(escola=request.escola, ano_letivo=ano_selecionado)
-                    .select_related('serie', 'ano_letivo')
-                    .order_by('nome')
-                )
+                turma_qs = Turma.objects.filter(
+                    escola=request.escola, ano_letivo=ano_selecionado,
+                ).select_related('serie', 'ano_letivo').order_by('nome')
+                if request.papel.tipo == 'PROFESSOR':
+                    turma_qs = turma_qs.filter(pk__in=_turma_ids_professor(request.papel))
+                turmas = turma_qs
             except AnoLetivo.DoesNotExist:
                 pass
 
@@ -78,10 +90,10 @@ class BoletimTurmaView(_LeituraMixin, View):
         from apps.turma.models import Turma
         from apps.aluno.models import MatriculaTurma
 
-        turma = get_object_or_404(
-            Turma.objects.select_related('ano_letivo', 'serie'),
-            pk=turma_pk, escola=request.escola,
-        )
+        qs = Turma.objects.select_related('ano_letivo', 'serie').filter(escola=request.escola)
+        if request.papel.tipo == 'PROFESSOR':
+            qs = qs.filter(pk__in=_turma_ids_professor(request.papel))
+        turma = get_object_or_404(qs, pk=turma_pk)
         matriculas = (
             MatriculaTurma.objects
             .filter(turma=turma, ano_letivo=turma.ano_letivo, ativo=True)

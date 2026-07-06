@@ -12,6 +12,13 @@ class Parentesco(models.TextChoices):
 
 
 class PerfilResponsavel(models.Model):
+    escola          = models.ForeignKey(
+        'escola.UnidadeEscolar',
+        on_delete=models.CASCADE,
+        related_name='responsaveis',
+        verbose_name='Escola',
+        null=True, blank=True,
+    )
     usuario         = models.OneToOneField(
         'core.Usuario',
         on_delete=models.SET_NULL,

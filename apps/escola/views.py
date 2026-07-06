@@ -35,65 +35,39 @@ class EscolaRequiredMixin:
 class PerfilEscolaView(EscolaRequiredMixin, View):
     template_name = 'escola/perfil_escola.html'
 
-    def _dados_perfil(self, request):
-        from apps.ano_letivo.models import AnoLetivo, StatusAnoLetivo
-        escola    = request.escola
-        enderecos = escola.enderecos.all().order_by('-principal', 'id')
+    def get(self, request):
+        enderecos = request.escola.enderecos.all().order_by('-principal', 'id')
+        return render(request, self.template_name, self._ctx(request, enderecos=enderecos))
+
+
+class SegmentosView(EscolaRequiredMixin, View):
+    template_name = 'escola/segmentos.html'
+
+    def _dados(self, request):
+        escola = request.escola
         segmentos = escola.segmentos.all().order_by('tipo')
         tipos_usados = list(segmentos.values_list('tipo', flat=True))
-        todos_tipos  = {v for v, _ in TipoSegmento.choices}
-        tem_disponivel = bool(todos_tipos - set(tipos_usados))
-        ano_ativo = (
-            AnoLetivo.objects
-            .filter(escola=escola, status=StatusAnoLetivo.EM_ANDAMENTO)
-            .first()
-        )
-        anos_total = AnoLetivo.objects.filter(escola=escola).count()
-        segmentos_com_series = [
-            {'segmento': seg, 'total': seg.series.filter(ativo=True).count()}
-            for seg in segmentos
-        ]
-        from apps.materia.models import Materia
-        total_materias = Materia.objects.filter(escola=escola, ativo=True).count()
-        return (
-            escola, enderecos, segmentos, tipos_usados, tem_disponivel,
-            ano_ativo, anos_total, segmentos_com_series, total_materias,
-        )
+        tem_disponivel = bool({v for v, _ in TipoSegmento.choices} - set(tipos_usados))
+        return escola, segmentos, tipos_usados, tem_disponivel
 
     def get(self, request):
-        escola, enderecos, segmentos, tipos_usados, tem_disponivel, ano_ativo, anos_total, segmentos_com_series, total_materias = self._dados_perfil(request)
-        form_segmento = AdicionarSegmentoForm(existentes=tipos_usados)
+        escola, segmentos, tipos_usados, tem_disponivel = self._dados(request)
+        form = AdicionarSegmentoForm(existentes=tipos_usados)
         return render(request, self.template_name, self._ctx(
-            request,
-            enderecos=enderecos,
-            segmentos=segmentos,
-            form_segmento=form_segmento,
-            tem_disponivel=tem_disponivel,
-            ano_ativo=ano_ativo,
-            anos_total=anos_total,
-            segmentos_com_series=segmentos_com_series,
-            total_materias=total_materias,
+            request, segmentos=segmentos, form=form, tem_disponivel=tem_disponivel,
         ))
 
     def post(self, request):
-        escola, enderecos, segmentos, tipos_usados, tem_disponivel, ano_ativo, anos_total, segmentos_com_series, total_materias = self._dados_perfil(request)
-        form_segmento = AdicionarSegmentoForm(request.POST, existentes=tipos_usados)
-        if form_segmento.is_valid():
-            tipo = form_segmento.cleaned_data['tipo']
+        escola, segmentos, tipos_usados, tem_disponivel = self._dados(request)
+        form = AdicionarSegmentoForm(request.POST, existentes=tipos_usados)
+        if form.is_valid():
+            tipo = form.cleaned_data['tipo']
             if tipo and tipo not in tipos_usados:
                 adicionar_segmento(escola, tipo)
                 messages.success(request, 'Segmento adicionado.')
-            return redirect('escola:perfil')
+            return redirect('escola:segmentos')
         return render(request, self.template_name, self._ctx(
-            request,
-            enderecos=enderecos,
-            segmentos=segmentos,
-            form_segmento=form_segmento,
-            tem_disponivel=tem_disponivel,
-            ano_ativo=ano_ativo,
-            anos_total=anos_total,
-            segmentos_com_series=segmentos_com_series,
-            total_materias=total_materias,
+            request, segmentos=segmentos, form=form, tem_disponivel=tem_disponivel,
         ))
 
 
@@ -177,4 +151,4 @@ class RemoverSegmentoView(EscolaRequiredMixin, View):
         segmento = get_object_or_404(SegmentoEscolar, pk=pk, escola=request.escola)
         remover_segmento(segmento)
         messages.success(request, 'Segmento removido.')
-        return redirect('escola:perfil')
+        return redirect('escola:segmentos')

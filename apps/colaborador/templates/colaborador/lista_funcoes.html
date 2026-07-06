@@ -49,6 +49,11 @@
                     {% endif %}
                 </div>
                 <div class="flex items-center gap-1">
+                    <a href="{% url 'colaborador:funcao_permissoes' funcao.pk %}"
+                       class="p-1.5 text-slate-300 hover:text-violet-500 rounded-md transition-colors"
+                       title="Permissões">
+                        <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                    </a>
                     <a href="{% url 'colaborador:funcao_editar' funcao.pk %}"
                        class="p-1.5 text-slate-300 hover:text-[#0d6efd] rounded-md transition-colors"
                        title="Editar">

@@ -8,6 +8,18 @@ from .models import PresencaAluno, RegistroFrequencia
 from .services import frequencia_service
 
 
+def _turma_ids_professor(papel):
+    try:
+        from apps.turma.models import ProfessorMateriaTurma
+        return list(
+            ProfessorMateriaTurma.objects
+            .filter(professor=papel.perfil_professor, ativo=True)
+            .values_list('turma_id', flat=True)
+        )
+    except Exception:
+        return []
+
+
 class _LeituraMixin:
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -50,6 +62,9 @@ class ListarRegistrosView(_LeituraMixin, View):
                             'ano_letivo', 'periodo_letivo')
             .order_by('-data', '-criado_em')
         )
+        if request.papel.tipo == 'PROFESSOR':
+            qs = qs.filter(turma_id__in=_turma_ids_professor(request.papel))
+
         turma_id  = request.GET.get('turma', '')
         data_str  = request.GET.get('data', '')
         if turma_id:
@@ -58,7 +73,10 @@ class ListarRegistrosView(_LeituraMixin, View):
             qs = qs.filter(data=data_str)
 
         from apps.turma.models import Turma
-        turmas = Turma.objects.filter(escola=escola, ativo=True).order_by('nome')
+        if request.papel.tipo == 'PROFESSOR':
+            turmas = Turma.objects.filter(pk__in=_turma_ids_professor(request.papel)).order_by('nome')
+        else:
+            turmas = Turma.objects.filter(escola=escola, ativo=True).order_by('nome')
         return render(request, self.template_name, self._ctx(
             request,
             registros=qs[:100],
@@ -74,18 +92,27 @@ class ListarRegistrosView(_LeituraMixin, View):
 class CriarRegistroView(_LeituraMixin, View):
     template_name = 'frequencia/form_registro.html'
 
+    def _turma_ids(self, request):
+        return _turma_ids_professor(request.papel) if request.papel.tipo == 'PROFESSOR' else None
+
     def get(self, request):
-        form = RegistroFrequenciaForm(escola=request.escola)
+        form = RegistroFrequenciaForm(escola=request.escola, turma_ids=self._turma_ids(request))
         return render(request, self.template_name, self._ctx(request, form=form))
 
     def post(self, request):
-        form = RegistroFrequenciaForm(request.POST, escola=request.escola)
+        form = RegistroFrequenciaForm(request.POST, escola=request.escola, turma_ids=self._turma_ids(request))
         if form.is_valid():
             cd = form.cleaned_data
+            professor = cd.get('professor')
+            if request.papel.tipo == 'PROFESSOR':
+                try:
+                    professor = request.papel.perfil_professor
+                except Exception:
+                    professor = None
             registro = frequencia_service.criar_registro(
                 turma          = cd['turma'],
                 materia        = cd.get('materia'),
-                professor      = cd.get('professor'),
+                professor      = professor,
                 data           = cd['data'],
                 ano_letivo     = cd['ano_letivo'],
                 periodo_letivo = cd.get('periodo_letivo'),
@@ -129,12 +156,12 @@ class LancarPresencasView(_LeituraMixin, View):
     template_name = 'frequencia/lancar.html'
 
     def _get_registro(self, request, pk):
-        return get_object_or_404(
-            RegistroFrequencia.objects.select_related(
-                'turma__escola', 'materia', 'ano_letivo', 'periodo_letivo',
-            ),
-            pk=pk, turma__escola=request.escola,
-        )
+        qs = RegistroFrequencia.objects.select_related(
+            'turma__escola', 'materia', 'ano_letivo', 'periodo_letivo',
+        ).filter(turma__escola=request.escola)
+        if request.papel.tipo == 'PROFESSOR':
+            qs = qs.filter(turma_id__in=_turma_ids_professor(request.papel))
+        return get_object_or_404(qs, pk=pk)
 
     def get(self, request, pk):
         registro = self._get_registro(request, pk)

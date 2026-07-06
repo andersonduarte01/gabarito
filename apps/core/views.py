@@ -99,8 +99,8 @@ class DashboardRedirectView(View):
         TipoVinculo.DIRETOR:     'diretor:dashboard',  # módulo 07
         TipoVinculo.FUNCIONARIO: 'colaborador:dashboard',  # módulo 08
         TipoVinculo.PROFESSOR:   'professor:dashboard',  # módulo 09
-        TipoVinculo.ALUNO:       'core:inicio',   # módulo 15
-        TipoVinculo.RESPONSAVEL: 'core:inicio',   # módulo 10
+        TipoVinculo.ALUNO:       'aluno:portal_dashboard',
+        TipoVinculo.RESPONSAVEL: 'responsavel:portal_dashboard',
     }
 
     def get(self, request):

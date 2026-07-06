@@ -1,6 +1,26 @@
 from django.db import models
 
 
+MODULOS_COLABORADOR = [
+    ('escola',        'Escola'),
+    ('series',        'Séries'),
+    ('turmas',        'Turmas'),
+    ('segmentos',     'Segmentos'),
+    ('materias',      'Matérias'),
+    ('professores',   'Professores'),
+    ('colaboradores', 'Colaboradores'),
+    ('alunos',        'Alunos'),
+    ('responsaveis',  'Responsáveis'),
+    ('avaliacoes',    'Avaliações'),
+    ('boletim',       'Boletim'),
+    ('frequencia',    'Frequência'),
+    ('financeiro',    'Financeiro'),
+    ('comunicados',   'Comunicados'),
+    ('agenda',        'Agenda'),
+    ('relatorios',    'Relatórios'),
+]
+
+
 class TipoVinculoEmpregaticio(models.TextChoices):
     CLT         = 'CLT',         'CLT'
     ESTATUTARIO = 'ESTATUTARIO', 'Estatutário'
@@ -81,3 +101,21 @@ class PerfilColaborador(models.Model):
     @property
     def usuario(self):
         return self.papel.usuario
+
+
+class PermissaoFuncao(models.Model):
+    funcao = models.ForeignKey(
+        FuncaoEscolar,
+        on_delete=models.CASCADE,
+        related_name='permissoes',
+        verbose_name='Função',
+    )
+    modulo = models.CharField('Módulo', max_length=50)
+
+    class Meta:
+        unique_together     = ('funcao', 'modulo')
+        verbose_name        = 'Permissão de Função'
+        verbose_name_plural = 'Permissões de Função'
+
+    def __str__(self):
+        return f'{self.funcao.nome} — {self.modulo}'

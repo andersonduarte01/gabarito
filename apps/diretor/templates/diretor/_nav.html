@@ -1,5 +1,8 @@
 {% with a=active %}
 
+{# ── GESTÃO ── #}
+<p class="sidebar-label px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500">Gestão</p>
+
 <a href="{% if papel.tipo == 'FUNCIONARIO' %}{% url 'colaborador:dashboard' %}{% else %}{% url 'diretor:dashboard' %}{% endif %}"
    title="Dashboard"
    class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
@@ -8,6 +11,113 @@
     <i data-lucide="layout-dashboard" class="w-4 h-4 shrink-0"></i>
     <span class="sidebar-label">Dashboard</span>
 </a>
+
+{% if papel.tipo == 'DIRETOR' %}
+<a href="{% url 'auditoria:lista' %}"
+   title="Auditoria"
+   class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+          {% if a == 'auditoria' %}bg-[#0d6efd]/10 text-[#0d6efd] dark:bg-[#0d6efd]/20
+          {% else %}text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white{% endif %}">
+    <i data-lucide="shield-check" class="w-4 h-4 shrink-0"></i>
+    <span class="sidebar-label">Auditoria</span>
+</a>
+{% endif %}
+
+{% if papel.tipo == 'DIRETOR' or 'relatorios' in modulos_permitidos %}
+<a href="{% url 'relatorio:index' %}"
+   title="Relatórios"
+   class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+          {% if a == 'relatorios' %}bg-[#0d6efd]/10 text-[#0d6efd] dark:bg-[#0d6efd]/20
+          {% else %}text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white{% endif %}">
+    <i data-lucide="chart-bar" class="w-4 h-4 shrink-0"></i>
+    <span class="sidebar-label">Relatórios</span>
+</a>
+{% endif %}
+
+{# ── CONFIGURAÇÃO ── #}
+<div class="my-2 border-t border-slate-100 dark:border-slate-700"></div>
+<p class="sidebar-label px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500">Configuração</p>
+
+{% if papel.tipo == 'DIRETOR' or 'escola' in modulos_permitidos %}
+<a href="{% url 'escola:perfil' %}"
+   title="Escola"
+   class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+          {% if a == 'escola' %}bg-[#0d6efd]/10 text-[#0d6efd] dark:bg-[#0d6efd]/20
+          {% else %}text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white{% endif %}">
+    <i data-lucide="school" class="w-4 h-4 shrink-0"></i>
+    <span class="sidebar-label">Escola</span>
+</a>
+{% endif %}
+
+{% if papel.tipo == 'DIRETOR' %}
+<a href="{% url 'ano_letivo:lista' %}"
+   title="Ano Letivo"
+   class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+          {% if a == 'ano_letivo' %}bg-[#0d6efd]/10 text-[#0d6efd] dark:bg-[#0d6efd]/20
+          {% else %}text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white{% endif %}">
+    <i data-lucide="calendar-range" class="w-4 h-4 shrink-0"></i>
+    <span class="sidebar-label">Ano Letivo</span>
+</a>
+{% endif %}
+
+{% if papel.tipo == 'DIRETOR' or 'series' in modulos_permitidos %}
+<a href="{% url 'serie:lista' %}"
+   title="Séries"
+   class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+          {% if a == 'series' %}bg-[#0d6efd]/10 text-[#0d6efd] dark:bg-[#0d6efd]/20
+          {% else %}text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white{% endif %}">
+    <i data-lucide="layers" class="w-4 h-4 shrink-0"></i>
+    <span class="sidebar-label">Séries</span>
+</a>
+{% endif %}
+
+{% if papel.tipo == 'DIRETOR' or 'turmas' in modulos_permitidos %}
+<a href="{% url 'turma:lista' %}"
+   title="Turmas"
+   class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+          {% if a == 'turmas' %}bg-[#0d6efd]/10 text-[#0d6efd] dark:bg-[#0d6efd]/20
+          {% else %}text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white{% endif %}">
+    <i data-lucide="layout-list" class="w-4 h-4 shrink-0"></i>
+    <span class="sidebar-label">Turmas</span>
+</a>
+{% endif %}
+
+{% if papel.tipo == 'DIRETOR' or 'segmentos' in modulos_permitidos %}
+<a href="{% url 'escola:segmentos' %}"
+   title="Segmentos"
+   class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+          {% if a == 'segmentos' %}bg-[#0d6efd]/10 text-[#0d6efd] dark:bg-[#0d6efd]/20
+          {% else %}text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white{% endif %}">
+    <i data-lucide="layers" class="w-4 h-4 shrink-0"></i>
+    <span class="sidebar-label">Segmentos</span>
+</a>
+{% endif %}
+
+{% if papel.tipo == 'DIRETOR' or 'materias' in modulos_permitidos %}
+<a href="{% url 'materia:lista' %}"
+   title="Matérias"
+   class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+          {% if a == 'materias' %}bg-[#0d6efd]/10 text-[#0d6efd] dark:bg-[#0d6efd]/20
+          {% else %}text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white{% endif %}">
+    <i data-lucide="book-open" class="w-4 h-4 shrink-0"></i>
+    <span class="sidebar-label">Matérias</span>
+</a>
+{% endif %}
+
+{% if papel.tipo == 'DIRETOR' %}
+<a href="{% url 'configuracao:academica' %}"
+   title="Configurações"
+   class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+          {% if a == 'configuracoes' %}bg-[#0d6efd]/10 text-[#0d6efd] dark:bg-[#0d6efd]/20
+          {% else %}text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white{% endif %}">
+    <i data-lucide="settings-2" class="w-4 h-4 shrink-0"></i>
+    <span class="sidebar-label">Configurações</span>
+</a>
+{% endif %}
+
+{# ── EQUIPE ── #}
+<div class="my-2 border-t border-slate-100 dark:border-slate-700"></div>
+<p class="sidebar-label px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500">Equipe</p>
 
 {% if papel.tipo == 'DIRETOR' %}
 <a href="{% url 'diretor:listar_diretores' %}"
@@ -20,15 +130,7 @@
 </a>
 {% endif %}
 
-<a href="{% url 'escola:perfil' %}"
-   title="Escola"
-   class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
-          {% if a == 'escola' %}bg-[#0d6efd]/10 text-[#0d6efd] dark:bg-[#0d6efd]/20
-          {% else %}text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white{% endif %}">
-    <i data-lucide="school" class="w-4 h-4 shrink-0"></i>
-    <span class="sidebar-label">Escola</span>
-</a>
-
+{% if papel.tipo == 'DIRETOR' or 'professores' in modulos_permitidos %}
 <a href="{% url 'professor:lista' %}"
    title="Professores"
    class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
@@ -37,7 +139,9 @@
     <i data-lucide="graduation-cap" class="w-4 h-4 shrink-0"></i>
     <span class="sidebar-label">Professores</span>
 </a>
+{% endif %}
 
+{% if papel.tipo == 'DIRETOR' or 'colaboradores' in modulos_permitidos %}
 <a href="{% url 'colaborador:lista' %}"
    title="Colaboradores"
    class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
@@ -46,9 +150,13 @@
     <i data-lucide="users-round" class="w-4 h-4 shrink-0"></i>
     <span class="sidebar-label">Colaboradores</span>
 </a>
+{% endif %}
 
+{# ── ALUNOS ── #}
 <div class="my-2 border-t border-slate-100 dark:border-slate-700"></div>
+<p class="sidebar-label px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500">Alunos</p>
 
+{% if papel.tipo == 'DIRETOR' or 'alunos' in modulos_permitidos %}
 <a href="{% url 'aluno:lista' %}"
    title="Alunos"
    class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
@@ -57,7 +165,9 @@
     <i data-lucide="users" class="w-4 h-4 shrink-0"></i>
     <span class="sidebar-label">Alunos</span>
 </a>
+{% endif %}
 
+{% if papel.tipo == 'DIRETOR' or 'responsaveis' in modulos_permitidos %}
 <a href="{% url 'responsavel:lista' %}"
    title="Responsáveis"
    class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
@@ -66,7 +176,13 @@
     <i data-lucide="heart-handshake" class="w-4 h-4 shrink-0"></i>
     <span class="sidebar-label">Responsáveis</span>
 </a>
+{% endif %}
 
+{# ── ACADÊMICO ── #}
+<div class="my-2 border-t border-slate-100 dark:border-slate-700"></div>
+<p class="sidebar-label px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500">Acadêmico</p>
+
+{% if papel.tipo == 'DIRETOR' or 'avaliacoes' in modulos_permitidos %}
 <a href="{% url 'avaliacao:lista' %}"
    title="Avaliações"
    class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
@@ -75,7 +191,9 @@
     <i data-lucide="clipboard-list" class="w-4 h-4 shrink-0"></i>
     <span class="sidebar-label">Avaliações</span>
 </a>
+{% endif %}
 
+{% if papel.tipo == 'DIRETOR' or 'boletim' in modulos_permitidos %}
 <a href="{% url 'boletim:index' %}"
    title="Boletim"
    class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
@@ -84,7 +202,9 @@
     <i data-lucide="book-open-check" class="w-4 h-4 shrink-0"></i>
     <span class="sidebar-label">Boletim</span>
 </a>
+{% endif %}
 
+{% if papel.tipo == 'DIRETOR' or 'frequencia' in modulos_permitidos %}
 <a href="{% url 'frequencia:lista' %}"
    title="Frequência"
    class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
@@ -93,25 +213,13 @@
     <i data-lucide="calendar-check" class="w-4 h-4 shrink-0"></i>
     <span class="sidebar-label">Frequência</span>
 </a>
+{% endif %}
 
-<a href="{% url 'serie:lista' %}"
-   title="Séries"
-   class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
-          {% if a == 'series' %}bg-[#0d6efd]/10 text-[#0d6efd] dark:bg-[#0d6efd]/20
-          {% else %}text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white{% endif %}">
-    <i data-lucide="layers" class="w-4 h-4 shrink-0"></i>
-    <span class="sidebar-label">Séries</span>
-</a>
+{# ── FINANCEIRO E COMUNICAÇÃO ── #}
+<div class="my-2 border-t border-slate-100 dark:border-slate-700"></div>
+<p class="sidebar-label px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500">Financeiro e Comunicação</p>
 
-<a href="{% url 'turma:lista' %}"
-   title="Turmas"
-   class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
-          {% if a == 'turmas' %}bg-[#0d6efd]/10 text-[#0d6efd] dark:bg-[#0d6efd]/20
-          {% else %}text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white{% endif %}">
-    <i data-lucide="users" class="w-4 h-4 shrink-0"></i>
-    <span class="sidebar-label">Turmas</span>
-</a>
-
+{% if papel.tipo == 'DIRETOR' or 'financeiro' in modulos_permitidos %}
 <a href="{% url 'financeiro:dashboard' %}"
    title="Financeiro"
    class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
@@ -120,7 +228,9 @@
     <i data-lucide="receipt" class="w-4 h-4 shrink-0"></i>
     <span class="sidebar-label">Financeiro</span>
 </a>
+{% endif %}
 
+{% if papel.tipo == 'DIRETOR' or 'comunicados' in modulos_permitidos %}
 <a href="{% url 'comunicado:lista' %}"
    title="Comunicados"
    class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
@@ -129,7 +239,9 @@
     <i data-lucide="megaphone" class="w-4 h-4 shrink-0"></i>
     <span class="sidebar-label">Comunicados</span>
 </a>
+{% endif %}
 
+{% if papel.tipo == 'DIRETOR' or 'agenda' in modulos_permitidos %}
 <a href="{% url 'agenda:lista' %}"
    title="Agenda"
    class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
@@ -138,16 +250,9 @@
     <i data-lucide="calendar-days" class="w-4 h-4 shrink-0"></i>
     <span class="sidebar-label">Agenda</span>
 </a>
+{% endif %}
 
-<a href="{% url 'relatorio:index' %}"
-   title="Relatórios"
-   class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
-          {% if a == 'relatorios' %}bg-[#0d6efd]/10 text-[#0d6efd] dark:bg-[#0d6efd]/20
-          {% else %}text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white{% endif %}">
-    <i data-lucide="chart-bar" class="w-4 h-4 shrink-0"></i>
-    <span class="sidebar-label">Relatórios</span>
-</a>
-
+{# ── PERFIL ── #}
 <div class="my-2 border-t border-slate-100 dark:border-slate-700"></div>
 
 <a href="{% if papel.tipo == 'FUNCIONARIO' %}{% url 'colaborador:meu_perfil' %}{% else %}{% url 'diretor:meu_perfil' %}{% endif %}"

@@ -4,28 +4,28 @@
 {% block page_title %}Configurações{% endblock %}
 
 {% block sidebar_nav %}
-{% include "diretor/_nav.html" with active="" %}
+{% include "diretor/_nav.html" with active="configuracoes" %}
 {% endblock %}
 
 {% block conteudo %}
 <div>
 
     <!-- Tabs de seção -->
-    <div class="flex gap-1 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-1 mb-6 w-fit">
+    <div class="flex gap-1 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-1 mb-6">
         <a href="{% url 'configuracao:academica' %}"
-           class="px-4 py-2 rounded-lg text-sm font-medium transition-colors
+           class="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors
                   text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
             <i data-lucide="graduation-cap" class="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5"></i>
             Acadêmico
         </a>
         <a href="{% url 'configuracao:frequencia' %}"
-           class="px-4 py-2 rounded-lg text-sm font-medium transition-colors
+           class="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors
                   text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
             <i data-lucide="calendar-check" class="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5"></i>
             Frequência
         </a>
         <a href="{% url 'configuracao:professor' %}"
-           class="px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-[#0d6efd] text-white">
+           class="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-[#0d6efd] text-white">
             <i data-lucide="user-check" class="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5"></i>
             Professor
         </a>

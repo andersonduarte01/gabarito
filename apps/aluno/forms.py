@@ -51,17 +51,45 @@ class CriarAlunoForm(forms.Form):
         label='Ano Letivo', queryset=None, required=False, empty_label='— Selecione —',
         widget=forms.Select(attrs={'class': _SELECT}),
     )
+    # ── Responsável (opcional) ──────────────────────────────────────────────
+    resp_nome       = forms.CharField(
+        label='Nome do Responsável', max_length=200, required=False,
+        widget=forms.TextInput(attrs={'class': _INPUT, 'placeholder': 'Nome completo'}),
+    )
+    resp_telefone   = forms.CharField(
+        label='Telefone', max_length=20, required=False,
+        widget=forms.TextInput(attrs={'class': _INPUT, 'placeholder': '(00) 00000-0000'}),
+    )
+    resp_cpf        = forms.CharField(
+        label='CPF', max_length=14, required=False,
+        widget=forms.TextInput(attrs={'class': _INPUT, 'placeholder': '000.000.000-00'}),
+    )
+    resp_parentesco = forms.ChoiceField(
+        label='Parentesco', required=False,
+        choices=[('', '— Selecione —')],
+        widget=forms.Select(attrs={'class': _SELECT}),
+    )
+    resp_principal  = forms.BooleanField(
+        label='Responsável principal', required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'w-4 h-4 rounded border-slate-300 text-[#0d6efd]'}),
+    )
+    resp_financeiro = forms.BooleanField(
+        label='Responsável financeiro', required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'w-4 h-4 rounded border-slate-300 text-[#0d6efd]'}),
+    )
 
     def __init__(self, *args, escola=None, **kwargs):
         super().__init__(*args, **kwargs)
         from apps.turma.models import Turma
         from apps.ano_letivo.models import AnoLetivo
+        from apps.responsavel.models import Parentesco
         if escola:
             self.fields['turma'].queryset      = Turma.objects.filter(escola=escola, ativo=True).order_by('nome')
             self.fields['ano_letivo'].queryset = AnoLetivo.objects.filter(escola=escola).order_by('-ano')
         else:
             self.fields['turma'].queryset      = Turma.objects.none()
             self.fields['ano_letivo'].queryset = Turma.objects.none()
+        self.fields['resp_parentesco'].choices = [('', '— Selecione —')] + list(Parentesco.choices)
 
     def clean(self):
         cleaned    = super().clean()
@@ -71,6 +99,8 @@ class CriarAlunoForm(forms.Form):
             self.add_error('ano_letivo', 'Selecione o ano letivo ao vincular uma turma.')
         if ano_letivo and not turma:
             self.add_error('turma', 'Selecione a turma para o ano letivo informado.')
+        if cleaned.get('resp_nome') and not cleaned.get('resp_parentesco'):
+            self.add_error('resp_parentesco', 'Informe o parentesco do responsável.')
         return cleaned
 
 
@@ -152,12 +182,13 @@ class VincularResponsavelForm(forms.Form):
 
     def __init__(self, *args, escola=None, **kwargs):
         super().__init__(*args, **kwargs)
+        from django.db.models import Q
         from apps.responsavel.models import Parentesco, PerfilResponsavel
         self.fields['parentesco'].choices = Parentesco.choices
         if escola:
             self.fields['responsavel'].queryset = (
                 PerfilResponsavel.objects
-                .filter(vinculos_aluno__aluno__escola=escola)
+                .filter(Q(escola=escola) | Q(vinculos_aluno__aluno__escola=escola))
                 .distinct()
                 .order_by('nome')
             )

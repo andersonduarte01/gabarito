@@ -262,6 +262,32 @@ class ReativarFuncaoView(_DiretorMixin, View):
         return redirect('colaborador:funcoes')
 
 
+class PermissoesFuncaoView(_DiretorMixin, View):
+    template_name = 'colaborador/permissoes_funcao.html'
+
+    def _get_funcao(self, request, pk):
+        return get_object_or_404(FuncaoEscolar, pk=pk, escola=request.escola)
+
+    def get(self, request, pk):
+        from .models import MODULOS_COLABORADOR
+        from .services.permissao_service import get_modulos
+        funcao = self._get_funcao(request, pk)
+        ativos = get_modulos(funcao)
+        return render(request, self.template_name, self._ctx(
+            request, funcao=funcao, modulos=MODULOS_COLABORADOR, ativos=ativos,
+        ))
+
+    def post(self, request, pk):
+        from .models import MODULOS_COLABORADOR
+        from .services.permissao_service import set_permissoes
+        funcao = self._get_funcao(request, pk)
+        chaves_validas = {m[0] for m in MODULOS_COLABORADOR}
+        selecionados = [m for m in request.POST.getlist('modulos') if m in chaves_validas]
+        set_permissoes(funcao, selecionados)
+        messages.success(request, f'Permissões de "{funcao.nome}" atualizadas.')
+        return redirect('colaborador:funcoes')
+
+
 # ---------------------------------------------------------------------------
 # Portal do Funcionário
 # ---------------------------------------------------------------------------

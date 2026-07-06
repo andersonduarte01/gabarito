@@ -25,6 +25,19 @@ class _LeituraMixin:
         return {'usuario': request.user, 'escola': request.escola, 'papel': request.papel, **extra}
 
 
+class _EscritaMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('accounts:login')
+        papel = getattr(request, 'papel', None)
+        if papel is None or papel.tipo not in ('DIRETOR', 'FUNCIONARIO', 'PROFESSOR'):
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+    def _ctx(self, request, **extra):
+        return {'usuario': request.user, 'escola': request.escola, 'papel': request.papel, **extra}
+
+
 class _DiretorMixin:
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -38,6 +51,18 @@ class _DiretorMixin:
         return {'usuario': request.user, 'escola': request.escola, 'papel': request.papel, **extra}
 
 
+def _turma_ids_professor(papel):
+    try:
+        from apps.turma.models import ProfessorMateriaTurma
+        return list(
+            ProfessorMateriaTurma.objects
+            .filter(professor=papel.perfil_professor, ativo=True)
+            .values_list('turma_id', flat=True)
+        )
+    except Exception:
+        return []
+
+
 class ListarAvaliacoesView(_LeituraMixin, View):
     template_name = 'avaliacao/lista.html'
 
@@ -49,6 +74,9 @@ class ListarAvaliacoesView(_LeituraMixin, View):
             .select_related('turma', 'materia', 'ano_letivo', 'periodo_letivo')
             .order_by('-data_aplicacao', '-criado_em')
         )
+        if request.papel.tipo == 'PROFESSOR':
+            qs = qs.filter(turma_id__in=_turma_ids_professor(request.papel))
+
         turma_id  = request.GET.get('turma', '')
         tipo      = request.GET.get('tipo', '')
         if turma_id:
@@ -58,7 +86,10 @@ class ListarAvaliacoesView(_LeituraMixin, View):
 
         from apps.turma.models import Turma
         from .models import TipoAvaliacao
-        turmas = Turma.objects.filter(escola=escola, ativo=True).order_by('nome')
+        if request.papel.tipo == 'PROFESSOR':
+            turmas = Turma.objects.filter(pk__in=_turma_ids_professor(request.papel)).order_by('nome')
+        else:
+            turmas = Turma.objects.filter(escola=escola, ativo=True).order_by('nome')
         return render(request, self.template_name, self._ctx(
             request,
             avaliacoes=qs,
@@ -68,21 +99,30 @@ class ListarAvaliacoesView(_LeituraMixin, View):
         ))
 
 
-class CriarAvaliacaoView(_DiretorMixin, View):
+class CriarAvaliacaoView(_EscritaMixin, View):
     template_name = 'avaliacao/form_avaliacao.html'
 
+    def _turma_ids(self, request):
+        return _turma_ids_professor(request.papel) if request.papel.tipo == 'PROFESSOR' else None
+
     def get(self, request):
-        form = AvaliacaoForm(escola=request.escola)
+        form = AvaliacaoForm(escola=request.escola, turma_ids=self._turma_ids(request))
         return render(request, self.template_name, self._ctx(request, form=form, editando=False))
 
     def post(self, request):
-        form = AvaliacaoForm(request.POST, escola=request.escola)
+        form = AvaliacaoForm(request.POST, escola=request.escola, turma_ids=self._turma_ids(request))
         if form.is_valid():
             cd = form.cleaned_data
+            professor = cd.get('professor')
+            if request.papel.tipo == 'PROFESSOR':
+                try:
+                    professor = request.papel.perfil_professor
+                except Exception:
+                    professor = None
             avaliacao = avaliacao_service.criar(request.escola, {
                 'turma':          cd['turma'],
                 'materia':        cd['materia'],
-                'professor':      cd.get('professor'),
+                'professor':      professor,
                 'ano_letivo':     cd['ano_letivo'],
                 'periodo_letivo': cd.get('periodo_letivo'),
                 'titulo':         cd['titulo'],
@@ -129,28 +169,40 @@ class DetalheAvaliacaoView(_LeituraMixin, View):
         ))
 
 
-class EditarAvaliacaoView(_DiretorMixin, View):
+class EditarAvaliacaoView(_EscritaMixin, View):
     template_name = 'avaliacao/form_avaliacao.html'
 
     def _get(self, request, pk):
-        return get_object_or_404(Avaliacao, pk=pk, escola=request.escola)
+        qs = Avaliacao.objects.filter(escola=request.escola)
+        if request.papel.tipo == 'PROFESSOR':
+            qs = qs.filter(turma_id__in=_turma_ids_professor(request.papel))
+        return get_object_or_404(qs, pk=pk)
+
+    def _turma_ids(self, request):
+        return _turma_ids_professor(request.papel) if request.papel.tipo == 'PROFESSOR' else None
 
     def get(self, request, pk):
         avaliacao = self._get(request, pk)
-        form = AvaliacaoForm(escola=request.escola, instance=avaliacao)
+        form = AvaliacaoForm(escola=request.escola, instance=avaliacao, turma_ids=self._turma_ids(request))
         return render(request, self.template_name, self._ctx(
             request, form=form, editando=True, avaliacao=avaliacao,
         ))
 
     def post(self, request, pk):
         avaliacao = self._get(request, pk)
-        form = AvaliacaoForm(request.POST, escola=request.escola)
+        form = AvaliacaoForm(request.POST, escola=request.escola, turma_ids=self._turma_ids(request))
         if form.is_valid():
             cd = form.cleaned_data
+            professor = cd.get('professor')
+            if request.papel.tipo == 'PROFESSOR':
+                try:
+                    professor = request.papel.perfil_professor
+                except Exception:
+                    professor = None
             avaliacao_service.editar(avaliacao, {
                 'turma':          cd['turma'],
                 'materia':        cd['materia'],
-                'professor':      cd.get('professor'),
+                'professor':      professor,
                 'ano_letivo':     cd['ano_letivo'],
                 'periodo_letivo': cd.get('periodo_letivo'),
                 'titulo':         cd['titulo'],
@@ -167,25 +219,34 @@ class EditarAvaliacaoView(_DiretorMixin, View):
         ))
 
 
-class PublicarView(_DiretorMixin, View):
+class PublicarView(_EscritaMixin, View):
     def post(self, request, pk):
-        avaliacao = get_object_or_404(Avaliacao, pk=pk, escola=request.escola)
+        qs = Avaliacao.objects.filter(escola=request.escola)
+        if request.papel.tipo == 'PROFESSOR':
+            qs = qs.filter(turma_id__in=_turma_ids_professor(request.papel))
+        avaliacao = get_object_or_404(qs, pk=pk)
         avaliacao_service.publicar(avaliacao)
         messages.success(request, 'Avaliação publicada.')
         return redirect('avaliacao:detalhe', pk=pk)
 
 
-class DespublicarView(_DiretorMixin, View):
+class DespublicarView(_EscritaMixin, View):
     def post(self, request, pk):
-        avaliacao = get_object_or_404(Avaliacao, pk=pk, escola=request.escola)
+        qs = Avaliacao.objects.filter(escola=request.escola)
+        if request.papel.tipo == 'PROFESSOR':
+            qs = qs.filter(turma_id__in=_turma_ids_professor(request.papel))
+        avaliacao = get_object_or_404(qs, pk=pk)
         avaliacao_service.despublicar(avaliacao)
         messages.success(request, 'Avaliação despublicada.')
         return redirect('avaliacao:detalhe', pk=pk)
 
 
-class AdicionarQuestaoView(_DiretorMixin, View):
+class AdicionarQuestaoView(_EscritaMixin, View):
     def post(self, request, pk):
-        avaliacao = get_object_or_404(Avaliacao, pk=pk, escola=request.escola)
+        qs = Avaliacao.objects.filter(escola=request.escola)
+        if request.papel.tipo == 'PROFESSOR':
+            qs = qs.filter(turma_id__in=_turma_ids_professor(request.papel))
+        avaliacao = get_object_or_404(qs, pk=pk)
         form = QuestaoForm(request.POST)
         if form.is_valid():
             try:
@@ -198,18 +259,24 @@ class AdicionarQuestaoView(_DiretorMixin, View):
         return redirect('avaliacao:detalhe', pk=pk)
 
 
-class RemoverQuestaoView(_DiretorMixin, View):
+class RemoverQuestaoView(_EscritaMixin, View):
     def post(self, request, pk, questao_pk):
-        avaliacao = get_object_or_404(Avaliacao, pk=pk, escola=request.escola)
+        qs = Avaliacao.objects.filter(escola=request.escola)
+        if request.papel.tipo == 'PROFESSOR':
+            qs = qs.filter(turma_id__in=_turma_ids_professor(request.papel))
+        avaliacao = get_object_or_404(qs, pk=pk)
         questao   = get_object_or_404(Questao, pk=questao_pk, avaliacao=avaliacao)
         avaliacao_service.remover_questao(questao)
         messages.success(request, f'Questão {questao.numero} removida.')
         return redirect('avaliacao:detalhe', pk=pk)
 
 
-class AdicionarOpcaoView(_DiretorMixin, View):
+class AdicionarOpcaoView(_EscritaMixin, View):
     def post(self, request, pk, questao_pk):
-        avaliacao = get_object_or_404(Avaliacao, pk=pk, escola=request.escola)
+        qs = Avaliacao.objects.filter(escola=request.escola)
+        if request.papel.tipo == 'PROFESSOR':
+            qs = qs.filter(turma_id__in=_turma_ids_professor(request.papel))
+        avaliacao = get_object_or_404(qs, pk=pk)
         questao   = get_object_or_404(Questao, pk=questao_pk, avaliacao=avaliacao)
         form = OpcaoRespostaForm(request.POST)
         if form.is_valid():
@@ -254,11 +321,14 @@ class ExportarPdfView(_LeituraMixin, View):
         return response
 
 
-class LancarNotasView(_DiretorMixin, View):
+class LancarNotasView(_EscritaMixin, View):
     template_name = 'avaliacao/lancar_notas.html'
 
     def _get_avaliacao(self, request, pk):
-        return get_object_or_404(Avaliacao, pk=pk, escola=request.escola)
+        qs = Avaliacao.objects.filter(escola=request.escola)
+        if request.papel.tipo == 'PROFESSOR':
+            qs = qs.filter(turma_id__in=_turma_ids_professor(request.papel))
+        return get_object_or_404(qs, pk=pk)
 
     def get(self, request, pk):
         avaliacao = self._get_avaliacao(request, pk)

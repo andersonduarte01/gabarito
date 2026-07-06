@@ -142,6 +142,53 @@
 
             </div>
 
+            {% if tipo != 'editar' %}
+            <!-- ── Vínculo com aluno (opcional) ──────────────────────────── -->
+            <div class="px-6 pt-2 pb-4">
+                <button type="button"
+                        onclick="toggleAluno(this)"
+                        class="flex items-center gap-2 text-sm font-medium text-[#0d6efd] hover:underline">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    Vincular a um aluno
+                </button>
+                <div id="aluno-section" class="hidden mt-4 space-y-4">
+                    <div class="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-700">
+                        <div class="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                            <i data-lucide="user-check" class="w-3.5 h-3.5 text-emerald-500"></i>
+                        </div>
+                        <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Aluno vinculado</p>
+                        <span class="text-xs text-slate-400">(opcional)</span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                                {{ form.aluno.label }}
+                            </label>
+                            {{ form.aluno }}
+                            {% if form.aluno.errors %}<p class="mt-1 text-xs text-red-500">{{ form.aluno.errors.0 }}</p>{% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                                {{ form.parentesco.label }}
+                            </label>
+                            {{ form.parentesco }}
+                            {% if form.parentesco.errors %}<p class="mt-1 text-xs text-red-500">{{ form.parentesco.errors.0 }}</p>{% endif %}
+                        </div>
+                        <div class="flex flex-col gap-2 justify-end">
+                            <label class="flex items-center gap-2 cursor-pointer select-none text-sm text-slate-600 dark:text-slate-300">
+                                {{ form.responsavel_principal }}
+                                {{ form.responsavel_principal.label }}
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer select-none text-sm text-slate-600 dark:text-slate-300">
+                                {{ form.responsavel_financeiro }}
+                                {{ form.responsavel_financeiro.label }}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
             <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 dark:border-slate-700 mt-2">
                 <a href="{% if tipo == 'editar' and responsavel %}{% url 'responsavel:detalhe' responsavel.pk %}{% else %}{% url 'responsavel:lista' %}{% endif %}"
                    class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200
@@ -160,4 +207,27 @@
     </form>
 
 </div>
+
+<script>
+function toggleAluno(btn) {
+    var section = document.getElementById('aluno-section');
+    var isHidden = section.classList.contains('hidden');
+    section.classList.toggle('hidden');
+    btn.innerHTML = isHidden
+        ? '<i data-lucide="minus-circle" class="w-4 h-4"></i> Remover vínculo'
+        : '<i data-lucide="plus-circle" class="w-4 h-4"></i> Vincular a um aluno';
+    lucide.createIcons();
+}
+{% if form.aluno.errors or form.parentesco.errors %}
+(function() {
+    var s = document.getElementById('aluno-section');
+    if (s) s.classList.remove('hidden');
+    var b = document.querySelector('[onclick="toggleAluno(this)"]');
+    if (b) {
+        b.innerHTML = '<i data-lucide="minus-circle" class="w-4 h-4"></i> Remover vínculo';
+        lucide.createIcons();
+    }
+})();
+{% endif %}
+</script>
 {% endblock %}

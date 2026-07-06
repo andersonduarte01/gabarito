@@ -84,7 +84,17 @@ class CriarAlunoView(_EscritaMixin, View):
         if form.is_valid():
             cd = form.cleaned_data
             try:
-                aluno_service.criar(request.escola, {
+                responsavel_dados = None
+                if cd.get('resp_nome'):
+                    responsavel_dados = {
+                        'nome':                  cd['resp_nome'],
+                        'telefone':              cd.get('resp_telefone', ''),
+                        'cpf':                   cd.get('resp_cpf', ''),
+                        'parentesco':            cd['resp_parentesco'],
+                        'responsavel_principal': cd.get('resp_principal', False),
+                        'responsavel_financeiro': cd.get('resp_financeiro', False),
+                    }
+                aluno = aluno_service.criar(request.escola, {
                     'nome_completo':   cd['nome_completo'],
                     'data_nascimento': cd.get('data_nascimento'),
                     'cpf':             cd.get('cpf', ''),
@@ -92,9 +102,10 @@ class CriarAlunoView(_EscritaMixin, View):
                     'foto':            cd.get('foto'),
                     'turma':           cd.get('turma'),
                     'ano_letivo':      cd.get('ano_letivo'),
+                    'responsavel_dados': responsavel_dados,
                 })
                 messages.success(request, f'Aluno {cd["nome_completo"]} cadastrado com sucesso.')
-                return redirect('aluno:lista')
+                return redirect('aluno:detalhe', pk=aluno.pk)
             except Exception as exc:
                 messages.error(request, f'Erro ao cadastrar: {exc}')
         return render(request, self.template_name, self._ctx(request, form=form, editando=False))
@@ -257,3 +268,125 @@ class VincularResponsavelAlunoView(_EscritaMixin, View):
         else:
             messages.error(request, 'Dados inválidos.')
         return redirect('aluno:detalhe', pk=aluno.pk)
+
+
+# ---------------------------------------------------------------------------
+# Portal do Aluno
+# ---------------------------------------------------------------------------
+
+class _AlunoMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('accounts:login')
+        papel = getattr(request, 'papel', None)
+        if papel is None or papel.tipo != 'ALUNO':
+            from django.core.exceptions import PermissionDenied
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+    def _ctx(self, request, **extra):
+        return {'usuario': request.user, 'escola': request.escola, 'papel': request.papel, **extra}
+
+
+class DashboardAlunoView(_AlunoMixin, View):
+    template_name = 'aluno/portal_dashboard.html'
+
+    def get(self, request):
+        from apps.boletim.models import ResultadoPeriodo
+        from apps.avaliacao.models import Avaliacao
+        from apps.comunicado.models import Comunicado
+        from apps.ano_letivo.models import PeriodoLetivo
+        from django.db.models import Avg
+        import datetime
+
+        try:
+            aluno = request.user.aluno
+        except Exception:
+            aluno = None
+
+        matricula_ativa = ano_letivo = periodo_atual = None
+        resultados_periodo = []
+        avaliacoes_proximas = []
+        freq_media = None
+
+        if aluno:
+            matricula_ativa = (
+                aluno.matriculas
+                .filter(ativo=True)
+                .select_related('turma__serie', 'ano_letivo')
+                .first()
+            )
+            if matricula_ativa:
+                ano_letivo = matricula_ativa.ano_letivo
+                periodo_atual = (
+                    PeriodoLetivo.objects
+                    .filter(ano_letivo=ano_letivo)
+                    .order_by('-numero')
+                    .first()
+                )
+                resultados_qs = (
+                    ResultadoPeriodo.objects
+                    .filter(aluno=aluno, ano_letivo=ano_letivo, periodo_letivo=periodo_atual)
+                    .select_related('materia', 'periodo_letivo')
+                    .order_by('materia__nome')
+                ) if periodo_atual else ResultadoPeriodo.objects.none()
+
+                freq_media = resultados_qs.aggregate(
+                    Avg('frequencia_percentual')
+                )['frequencia_percentual__avg']
+                resultados_periodo = list(resultados_qs)
+
+                avaliacoes_proximas = (
+                    Avaliacao.objects
+                    .filter(
+                        turma=matricula_ativa.turma,
+                        ano_letivo=ano_letivo,
+                        publicada=True,
+                        data_aplicacao__gte=datetime.date.today(),
+                    )
+                    .select_related('materia')
+                    .order_by('data_aplicacao')[:5]
+                )
+
+        comunicados_recentes = (
+            Comunicado.objects
+            .filter(escola=request.escola, publicada=True)
+            .order_by('-criado_em')[:5]
+        )
+
+        return render(request, self.template_name, self._ctx(
+            request,
+            active_nav='dashboard',
+            aluno=aluno,
+            matricula_ativa=matricula_ativa,
+            ano_letivo=ano_letivo,
+            periodo_atual=periodo_atual,
+            freq_media=freq_media,
+            resultados_periodo=resultados_periodo,
+            avaliacoes_proximas=avaliacoes_proximas,
+            comunicados_recentes=comunicados_recentes,
+        ))
+
+
+class PerfilAlunoView(_AlunoMixin, View):
+    template_name = 'aluno/portal_perfil.html'
+
+    def get(self, request):
+        try:
+            aluno = request.user.aluno
+        except Exception:
+            aluno = None
+
+        matricula_ativa = (
+            aluno.matriculas
+            .filter(ativo=True)
+            .select_related('turma__serie', 'ano_letivo')
+            .first()
+        ) if aluno else None
+
+        return render(request, self.template_name, self._ctx(
+            request,
+            active_nav='perfil',
+            aluno=aluno,
+            matricula_ativa=matricula_ativa,
+        ))

@@ -60,7 +60,7 @@ class AvaliacaoForm(forms.Form):
         widget=forms.NumberInput(attrs={'class': _INPUT, 'step': '0.5'}),
     )
 
-    def __init__(self, *args, escola=None, instance=None, **kwargs):
+    def __init__(self, *args, escola=None, instance=None, turma_ids=None, **kwargs):
         super().__init__(*args, **kwargs)
         from apps.turma.models import Turma
         from apps.materia.models import Materia
@@ -68,7 +68,10 @@ class AvaliacaoForm(forms.Form):
         from apps.ano_letivo.models import AnoLetivo, PeriodoLetivo
 
         if escola:
-            self.fields['turma'].queryset          = Turma.objects.filter(escola=escola, ativo=True).order_by('nome')
+            turma_qs = Turma.objects.filter(escola=escola, ativo=True).order_by('nome')
+            if turma_ids is not None:
+                turma_qs = turma_qs.filter(pk__in=turma_ids)
+            self.fields['turma'].queryset          = turma_qs
             self.fields['materia'].queryset        = Materia.objects.filter(escola=escola, ativo=True).order_by('nome')
             self.fields['professor'].queryset      = (
                 PerfilProfessor.objects

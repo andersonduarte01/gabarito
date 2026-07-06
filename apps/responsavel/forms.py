@@ -20,6 +20,7 @@ _FILE = (
     'file:hover:bg-slate-200 dark:file:hover:bg-slate-600 '
     'file:transition-colors'
 )
+_CHECK = 'w-4 h-4 rounded border-slate-300 text-[#0d6efd]'
 
 
 class CriarResponsavelForm(forms.Form):
@@ -60,6 +61,33 @@ class CriarResponsavelForm(forms.Form):
         label='Confirmar senha',
         widget=forms.PasswordInput(attrs={'class': _INPUT, 'placeholder': 'Repita a senha'}),
     )
+    # vínculo com aluno (opcional)
+    aluno                  = forms.ModelChoiceField(
+        label='Vincular a aluno', queryset=None, required=False, empty_label='— Nenhum —',
+        widget=forms.Select(attrs={'class': _SELECT}),
+    )
+    parentesco             = forms.ChoiceField(
+        label='Parentesco', choices=[('', '— Selecione —')] + list(Parentesco.choices), required=False,
+        widget=forms.Select(attrs={'class': _SELECT}),
+    )
+    responsavel_principal  = forms.BooleanField(
+        label='Responsável principal', required=False,
+        widget=forms.CheckboxInput(attrs={'class': _CHECK}),
+    )
+    responsavel_financeiro = forms.BooleanField(
+        label='Responsável financeiro', required=False,
+        widget=forms.CheckboxInput(attrs={'class': _CHECK}),
+    )
+
+    def __init__(self, *args, escola=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        from apps.aluno.models import Aluno
+        if escola:
+            self.fields['aluno'].queryset = (
+                Aluno.objects.filter(escola=escola, ativo=True).order_by('nome_completo')
+            )
+        else:
+            self.fields['aluno'].queryset = Aluno.objects.none()
 
     def clean(self):
         cleaned = super().clean()
@@ -67,6 +95,8 @@ class CriarResponsavelForm(forms.Form):
         s2 = cleaned.get('confirmar_senha')
         if s1 and s2 and s1 != s2:
             self.add_error('confirmar_senha', 'As senhas não conferem.')
+        if cleaned.get('aluno') and not cleaned.get('parentesco'):
+            self.add_error('parentesco', 'Informe o parentesco ao vincular um aluno.')
         return cleaned
 
 
@@ -96,6 +126,39 @@ class CriarSemAcessoForm(forms.Form):
         label='Data de Nascimento', required=False,
         widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}, format='%Y-%m-%d'),
     )
+    # vínculo com aluno (opcional)
+    aluno                  = forms.ModelChoiceField(
+        label='Vincular a aluno', queryset=None, required=False, empty_label='— Nenhum —',
+        widget=forms.Select(attrs={'class': _SELECT}),
+    )
+    parentesco             = forms.ChoiceField(
+        label='Parentesco', choices=[('', '— Selecione —')] + list(Parentesco.choices), required=False,
+        widget=forms.Select(attrs={'class': _SELECT}),
+    )
+    responsavel_principal  = forms.BooleanField(
+        label='Responsável principal', required=False,
+        widget=forms.CheckboxInput(attrs={'class': _CHECK}),
+    )
+    responsavel_financeiro = forms.BooleanField(
+        label='Responsável financeiro', required=False,
+        widget=forms.CheckboxInput(attrs={'class': _CHECK}),
+    )
+
+    def __init__(self, *args, escola=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        from apps.aluno.models import Aluno
+        if escola:
+            self.fields['aluno'].queryset = (
+                Aluno.objects.filter(escola=escola, ativo=True).order_by('nome_completo')
+            )
+        else:
+            self.fields['aluno'].queryset = Aluno.objects.none()
+
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get('aluno') and not cleaned.get('parentesco'):
+            self.add_error('parentesco', 'Informe o parentesco ao vincular um aluno.')
+        return cleaned
 
 
 class EditarResponsavelForm(forms.ModelForm):
@@ -123,11 +186,11 @@ class VincularAlunoForm(forms.Form):
     )
     responsavel_principal  = forms.BooleanField(
         label='Responsável principal', required=False,
-        widget=forms.CheckboxInput(attrs={'class': 'w-4 h-4 rounded border-slate-300 text-[#0d6efd]'}),
+        widget=forms.CheckboxInput(attrs={'class': _CHECK}),
     )
     responsavel_financeiro = forms.BooleanField(
         label='Responsável financeiro', required=False,
-        widget=forms.CheckboxInput(attrs={'class': 'w-4 h-4 rounded border-slate-300 text-[#0d6efd]'}),
+        widget=forms.CheckboxInput(attrs={'class': _CHECK}),
     )
 
     def __init__(self, *args, escola=None, **kwargs):
