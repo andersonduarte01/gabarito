@@ -1,0 +1,596 @@
+================================================================================
+PROJETO: EDUCARE
+LEVANTAMENTO COMPLETO — O QUE CADA TIPO DE USUÁRIO TEM IMPLEMENTADO
+================================================================================
+Data: 2026-07-13
+
+Tipos de usuário (PapelVinculo.tipo):
+  DIRETOR · FUNCIONARIO · PROFESSOR · ALUNO · RESPONSAVEL
+
+================================================================================
+1. DIRETOR
+================================================================================
+
+AUTENTICAÇÃO E REDIRECIONAMENTO
+· Mixin: DiretorRequiredMixin
+· Após login → diretor:dashboard
+
+DASHBOARD (diretor/dashboard.html)
+· KPIs: total de alunos ativos, total de turmas, total de professores,
+        total de colaboradores, ano letivo em andamento, status da assinatura
+· Diretores da escola com cargo (lista)
+· Banner de grace period com dias restantes (quando aplicável)
+
+MEU PERFIL
+· Visualizar dados pessoais (nome, cargo, email, foto, CPF, RG, telefone)
+· Editar perfil completo
+· Editar endereço
+
+GESTÃO DE DIRETORES
+· Listar todos os diretores da escola
+· Criar diretor (nome, email, senha, cargo, foto, dados pessoais)
+· Desativar outro diretor — NÃO pode desativar a si mesmo
+
+GESTÃO DE COLABORADORES
+· Listar colaboradores com função, status
+· Criar colaborador (nome, email, senha, função, CPF, RG, data admissão, tipo vínculo, PIS)
+· Detalhe do colaborador
+· Editar colaborador
+· Alterar senha do colaborador
+· Desativar colaborador
+· Reativar colaborador
+
+GESTÃO DE FUNÇÕES ESCOLARES
+· Listar funções da escola
+· Criar função
+· Editar função
+· Desativar / Reativar função
+· Configurar permissões da função (checkboxes por módulo):
+    escola, series, turmas, segmentos, materias, professores, colaboradores,
+    alunos, responsaveis, avaliacoes, boletim, frequencia, financeiro,
+    comunicados, agenda, relatorios
+
+GESTÃO DE PROFESSORES
+· Listar professores
+· Criar professor (nome, email, senha, CPF, RG, foto, data admissão, tipo vínculo)
+· Detalhe do professor (formações acadêmicas, turmas/matérias)
+· Editar professor
+· Alterar senha do professor
+· Desativar / Reativar professor
+· Adicionar formação acadêmica (nível, curso, instituição, ano conclusão)
+· Remover formação acadêmica
+
+GESTÃO DE ALUNOS
+· Listar alunos (filtros: ativo, turma, busca por nome/matrícula)
+· Criar aluno — inclui seção opcional para cadastro de responsável
+  na mesma transação (nome, CPF, parentesco, vínculos)
+· Detalhe do aluno (histórico de matrículas, vínculos de responsáveis,
+  links para boletim e frequência)
+· Editar aluno
+· Desativar aluno (propaga VinculoResponsavelAluno.ativo=False)
+· Reativar aluno
+· Matricular aluno em turma
+· Trocar aluno de turma
+· Marcar como transferido
+· Marcar como evadido
+· Marcar como concluinte
+· Ativar acesso (criar usuário para aluno sem login)
+· Vincular responsável existente ao aluno
+
+GESTÃO DE RESPONSÁVEIS
+· Listar responsáveis da escola
+· Buscar responsável via AJAX (autocomplete)
+· Criar responsável com acesso (gera login/senha)
+· Criar responsável sem acesso (apenas contato)
+  — inclui seção opcional para vincular a aluno já cadastrado
+· Detalhe do responsável (vínculos, badges de principal/financeiro)
+· Editar responsável
+· Vincular aluno (por nome ou matrícula)
+· Desvincular aluno
+
+TURMAS
+· Listar turmas agrupadas por ano letivo
+· Criar turma (série, turno, capacidade, ano letivo)
+· Detalhe da turma
+· Editar turma
+
+SÉRIES
+· Listar séries por segmento
+· Criar série
+· Editar série
+· Desativar / Reativar série
+
+ESCOLA
+· Visualizar perfil da escola (nome, tipo, CNPJ, cores, logo, segmentos, endereços)
+· Editar escola (incluindo preview de cores em tempo real)
+· Adicionar / Editar / Remover endereço
+· Definir endereço principal
+· Adicionar / Remover segmento escolar
+  (ao adicionar segmento → séries padrão criadas automaticamente)
+
+MATÉRIAS
+· Listar matérias
+· Criar matéria
+· Editar matéria
+· Desativar / Reativar matéria
+· Vincular matéria a série
+· Desvincular matéria de série
+
+ANO LETIVO (exclusivo DIRETOR)
+· Listar anos letivos
+· Criar ano letivo
+· Detalhe do ano letivo (períodos)
+· Iniciar ano letivo
+· Encerrar ano letivo
+· Criar período letivo
+· Editar período letivo
+· Remover período letivo
+
+CONFIGURAÇÕES (exclusivo DIRETOR)
+· Configuração acadêmica (nota mínima, recuperação, tipo de cálculo de média)
+· Configuração de frequência (percentual mínimo, alertas)
+· Configuração financeira (multa, juros, dias tolerância, gateway padrão)
+
+AVALIAÇÕES (DIRETOR/FUNCIONARIO/PROFESSOR)
+· Listar avaliações (filtros: turma, tipo, status)
+· Criar avaliação (turma, matéria, professor, tipo, modalidade, data, nota máxima, peso)
+· Detalhe da avaliação (questões + lista de notas dos alunos)
+· Editar avaliação
+· Publicar avaliação
+· Despublicar avaliação
+· Encerrar avaliação
+· Adicionar / Remover questão (múltipla escolha, dissertativa, V/F, etc.)
+· Adicionar / Remover opção de resposta
+· Lançar notas em massa (nota, ausente, observação por aluno)
+· Exportar PDF da avaliação (via Typst)
+
+FREQUÊNCIA (DIRETOR/FUNCIONARIO/PROFESSOR)
+· Listar registros de frequência (filtros: turma, data)
+· Criar registro (data, turma, matéria, professor)
+· Detalhe do registro
+· Lançar presenças (presente/justificado/observação por aluno)
+· Justificar falta individual
+· Cancelar aula (DELETE — exclusivo DIRETOR)
+· Frequência do aluno (grade matéria × período com percentual)
+
+BOLETIM (DIRETOR/FUNCIONARIO/PROFESSOR)
+· Selecionar ano letivo e turma
+· Listar alunos da turma com badges de alerta (Rec/Rep)
+· Boletim individual (grid matéria × período com notas, situação e resultado anual)
+· Calcular resultado do período da turma (exclusivo DIRETOR)
+· Calcular resultado anual da turma (exclusivo DIRETOR)
+· Aprovar por conselho de classe (exclusivo DIRETOR)
+· Exportar boletim em PDF (WeasyPrint)
+
+FINANCEIRO (DIRETOR/FUNCIONARIO)
+· Dashboard financeiro (total, pendentes, vencidos, pagos, recentes)
+· Listar cobranças (filtro por status)
+· Detalhe da cobrança
+· Criar cobrança manual (aluno, plano, valor, vencimento, gateway)
+· Gerar cobranças por turma (em lote)
+· Gerar cobranças por escola (em lote)
+· Registrar pagamento manual
+· Cancelar cobrança (exclusivo DIRETOR)
+· Listar planos financeiros (exclusivo DIRETOR)
+· Criar plano financeiro (exclusivo DIRETOR)
+· Editar plano financeiro (exclusivo DIRETOR)
+· Webhook Mercado Pago (stub — sem implementação real)
+
+COMUNICADOS (DIRETOR/FUNCIONARIO/PROFESSOR)
+· Listar comunicados (filtros: tipo, status)
+· Criar comunicado (destinatários, turmas, rascunho)
+· Detalhe (com registro de leituras)
+· Editar comunicado
+· Publicar comunicado (notifica destinatários)
+· Despublicar comunicado
+· Excluir comunicado
+
+AGENDA (DIRETOR/FUNCIONARIO)
+· Listar eventos (data, tipo, destinatários)
+· Criar evento
+· Detalhe
+· Editar
+· Publicar / Despublicar
+· Excluir
+
+RELATÓRIOS (DIRETOR / FUNCIONARIO com permissão)
+· Desempenho por turma
+· Frequência por turma
+· Frequência por aluno
+· Alunos em risco
+· Boletim em lote
+· Desempenho por professor (exclusivo DIRETOR)
+· Inadimplência
+· Extrato financeiro
+· Formatos: HTML on-screen, XLSX (openpyxl), PDF (WeasyPrint)
+
+AUDITORIA (exclusivo DIRETOR)
+· Listar log de ações da escola (paginado 25/página)
+· Filtros por ação (CRIAR, EDITAR, DESATIVAR, REATIVAR, LOGIN, LOGOUT) e modelo
+
+SIDEBAR DO DIRETOR (agrupada por natureza)
+  GESTÃO:           Dashboard · Auditoria · Relatórios
+  CONFIGURAÇÃO:     Escola · Ano Letivo · Séries · Turmas · Segmentos · Matérias · Configurações
+  EQUIPE:           Diretores · Professores · Colaboradores
+  ALUNOS:           Alunos · Responsáveis
+  ACADÊMICO:        Avaliações · Boletim · Frequência
+  FINANCEIRO/COM.:  Financeiro · Comunicados · Agenda
+  PERFIL:           Meu Perfil
+
+Itens exclusivos do DIRETOR (não aparecem para FUNCIONARIO):
+  Auditoria · Ano Letivo · Diretores · Configurações
+
+
+================================================================================
+2. FUNCIONARIO (COLABORADOR)
+================================================================================
+
+AUTENTICAÇÃO E REDIRECIONAMENTO
+· Mixin: _FuncionarioMixin
+· Após login → colaborador:dashboard
+
+DASHBOARD (colaborador/dashboard.html)
+· Total de alunos ativos
+· Total de turmas ativas
+· Total de professores ativos
+· Cobranças pendentes / vencidas (se tem módulo 'financeiro')
+· Ano letivo em andamento
+· Comunicados recentes publicados
+· Próximos eventos da escola
+
+MEU PERFIL
+· Visualizar dados pessoais
+· (Edição via DIRETOR)
+
+SISTEMA DE PERMISSÕES POR MÓDULO
+· O FUNCIONARIO sem função atribuída vê APENAS dashboard + meu perfil
+  (com banner de aviso: "Nenhuma função atribuída")
+· Com função: acesso aos módulos marcados pelo DIRETOR em PermissaoFuncao
+· A sidebar renderiza somente os módulos com permissão
+
+ACESSO CONDICIONAL (somente se módulo liberado pela função)
+  'escola'        → Perfil da escola (leitura)
+  'series'        → Séries (leitura — estrutura acadêmica)
+  'turmas'        → Turmas (leitura — estrutura acadêmica)
+  'segmentos'     → Segmentos da escola
+  'materias'      → Matérias (leitura)
+  'professores'   → Professores (leitura — contato/referência)
+  'colaboradores' → Colaboradores (leitura)
+  'alunos'        → Alunos (criar, editar, desativar, matricular, vincular responsável)
+  'responsaveis'  → Responsáveis (criar, editar, vincular/desvincular aluno)
+  'avaliacoes'    → Avaliações (criar, editar, publicar, lançar notas)
+  'boletim'       → Boletim (leitura por turma e por aluno)
+  'frequencia'    → Frequência (criar registro, lançar presenças, justificar)
+  'financeiro'    → Financeiro (ver, criar cobrança, pagar manual — exceto cancelar)
+  'comunicados'   → Comunicados (criar, editar, publicar)
+  'agenda'        → Agenda (leitura)
+  'relatorios'    → Relatórios (exceto Desempenho por Professor)
+
+AÇÕES QUE FUNCIONARIO NUNCA PODE FAZER (independente de permissão)
+· Criar / Editar / Desativar / Reativar professor
+· Criar / Editar / Desativar / Reativar colaborador
+· Criar / Editar / Desativar / Reativar diretor
+· Gerenciar funções e permissões de funções
+· Cancelar cobrança
+· Criar / Editar plano financeiro
+· Cancelar aula de frequência
+· Calcular resultado de período ou ano no boletim
+· Aprovar aluno por conselho de classe
+· Configurações acadêmicas, de frequência e financeiras
+· Iniciar / Encerrar ano letivo
+· Auditoria
+
+SIDEBAR DO FUNCIONARIO
+  Mesmo layout do DIRETOR, mas cada item protegido por:
+  {% if papel.tipo == 'DIRETOR' or 'modulo' in modulos_permitidos %}
+
+
+================================================================================
+3. PROFESSOR
+================================================================================
+
+AUTENTICAÇÃO E REDIRECIONAMENTO
+· Mixin: _ProfessorMixin
+· Após login → professor:dashboard
+
+DASHBOARD (professor/dashboard.html)
+· Perfil do professor
+· Ano letivo em andamento
+· Atribuições (ProfessorMateriaTurma): turma, série, matéria
+· Total de turmas (distintas)
+· Total de matérias (distintas)
+· Total de alunos (matriculados e ativos nas suas turmas)
+· Comunicados recentes publicados
+· Próximos eventos
+
+MEU PERFIL
+· Visualizar dados pessoais
+· (Edição via DIRETOR)
+
+ESCOPO DE ACESSO: APENAS PRÓPRIAS TURMAS
+· Helper _turma_ids_professor(papel):
+    retorna lista de turma IDs via ProfessorMateriaTurma.ativo=True
+· Todo queryset de avaliações / frequência / boletim é filtrado por essa lista
+· PROFESSOR não enxerga nada de turmas que não leciona
+
+AVALIAÇÕES (restritas às próprias turmas)
+· Listar avaliações (filtra por turma_ids do professor)
+· Criar avaliação — professor é auto-atribuído (ignora campo professor do form)
+· Detalhe (questões + notas dos alunos da turma)
+· Editar avaliação
+· Publicar avaliação
+· Despublicar avaliação
+· Encerrar avaliação
+· Adicionar / Remover questão
+· Adicionar / Remover opção de resposta
+· Lançar notas em massa
+· Exportar PDF da avaliação
+
+FREQUÊNCIA (restrita às próprias turmas)
+· Listar registros (filtra por turma_ids do professor)
+· Criar registro — professor é auto-atribuído
+· Detalhe do registro
+· Lançar presenças (presente/justificado/observação)
+· Justificar falta individual
+· Frequência do aluno (grade matéria × período)
+· NÃO pode: cancelar aula
+
+BOLETIM (restrito às próprias turmas)
+· Selecionar turma (somente turmas do professor aparecem)
+· Listar alunos da turma com alertas
+· Boletim individual do aluno
+· Exportar boletim em PDF
+· NÃO pode: Calcular período, Calcular ano, Aprovar por conselho
+
+COMUNICADOS
+· Listar comunicados publicados
+· Criar comunicado (rascunho)
+· Detalhe
+· Editar apenas próprio comunicado
+· Publicar próprio comunicado
+· NÃO pode: editar comunicado de outro autor
+
+AGENDA
+· Listar eventos (leitura apenas)
+· NÃO pode criar ou editar eventos
+
+AÇÕES QUE PROFESSOR NUNCA PODE FAZER
+· Qualquer gestão de usuários (criar, editar, desativar)
+· Acessar dados de alunos de turmas que não leciona
+· Financeiro (cobranças, planos)
+· Configurações da escola
+· Ano letivo
+· Auditoria / Relatórios
+· Cancelar aula
+· Calcular boletim / Aprovar conselho
+· Criar / Editar eventos da agenda
+
+SIDEBAR DO PROFESSOR
+  Dashboard · Avaliações · Boletim · Frequência · Comunicados · Agenda · Meu Perfil
+
+
+================================================================================
+4. ALUNO
+================================================================================
+
+AUTENTICAÇÃO E REDIRECIONAMENTO
+· Mixin: _AlunoMixin
+· Após login → aluno:portal_dashboard
+
+DASHBOARD (aluno/portal_dashboard.html)
+· Matrícula ativa do aluno (turma, série, ano letivo, período atual)
+· Resultados do período atual por matéria (nota, frequência %, situação)
+· Frequência média geral (%)
+· Próximas avaliações publicadas com data futura
+· Comunicados recentes publicados
+
+MEU PERFIL (aluno/portal_perfil.html)
+· Dados pessoais (nome, matrícula, data nascimento, CPF)
+· Matrícula ativa atual (turma, série, turno)
+· NÃO pode editar nada
+
+RESTRIÇÕES
+· Aluno vê EXCLUSIVAMENTE dados próprios
+· Sem acesso a qualquer módulo administrativo
+· Portal leitura-apenas — nenhuma ação de escrita disponível
+
+SIDEBAR DO ALUNO
+  Dashboard · Meu Perfil
+  (minimal — somente portal)
+
+AÇÕES QUE ALUNO NUNCA PODE FAZER
+· Absolutamente tudo além de visualizar seus próprios dados de leitura
+
+
+================================================================================
+5. RESPONSAVEL
+================================================================================
+
+AUTENTICAÇÃO E REDIRECIONAMENTO
+· Mixin: _ResponsavelMixin
+· Após login → responsavel:portal_dashboard
+
+DASHBOARD (responsavel/portal_dashboard.html)
+· Lista de filhos vinculados (VinculoResponsavelAluno.ativo=True)
+· Para cada filho:
+    — Matrícula ativa (turma, série, ano letivo)
+    — Alertas: matérias com situação RECUPERACAO ou REPROVADO
+· Total de alertas somados de todos os filhos
+· Comunicados recentes publicados
+· Próximos eventos
+
+MEU PERFIL (responsavel/portal_perfil.html)
+· Dados pessoais (nome, CPF, telefone)
+· NÃO pode editar nada
+
+RESTRIÇÕES
+· Responsável vê EXCLUSIVAMENTE dados dos filhos vinculados
+· Sem acesso a financeiro, frequência detalhada, comunicados próprios ou qualquer módulo admin
+· Portal leitura-apenas
+
+SIDEBAR DO RESPONSÁVEL
+  Dashboard · Meu Perfil
+  (minimal — somente portal)
+
+AÇÕES QUE RESPONSÁVEL NUNCA PODE FAZER
+· Absolutamente tudo além de visualizar dados dos filhos vinculados
+
+
+================================================================================
+TABELA RESUMO — QUEM PODE FAZER O QUÊ
+================================================================================
+
+AÇÃO                             DIRETOR  FUNCIONARIO  PROFESSOR  ALUNO  RESPONSAVEL
+-------------------------------  -------  -----------  ---------  -----  -----------
+Criar aluno                        SIM    *alunos       NÃO        NÃO    NÃO
+Editar aluno                       SIM    *alunos       NÃO        NÃO    NÃO
+Desativar/Reativar aluno           SIM    *alunos       NÃO        NÃO    NÃO
+Matricular aluno                   SIM    *alunos       NÃO        NÃO    NÃO
+Criar responsável                  SIM    *responsaveis NÃO        NÃO    NÃO
+Vincular responsável/aluno         SIM    *responsaveis NÃO        NÃO    NÃO
+Criar turma                        SIM    NÃO           NÃO        NÃO    NÃO
+Editar turma                       SIM    NÃO           NÃO        NÃO    NÃO
+Criar série                        SIM    NÃO           NÃO        NÃO    NÃO
+Criar matéria                      SIM    NÃO           NÃO        NÃO    NÃO
+Criar/Editar professor             SIM    NÃO           NÃO        NÃO    NÃO
+Criar/Editar colaborador           SIM    NÃO           NÃO        NÃO    NÃO
+Configurar permissões de função    SIM    NÃO           NÃO        NÃO    NÃO
+Criar avaliação                    SIM    *avaliacoes  só turma    NÃO    NÃO
+Editar avaliação                   SIM    *avaliacoes  só turma    NÃO    NÃO
+Publicar avaliação                 SIM    *avaliacoes  só turma    NÃO    NÃO
+Lançar notas                       SIM    *avaliacoes  só turma    NÃO    NÃO
+Exportar PDF avaliação             SIM    *avaliacoes  só turma    NÃO    NÃO
+Criar registro de frequência       SIM    *frequencia  só turma    NÃO    NÃO
+Lançar presenças                   SIM    *frequencia  só turma    NÃO    NÃO
+Justificar falta                   SIM    *frequencia  só turma    NÃO    NÃO
+Cancelar aula                      SIM    NÃO           NÃO        NÃO    NÃO
+Ver boletim                        SIM    *boletim     só turma   próprio filhos
+Calcular boletim                   SIM    NÃO           NÃO        NÃO    NÃO
+Aprovar conselho                   SIM    NÃO           NÃO        NÃO    NÃO
+Criar/Pagar cobrança               SIM    *financeiro   NÃO        NÃO    NÃO
+Cancelar cobrança                  SIM    NÃO           NÃO        NÃO    NÃO
+Criar plano financeiro             SIM    NÃO           NÃO        NÃO    NÃO
+Criar comunicado                   SIM    *comunicados  SIM        NÃO    NÃO
+Editar comunicado próprio          SIM    *comunicados  SIM        NÃO    NÃO
+Editar comunicado alheio           SIM    *comunicados  NÃO        NÃO    NÃO
+Criar evento de agenda             SIM    *agenda       NÃO        NÃO    NÃO
+Relatórios gerais                  SIM    *relatorios   NÃO        NÃO    NÃO
+Relatório desempenho professor     SIM    NÃO           NÃO        NÃO    NÃO
+Auditoria                          SIM    NÃO           NÃO        NÃO    NÃO
+Configurações acadêmicas/financ.   SIM    NÃO           NÃO        NÃO    NÃO
+Ano letivo (criar/iniciar/encerrar)SIM    NÃO           NÃO        NÃO    NÃO
+Ver dashboard personalizado        SIM    SIM           SIM        SIM    SIM
+Ver próprio perfil                 SIM    SIM           SIM        SIM    SIM
+
+Legenda: *modulo = somente se PermissaoFuncao liberar esse módulo para a função
+
+
+================================================================================
+LACUNAS IDENTIFICADAS (implementado parcialmente ou não implementado)
+================================================================================
+
+[ ALUNO ]
+· Boletim próprio não implementado no portal
+  (dashboard mostra resultados do período, mas não página dedicada de boletim)
+· Frequência própria não acessível diretamente no portal
+· Comunicados direcionados a ele não estão no portal
+· Agenda do portal não implementada
+· Avaliação online (submeter respostas) — models existem (RespostaAluno),
+  views e templates NÃO implementados
+
+[ RESPONSÁVEL ]
+· Boletim dos filhos não implementado no portal
+· Frequência dos filhos não acessível no portal
+· Cobranças dos filhos não visíveis no portal
+· Comunicados e agenda do portal não implementados
+· Notificações de alerta de frequência/desempenho: service cria notificação,
+  mas responsável não tem tela de notificações no portal
+
+[ PROFESSOR ]
+· Edição do próprio perfil não implementada (DIRETOR faz via gestão de professores)
+· Grade horária / visualização do próprio calendário não implementada
+· Comunicados: professor pode criar, mas sem filtro de destinatário por turma
+  validado no backend
+
+[ FUNCIONARIO ]
+· Dashboard não exibe banner de aviso "Sem função atribuída" explicitamente
+  (pode estar parcialmente implementado — não confirmado)
+· Edição do próprio perfil: apenas visualização implementada
+
+[ FINANCEIRO — GERAL ]
+· Mercado Pago: gateway é stub (criar_cobranca, consultar_status, cancelar)
+  sem implementação real; webhook processado mas sem lógica real
+· Responsável não vê nem paga cobranças pelo portal
+· Limite de 30 alunos no trial não verificado em AlunoService.criar()
+
+[ R01 — MATRICULATURMA ]
+· MatriculaTurma criada condicionalmente em aluno_service.criar()
+· Filtro "Sem turma" na listagem de alunos NÃO implementado
+· Badge visual de aluno sem turma NÃO implementado
+
+[ R03 — DASHBOARD DO DIRETOR ]
+· Alertas de gestão (bloco inferior) NÃO implementados:
+    — Alunos em risco (frequência abaixo do mínimo, em recuperação/reprovação)
+    — Inadimplência (total e quantidade de cobranças vencidas)
+    — Pendências acadêmicas (avaliações publicadas sem nota lançada)
+    — Frequência descoberta (turmas sem registro nos últimos X dias)
+    — Atividade recente (resumo do LogAuditoria)
+    — Status da assinatura (já parcialmente presente)
+
+
+================================================================================
+ENDPOINTS CRÍTICOS POR TIPO DE USUÁRIO
+================================================================================
+
+COMUNS:
+  /accounts/login/             · login (todos)
+  /accounts/logout/            · logout (todos)
+
+DIRETOR:
+  /                            · diretor:dashboard
+  /meu-perfil/                 · diretor:meu_perfil
+  /diretores/                  · diretor:listar_diretores
+  /colaboradores/              · colaborador:lista
+  /professores/                · professor:lista
+  /alunos/                     · aluno:lista
+  /responsaveis/               · responsavel:lista
+  /turmas/                     · turma:lista
+  /series/                     · serie:lista
+  /materias/                   · materia:lista
+  /escola/                     · escola:perfil
+  /ano-letivo/                 · ano_letivo:lista
+  /configuracoes/              · configuracao (acadêmica, frequência)
+  /avaliacoes/                 · avaliacao:lista
+  /frequencia/                 · frequencia:lista
+  /boletim/                    · boletim:index
+  /financeiro/                 · financeiro:dashboard
+  /comunicados/                · comunicado:lista
+  /agenda/                     · agenda:lista
+  /relatorios/                 · relatorio:index
+  /auditoria/                  · auditoria:lista
+
+FUNCIONARIO:
+  /colaborador/dashboard/      · colaborador:dashboard
+  /colaborador/meu-perfil/     · colaborador:meu_perfil
+  + os mesmos módulos do DIRETOR que tiver permissão
+
+PROFESSOR:
+  /professor/dashboard/        · professor:dashboard
+  /professor/meu-perfil/       · professor:meu_perfil
+  /avaliacoes/                 · avaliacao:lista (turmas do professor)
+  /frequencia/                 · frequencia:lista (turmas do professor)
+  /boletim/                    · boletim:index (turmas do professor)
+  /comunicados/                · comunicado:lista
+
+ALUNO:
+  /aluno/portal/               · aluno:portal_dashboard
+  /aluno/portal/perfil/        · aluno:portal_perfil
+
+RESPONSAVEL:
+  /responsavel/portal/         · responsavel:portal_dashboard
+  /responsavel/portal/perfil/  · responsavel:portal_perfil
+
+
+================================================================================
+FIM DO ARQUIVO — gerado em 2026-07-13
+================================================================================

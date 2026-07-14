@@ -4,11 +4,10 @@ from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.template.loader import render_to_string
 from django.views import View
 
 from .forms import AvaliacaoForm, OpcaoRespostaForm, QuestaoForm
-from .models import Avaliacao, NotaAluno, OpcaoResposta, Questao
+from .models import Avaliacao, OpcaoResposta, Questao
 from .services import avaliacao_service
 
 
@@ -74,11 +73,14 @@ class ListarAvaliacoesView(_LeituraMixin, View):
             .select_related('turma', 'materia', 'ano_letivo', 'periodo_letivo')
             .order_by('-data_aplicacao', '-criado_em')
         )
-        if request.papel.tipo == 'PROFESSOR':
-            qs = qs.filter(turma_id__in=_turma_ids_professor(request.papel))
 
-        turma_id  = request.GET.get('turma', '')
-        tipo      = request.GET.get('tipo', '')
+        # Calcula turma_ids uma única vez para professor
+        turma_ids = _turma_ids_professor(request.papel) if request.papel.tipo == 'PROFESSOR' else None
+        if turma_ids is not None:
+            qs = qs.filter(turma_id__in=turma_ids)
+
+        turma_id = request.GET.get('turma', '')
+        tipo     = request.GET.get('tipo', '')
         if turma_id:
             qs = qs.filter(turma_id=turma_id)
         if tipo:
@@ -86,10 +88,11 @@ class ListarAvaliacoesView(_LeituraMixin, View):
 
         from apps.turma.models import Turma
         from .models import TipoAvaliacao
-        if request.papel.tipo == 'PROFESSOR':
-            turmas = Turma.objects.filter(pk__in=_turma_ids_professor(request.papel)).order_by('nome')
+        if turma_ids is not None:
+            turmas = Turma.objects.filter(pk__in=turma_ids).order_by('nome')
         else:
             turmas = Turma.objects.filter(escola=escola, ativo=True).order_by('nome')
+
         return render(request, self.template_name, self._ctx(
             request,
             avaliacoes=qs,
@@ -157,15 +160,17 @@ class DetalheAvaliacaoView(_LeituraMixin, View):
             .select_related('aluno')
             .order_by('aluno__nome_completo')
         )
-        notas = {n.aluno_id: n for n in avaliacao.notas.all()}
+        notas      = {n.aluno_id: n for n in avaliacao.notas.select_related('aluno')}
         notas_list = [(mat, notas.get(mat.aluno_id)) for mat in matriculas]
 
+        from .forms import TIPOS_COM_OPCOES
         return render(request, self.template_name, self._ctx(
             request,
             avaliacao=avaliacao,
             questao_form=questao_form,
             opcao_form=opcao_form,
             notas_list=notas_list,
+            tipos_com_opcoes=TIPOS_COM_OPCOES,
         ))
 
 
@@ -241,21 +246,35 @@ class DespublicarView(_EscritaMixin, View):
         return redirect('avaliacao:detalhe', pk=pk)
 
 
+class EncerrarView(_EscritaMixin, View):
+    def post(self, request, pk):
+        qs = Avaliacao.objects.filter(escola=request.escola)
+        if request.papel.tipo == 'PROFESSOR':
+            qs = qs.filter(turma_id__in=_turma_ids_professor(request.papel))
+        avaliacao = get_object_or_404(qs, pk=pk)
+        avaliacao_service.encerrar(avaliacao)
+        messages.success(request, 'Avaliação encerrada.')
+        return redirect('avaliacao:detalhe', pk=pk)
+
+
 class AdicionarQuestaoView(_EscritaMixin, View):
     def post(self, request, pk):
         qs = Avaliacao.objects.filter(escola=request.escola)
         if request.papel.tipo == 'PROFESSOR':
             qs = qs.filter(turma_id__in=_turma_ids_professor(request.papel))
         avaliacao = get_object_or_404(qs, pk=pk)
-        form = QuestaoForm(request.POST)
+        form = QuestaoForm(request.POST, request.FILES)
         if form.is_valid():
             try:
                 avaliacao_service.adicionar_questao(avaliacao, form.cleaned_data)
                 messages.success(request, 'Questão adicionada.')
             except Exception as exc:
-                messages.error(request, f'Erro: {exc}')
+                messages.error(request, f'Erro ao adicionar questão: {exc}')
         else:
-            messages.error(request, 'Dados da questão inválidos.')
+            erros = '; '.join(
+                f'{f}: {e[0]}' for f, e in form.errors.items()
+            )
+            messages.error(request, f'Dados inválidos — {erros}')
         return redirect('avaliacao:detalhe', pk=pk)
 
 
@@ -266,8 +285,9 @@ class RemoverQuestaoView(_EscritaMixin, View):
             qs = qs.filter(turma_id__in=_turma_ids_professor(request.papel))
         avaliacao = get_object_or_404(qs, pk=pk)
         questao   = get_object_or_404(Questao, pk=questao_pk, avaliacao=avaliacao)
+        numero    = questao.numero
         avaliacao_service.remover_questao(questao)
-        messages.success(request, f'Questão {questao.numero} removida.')
+        messages.success(request, f'Questão {numero} removida.')
         return redirect('avaliacao:detalhe', pk=pk)
 
 
@@ -284,36 +304,45 @@ class AdicionarOpcaoView(_EscritaMixin, View):
                 avaliacao_service.adicionar_opcao(questao, form.cleaned_data)
                 messages.success(request, 'Opção adicionada.')
             except Exception as exc:
-                messages.error(request, f'Erro: {exc}')
+                messages.error(request, f'Erro ao adicionar opção: {exc}')
         else:
             messages.error(request, 'Dados da opção inválidos.')
         return redirect('avaliacao:detalhe', pk=pk)
 
 
+class RemoverOpcaoView(_EscritaMixin, View):
+    def post(self, request, pk, questao_pk, opcao_pk):
+        qs = Avaliacao.objects.filter(escola=request.escola)
+        if request.papel.tipo == 'PROFESSOR':
+            qs = qs.filter(turma_id__in=_turma_ids_professor(request.papel))
+        avaliacao = get_object_or_404(qs, pk=pk)
+        questao   = get_object_or_404(Questao, pk=questao_pk, avaliacao=avaliacao)
+        opcao     = get_object_or_404(OpcaoResposta, pk=opcao_pk, questao=questao)
+        letra     = opcao.letra
+        avaliacao_service.remover_opcao(opcao)
+        messages.success(request, f'Opção {letra} removida.')
+        return redirect('avaliacao:detalhe', pk=pk)
+
+
 class ExportarPdfView(_LeituraMixin, View):
     def get(self, request, pk):
+        from .services.pdf_service import gerar_pdf_avaliacao
+
+        qs = Avaliacao.objects.filter(escola=request.escola)
+        if request.papel.tipo == 'PROFESSOR':
+            qs = qs.filter(turma_id__in=_turma_ids_professor(request.papel))
         avaliacao = get_object_or_404(
-            Avaliacao.objects
-            .select_related(
+            qs.select_related(
                 'turma', 'materia', 'ano_letivo', 'periodo_letivo',
                 'professor__papel__vinculo__usuario', 'escola',
-            )
-            .prefetch_related('questoes__opcoes'),
-            pk=pk, escola=request.escola,
+            ).prefetch_related('questoes__opcoes'),
+            pk=pk,
         )
-        questoes = avaliacao.questoes.all()
 
         try:
-            from weasyprint import HTML
-        except ImportError:
-            return HttpResponse('WeasyPrint não instalado.', status=500)
-
-        html = render_to_string(
-            'avaliacao/avaliacao_pdf.html',
-            {'avaliacao': avaliacao, 'escola': request.escola, 'questoes': questoes},
-            request=request,
-        )
-        pdf = HTML(string=html, base_url=request.build_absolute_uri('/')).write_pdf()
+            pdf = gerar_pdf_avaliacao(avaliacao, request.escola)
+        except Exception as exc:
+            return HttpResponse(f'Erro ao gerar PDF: {exc}', status=500)
 
         nome = avaliacao.titulo[:50].replace(' ', '-').lower()
         response = HttpResponse(pdf, content_type='application/pdf')
@@ -339,7 +368,7 @@ class LancarNotasView(_EscritaMixin, View):
             .select_related('aluno')
             .order_by('aluno__nome_completo')
         )
-        notas = {n.aluno_id: n for n in avaliacao.notas.all()}
+        notas      = {n.aluno_id: n for n in avaliacao.notas.all()}
         notas_list = [(mat, notas.get(mat.aluno_id)) for mat in matriculas]
         return render(request, self.template_name, self._ctx(
             request, avaliacao=avaliacao, notas_list=notas_list,
@@ -363,6 +392,8 @@ class LancarNotasView(_EscritaMixin, View):
             if not ausente and raw_nota:
                 try:
                     nota = Decimal(raw_nota.replace(',', '.'))
+                    # Clampa no intervalo [0, nota_maxima]
+                    nota = max(Decimal('0'), min(nota, avaliacao.nota_maxima))
                 except InvalidOperation:
                     pass
             entradas.append({'aluno_id': aluno_id, 'nota': nota, 'ausente': ausente, 'observacao': obs})

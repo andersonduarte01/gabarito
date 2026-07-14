@@ -15,7 +15,7 @@
             <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Avaliações</h2>
             <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">Provas, trabalhos e atividades</p>
         </div>
-        {% if papel.tipo == 'DIRETOR' %}
+        {% if papel.tipo == 'DIRETOR' or papel.tipo == 'PROFESSOR' %}
         <a href="{% url 'avaliacao:criar' %}"
            class="flex items-center gap-2 px-4 py-2 rounded-xl shrink-0
                   bg-[#0d6efd] hover:bg-[#0b5ed7] text-white text-sm font-medium transition-colors">
@@ -63,8 +63,10 @@
                 <div class="min-w-0">
                     <div class="flex items-center gap-2 flex-wrap">
                         <span class="text-sm font-semibold text-slate-800 dark:text-slate-100">{{ av.titulo }}</span>
-                        {% if av.publicada %}
+                        {% if av.status == 'PUBLICADA' %}
                         <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600">Publicada</span>
+                        {% elif av.status == 'ENCERRADA' %}
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 dark:bg-slate-700 text-slate-500">Encerrada</span>
                         {% else %}
                         <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-600">Rascunho</span>
                         {% endif %}
@@ -82,15 +84,17 @@
                        class="p-1.5 text-slate-300 hover:text-[#0d6efd] rounded-md transition-colors" title="Detalhes">
                         <i data-lucide="eye" class="w-3.5 h-3.5"></i>
                     </a>
-                    {% if papel.tipo == 'DIRETOR' %}
+                    {% if papel.tipo == 'DIRETOR' or papel.tipo == 'PROFESSOR' %}
                     <a href="{% url 'avaliacao:lancar_notas' av.pk %}"
                        class="p-1.5 text-slate-300 hover:text-emerald-500 rounded-md transition-colors" title="Lançar notas">
                         <i data-lucide="clipboard-pen" class="w-3.5 h-3.5"></i>
                     </a>
+                    {% if av.status != 'ENCERRADA' %}
                     <a href="{% url 'avaliacao:editar' av.pk %}"
                        class="p-1.5 text-slate-300 hover:text-[#0d6efd] rounded-md transition-colors" title="Editar">
                         <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                     </a>
+                    {% endif %}
                     {% endif %}
                 </div>
             </div>
@@ -108,10 +112,12 @@
             <p class="text-xs text-slate-400 dark:text-slate-500 max-w-xs leading-relaxed">
                 {% if filtros.turma or filtros.tipo %}Tente ajustar os filtros.{% else %}Crie a primeira avaliação da escola.{% endif %}
             </p>
-            {% if papel.tipo == 'DIRETOR' and not filtros.turma and not filtros.tipo %}
+            {% if not filtros.turma and not filtros.tipo %}
+            {% if papel.tipo == 'DIRETOR' or papel.tipo == 'PROFESSOR' %}
             <a href="{% url 'avaliacao:criar' %}" class="mt-4 text-sm text-[#0d6efd] hover:underline font-medium">
                 Criar primeira avaliação →
             </a>
+            {% endif %}
             {% endif %}
         </div>
     </div>

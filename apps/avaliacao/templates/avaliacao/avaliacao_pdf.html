@@ -3,15 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <style>
+
+/* ── Página ─────────────────────────────────────────────────── */
 @page {
     size: A4;
-    margin: 2cm 2cm 2.5cm 2cm;
-    @bottom-center {
-        content: "Página " counter(page) " de " counter(pages);
-        font-family: Arial, sans-serif;
-        font-size: 8pt;
-        color: #888;
-    }
+    margin: 2.2cm 2.2cm 2.5cm 2.2cm;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -19,200 +15,357 @@
 body {
     font-family: Arial, Helvetica, sans-serif;
     font-size: 10.5pt;
-    color: #111;
-    line-height: 1.55;
+    color: #1e293b;
+    line-height: 1.6;
 }
 
-/* ── Cabeçalho ─────────────────────────────────────────────── */
-.header {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    border-bottom: 2.5px solid #1a2e5e;
-    padding-bottom: 12px;
-    margin-bottom: 14px;
-}
-.logo-img { width: 56px; height: 56px; object-fit: contain; }
-.logo-inicial {
+/* ── Utilitários ────────────────────────────────────────────── */
+.w-full  { width: 100%; }
+.bold    { font-weight: bold; }
+.upper   { text-transform: uppercase; }
+.center  { text-align: center; }
+.muted   { color: #64748b; }
+.small   { font-size: 8.5pt; }
+.xsmall  { font-size: 8pt; }
+hr.rule  { border: none; border-top: 1px solid #e2e8f0; }
+hr.rule-dark { border: none; border-top: 2px solid #1e3a5f; }
+
+/* ── CABEÇALHO ──────────────────────────────────────────────── */
+.header-wrap { padding-bottom: 10px; margin-bottom: 12px; }
+.header-table { width: 100%; border-collapse: collapse; }
+.header-table td { vertical-align: middle; padding: 0; }
+.logo-cell { width: 62px; }
+.logo-img  { width: 56px; height: 56px; object-fit: contain; }
+.logo-box  {
     width: 56px; height: 56px;
-    background: #1a2e5e;
-    color: white;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 26pt; font-weight: bold;
-    border-radius: 8px;
-    flex-shrink: 0;
+    background: #1e3a5f;
+    color: #ffffff;
+    text-align: center; line-height: 56px;
+    font-size: 24pt; font-weight: bold;
+    border-radius: 6px;
 }
-.school-name { font-size: 13pt; font-weight: bold; color: #1a2e5e; }
-.school-sub  { font-size: 8.5pt; color: #555; margin-top: 3px; }
+.school-name {
+    font-size: 14pt;
+    font-weight: bold;
+    color: #1e3a5f;
+    letter-spacing: 0.3px;
+}
+.school-tagline { font-size: 8.5pt; color: #64748b; margin-top: 2px; }
 
-/* ── Título da avaliação ────────────────────────────────────── */
-.av-title-block { text-align: center; margin-bottom: 14px; }
+/* ── TÍTULO DA AVALIAÇÃO ────────────────────────────────────── */
+.title-block {
+    text-align: center;
+    padding: 14px 0 10px;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 12px;
+}
 .av-titulo {
-    font-size: 12.5pt; font-weight: bold;
-    text-transform: uppercase; letter-spacing: 0.5px;
+    font-size: 13.5pt;
+    font-weight: bold;
+    color: #1e293b;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
 }
-.av-sub { font-size: 9pt; color: #444; margin-top: 3px; }
+.av-sub {
+    font-size: 9pt;
+    color: #64748b;
+    margin-top: 3px;
+}
 
-/* ── Grade de informações ───────────────────────────────────── */
-.info-grid {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 5px 16px;
-    border: 1px solid #d0d0d0;
-    padding: 8px 12px;
-    border-radius: 4px;
-    background: #f8f8f8;
+/* ── BLOCO DE METADADOS ─────────────────────────────────────── */
+.meta-block {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 5px;
+    padding: 9px 14px;
     margin-bottom: 14px;
-    font-size: 9.5pt;
 }
-.info-full  { grid-column: 1 / -1; }
-.info-label { font-weight: bold; }
+.meta-table { width: 100%; border-collapse: collapse; }
+.meta-table td { padding: 2px 0; vertical-align: top; }
+.meta-label { font-weight: bold; font-size: 8.5pt; color: #475569; }
+.meta-value { font-size: 9pt; color: #1e293b; }
+.meta-divider { border-top: 1px solid #e2e8f0; padding-top: 6px; margin-top: 6px; }
+.meta-col { width: 33.3%; padding-right: 10px; }
 
-/* ── Bloco de identificação do aluno ───────────────────────── */
+/* ── IDENTIFICAÇÃO DO ALUNO ─────────────────────────────────── */
 .student-block {
-    border: 1px solid #aaa;
-    border-radius: 4px;
-    padding: 8px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 5px;
     margin-bottom: 20px;
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
-    gap: 12px;
+    overflow: hidden;
 }
-.field-label { font-size: 8pt; font-weight: bold; color: #333; margin-bottom: 4px; }
-.field-line  { border-bottom: 1px solid #555; min-height: 18px; padding-bottom: 2px; font-size: 9.5pt; color: #333; }
+.student-header {
+    background: #1e3a5f;
+    color: #ffffff;
+    font-size: 7.5pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 4px 12px;
+}
+.student-fields { padding: 8px 12px; }
+.student-table  { width: 100%; border-collapse: collapse; }
+.student-table td { vertical-align: top; padding: 0 8px 0 0; }
+.field-label { font-size: 7.5pt; font-weight: bold; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.field-line  { border-bottom: 1.5px solid #94a3b8; min-height: 18px; padding-bottom: 1px; font-size: 9.5pt; }
 
-/* ── Questões ───────────────────────────────────────────────── */
-.question { margin-bottom: 18px; page-break-inside: avoid; }
-.q-header { display: flex; align-items: flex-start; gap: 9px; margin-bottom: 4px; }
-.q-number {
-    width: 22px; height: 22px;
-    background: #1a2e5e; color: white;
+/* ── QUESTÕES ───────────────────────────────────────────────── */
+.questions-label {
+    font-size: 8pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #64748b;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 5px;
+    margin-bottom: 14px;
+}
+
+.question { margin-bottom: 20px; page-break-inside: avoid; }
+
+.q-row-table { width: 100%; border-collapse: collapse; }
+.q-row-table td { vertical-align: top; padding: 0; }
+.q-num-cell { width: 28px; padding-top: 1px; }
+.q-num      { font-size: 10.5pt; font-weight: bold; color: #1e3a5f; }
+.q-body     { }
+.q-pts      { width: 64px; text-align: right; white-space: nowrap; padding-top: 1px; }
+.q-pts-text { font-size: 8.5pt; color: #64748b; font-style: italic; }
+
+.q-enunciado { font-size: 10.5pt; line-height: 1.6; color: #1e293b; }
+
+/* Opções de múltipla escolha */
+.options-wrap { margin-top: 8px; margin-left: 0; }
+.options-table { width: 100%; border-collapse: collapse; }
+.options-table td { padding: 0 0 5px 0; vertical-align: top; font-size: 10pt; }
+.opt-bubble-cell { width: 20px; }
+.opt-bubble {
+    width: 14px; height: 14px;
+    border: 1.5px solid #475569;
     border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 8.5pt; font-weight: bold;
-    flex-shrink: 0; margin-top: 1px;
+    margin-top: 3px;
 }
-.q-enunciado { flex: 1; font-size: 10.5pt; line-height: 1.55; }
-.q-meta { margin-left: 31px; font-size: 8pt; color: #666; margin-bottom: 5px; }
+.opt-letra-cell { width: 22px; font-weight: bold; color: #1e3a5f; }
+.opt-texto      { color: #1e293b; }
 
-/* Múltipla escolha */
-.options { margin-left: 31px; margin-top: 5px; }
-.option  { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; font-size: 10pt; }
-.opt-circle {
-    width: 15px; height: 15px;
-    border: 1.5px solid #333; border-radius: 50%;
-    flex-shrink: 0; margin-top: 3px;
-}
-.opt-letra { font-weight: bold; width: 14px; flex-shrink: 0; }
+/* Verdadeiro ou falso */
+.vf-table { border-collapse: collapse; margin-top: 8px; }
+.vf-table td { padding: 4px 10px; border: 1px solid #cbd5e1; font-size: 10pt; }
+.vf-check { width: 28px; height: 18px; border: 1.5px solid #475569; border-radius: 3px; }
 
-/* Discursiva */
-.answer-lines { margin-left: 31px; margin-top: 8px; }
-.answer-line  { border-bottom: 1px solid #bbb; margin-bottom: 11px; height: 10px; }
+/* Linhas para resposta discursiva / curta */
+.answer-lines { margin-top: 10px; }
+.answer-line  { border-bottom: 1px solid #cbd5e1; height: 11px; margin-bottom: 10px; }
+.answer-line-sm { border-bottom: 1px solid #cbd5e1; height: 11px; margin-bottom: 10px; }
 
 /* Separador entre questões */
-.q-divider { border: none; border-top: 1px dashed #ccc; margin: 2px 0 18px; }
+.q-sep { border: none; border-top: 1px dashed #e2e8f0; margin: 4px 0 18px; }
 
-.empty-msg { text-align: center; color: #999; margin-top: 40px; }
+/* Estado vazio */
+.empty-msg { text-align: center; color: #94a3b8; margin-top: 50px; font-size: 9.5pt; }
+
 </style>
 </head>
 <body>
 
-<!-- ── CABEÇALHO ──────────────────────────────────────────────── -->
-<div class="header">
-    {% if escola.logo %}
-    <img src="{{ escola.logo.url }}" alt="{{ escola.nome }}" class="logo-img">
-    {% else %}
-    <div class="logo-inicial">{{ escola.nome|first|upper }}</div>
-    {% endif %}
-    <div>
-        <div class="school-name">{{ escola.nome }}</div>
-        <div class="school-sub">Ensino — Avaliação Presencial</div>
-    </div>
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!--  CABEÇALHO                                                  -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="header-wrap">
+    <table class="header-table">
+    <tr>
+        <td class="logo-cell">
+            {% if escola.logo %}
+            <img src="{{ escola.logo.url }}" alt="" class="logo-img">
+            {% else %}
+            <div class="logo-box">{{ escola.nome|first|upper }}</div>
+            {% endif %}
+        </td>
+        <td style="padding-left: 14px;">
+            <div class="school-name">{{ escola.nome }}</div>
+            <div class="school-tagline">Ensino Fundamental &mdash; Avaliação Presencial</div>
+        </td>
+    </tr>
+    </table>
 </div>
+<hr class="rule-dark" style="margin-bottom: 0;">
 
-<!-- ── TÍTULO ─────────────────────────────────────────────────── -->
-<div class="av-title-block">
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!--  TÍTULO                                                     -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="title-block">
     <div class="av-titulo">{{ avaliacao.titulo }}</div>
-    <div class="av-sub">
-        {{ avaliacao.turma.nome }} &bull; {{ avaliacao.materia.nome }} &bull; {{ avaliacao.get_tipo_display }}
-    </div>
+    <div class="av-sub">{{ avaliacao.turma.nome }} &nbsp;&bull;&nbsp; {{ avaliacao.materia.nome }}</div>
 </div>
 
-<!-- ── INFORMAÇÕES ────────────────────────────────────────────── -->
-<div class="info-grid">
-    <div>
-        <span class="info-label">Ano Letivo:</span> {{ avaliacao.ano_letivo.ano }}
-    </div>
-    <div>
-        {% if avaliacao.periodo_letivo %}
-        <span class="info-label">Período:</span> {{ avaliacao.periodo_letivo.nome }}
-        {% endif %}
-    </div>
-    <div>
-        {% if avaliacao.data_aplicacao %}
-        <span class="info-label">Data de Aplicação:</span> {{ avaliacao.data_aplicacao|date:"d/m/Y" }}
-        {% endif %}
-    </div>
-    <div>
-        <span class="info-label">Nota Máxima:</span> {{ avaliacao.nota_maxima }} pontos
-    </div>
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!--  METADADOS                                                  -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="meta-block">
     {% if avaliacao.professor %}
-    <div class="info-full">
-        <span class="info-label">Professor(a):</span> {{ avaliacao.professor.papel.vinculo.usuario.nome }}
-    </div>
+    <table class="meta-table" style="margin-bottom: 6px;">
+    <tr>
+        <td>
+            <span class="meta-label">Professor(a):&nbsp;</span>
+            <span class="meta-value">{{ avaliacao.professor.papel.vinculo.usuario.nome }}</span>
+        </td>
+    </tr>
+    </table>
+    <hr class="rule" style="margin: 6px 0;">
     {% endif %}
+    <table class="meta-table">
+    <tr>
+        <td class="meta-col">
+            <span class="meta-label">Ano Letivo:&nbsp;</span>
+            <span class="meta-value">{{ avaliacao.ano_letivo.ano }}</span>
+        </td>
+        <td class="meta-col">
+            {% if avaliacao.periodo_letivo %}
+            <span class="meta-label">Período:&nbsp;</span>
+            <span class="meta-value">{{ avaliacao.periodo_letivo.nome }}</span>
+            {% endif %}
+        </td>
+        <td class="meta-col">
+            {% if avaliacao.data_aplicacao %}
+            <span class="meta-label">Data:&nbsp;</span>
+            <span class="meta-value">{{ avaliacao.data_aplicacao|date:"d/m/Y" }}</span>
+            {% endif %}
+        </td>
+        <td style="width: 120px; text-align: right;">
+            <span class="meta-label">Nota Máxima:&nbsp;</span>
+            <span class="meta-value bold">{{ avaliacao.nota_maxima }}</span>
+        </td>
+    </tr>
+    </table>
 </div>
 
-<!-- ── IDENTIFICAÇÃO DO ALUNO ─────────────────────────────────── -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!--  IDENTIFICAÇÃO DO ALUNO                                     -->
+<!-- ═══════════════════════════════════════════════════════════ -->
 <div class="student-block">
-    <div>
-        <div class="field-label">Nome do Aluno(a)</div>
-        <div class="field-line"></div>
-    </div>
-    <div>
-        <div class="field-label">Turma</div>
-        <div class="field-line">{{ avaliacao.turma.nome }}</div>
-    </div>
-    <div>
-        <div class="field-label">Data</div>
-        <div class="field-line">
-            {% if avaliacao.data_aplicacao %}{{ avaliacao.data_aplicacao|date:"d/m/Y" }}{% endif %}
-        </div>
+    <div class="student-header">Identificação do(a) Aluno(a)</div>
+    <div class="student-fields">
+        <table class="student-table">
+        <tr>
+            <td style="width: 58%;">
+                <div class="field-label">Nome completo</div>
+                <div class="field-line">&nbsp;</div>
+            </td>
+            <td style="width: 20%;">
+                <div class="field-label">Turma</div>
+                <div class="field-line">{{ avaliacao.turma.nome }}</div>
+            </td>
+            <td style="width: 22%; padding-right: 0;">
+                <div class="field-label">Data de aplicação</div>
+                <div class="field-line">
+                    {% if avaliacao.data_aplicacao %}{{ avaliacao.data_aplicacao|date:"d/m/Y" }}{% else %}&nbsp;{% endif %}
+                </div>
+            </td>
+        </tr>
+        </table>
     </div>
 </div>
 
-<!-- ── QUESTÕES ───────────────────────────────────────────────── -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!--  QUESTÕES                                                   -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="questions-label">Questões</div>
+
 {% for q in questoes %}
 <div class="question">
-    <div class="q-header">
-        <div class="q-number">{{ q.numero }}</div>
-        <div class="q-enunciado">{{ q.enunciado }}</div>
-    </div>
-    <div class="q-meta">
-        {{ q.pontuacao }} ponto{% if q.pontuacao != 1 %}s{% endif %} &mdash; {{ q.get_tipo_display }}
-    </div>
+    <table class="q-row-table">
+    <tr>
+        <td class="q-num-cell">
+            <span class="q-num">{{ q.numero }}.</span>
+        </td>
+        <td class="q-body">
+            <div class="q-enunciado">{{ q.enunciado }}</div>
 
-    {% if q.tipo == 'MULTIPLA_ESCOLHA' %}
-    <div class="options">
-        {% for op in q.opcoes.all %}
-        <div class="option">
-            <div class="opt-circle"></div>
-            <span class="opt-letra">{{ op.letra }})</span>
-            <span>{{ op.texto }}</span>
-        </div>
-        {% endfor %}
-    </div>
-    {% else %}
-    <div class="answer-lines">
-        <div class="answer-line"></div>
-        <div class="answer-line"></div>
-        <div class="answer-line"></div>
-        <div class="answer-line"></div>
-        <div class="answer-line"></div>
-        <div class="answer-line"></div>
-    </div>
-    {% endif %}
+            {% if q.imagem %}
+            <div style="margin-top: 8px;">
+                <img src="{{ q.imagem.url }}" alt=""
+                     style="max-height: 200px; max-width: 100%; border-radius: 4px; border: 1px solid #e2e8f0;">
+            </div>
+            {% endif %}
+
+            <!-- Múltipla escolha e Múltiplas respostas -->
+            {% if q.tipo == 'MULTIPLA_ESCOLHA' or q.tipo == 'MULTIPLAS_RESPOSTAS' %}
+            <div class="options-wrap">
+                <table class="options-table">
+                {% for op in q.opcoes.all %}
+                <tr>
+                    <td class="opt-bubble-cell"><div class="opt-bubble"></div></td>
+                    <td class="opt-letra-cell">{{ op.letra }})</td>
+                    <td class="opt-texto">{{ op.texto }}</td>
+                </tr>
+                {% endfor %}
+                </table>
+            </div>
+
+            <!-- Verdadeiro ou Falso -->
+            {% elif q.tipo == 'VERDADEIRO_FALSO' %}
+            <div style="margin-top: 8px;">
+                <table class="vf-table">
+                <tr>
+                    <td style="width: 32px; text-align: center;">
+                        <div class="vf-check"></div>
+                    </td>
+                    <td>Verdadeiro</td>
+                    <td style="width: 32px; text-align: center; padding-left: 16px;">
+                        <div class="vf-check"></div>
+                    </td>
+                    <td>Falso</td>
+                </tr>
+                </table>
+            </div>
+
+            <!-- Ordenação -->
+            {% elif q.tipo == 'ORDENACAO' %}
+            <div class="options-wrap">
+                <table class="options-table">
+                {% for op in q.opcoes.all %}
+                <tr>
+                    <td style="width: 26px;">
+                        <div style="width: 20px; height: 20px; border: 1.5px solid #94a3b8; border-radius: 3px; margin-top: 2px;"></div>
+                    </td>
+                    <td class="opt-texto">{{ op.texto }}</td>
+                </tr>
+                {% endfor %}
+                </table>
+            </div>
+
+            <!-- Numérica — campo pequeno -->
+            {% elif q.tipo == 'NUMERICA' %}
+            <div class="answer-lines" style="max-width: 140px; margin-top: 8px;">
+                <div class="field-label xsmall" style="margin-bottom: 3px;">Resposta</div>
+                <div class="answer-line"></div>
+            </div>
+
+            <!-- Resposta curta -->
+            {% elif q.tipo == 'RESPOSTA_CURTA' %}
+            <div class="answer-lines" style="margin-top: 8px;">
+                <div class="answer-line"></div>
+                <div class="answer-line"></div>
+            </div>
+
+            <!-- Discursiva / Lacunas / Associação — linhas largas -->
+            {% else %}
+            <div class="answer-lines" style="margin-top: 10px;">
+                <div class="answer-line"></div>
+                <div class="answer-line"></div>
+                <div class="answer-line"></div>
+                <div class="answer-line"></div>
+                <div class="answer-line"></div>
+                <div class="answer-line"></div>
+            </div>
+            {% endif %}
+        </td>
+        <td class="q-pts">
+            <span class="q-pts-text">{{ q.pontuacao }} pt{% if q.pontuacao != 1 %}s{% endif %}</span>
+        </td>
+    </tr>
+    </table>
 </div>
-{% if not forloop.last %}<hr class="q-divider">{% endif %}
+{% if not forloop.last %}<hr class="q-sep">{% endif %}
 {% empty %}
 <p class="empty-msg">Nenhuma questão cadastrada nesta avaliação.</p>
 {% endfor %}

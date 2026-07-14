@@ -75,21 +75,12 @@ class VinculoResponsavelAluno(models.Model):
     parentesco             = models.CharField(
         'Parentesco', max_length=20, choices=Parentesco.choices,
     )
-    responsavel_financeiro = models.BooleanField('Responsável Financeiro', default=False)
-    responsavel_principal  = models.BooleanField('Responsável Principal', default=False)
     ativo                  = models.BooleanField('Ativo', default=True)
 
     class Meta:
         verbose_name        = 'Vínculo Responsável-Aluno'
         verbose_name_plural = 'Vínculos Responsável-Aluno'
         unique_together     = ('responsavel', 'aluno')
-        constraints = [
-            models.UniqueConstraint(
-                fields=['aluno'],
-                condition=models.Q(responsavel_principal=True),
-                name='unique_responsavel_principal_por_aluno',
-            ),
-        ]
 
     def __str__(self):
         return f'{self.responsavel.nome} → {self.aluno.nome_completo} ({self.get_parentesco_display()})'

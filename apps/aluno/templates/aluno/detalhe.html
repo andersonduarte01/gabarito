@@ -1,4 +1,4 @@
-﻿{% extends base_template %}
+{% extends base_template %}
 
 {% block titulo %}{{ aluno.nome_completo }} — {{ escola.nome }}{% endblock %}
 {% block page_title %}Aluno{% endblock %}
@@ -11,605 +11,972 @@
 {% endif %}
 {% endblock %}
 
-{% block extra_head %}
-<style>
-.banner-dots {
-    background-image: radial-gradient(circle, #6ee7b7 1.5px, transparent 1.5px);
-    background-size: 24px 24px;
-    opacity: 0.55;
-}
-.dark .banner-dots {
-    background-image: radial-gradient(circle, rgba(110,231,183,0.35) 1.5px, transparent 1.5px);
-    opacity: 1;
-}
-</style>
-{% endblock %}
-
 {% block conteudo %}
+<div class="space-y-5">
 
-<!-- Breadcrumb -->
-<div class="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500 mb-6">
-    <a href="{% url 'aluno:lista' %}" class="hover:text-[#0d6efd] transition-colors">Alunos</a>
-    <i data-lucide="chevron-right" class="w-3 h-3"></i>
-    <span class="text-slate-600 dark:text-slate-300">{{ aluno.nome_completo }}</span>
-</div>
+    <!-- Breadcrumb -->
+    <a href="{% url 'aluno:lista' %}"
+       class="inline-flex items-center gap-1.5 text-sm text-slate-500
+              hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        Alunos
+    </a>
 
-<!-- BANNER + AVATAR -->
-<div class="relative mb-20">
-    <div class="h-44 rounded-3xl overflow-hidden relative shadow-sm
-                bg-gradient-to-br from-emerald-400 via-teal-300 to-emerald-200
-                dark:from-emerald-800 dark:via-teal-900 dark:to-slate-800
-                border border-emerald-200 dark:border-slate-700">
-        <div class="absolute inset-0 banner-dots"></div>
-    </div>
+    <!-- Header card -->
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
 
-    <div class="absolute -bottom-16 left-6 md:left-10 flex items-end gap-5">
-        <div class="ring-4 ring-white dark:ring-slate-900 rounded-3xl shadow-xl shrink-0">
-            {% if aluno.foto %}
-            <img src="{{ aluno.foto.url }}" alt="{{ aluno.nome_completo }}"
-                 class="w-28 h-28 md:w-32 md:h-32 rounded-3xl object-cover">
-            {% else %}
-            <div class="w-28 h-28 md:w-32 md:h-32 rounded-3xl
-                        bg-gradient-to-br from-emerald-500 to-teal-700
-                        flex items-center justify-center
-                        text-white text-5xl font-bold select-none">
-                {{ aluno.nome_completo|first|upper }}
-            </div>
-            {% endif %}
-        </div>
-
-        <div class="hidden md:block pb-2">
-            <h1 class="text-2xl font-bold text-slate-800 dark:text-white leading-tight">
-                {{ aluno.nome_completo }}
-            </h1>
-            <div class="flex items-center gap-2 mt-1 flex-wrap">
-                <span class="inline-flex items-center text-xs px-3 py-1 rounded-full font-bold
-                             bg-emerald-100 text-emerald-800 border border-emerald-200
-                             dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-700">
-                    Aluno
-                </span>
-                {% if not aluno.ativo %}
-                <span class="inline-flex items-center text-xs px-3 py-1 rounded-full font-semibold
-                             bg-red-100 text-red-700 border border-red-200
-                             dark:bg-red-900/40 dark:text-red-300 dark:border-red-700">
-                    Inativo
-                </span>
-                {% endif %}
-                {% if aluno.usuario_id %}
-                <span class="inline-flex items-center text-xs px-3 py-1 rounded-full font-semibold
-                             bg-blue-100 text-blue-700 border border-blue-200
-                             dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-700">
-                    Acesso ativo
-                </span>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Nome + badges (mobile) -->
-<div class="md:hidden px-2 mb-6">
-    <h1 class="text-xl font-bold text-slate-800 dark:text-white">{{ aluno.nome_completo }}</h1>
-    <div class="flex items-center gap-2 mt-1 flex-wrap">
-        <span class="inline-flex items-center text-xs px-3 py-1 rounded-full font-bold
-                     bg-emerald-100 text-emerald-800 border border-emerald-200">Aluno</span>
-        {% if not aluno.ativo %}
-        <span class="inline-flex items-center text-xs px-3 py-1 rounded-full font-semibold
-                     bg-red-100 text-red-700 border border-red-200">Inativo</span>
-        {% endif %}
-    </div>
-</div>
-
-<!-- GRID PRINCIPAL -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-
-    <!-- COLUNA ESQUERDA -->
-    <div class="flex flex-col gap-4">
-
-        <!-- Status -->
-        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700
-                    rounded-2xl shadow-sm p-5">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0
-                            {% if aluno.ativo %}bg-emerald-100 dark:bg-emerald-900/30{% else %}bg-red-100 dark:bg-red-900/30{% endif %}">
-                    <span class="w-2.5 h-2.5 rounded-full inline-block
-                                 {% if aluno.ativo %}bg-emerald-500{% else %}bg-red-500{% endif %}"></span>
+            <!-- Avatar + identidade -->
+            <div class="flex items-start gap-4">
+                {% if aluno.foto %}
+                <img src="{{ aluno.foto.url }}" alt="{{ aluno.nome_completo }}"
+                     class="w-16 h-16 rounded-2xl object-cover shrink-0 ring-2 ring-slate-100 dark:ring-slate-700">
+                {% else %}
+                <div class="w-16 h-16 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30
+                            flex items-center justify-center shrink-0">
+                    <span class="text-2xl font-bold text-emerald-600 dark:text-emerald-400 select-none">
+                        {{ aluno.nome_completo|first|upper }}
+                    </span>
                 </div>
+                {% endif %}
+
                 <div>
-                    <p class="text-xs text-slate-400 uppercase tracking-wide">Status</p>
-                    <p class="font-semibold {% if aluno.ativo %}text-slate-700 dark:text-slate-200{% else %}text-red-600{% endif %}">
-                        {% if aluno.ativo %}Ativo{% else %}Inativo{% endif %}
-                    </p>
+                    <div class="flex items-center gap-2.5 flex-wrap">
+                        <h1 class="text-xl font-bold text-slate-900 dark:text-white">
+                            {{ aluno.nome_completo }}
+                        </h1>
+                        {% if aluno.ativo %}
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
+                                     bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            Ativo
+                        </span>
+                        {% else %}
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
+                                     bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                            Inativo
+                        </span>
+                        {% endif %}
+                        {% if aluno.usuario_id %}
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
+                                     bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
+                            <i data-lucide="shield-check" class="w-3 h-3"></i>
+                            Com acesso
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="flex items-center gap-4 mt-1.5 text-sm text-slate-500 dark:text-slate-400 flex-wrap">
+                        <span class="flex items-center gap-1.5">
+                            <i data-lucide="hash" class="w-3.5 h-3.5"></i>
+                            {{ aluno.matricula }}
+                        </span>
+                        {% if aluno.data_nascimento %}
+                        <span class="flex items-center gap-1.5">
+                            <i data-lucide="cake" class="w-3.5 h-3.5"></i>
+                            {{ aluno.data_nascimento|date:"d/m/Y" }}
+                        </span>
+                        {% endif %}
+                        <span class="flex items-center gap-1.5">
+                            <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+                            Desde {{ aluno.criado_em|date:"d/m/Y" }}
+                        </span>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Ações -->
-        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700
-                    rounded-2xl shadow-sm p-5">
-            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Ações</p>
-            <div class="space-y-1">
-
-                {% for mat in aluno.matriculas.all %}{% if mat.ativo %}
-                <a href="{% url 'boletim:boletim_aluno' aluno.pk mat.ano_letivo_id %}"
-                   class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group
-                          text-slate-600 dark:text-slate-300
-                          hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-700 dark:hover:text-indigo-400">
-                    <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors
-                                bg-indigo-100 dark:bg-indigo-900/30
-                                group-hover:bg-indigo-200 dark:group-hover:bg-indigo-900/50">
-                        <i data-lucide="book-open-check" class="w-4 h-4 text-indigo-500"></i>
-                    </div>
-                    <span class="text-sm font-medium">Boletim</span>
-                </a>
-                <a href="{% url 'frequencia:aluno' aluno.pk mat.ano_letivo_id %}"
-                   class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group
-                          text-slate-600 dark:text-slate-300
-                          hover:bg-teal-50 dark:hover:bg-teal-900/20 hover:text-teal-700 dark:hover:text-teal-400">
-                    <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors
-                                bg-teal-100 dark:bg-teal-900/30
-                                group-hover:bg-teal-200 dark:group-hover:bg-teal-900/50">
-                        <i data-lucide="calendar-check" class="w-4 h-4 text-teal-500"></i>
-                    </div>
-                    <span class="text-sm font-medium">Frequência</span>
-                </a>
-                {% endif %}{% endfor %}
-
+            <!-- Ações primárias -->
+            {% if papel.tipo == 'DIRETOR' %}
+            <div class="flex items-center gap-2 shrink-0 flex-wrap">
                 <a href="{% url 'aluno:editar' aluno.pk %}"
-                   class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group
-                          text-slate-600 dark:text-slate-300
-                          hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-400">
-                    <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors
-                                bg-blue-100 dark:bg-blue-900/30
-                                group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50">
-                        <i data-lucide="pencil" class="w-4 h-4 text-blue-500"></i>
-                    </div>
-                    <span class="text-sm font-medium">Editar</span>
+                   class="inline-flex items-center gap-2 px-4 py-2 rounded-xl
+                          border border-slate-200 dark:border-slate-700
+                          text-sm font-medium text-slate-600 dark:text-slate-300
+                          hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                    Editar
                 </a>
-
-                {% if not aluno.usuario_id %}
-                <button type="button"
-                        onclick="document.getElementById('modal-acesso').classList.remove('hidden')"
-                        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all group
-                               text-slate-600 dark:text-slate-300
-                               hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:text-violet-700 dark:hover:text-violet-400">
-                    <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors
-                                bg-violet-100 dark:bg-violet-900/30
-                                group-hover:bg-violet-200 dark:group-hover:bg-violet-900/50">
-                        <i data-lucide="key-round" class="w-4 h-4 text-violet-500"></i>
-                    </div>
-                    <span class="text-sm font-medium">Ativar acesso</span>
-                </button>
-                {% endif %}
-
-                <button type="button"
-                        onclick="document.getElementById('modal-vincular-resp').classList.remove('hidden')"
-                        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all group
-                               text-slate-600 dark:text-slate-300
-                               hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-700 dark:hover:text-emerald-400">
-                    <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors
-                                bg-emerald-100 dark:bg-emerald-900/30
-                                group-hover:bg-emerald-200 dark:group-hover:bg-emerald-900/50">
-                        <i data-lucide="users" class="w-4 h-4 text-emerald-500"></i>
-                    </div>
-                    <span class="text-sm font-medium">Vincular responsável</span>
-                </button>
-
                 {% if aluno.ativo %}
-                <form id="form-desativar" method="post" action="{% url 'aluno:desativar' aluno.pk %}">{% csrf_token %}</form>
                 <button type="button"
-                        onclick="document.getElementById('modal-desativar').classList.remove('hidden')"
-                        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all group
-                               text-slate-600 dark:text-slate-300
-                               hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-400">
-                    <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors
-                                bg-red-100 dark:bg-red-900/30
-                                group-hover:bg-red-200 dark:group-hover:bg-red-900/50">
-                        <i data-lucide="user-x" class="w-4 h-4 text-red-500"></i>
-                    </div>
-                    <span class="text-sm font-medium">Desativar</span>
+                        data-modal-target="modal-desativar"
+                        data-modal-toggle="modal-desativar"
+                        class="inline-flex items-center gap-2 px-4 py-2 rounded-xl
+                               border border-red-200 dark:border-red-800
+                               text-sm font-medium text-red-600 dark:text-red-400
+                               hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                    <i data-lucide="user-x" class="w-4 h-4"></i>
+                    Desativar
                 </button>
                 {% else %}
                 <form method="post" action="{% url 'aluno:reativar' aluno.pk %}">
                     {% csrf_token %}
                     <button type="submit"
-                            class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all group
-                                   text-slate-600 dark:text-slate-300
-                                   hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-700 dark:hover:text-emerald-400">
-                        <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0
-                                    bg-emerald-100 dark:bg-emerald-900/30">
-                            <i data-lucide="user-check" class="w-4 h-4 text-emerald-500"></i>
-                        </div>
-                        <span class="text-sm font-medium">Reativar</span>
+                            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl
+                                   border border-emerald-200 dark:border-emerald-800
+                                   text-sm font-medium text-emerald-600 dark:text-emerald-400
+                                   hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors">
+                        <i data-lucide="user-check" class="w-4 h-4"></i>
+                        Reativar
                     </button>
                 </form>
                 {% endif %}
-
             </div>
+            {% endif %}
         </div>
 
-        <!-- Registro -->
-        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700
-                    rounded-2xl shadow-sm p-5">
-            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Registro</p>
-            <div class="space-y-1.5">
-                <p class="text-xs text-slate-500 dark:text-slate-400">
-                    Matrícula: <strong class="text-slate-700 dark:text-slate-200 font-mono">{{ aluno.matricula }}</strong>
-                </p>
-                <p class="text-xs text-slate-500 dark:text-slate-400">
-                    Cadastrado em {{ aluno.criado_em|date:"d/m/Y" }}
-                </p>
-            </div>
+        <!-- Atalhos de navegação rápida -->
+        {% for mat in aluno.matriculas.all %}{% if mat.ativo %}
+        <div class="flex items-center gap-2 mt-5 pt-5 border-t border-slate-100 dark:border-slate-700 flex-wrap">
+            <a href="{% url 'boletim:boletim_aluno' aluno.pk mat.ano_letivo_id %}"
+               class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium
+                      bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400
+                      hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors">
+                <i data-lucide="book-open-check" class="w-3.5 h-3.5"></i>
+                Boletim {{ mat.ano_letivo.ano }}
+            </a>
+            <a href="{% url 'frequencia:aluno' aluno.pk mat.ano_letivo_id %}"
+               class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium
+                      bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400
+                      hover:bg-teal-100 dark:hover:bg-teal-900/40 transition-colors">
+                <i data-lucide="calendar-check" class="w-3.5 h-3.5"></i>
+                Frequência {{ mat.ano_letivo.ano }}
+            </a>
         </div>
-
+        {% endif %}{% endfor %}
     </div>
 
-    <!-- COLUNA DIREITA (2/3) -->
-    <div class="lg:col-span-2 flex flex-col gap-5">
+    <!-- Grid: Dados pessoais + Responsáveis -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
-        <!-- Dados Pessoais -->
-        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
-            <div class="flex items-center gap-2 p-5 md:p-6">
-                <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                    <i data-lucide="user" class="w-4 h-4 text-emerald-500"></i>
-                </div>
-                <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">Dados Pessoais</h2>
+        <!-- Dados pessoais -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700">
+                <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200">Dados Pessoais</h2>
+                {% if papel.tipo == 'DIRETOR' and not aluno.usuario_id %}
+                <button type="button"
+                        data-modal-target="modal-acesso"
+                        data-modal-toggle="modal-acesso"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium
+                               bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400
+                               hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-colors">
+                    <i data-lucide="key-round" class="w-3.5 h-3.5"></i>
+                    Ativar acesso
+                </button>
+                {% endif %}
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 px-5 pb-6">
-
-                <div class="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl">
-                    <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
-                        <i data-lucide="hash" class="w-4 h-4 text-emerald-500"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <p class="text-xs text-slate-400 uppercase tracking-wide mb-0.5">Matrícula</p>
-                        <p class="text-sm font-semibold text-slate-700 dark:text-slate-200 font-mono">{{ aluno.matricula }}</p>
-                    </div>
+            <dl class="divide-y divide-slate-100 dark:divide-slate-700">
+                <div class="flex items-center px-6 py-3">
+                    <dt class="w-32 text-xs text-slate-500 dark:text-slate-400 shrink-0">Matrícula</dt>
+                    <dd class="text-sm font-mono font-medium text-slate-800 dark:text-slate-100">{{ aluno.matricula }}</dd>
                 </div>
-
-                <div class="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl">
-                    <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
-                        <i data-lucide="cake" class="w-4 h-4 text-emerald-500"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <p class="text-xs text-slate-400 uppercase tracking-wide mb-0.5">Nascimento</p>
-                        <p class="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                            {{ aluno.data_nascimento|date:"d/m/Y"|default:"Não informado" }}
-                        </p>
-                    </div>
+                <div class="flex items-center px-6 py-3">
+                    <dt class="w-32 text-xs text-slate-500 dark:text-slate-400 shrink-0">Nascimento</dt>
+                    <dd class="text-sm text-slate-800 dark:text-slate-100">
+                        {{ aluno.data_nascimento|date:"d/m/Y"|default:"—" }}
+                    </dd>
                 </div>
-
-                <div class="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl">
-                    <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
-                        <i data-lucide="credit-card" class="w-4 h-4 text-emerald-500"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <p class="text-xs text-slate-400 uppercase tracking-wide mb-0.5">CPF</p>
-                        <p class="text-sm font-semibold text-slate-700 dark:text-slate-200 font-mono">
-                            {{ aluno.cpf|default:"Não informado" }}
-                        </p>
-                    </div>
+                <div class="flex items-center px-6 py-3">
+                    <dt class="w-32 text-xs text-slate-500 dark:text-slate-400 shrink-0">CPF</dt>
+                    <dd class="text-sm font-mono text-slate-800 dark:text-slate-100">{{ aluno.cpf|default:"—" }}</dd>
                 </div>
-
-                <div class="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl">
-                    <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
-                        <i data-lucide="id-card" class="w-4 h-4 text-emerald-500"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <p class="text-xs text-slate-400 uppercase tracking-wide mb-0.5">RG</p>
-                        <p class="text-sm font-semibold text-slate-700 dark:text-slate-200 font-mono">
-                            {{ aluno.rg|default:"Não informado" }}
-                        </p>
-                    </div>
+                <div class="flex items-center px-6 py-3">
+                    <dt class="w-32 text-xs text-slate-500 dark:text-slate-400 shrink-0">RG</dt>
+                    <dd class="text-sm font-mono text-slate-800 dark:text-slate-100">{{ aluno.rg|default:"—" }}</dd>
                 </div>
-
                 {% if aluno.usuario_id %}
-                <div class="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl sm:col-span-2">
-                    <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
-                        <i data-lucide="mail" class="w-4 h-4 text-blue-500"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <p class="text-xs text-slate-400 uppercase tracking-wide mb-0.5">E-mail (acesso)</p>
-                        <p class="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate">
-                            {{ aluno.usuario.email }}
-                        </p>
-                    </div>
+                <div class="flex items-center px-6 py-3">
+                    <dt class="w-32 text-xs text-slate-500 dark:text-slate-400 shrink-0">E-mail</dt>
+                    <dd class="text-sm text-slate-800 dark:text-slate-100 truncate">{{ aluno.usuario.email }}</dd>
                 </div>
                 {% endif %}
-
-            </div>
-        </div>
-
-        <!-- Histórico de Matrículas -->
-        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
-            <div class="flex items-center gap-2 p-5 md:p-6">
-                <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                    <i data-lucide="book-open" class="w-4 h-4 text-blue-500"></i>
-                </div>
-                <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">Histórico de Matrículas</h2>
-            </div>
-
-            {% if aluno.matriculas.all %}
-            <div class="divide-y divide-slate-100 dark:divide-slate-700 px-5">
-                {% for mat in aluno.matriculas.all %}
-                <div class="flex items-center justify-between py-3 {% if not mat.ativo %}opacity-60{% endif %}">
-                    <div>
-                        <p class="text-sm font-medium text-slate-800 dark:text-slate-100">{{ mat.turma.nome }}</p>
-                        <p class="text-xs text-slate-400 dark:text-slate-500">
-                            {{ mat.ano_letivo.ano }} · Desde {{ mat.data_matricula|date:"d/m/Y" }}
-                        </p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        {% if mat.situacao == 'MATRICULADO' %}
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600">Matriculado</span>
-                        {% elif mat.situacao == 'TRANSFERIDO' %}
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-600">Transferido</span>
-                        {% elif mat.situacao == 'EVADIDO' %}
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-red-100 dark:bg-red-900/30 text-red-500">Evadido</span>
-                        {% elif mat.situacao == 'CONCLUINTE' %}
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-500">Concluinte</span>
-                        {% endif %}
-                        {% if mat.ativo %}
-                        <div class="flex items-center gap-1">
-                            <button onclick="document.getElementById('modal-troca-{{ mat.pk }}').classList.remove('hidden')"
-                                    class="p-1 text-slate-300 hover:text-[#0d6efd] rounded transition-colors" title="Trocar turma">
-                                <i data-lucide="arrow-left-right" class="w-3.5 h-3.5"></i>
-                            </button>
-                            <form method="post" action="{% url 'aluno:concluir' mat.pk %}">
-                                {% csrf_token %}
-                                <button type="submit" title="Marcar como concluinte"
-                                        class="p-1 text-slate-300 hover:text-blue-500 rounded transition-colors">
-                                    <i data-lucide="graduation-cap" class="w-3.5 h-3.5"></i>
-                                </button>
-                            </form>
-                            <form method="post" action="{% url 'aluno:transferir' mat.pk %}">
-                                {% csrf_token %}
-                                <button type="submit" title="Registrar transferência"
-                                        class="p-1 text-slate-300 hover:text-amber-500 rounded transition-colors">
-                                    <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
-                                </button>
-                            </form>
-                            <form method="post" action="{% url 'aluno:evadir' mat.pk %}">
-                                {% csrf_token %}
-                                <button type="submit" title="Registrar evasão"
-                                        class="p-1 text-slate-300 hover:text-red-500 rounded transition-colors">
-                                    <i data-lucide="user-minus" class="w-3.5 h-3.5"></i>
-                                </button>
-                            </form>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            {% else %}
-            <p class="text-sm text-slate-400 dark:text-slate-500 px-5 pb-5">Nenhuma matrícula registrada.</p>
-            {% endif %}
-
-            <div class="px-5 pb-5 pt-3 border-t border-slate-100 dark:border-slate-700">
-                <details class="group">
-                    <summary class="text-xs font-medium text-[#0d6efd] cursor-pointer hover:underline list-none flex items-center gap-1">
-                        <i data-lucide="plus" class="w-3 h-3"></i>
-                        Adicionar matrícula
-                    </summary>
-                    <div class="mt-3">
-                        <form method="post" action="{% url 'aluno:matricular' aluno.pk %}" class="flex flex-wrap items-end gap-3">
-                            {% csrf_token %}
-                            <div>
-                                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{{ mat_form.ano_letivo.label }}</label>
-                                {{ mat_form.ano_letivo }}
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{{ mat_form.turma.label }}</label>
-                                {{ mat_form.turma }}
-                            </div>
-                            <button type="submit"
-                                    class="px-4 py-2 text-xs font-medium text-white bg-[#0d6efd] rounded-lg hover:bg-[#0b5ed7] transition-colors">
-                                Matricular
-                            </button>
-                        </form>
-                    </div>
-                </details>
-            </div>
+            </dl>
         </div>
 
         <!-- Responsáveis -->
-        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
-            <div class="flex items-center gap-2 p-5 md:p-6">
-                <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                    <i data-lucide="users" class="w-4 h-4 text-emerald-500"></i>
-                </div>
-                <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">Responsáveis</h2>
+        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700">
+                <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                    Responsáveis
+                </h2>
+                {% if papel.tipo == 'DIRETOR' %}
+                <button type="button"
+                        data-modal-target="modal-vincular-resp"
+                        data-modal-toggle="modal-vincular-resp"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium
+                               bg-[#0d6efd]/10 text-[#0d6efd]
+                               hover:bg-[#0d6efd]/20 transition-colors">
+                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                    Vincular
+                </button>
+                {% endif %}
             </div>
 
-            {% with vinculos_ativos=aluno.responsaveis.all %}
             {% if vinculos_ativos %}
-            <div class="divide-y divide-slate-100 dark:divide-slate-700 px-5">
+            <ul class="divide-y divide-slate-100 dark:divide-slate-700">
                 {% for vinculo in vinculos_ativos %}
-                {% if vinculo.ativo %}
-                <div class="flex items-center justify-between py-3">
+                <li class="flex items-center justify-between px-6 py-3">
                     <div class="flex items-center gap-3">
                         {% if vinculo.responsavel.foto %}
                         <img src="{{ vinculo.responsavel.foto.url }}" alt="{{ vinculo.responsavel.nome }}"
-                             class="w-9 h-9 rounded-xl object-cover">
+                             class="w-8 h-8 rounded-full object-cover shrink-0">
                         {% else %}
-                        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600
-                                    flex items-center justify-center text-white text-sm font-bold">
-                            {{ vinculo.responsavel.nome|first|upper }}
+                        <div class="w-8 h-8 rounded-full bg-violet-100 dark:bg-violet-900/30
+                                    flex items-center justify-center shrink-0">
+                            <span class="text-xs font-bold text-violet-600 dark:text-violet-400">
+                                {{ vinculo.responsavel.nome|first|upper }}
+                            </span>
                         </div>
                         {% endif %}
                         <div>
                             <a href="{% url 'responsavel:detalhe' vinculo.responsavel.pk %}"
-                               class="text-sm font-medium text-slate-800 dark:text-slate-100 hover:text-[#0d6efd] transition-colors">
+                               class="text-sm font-medium text-slate-800 dark:text-slate-100
+                                      hover:text-[#0d6efd] transition-colors">
                                 {{ vinculo.responsavel.nome }}
                             </a>
-                            <div class="flex items-center gap-2 mt-0.5">
-                                <span class="text-xs text-slate-400">{{ vinculo.get_parentesco_display }}</span>
-                                {% if vinculo.responsavel_principal %}
-                                <span class="text-[10px] px-1.5 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-full">Principal</span>
-                                {% endif %}
-                                {% if vinculo.responsavel_financeiro %}
-                                <span class="text-[10px] px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full">Financeiro</span>
-                                {% endif %}
-                            </div>
+                            <p class="text-xs text-slate-400 mt-0.5">{{ vinculo.get_parentesco_display }}</p>
                         </div>
                     </div>
-                    <form method="post" action="{% url 'responsavel:desvincular_aluno' vinculo.responsavel.pk vinculo.pk %}">
-                        {% csrf_token %}
-                        <button type="submit" title="Desvincular"
-                                class="p-1.5 text-slate-300 hover:text-red-500 rounded-lg transition-colors">
-                            <i data-lucide="x" class="w-3.5 h-3.5"></i>
-                        </button>
-                    </form>
-                </div>
-                {% endif %}
+                    {% if papel.tipo == 'DIRETOR' %}
+                    <button type="button" title="Desvincular"
+                            onclick="prepararModalDesvincularResp('{{ vinculo.responsavel.nome|escapejs }}', '{% url 'responsavel:desvincular_aluno' vinculo.responsavel.pk vinculo.pk %}')"
+                            class="p-1.5 text-red-400 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 rounded-lg transition-colors">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                    {% endif %}
+                </li>
                 {% endfor %}
-            </div>
+            </ul>
             {% else %}
-            <p class="text-sm text-slate-400 dark:text-slate-500 px-5 pb-4">Nenhum responsável vinculado.</p>
-            {% endif %}
-            {% endwith %}
-
-            <div class="px-5 pb-4 pt-3 border-t border-slate-100 dark:border-slate-700">
-                <p class="text-xs text-slate-400 dark:text-slate-500">
-                    Use <span class="font-medium text-slate-500 dark:text-slate-400">Vincular responsável</span> no painel de Ações para adicionar.
-                </p>
+            <div class="px-6 py-8 text-center">
+                <i data-lucide="users" class="w-8 h-8 text-slate-200 dark:text-slate-600 mx-auto mb-2"></i>
+                <p class="text-sm text-slate-400">Nenhum responsável vinculado.</p>
             </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Histórico de Matrículas -->
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700">
+            <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                Histórico de Matrículas
+                <span class="ml-1.5 text-xs font-normal text-slate-400">({{ aluno.matriculas.count }})</span>
+            </h2>
+            {% if papel.tipo == 'DIRETOR' %}
+            <button type="button"
+                    data-modal-target="modal-matricular"
+                    data-modal-toggle="modal-matricular"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium
+                           bg-[#0d6efd] hover:bg-[#0b5ed7] text-white transition-colors">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                Adicionar matrícula
+            </button>
+            {% endif %}
         </div>
 
+        {% if aluno.matriculas.all %}
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60">
+                    <th class="text-left px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Turma</th>
+                    <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide hidden sm:table-cell">Ano</th>
+                    <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide hidden md:table-cell">Desde</th>
+                    <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Situação</th>
+                    {% if papel.tipo == 'DIRETOR' %}
+                    <th class="text-right px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Ações</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+                {% for mat in aluno.matriculas.all %}
+                <tr class="{% if not mat.ativo %}opacity-50{% endif %}
+                           hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
+                    <td class="px-6 py-3">
+                        <p class="font-medium text-slate-800 dark:text-slate-100">{{ mat.turma.nome }}</p>
+                        <p class="text-xs text-slate-400">{{ mat.turma.serie.nome }}</p>
+                    </td>
+                    <td class="px-4 py-3 text-slate-500 dark:text-slate-400 hidden sm:table-cell">
+                        {{ mat.ano_letivo.ano }}
+                    </td>
+                    <td class="px-4 py-3 text-slate-400 text-xs hidden md:table-cell">
+                        {{ mat.data_matricula|date:"d/m/Y" }}
+                    </td>
+                    <td class="px-4 py-3">
+                        {% if mat.situacao == 'MATRICULADO' %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium
+                                     bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
+                            Matriculado
+                        </span>
+                        {% elif mat.situacao == 'TRANSFERIDO' %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium
+                                     bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
+                            Transferido
+                        </span>
+                        {% elif mat.situacao == 'EVADIDO' %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium
+                                     bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
+                            Evadido
+                        </span>
+                        {% elif mat.situacao == 'CONCLUINTE' %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium
+                                     bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
+                            Concluinte
+                        </span>
+                        {% endif %}
+                    </td>
+                    {% if papel.tipo == 'DIRETOR' %}
+                    <td class="px-6 py-3 text-right">
+                        {% if mat.ativo %}
+                        <div class="flex items-center justify-end gap-1">
+                            <button type="button"
+                                    data-modal-target="modal-troca-{{ mat.pk }}"
+                                    data-modal-toggle="modal-troca-{{ mat.pk }}"
+                                    class="p-1.5 rounded-lg text-slate-400 hover:text-[#0d6efd]
+                                           hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                    title="Trocar turma">
+                                <i data-lucide="arrow-left-right" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <button type="button"
+                                    data-modal-target="modal-concluir-{{ mat.pk }}"
+                                    data-modal-toggle="modal-concluir-{{ mat.pk }}"
+                                    class="p-1.5 rounded-lg text-slate-400 hover:text-blue-500
+                                           hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                    title="Marcar como concluinte">
+                                <i data-lucide="graduation-cap" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <button type="button"
+                                    data-modal-target="modal-transferir-{{ mat.pk }}"
+                                    data-modal-toggle="modal-transferir-{{ mat.pk }}"
+                                    class="p-1.5 rounded-lg text-slate-400 hover:text-amber-500
+                                           hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                    title="Registrar transferência">
+                                <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <button type="button"
+                                    data-modal-target="modal-evadir-{{ mat.pk }}"
+                                    data-modal-toggle="modal-evadir-{{ mat.pk }}"
+                                    class="p-1.5 rounded-lg text-slate-400 hover:text-red-500
+                                           hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                    title="Registrar evasão">
+                                <i data-lucide="user-minus" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                        {% endif %}
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="flex flex-col items-center justify-center py-12 text-center px-6">
+            <div class="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center mb-4">
+                <i data-lucide="book-open" class="w-6 h-6 text-slate-400 dark:text-slate-500"></i>
+            </div>
+            <p class="text-sm font-medium text-slate-700 dark:text-slate-300">Nenhuma matrícula registrada</p>
+            {% if papel.tipo == 'DIRETOR' %}
+            <button type="button"
+                    data-modal-target="modal-matricular"
+                    data-modal-toggle="modal-matricular"
+                    class="inline-flex items-center gap-1.5 mt-4 px-4 py-2 rounded-xl
+                           bg-[#0d6efd] hover:bg-[#0b5ed7] text-white text-sm font-medium transition-colors">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                Adicionar matrícula
+            </button>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
+
 </div>
 
-<!-- Modals troca de turma -->
-{% for mat in aluno.matriculas.all %}{% if mat.ativo %}
-<div id="modal-troca-{{ mat.pk }}" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4">
-        <h4 class="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-4">Trocar turma</h4>
-        <form method="post" action="{% url 'aluno:trocar_turma' mat.pk %}">
-            {% csrf_token %}
-            <div class="mb-4">
-                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Nova turma</label>
-                {{ troca_form.nova_turma }}
-            </div>
-            <div class="flex gap-2 justify-end">
-                <button type="button"
-                        onclick="document.getElementById('modal-troca-{{ mat.pk }}').classList.add('hidden')"
-                        class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors">
-                    Cancelar
-                </button>
-                <button type="submit"
-                        class="px-3 py-1.5 text-xs font-medium text-white bg-[#0d6efd] rounded-lg hover:bg-[#0b5ed7] transition-colors">
-                    Confirmar
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-{% endif %}{% endfor %}
+<!-- ═══════════════════════════════════════════
+     MODAIS
+════════════════════════════════════════════ -->
 
-<!-- Modal ativar acesso -->
-{% if not aluno.usuario_id %}
-<div id="modal-acesso" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4">
-        <h4 class="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-1">Ativar acesso ao sistema</h4>
-        <p class="text-xs text-slate-400 dark:text-slate-500 mb-4">Cria login com e-mail e senha para o aluno.</p>
-        <form method="post" action="{% url 'aluno:ativar_acesso' aluno.pk %}">
-            {% csrf_token %}
-            <div class="space-y-3 mb-4">
-                <div>
-                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{{ acesso_form.email.label }}</label>
-                    {{ acesso_form.email }}
-                    {% if acesso_form.email.errors %}<p class="mt-1 text-xs text-red-500">{{ acesso_form.email.errors.0 }}</p>{% endif %}
+<!-- Modal: Desativar aluno -->
+{% if aluno.ativo and papel.tipo == 'DIRETOR' %}
+<form id="form-desativar" method="post" action="{% url 'aluno:desativar' aluno.pk %}">{% csrf_token %}</form>
+<div id="modal-desativar" tabindex="-1" aria-hidden="true"
+     class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-[100]
+            justify-center items-center w-full md:inset-0 h-full max-h-full">
+    <div class="relative w-full max-w-sm p-4">
+        <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl">
+            <button type="button" data-modal-hide="modal-desativar"
+                    class="absolute top-3 right-3 p-1.5 rounded-lg text-slate-400
+                           hover:text-slate-600 hover:bg-slate-100
+                           dark:hover:bg-slate-700 dark:hover:text-slate-300 transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+            <div class="px-6 pt-8 pb-6 text-center">
+                <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30
+                            flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="user-x" class="w-6 h-6 text-red-500"></i>
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{{ acesso_form.senha.label }}</label>
-                    {{ acesso_form.senha }}
-                    {% if acesso_form.senha.errors %}<p class="mt-1 text-xs text-red-500">{{ acesso_form.senha.errors.0 }}</p>{% endif %}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{{ acesso_form.confirmar_senha.label }}</label>
-                    {{ acesso_form.confirmar_senha }}
-                    {% if acesso_form.confirmar_senha.errors %}<p class="mt-1 text-xs text-red-500">{{ acesso_form.confirmar_senha.errors.0 }}</p>{% endif %}
-                </div>
+                <h3 class="text-base font-semibold text-slate-900 dark:text-white">Desativar aluno?</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    <strong>{{ aluno.nome_completo }}</strong> perderá o acesso ao sistema e será marcado como inativo.
+                </p>
             </div>
-            <div class="flex gap-2 justify-end">
-                <button type="button"
-                        onclick="document.getElementById('modal-acesso').classList.add('hidden')"
-                        class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors">
+            <div class="flex border-t border-slate-100 dark:border-slate-700">
+                <button type="button" data-modal-hide="modal-desativar"
+                        class="flex-1 px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-300
+                               hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
                     Cancelar
                 </button>
-                <button type="submit"
-                        class="px-3 py-1.5 text-xs font-medium text-white bg-violet-600 rounded-lg hover:bg-violet-700 transition-colors">
-                    Ativar
+                <div class="w-px bg-slate-100 dark:bg-slate-700"></div>
+                <button type="submit" form="form-desativar"
+                        class="flex-1 px-4 py-3 text-sm font-semibold text-red-600 dark:text-red-400
+                               hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                    Desativar
                 </button>
             </div>
-        </form>
+        </div>
     </div>
 </div>
 {% endif %}
 
-<!-- Modal vincular responsável -->
-<div id="modal-vincular-resp" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4">
-        <h4 class="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-4">Vincular responsável</h4>
-        <form method="post" action="{% url 'aluno:vincular_responsavel' aluno.pk %}">
-            {% csrf_token %}
-            <div class="space-y-3 mb-4">
-                <div>
-                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{{ vincular_resp_form.responsavel.label }}</label>
-                    {{ vincular_resp_form.responsavel }}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{{ vincular_resp_form.parentesco.label }}</label>
-                    {{ vincular_resp_form.parentesco }}
-                </div>
-                <div class="flex items-center gap-5">
-                    <label class="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300 cursor-pointer">
-                        {{ vincular_resp_form.responsavel_principal }}
-                        {{ vincular_resp_form.responsavel_principal.label }}
-                    </label>
-                    <label class="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300 cursor-pointer">
-                        {{ vincular_resp_form.responsavel_financeiro }}
-                        {{ vincular_resp_form.responsavel_financeiro.label }}
-                    </label>
-                </div>
-            </div>
-            <div class="flex gap-2 justify-end">
-                <button type="button"
-                        onclick="document.getElementById('modal-vincular-resp').classList.add('hidden')"
-                        class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors">
-                    Cancelar
-                </button>
-                <button type="submit"
-                        class="px-3 py-1.5 text-xs font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors">
-                    Vincular
+<!-- Modal: Ativar acesso -->
+{% if not aluno.usuario_id and papel.tipo == 'DIRETOR' %}
+<div id="modal-acesso" tabindex="-1" aria-hidden="true"
+     class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-[100]
+            justify-center items-center w-full md:inset-0 h-full max-h-full">
+    <div class="relative w-full max-w-md p-4">
+        <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700">
+                <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Ativar acesso ao sistema</h3>
+                <button type="button" data-modal-hide="modal-acesso"
+                        class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100
+                               dark:hover:bg-slate-700 dark:hover:text-slate-300 transition-colors">
+                    <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
-        </form>
-    </div>
-</div>
-
-<!-- Modal desativar -->
-{% if aluno.ativo %}
-<div id="modal-desativar" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4">
-        <h4 class="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-2">Desativar aluno</h4>
-        <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">
-            Tem certeza que deseja desativar <strong>{{ aluno.nome_completo }}</strong>?
-        </p>
-        <div class="flex gap-2 justify-end">
-            <button type="button"
-                    onclick="document.getElementById('modal-desativar').classList.add('hidden')"
-                    class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors">
-                Cancelar
-            </button>
-            <button type="submit" form="form-desativar"
-                    class="px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors">
-                Desativar
-            </button>
+            <form method="post" action="{% url 'aluno:ativar_acesso' aluno.pk %}">
+                {% csrf_token %}
+                <div class="px-6 py-5 space-y-4">
+                    <p class="text-xs text-slate-500 dark:text-slate-400">
+                        Cria credenciais de acesso para o aluno entrar no portal.
+                    </p>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                            {{ acesso_form.email.label }}
+                        </label>
+                        {{ acesso_form.email }}
+                        {% if acesso_form.email.errors %}
+                        <p class="mt-1 text-xs text-red-500">{{ acesso_form.email.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                            {{ acesso_form.senha.label }}
+                        </label>
+                        {{ acesso_form.senha }}
+                        {% if acesso_form.senha.errors %}
+                        <p class="mt-1 text-xs text-red-500">{{ acesso_form.senha.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                            {{ acesso_form.confirmar_senha.label }}
+                        </label>
+                        {{ acesso_form.confirmar_senha }}
+                        {% if acesso_form.confirmar_senha.errors %}
+                        <p class="mt-1 text-xs text-red-500">{{ acesso_form.confirmar_senha.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="flex border-t border-slate-100 dark:border-slate-700">
+                    <button type="button" data-modal-hide="modal-acesso"
+                            class="flex-1 px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-300
+                                   hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                        Cancelar
+                    </button>
+                    <div class="w-px bg-slate-100 dark:bg-slate-700"></div>
+                    <button type="submit"
+                            class="flex-1 px-4 py-3 text-sm font-semibold text-violet-600 dark:text-violet-400
+                                   hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-colors">
+                        Ativar
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+{% endif %}
+
+<!-- Modal: Vincular responsável -->
+{% if papel.tipo == 'DIRETOR' %}
+<div id="modal-vincular-resp" tabindex="-1" aria-hidden="true"
+     class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-[100]
+            justify-center items-center w-full md:inset-0 h-full max-h-full">
+    <div class="relative w-full max-w-md p-4">
+        <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700">
+                <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Vincular responsável</h3>
+                <button type="button" data-modal-hide="modal-vincular-resp"
+                        class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100
+                               dark:hover:bg-slate-700 dark:hover:text-slate-300 transition-colors">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <form method="post" action="{% url 'aluno:vincular_responsavel' aluno.pk %}">
+                {% csrf_token %}
+                <div class="px-6 py-5 space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                            {{ vincular_resp_form.responsavel.label }}
+                        </label>
+                        <div class="relative" id="modal-resp-autocomplete">
+                            <input type="hidden" id="modal-resp-id" name="responsavel" value="">
+                            <input type="text" id="modal-resp-search" autocomplete="off"
+                                   placeholder="Buscar por nome ou e-mail…"
+                                   class="w-full px-3 py-2 pr-9 text-sm
+                                          bg-white dark:bg-slate-800
+                                          border border-slate-200 dark:border-slate-700 rounded-lg
+                                          text-slate-900 dark:text-slate-100
+                                          focus:outline-none focus:ring-2 focus:ring-[#0d6efd]/30 focus:border-[#0d6efd]">
+                            <button type="button" id="modal-resp-clear" title="Limpar"
+                                    class="hidden absolute inset-y-0 right-0 px-3
+                                           text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <div id="modal-resp-dropdown"
+                                 class="hidden absolute z-[200] w-full mt-1
+                                        bg-white dark:bg-slate-800
+                                        border border-slate-200 dark:border-slate-700
+                                        rounded-xl shadow-lg max-h-52 overflow-y-auto">
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                            {{ vincular_resp_form.parentesco.label }}
+                        </label>
+                        {{ vincular_resp_form.parentesco }}
+                    </div>
+                </div>
+                <div class="flex border-t border-slate-100 dark:border-slate-700">
+                    <button type="button" data-modal-hide="modal-vincular-resp"
+                            class="flex-1 px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-300
+                                   hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                        Cancelar
+                    </button>
+                    <div class="w-px bg-slate-100 dark:bg-slate-700"></div>
+                    <button type="submit"
+                            class="flex-1 px-4 py-3 text-sm font-semibold text-emerald-600 dark:text-emerald-400
+                                   hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors">
+                        Vincular
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Adicionar matrícula -->
+<div id="modal-matricular" tabindex="-1" aria-hidden="true"
+     class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-[100]
+            justify-center items-center w-full md:inset-0 h-full max-h-full">
+    <div class="relative w-full max-w-md p-4">
+        <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700">
+                <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Adicionar matrícula</h3>
+                <button type="button" data-modal-hide="modal-matricular"
+                        class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100
+                               dark:hover:bg-slate-700 dark:hover:text-slate-300 transition-colors">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <form method="post" action="{% url 'aluno:matricular' aluno.pk %}">
+                {% csrf_token %}
+                <div class="px-6 py-5 space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                            {{ mat_form.ano_letivo.label }}
+                        </label>
+                        {{ mat_form.ano_letivo }}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                            {{ mat_form.turma.label }}
+                        </label>
+                        {{ mat_form.turma }}
+                    </div>
+                </div>
+                <div class="flex border-t border-slate-100 dark:border-slate-700">
+                    <button type="button" data-modal-hide="modal-matricular"
+                            class="flex-1 px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-300
+                                   hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                        Cancelar
+                    </button>
+                    <div class="w-px bg-slate-100 dark:bg-slate-700"></div>
+                    <button type="submit"
+                            class="flex-1 px-4 py-3 text-sm font-semibold text-[#0d6efd]
+                                   hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+                        Matricular
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modais por matrícula: trocar turma, concluir, transferir, evadir -->
+{% for mat in aluno.matriculas.all %}{% if mat.ativo %}
+
+<!-- Trocar turma -->
+<div id="modal-troca-{{ mat.pk }}" tabindex="-1" aria-hidden="true"
+     class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-[100]
+            justify-center items-center w-full md:inset-0 h-full max-h-full">
+    <div class="relative w-full max-w-sm p-4">
+        <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700">
+                <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Trocar turma</h3>
+                <button type="button" data-modal-hide="modal-troca-{{ mat.pk }}"
+                        class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100
+                               dark:hover:bg-slate-700 dark:hover:text-slate-300 transition-colors">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <form method="post" action="{% url 'aluno:trocar_turma' mat.pk %}">
+                {% csrf_token %}
+                <div class="px-6 py-5">
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">Nova turma</label>
+                    {{ troca_form.nova_turma }}
+                </div>
+                <div class="flex border-t border-slate-100 dark:border-slate-700">
+                    <button type="button" data-modal-hide="modal-troca-{{ mat.pk }}"
+                            class="flex-1 px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-300
+                                   hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                        Cancelar
+                    </button>
+                    <div class="w-px bg-slate-100 dark:bg-slate-700"></div>
+                    <button type="submit"
+                            class="flex-1 px-4 py-3 text-sm font-semibold text-[#0d6efd]
+                                   hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+                        Confirmar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Concluinte -->
+<div id="modal-concluir-{{ mat.pk }}" tabindex="-1" aria-hidden="true"
+     class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-[100]
+            justify-center items-center w-full md:inset-0 h-full max-h-full">
+    <div class="relative w-full max-w-sm p-4">
+        <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl">
+            <button type="button" data-modal-hide="modal-concluir-{{ mat.pk }}"
+                    class="absolute top-3 right-3 p-1.5 rounded-lg text-slate-400
+                           hover:text-slate-600 hover:bg-slate-100
+                           dark:hover:bg-slate-700 dark:hover:text-slate-300 transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+            <div class="px-6 pt-8 pb-6 text-center">
+                <div class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30
+                            flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="graduation-cap" class="w-6 h-6 text-blue-500"></i>
+                </div>
+                <h3 class="text-base font-semibold text-slate-900 dark:text-white">Marcar como concluinte?</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    A matrícula em <strong>{{ mat.turma.nome }}</strong> ({{ mat.ano_letivo.ano }}) será marcada como concluída.
+                </p>
+            </div>
+            <div class="flex border-t border-slate-100 dark:border-slate-700">
+                <button type="button" data-modal-hide="modal-concluir-{{ mat.pk }}"
+                        class="flex-1 px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-300
+                               hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                    Cancelar
+                </button>
+                <div class="w-px bg-slate-100 dark:bg-slate-700"></div>
+                <form method="post" action="{% url 'aluno:concluir' mat.pk %}" class="flex-1">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="w-full px-4 py-3 text-sm font-semibold text-blue-600 dark:text-blue-400
+                                   hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+                        Confirmar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Transferência -->
+<div id="modal-transferir-{{ mat.pk }}" tabindex="-1" aria-hidden="true"
+     class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-[100]
+            justify-center items-center w-full md:inset-0 h-full max-h-full">
+    <div class="relative w-full max-w-sm p-4">
+        <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl">
+            <button type="button" data-modal-hide="modal-transferir-{{ mat.pk }}"
+                    class="absolute top-3 right-3 p-1.5 rounded-lg text-slate-400
+                           hover:text-slate-600 hover:bg-slate-100
+                           dark:hover:bg-slate-700 dark:hover:text-slate-300 transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+            <div class="px-6 pt-8 pb-6 text-center">
+                <div class="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/30
+                            flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="log-out" class="w-6 h-6 text-amber-500"></i>
+                </div>
+                <h3 class="text-base font-semibold text-slate-900 dark:text-white">Registrar transferência?</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    A matrícula em <strong>{{ mat.turma.nome }}</strong> ({{ mat.ano_letivo.ano }}) será encerrada por transferência.
+                </p>
+            </div>
+            <div class="flex border-t border-slate-100 dark:border-slate-700">
+                <button type="button" data-modal-hide="modal-transferir-{{ mat.pk }}"
+                        class="flex-1 px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-300
+                               hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                    Cancelar
+                </button>
+                <div class="w-px bg-slate-100 dark:bg-slate-700"></div>
+                <form method="post" action="{% url 'aluno:transferir' mat.pk %}" class="flex-1">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="w-full px-4 py-3 text-sm font-semibold text-amber-600 dark:text-amber-400
+                                   hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors">
+                        Confirmar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Evasão -->
+<div id="modal-evadir-{{ mat.pk }}" tabindex="-1" aria-hidden="true"
+     class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-[100]
+            justify-center items-center w-full md:inset-0 h-full max-h-full">
+    <div class="relative w-full max-w-sm p-4">
+        <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl">
+            <button type="button" data-modal-hide="modal-evadir-{{ mat.pk }}"
+                    class="absolute top-3 right-3 p-1.5 rounded-lg text-slate-400
+                           hover:text-slate-600 hover:bg-slate-100
+                           dark:hover:bg-slate-700 dark:hover:text-slate-300 transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+            <div class="px-6 pt-8 pb-6 text-center">
+                <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30
+                            flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="user-minus" class="w-6 h-6 text-red-500"></i>
+                </div>
+                <h3 class="text-base font-semibold text-slate-900 dark:text-white">Registrar evasão?</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    A matrícula em <strong>{{ mat.turma.nome }}</strong> ({{ mat.ano_letivo.ano }}) será encerrada por evasão.
+                </p>
+            </div>
+            <div class="flex border-t border-slate-100 dark:border-slate-700">
+                <button type="button" data-modal-hide="modal-evadir-{{ mat.pk }}"
+                        class="flex-1 px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-300
+                               hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                    Cancelar
+                </button>
+                <div class="w-px bg-slate-100 dark:bg-slate-700"></div>
+                <form method="post" action="{% url 'aluno:evadir' mat.pk %}" class="flex-1">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="w-full px-4 py-3 text-sm font-semibold text-red-600 dark:text-red-400
+                                   hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                        Confirmar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endif %}{% endfor %}
+
+<!-- Modal: Desvincular responsável -->
+<div id="modal-desvincular-resp" tabindex="-1" aria-hidden="true"
+     class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-[100]
+            justify-center items-center w-full md:inset-0 h-full max-h-full">
+    <div class="relative w-full max-w-sm p-4">
+        <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl">
+            <button type="button" data-modal-hide="modal-desvincular-resp"
+                    class="absolute top-3 right-3 p-1.5 rounded-lg text-slate-400
+                           hover:text-slate-600 hover:bg-slate-100
+                           dark:hover:bg-slate-700 dark:hover:text-slate-300 transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+            <div class="px-6 pt-8 pb-6 text-center">
+                <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30
+                            flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="trash-2" class="w-6 h-6 text-red-500"></i>
+                </div>
+                <h3 class="text-base font-semibold text-slate-900 dark:text-white">Desvincular responsável?</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    <strong id="modal-resp-nome"></strong> será desvinculado(a) de
+                    <strong>{{ aluno.nome_completo }}</strong>.
+                </p>
+            </div>
+            <div class="flex border-t border-slate-100 dark:border-slate-700">
+                <button type="button" data-modal-hide="modal-desvincular-resp"
+                        class="flex-1 px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-300
+                               hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                    Cancelar
+                </button>
+                <div class="w-px bg-slate-100 dark:bg-slate-700"></div>
+                <form id="form-desvincular-resp" method="post" action="" class="flex-1">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'aluno:detalhe' aluno.pk %}">
+                    <button type="submit"
+                            class="w-full px-4 py-3 text-sm font-semibold text-red-600 dark:text-red-400
+                                   hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                        Desvincular
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<button id="btn-abrir-desvincular-resp" type="button"
+        data-modal-target="modal-desvincular-resp"
+        data-modal-toggle="modal-desvincular-resp"
+        class="hidden"></button>
+
+<script>
+function prepararModalDesvincularResp(nome, url) {
+    document.getElementById('modal-resp-nome').textContent = nome;
+    document.getElementById('form-desvincular-resp').action = url;
+    document.getElementById('btn-abrir-desvincular-resp').click();
+}
+
+/* ── Autocomplete: vincular responsável ─────────────────────── */
+(function () {
+    var BUSCAR_URL = '{% url "responsavel:buscar" %}';
+    var searchEl   = document.getElementById('modal-resp-search');
+    var hiddenEl   = document.getElementById('modal-resp-id');
+    var clearBtn   = document.getElementById('modal-resp-clear');
+    var dropdown   = document.getElementById('modal-resp-dropdown');
+    if (!searchEl) return;
+
+    var timer     = null;
+    var results   = [];
+    var activeIdx = -1;
+
+    function esc(str) {
+        var d = document.createElement('div');
+        d.textContent = str;
+        return d.innerHTML;
+    }
+
+    function closeDropdown() {
+        dropdown.classList.add('hidden');
+        dropdown.innerHTML = '';
+        activeIdx = -1;
+    }
+
+    function setMsg(html) {
+        dropdown.innerHTML = html;
+        dropdown.classList.remove('hidden');
+        activeIdx = -1;
+    }
+
+    function renderResults(items) {
+        results = items;
+        activeIdx = -1;
+        if (!items.length) {
+            setMsg('<p class="px-4 py-3 text-sm text-slate-400">Nenhum responsável encontrado.</p>');
+            return;
+        }
+        dropdown.innerHTML = items.map(function (r, i) {
+            return '<button type="button" data-idx="' + i + '" ' +
+                   'class="w-full text-left px-4 py-2.5 flex flex-col ' +
+                   'hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">' +
+                   '<span class="text-sm font-medium text-slate-800 dark:text-slate-100">' + esc(r.text) + '</span>' +
+                   (r.email ? '<span class="text-xs text-slate-400">' + esc(r.email) + '</span>' : '') +
+                   '</button>';
+        }).join('');
+        dropdown.classList.remove('hidden');
+    }
+
+    function selectItem(item) {
+        hiddenEl.value = item.id;
+        searchEl.value = item.text;
+        clearBtn.classList.remove('hidden');
+        closeDropdown();
+    }
+
+    function clearSelection() {
+        hiddenEl.value = '';
+        searchEl.value = '';
+        clearBtn.classList.add('hidden');
+        closeDropdown();
+        results = [];
+        searchEl.focus();
+    }
+
+    function highlightItem(idx) {
+        dropdown.querySelectorAll('button[data-idx]').forEach(function (btn, i) {
+            btn.classList.toggle('bg-slate-50', i === idx);
+            btn.classList.toggle('dark:bg-slate-700', i === idx);
+        });
+    }
+
+    searchEl.addEventListener('input', function () {
+        clearTimeout(timer);
+        var q = this.value.trim();
+        if (hiddenEl.value) {
+            hiddenEl.value = '';
+            clearBtn.classList.add('hidden');
+        }
+        if (!q) { closeDropdown(); return; }
+        if (q.length < 2) {
+            setMsg('<p class="px-4 py-3 text-sm text-slate-400">Digite pelo menos 2 caracteres.</p>');
+            return;
+        }
+        setMsg('<p class="px-4 py-3 text-sm text-slate-400">Buscando…</p>');
+        timer = setTimeout(function () {
+            fetch(BUSCAR_URL + '?q=' + encodeURIComponent(q), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) { renderResults(data.results); })
+            .catch(function () { closeDropdown(); });
+        }, 300);
+    });
+
+    searchEl.addEventListener('keydown', function (e) {
+        var items = dropdown.querySelectorAll('button[data-idx]');
+        if (!items.length) return;
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            activeIdx = Math.min(activeIdx + 1, items.length - 1);
+            highlightItem(activeIdx);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            activeIdx = Math.max(activeIdx - 1, 0);
+            highlightItem(activeIdx);
+        } else if (e.key === 'Enter' && activeIdx >= 0) {
+            e.preventDefault();
+            selectItem(results[activeIdx]);
+        } else if (e.key === 'Escape') {
+            closeDropdown();
+        }
+    });
+
+    dropdown.addEventListener('mousedown', function (e) {
+        var btn = e.target.closest('button[data-idx]');
+        if (btn) {
+            e.preventDefault();
+            selectItem(results[parseInt(btn.dataset.idx, 10)]);
+        }
+    });
+
+    clearBtn.addEventListener('click', clearSelection);
+
+    document.addEventListener('click', function (e) {
+        var wrap = document.getElementById('modal-resp-autocomplete');
+        if (wrap && !wrap.contains(e.target)) closeDropdown();
+    });
+}());
+</script>
+
 {% endif %}
 
 {% endblock %}

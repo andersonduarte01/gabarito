@@ -1,4 +1,4 @@
-﻿{% extends base_template %}
+{% extends base_template %}
 
 {% block titulo %}Dashboard — {{ escola.nome }}{% endblock %}
 {% block page_title %}Dashboard{% endblock %}
@@ -20,9 +20,7 @@
         <p class="text-sm font-semibold">Assinatura em período de carência</p>
         <p class="text-xs mt-0.5 opacity-80">
             Seu plano venceu. Regularize o pagamento para evitar a suspensão do acesso.
-            {% if grace_dias %}
-                Restam {{ grace_dias }} dia{{ grace_dias|pluralize }}.
-            {% endif %}
+            {% if grace_dias %}Restam {{ grace_dias }} dia{{ grace_dias|pluralize }}.{% endif %}
         </p>
     </div>
 </div>
@@ -39,9 +37,8 @@
 </div>
 
 {# ── KPIs ─────────────────────────────────────────────────────────────────── #}
-<div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+<div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
 
-    {# Ano Letivo #}
     <div class="col-span-2 lg:col-span-1 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
         <div class="flex items-center justify-between mb-3">
             <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Ano Letivo</span>
@@ -58,7 +55,6 @@
         {% endif %}
     </div>
 
-    {# Turmas #}
     <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
         <div class="flex items-center justify-between mb-3">
             <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Turmas</span>
@@ -70,7 +66,6 @@
         <p class="text-xs text-slate-400 mt-1">ativas</p>
     </div>
 
-    {# Alunos #}
     <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
         <div class="flex items-center justify-between mb-3">
             <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Alunos</span>
@@ -82,7 +77,6 @@
         <p class="text-xs text-slate-400 mt-1">matriculados</p>
     </div>
 
-    {# Professores #}
     <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
         <div class="flex items-center justify-between mb-3">
             <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Professores</span>
@@ -94,7 +88,6 @@
         <p class="text-xs text-slate-400 mt-1">ativos</p>
     </div>
 
-    {# Colaboradores #}
     <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
         <div class="flex items-center justify-between mb-3">
             <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Colaboradores</span>
@@ -108,43 +101,204 @@
 
 </div>
 
-{# ── Direção da escola ────────────────────────────────────────────────────── #}
-<div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 max-w-lg">
-    <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-700">
-        <div>
-            <h3 class="text-sm font-semibold text-slate-800 dark:text-white">Direção</h3>
-            <p class="text-xs text-slate-400 mt-0.5">Diretores ativos desta escola</p>
+{# ── Alertas de Gestão ────────────────────────────────────────────────────── #}
+<p class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">
+    Alertas de Gestão
+</p>
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+
+    {# Alunos em risco #}
+    <a href="{% url 'boletim:index' %}"
+       class="group bg-white dark:bg-slate-800 rounded-2xl border
+              {% if alunos_em_risco > 0 %}border-red-200 dark:border-red-800/60{% else %}border-slate-200 dark:border-slate-700{% endif %}
+              p-4 hover:shadow-md transition-all">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Alunos em Risco</span>
+            <div class="w-7 h-7 rounded-lg
+                        {% if alunos_em_risco > 0 %}bg-red-50 dark:bg-red-900/30{% else %}bg-green-50 dark:bg-green-900/30{% endif %}
+                        flex items-center justify-center">
+                <i data-lucide="{% if alunos_em_risco > 0 %}alert-circle{% else %}check-circle{% endif %}"
+                   class="w-3.5 h-3.5 {% if alunos_em_risco > 0 %}text-red-500{% else %}text-green-500{% endif %}"></i>
+            </div>
         </div>
-        <a href="{% url 'diretor:listar_diretores' %}"
-           class="text-xs font-medium text-[#0d6efd] hover:text-[#0b5ed7] transition-colors">
-            Gerenciar →
-        </a>
-    </div>
-    <div class="divide-y divide-slate-50 dark:divide-slate-700/50">
-        {% for d in diretores %}
-        <div class="flex items-center gap-3 px-5 py-3">
-            <div class="w-8 h-8 rounded-full bg-[#0d6efd]/10 flex items-center justify-center
-                        text-[#0d6efd] text-xs font-bold shrink-0">
-                {{ d.usuario.nome|first|upper }}
+        <p class="text-2xl font-bold
+                  {% if alunos_em_risco > 0 %}text-red-600 dark:text-red-400{% else %}text-slate-900 dark:text-white{% endif %}">
+            {{ alunos_em_risco }}
+        </p>
+        <p class="text-xs text-slate-400 mt-1">em recuperação ou reprovação</p>
+    </a>
+
+    {# Inadimplência #}
+    <a href="{% url 'financeiro:lista_cobrancas' %}?status=VENCIDO"
+       class="group bg-white dark:bg-slate-800 rounded-2xl border
+              {% if inadimplencia_qtd > 0 %}border-red-200 dark:border-red-800/60{% else %}border-slate-200 dark:border-slate-700{% endif %}
+              p-4 hover:shadow-md transition-all">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Inadimplência</span>
+            <div class="w-7 h-7 rounded-lg
+                        {% if inadimplencia_qtd > 0 %}bg-red-50 dark:bg-red-900/30{% else %}bg-green-50 dark:bg-green-900/30{% endif %}
+                        flex items-center justify-center">
+                <i data-lucide="{% if inadimplencia_qtd > 0 %}credit-card{% else %}check-circle{% endif %}"
+                   class="w-3.5 h-3.5 {% if inadimplencia_qtd > 0 %}text-red-500{% else %}text-green-500{% endif %}"></i>
             </div>
-            <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ d.usuario.nome }}</p>
-                <p class="text-xs text-slate-400 truncate">{{ d.get_cargo_display }}</p>
-            </div>
-            {% if d.papel == papel %}
-            <span class="text-xs text-[#0d6efd] font-medium shrink-0">você</span>
+        </div>
+        <p class="text-2xl font-bold
+                  {% if inadimplencia_qtd > 0 %}text-red-600 dark:text-red-400{% else %}text-slate-900 dark:text-white{% endif %}">
+            {{ inadimplencia_qtd }}
+        </p>
+        <p class="text-xs text-slate-400 mt-1">
+            {% if inadimplencia_qtd > 0 %}
+                cobrança{{ inadimplencia_qtd|pluralize }} vencida{{ inadimplencia_qtd|pluralize }}
+                · R$ {{ inadimplencia_total|floatformat:2 }}
+            {% else %}
+                sem cobranças vencidas
             {% endif %}
+        </p>
+    </a>
+
+    {# Avaliações sem nota #}
+    <a href="{% url 'avaliacao:lista' %}"
+       class="group bg-white dark:bg-slate-800 rounded-2xl border
+              {% if avaliacoes_sem_nota > 0 %}border-amber-200 dark:border-amber-800/60{% else %}border-slate-200 dark:border-slate-700{% endif %}
+              p-4 hover:shadow-md transition-all">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Pendências</span>
+            <div class="w-7 h-7 rounded-lg
+                        {% if avaliacoes_sem_nota > 0 %}bg-amber-50 dark:bg-amber-900/30{% else %}bg-green-50 dark:bg-green-900/30{% endif %}
+                        flex items-center justify-center">
+                <i data-lucide="{% if avaliacoes_sem_nota > 0 %}clipboard-list{% else %}check-circle{% endif %}"
+                   class="w-3.5 h-3.5 {% if avaliacoes_sem_nota > 0 %}text-amber-500{% else %}text-green-500{% endif %}"></i>
+            </div>
         </div>
-        {% empty %}
-        <div class="px-5 py-8 text-center">
-            <p class="text-sm text-slate-400">Nenhum diretor cadastrado.</p>
-            <a href="{% url 'diretor:criar_diretor' %}"
-               class="text-sm text-[#0d6efd] mt-1 inline-block">
-                Adicionar →
+        <p class="text-2xl font-bold
+                  {% if avaliacoes_sem_nota > 0 %}text-amber-600 dark:text-amber-400{% else %}text-slate-900 dark:text-white{% endif %}">
+            {{ avaliacoes_sem_nota }}
+        </p>
+        <p class="text-xs text-slate-400 mt-1">avaliação{% if avaliacoes_sem_nota != 1 %}ões{% endif %} publicada{% if avaliacoes_sem_nota != 1 %}s{% endif %} sem nota</p>
+    </a>
+
+    {# Frequência descoberta #}
+    <a href="{% url 'frequencia:lista' %}"
+       class="group bg-white dark:bg-slate-800 rounded-2xl border
+              {% if turmas_sem_frequencia > 0 %}border-amber-200 dark:border-amber-800/60{% else %}border-slate-200 dark:border-slate-700{% endif %}
+              p-4 hover:shadow-md transition-all">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Freq. Descoberta</span>
+            <div class="w-7 h-7 rounded-lg
+                        {% if turmas_sem_frequencia > 0 %}bg-amber-50 dark:bg-amber-900/30{% else %}bg-green-50 dark:bg-green-900/30{% endif %}
+                        flex items-center justify-center">
+                <i data-lucide="{% if turmas_sem_frequencia > 0 %}calendar-x{% else %}check-circle{% endif %}"
+                   class="w-3.5 h-3.5 {% if turmas_sem_frequencia > 0 %}text-amber-500{% else %}text-green-500{% endif %}"></i>
+            </div>
+        </div>
+        <p class="text-2xl font-bold
+                  {% if turmas_sem_frequencia > 0 %}text-amber-600 dark:text-amber-400{% else %}text-slate-900 dark:text-white{% endif %}">
+            {{ turmas_sem_frequencia }}
+        </p>
+        <p class="text-xs text-slate-400 mt-1">turma{{ turmas_sem_frequencia|pluralize }} sem registro (7 dias)</p>
+    </a>
+
+</div>
+
+{# ── Painel inferior: Atividade Recente + Direção ─────────────────────────── #}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    {# Atividade Recente #}
+    <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-700">
+            <div>
+                <h3 class="text-sm font-semibold text-slate-800 dark:text-white">Atividade Recente</h3>
+                <p class="text-xs text-slate-400 mt-0.5">Últimas ações registradas na escola</p>
+            </div>
+            <a href="{% url 'auditoria:lista' %}"
+               class="text-xs font-medium text-[#0d6efd] hover:text-[#0b5ed7] transition-colors">
+                Ver tudo →
             </a>
         </div>
-        {% endfor %}
+        <div class="divide-y divide-slate-50 dark:divide-slate-700/50">
+            {% for log in logs_recentes %}
+            <div class="flex items-start gap-3 px-5 py-3">
+                <div class="mt-0.5 w-6 h-6 rounded-full shrink-0 flex items-center justify-center
+                    {% if log.acao == 'CRIAR' %}bg-green-50 dark:bg-green-900/30
+                    {% elif log.acao == 'EDITAR' %}bg-blue-50 dark:bg-blue-900/30
+                    {% elif log.acao == 'DESATIVAR' %}bg-red-50 dark:bg-red-900/30
+                    {% elif log.acao == 'REATIVAR' %}bg-emerald-50 dark:bg-emerald-900/30
+                    {% else %}bg-slate-100 dark:bg-slate-700{% endif %}">
+                    <i data-lucide="
+                        {% if log.acao == 'CRIAR' %}plus
+                        {% elif log.acao == 'EDITAR' %}pencil
+                        {% elif log.acao == 'DESATIVAR' %}user-x
+                        {% elif log.acao == 'REATIVAR' %}user-check
+                        {% elif log.acao == 'LOGIN' %}log-in
+                        {% else %}log-out{% endif %}"
+                       class="w-3 h-3
+                           {% if log.acao == 'CRIAR' %}text-green-500
+                           {% elif log.acao == 'EDITAR' %}text-blue-500
+                           {% elif log.acao == 'DESATIVAR' %}text-red-500
+                           {% elif log.acao == 'REATIVAR' %}text-emerald-500
+                           {% else %}text-slate-400{% endif %}"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs text-slate-700 dark:text-slate-300 leading-snug">
+                        <span class="font-medium">{{ log.get_acao_display }}</span>
+                        {{ log.modelo }}
+                        {% if log.usuario %}
+                        <span class="text-slate-400">· {{ log.usuario.nome }}</span>
+                        {% endif %}
+                    </p>
+                    <p class="text-xs text-slate-400 mt-0.5 truncate">{{ log.descricao|truncatechars:60 }}</p>
+                </div>
+                <span class="text-xs text-slate-400 shrink-0 whitespace-nowrap">
+                    {{ log.criado_em|date:"d/m H:i" }}
+                </span>
+            </div>
+            {% empty %}
+            <div class="px-5 py-8 text-center">
+                <p class="text-sm text-slate-400">Nenhuma atividade registrada ainda.</p>
+            </div>
+            {% endfor %}
+        </div>
     </div>
+
+    {# Direção da escola #}
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-700">
+            <div>
+                <h3 class="text-sm font-semibold text-slate-800 dark:text-white">Direção</h3>
+                <p class="text-xs text-slate-400 mt-0.5">Diretores ativos desta escola</p>
+            </div>
+            <a href="{% url 'diretor:listar_diretores' %}"
+               class="text-xs font-medium text-[#0d6efd] hover:text-[#0b5ed7] transition-colors">
+                Gerenciar →
+            </a>
+        </div>
+        <div class="divide-y divide-slate-50 dark:divide-slate-700/50">
+            {% for d in diretores %}
+            <div class="flex items-center gap-3 px-5 py-3">
+                <div class="w-8 h-8 rounded-full bg-[#0d6efd]/10 flex items-center justify-center
+                            text-[#0d6efd] text-xs font-bold shrink-0">
+                    {{ d.usuario.nome|first|upper }}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ d.usuario.nome }}</p>
+                    <p class="text-xs text-slate-400 truncate">{{ d.get_cargo_display }}</p>
+                </div>
+                {% if d.papel == papel %}
+                <span class="text-xs text-[#0d6efd] font-medium shrink-0">você</span>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="px-5 py-8 text-center">
+                <p class="text-sm text-slate-400">Nenhum diretor cadastrado.</p>
+                <a href="{% url 'diretor:criar_diretor' %}"
+                   class="text-sm text-[#0d6efd] mt-1 inline-block">
+                    Adicionar →
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
 </div>
 
 {% endblock %}

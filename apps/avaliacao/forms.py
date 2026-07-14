@@ -4,14 +4,22 @@ from django import forms
 
 from .models import ModalidadeAvaliacao, OpcaoResposta, Questao, TipoAvaliacao
 
+
 _INPUT = (
     'w-full px-3 py-2 text-sm bg-white dark:bg-slate-800 '
     'border border-slate-200 dark:border-slate-700 rounded-lg '
     'text-slate-900 dark:text-slate-100 focus:outline-none '
-    'focus:ring-2 focus:ring-[#0d6efd]/30 focus:border-[#0d6efd]'
+    'focus:ring-2 focus:ring-[#0d6efd]/30 focus:border-[#0d6efd] '
+    'dark:[color-scheme:dark]'
 )
 _SELECT = _INPUT
 _TEXTAREA = _INPUT + ' resize-none'
+_FILE = (
+    'block w-full text-sm text-slate-500 dark:text-slate-400 '
+    'file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 '
+    'file:text-xs file:font-medium file:bg-[#0d6efd]/10 file:text-[#0d6efd] '
+    'hover:file:bg-[#0d6efd]/20 cursor-pointer'
+)
 
 
 class AvaliacaoForm(forms.Form):
@@ -71,8 +79,16 @@ class AvaliacaoForm(forms.Form):
             turma_qs = Turma.objects.filter(escola=escola, ativo=True).order_by('nome')
             if turma_ids is not None:
                 turma_qs = turma_qs.filter(pk__in=turma_ids)
+            series_ids = turma_qs.values_list('serie_id', flat=True)
             self.fields['turma'].queryset          = turma_qs
-            self.fields['materia'].queryset        = Materia.objects.filter(escola=escola, ativo=True).order_by('nome')
+            self.fields['materia'].queryset        = (
+                Materia.objects
+                .filter(escola=escola, ativo=True,
+                        series_config__serie_id__in=series_ids,
+                        series_config__ativo=True)
+                .distinct()
+                .order_by('nome')
+            )
             self.fields['professor'].queryset      = (
                 PerfilProfessor.objects
                 .filter(papel__vinculo__escola=escola, papel__ativo=True)
@@ -87,8 +103,11 @@ class AvaliacaoForm(forms.Form):
                 .order_by('ano_letivo__ano', 'numero')
             )
         else:
-            for f in ('turma', 'materia', 'professor', 'ano_letivo', 'periodo_letivo'):
-                self.fields[f].queryset = self.fields[f].queryset.none()
+            self.fields['turma'].queryset          = Turma.objects.none()
+            self.fields['materia'].queryset        = Materia.objects.none()
+            self.fields['professor'].queryset      = PerfilProfessor.objects.none()
+            self.fields['ano_letivo'].queryset     = AnoLetivo.objects.none()
+            self.fields['periodo_letivo'].queryset = PeriodoLetivo.objects.none()
 
         if instance:
             self.initial.update({
@@ -106,24 +125,36 @@ class AvaliacaoForm(forms.Form):
             })
 
 
+# Tipos de questão que possuem opções de resposta gerenciadas via OpcaoResposta
+TIPOS_COM_OPCOES = (
+    'MULTIPLA_ESCOLHA',
+    'MULTIPLAS_RESPOSTAS',
+    'VERDADEIRO_FALSO',
+    'ORDENACAO',
+    'ASSOCIACAO',
+)
+
+
 class QuestaoForm(forms.ModelForm):
     class Meta:
         model   = Questao
-        fields  = ('numero', 'enunciado', 'tipo', 'pontuacao')
+        fields  = ('numero', 'enunciado', 'tipo', 'pontuacao', 'imagem')
         widgets = {
             'numero':    forms.NumberInput(attrs={'class': _INPUT, 'min': 1}),
             'enunciado': forms.Textarea(attrs={'class': _TEXTAREA, 'rows': 3}),
             'tipo':      forms.Select(attrs={'class': _SELECT}),
             'pontuacao': forms.NumberInput(attrs={'class': _INPUT, 'step': '0.5'}),
+            'imagem':    forms.ClearableFileInput(attrs={'class': _FILE, 'accept': 'image/*'}),
         }
 
 
 class OpcaoRespostaForm(forms.ModelForm):
     class Meta:
         model   = OpcaoResposta
-        fields  = ('letra', 'texto', 'correta')
+        fields  = ('letra', 'texto', 'correta', 'ordem')
         widgets = {
-            'letra':   forms.TextInput(attrs={'class': _INPUT, 'maxlength': 1, 'placeholder': 'A'}),
-            'texto':   forms.TextInput(attrs={'class': _INPUT}),
+            'letra':  forms.TextInput(attrs={'class': _INPUT, 'maxlength': 1, 'placeholder': 'A'}),
+            'texto':  forms.TextInput(attrs={'class': _INPUT}),
             'correta': forms.CheckboxInput(attrs={'class': 'w-4 h-4 rounded border-slate-300 text-[#0d6efd]'}),
+            'ordem':  forms.NumberInput(attrs={'class': _INPUT, 'min': 1, 'placeholder': 'Ordem'}),
         }

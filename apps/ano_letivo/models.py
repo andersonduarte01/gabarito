@@ -7,6 +7,11 @@ class StatusAnoLetivo(models.TextChoices):
     ENCERRADO       = 'ENCERRADO',       'Encerrado'
 
 
+class TipoPeriodo(models.TextChoices):
+    LETIVO  = 'LETIVO',  'Letivo'
+    RECESSO = 'RECESSO', 'Recesso / Férias'
+
+
 class AnoLetivo(models.Model):
     escola      = models.ForeignKey(
         'escola.UnidadeEscolar',
@@ -64,6 +69,12 @@ class PeriodoLetivo(models.Model):
     )
     numero      = models.PositiveSmallIntegerField('Número')
     nome        = models.CharField('Nome', max_length=50)
+    tipo        = models.CharField(
+        'Tipo',
+        max_length=10,
+        choices=TipoPeriodo.choices,
+        default=TipoPeriodo.LETIVO,
+    )
     data_inicio = models.DateField('Data de Início')
     data_fim    = models.DateField('Data de Fim')
 
@@ -75,3 +86,7 @@ class PeriodoLetivo(models.Model):
 
     def __str__(self):
         return f'{self.nome} — {self.ano_letivo.ano}'
+
+    @property
+    def is_recesso(self):
+        return self.tipo == TipoPeriodo.RECESSO

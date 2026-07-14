@@ -5,8 +5,11 @@ app_name = 'colaborador'
 
 urlpatterns = [
     # Portal do Funcionário
-    path('dashboard/',   views.DashboardFuncionarioView.as_view(), name='dashboard'),
-    path('meu-perfil/',  views.MeuPerfilColaboradorView.as_view(), name='meu_perfil'),
+    path('dashboard/',            views.DashboardFuncionarioView.as_view(),  name='dashboard'),
+    path('meu-perfil/',           views.MeuPerfilColaboradorView.as_view(),  name='meu_perfil'),
+    path('meu-perfil/editar/',    views.EditarMeuPerfilView.as_view(),       name='editar_meu_perfil'),
+    path('meu-perfil/endereco/',  views.EditarMeuEnderecoView.as_view(),     name='editar_meu_endereco'),
+    path('meu-perfil/senha/',     views.TrocarMinhaSenhaView.as_view(),      name='trocar_minha_senha'),
 
     # Colaboradores
     path('',                            views.ListarColaboradoresView.as_view(), name='lista'),

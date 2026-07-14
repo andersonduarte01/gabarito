@@ -1,0 +1,591 @@
+{% extends base_template %}
+
+{% block titulo %}Caderneta Digital{% endblock %}
+{% block page_title %}Caderneta Digital{% endblock %}
+
+{% block sidebar_nav %}
+{% if papel.tipo == 'FUNCIONARIO' %}
+{% include "colaborador/_nav.html" with active="frequencia" %}
+{% else %}
+{% include "diretor/_nav.html" with active="frequencia" %}
+{% endif %}
+{% endblock %}
+
+{% block conteudo %}
+<div>
+
+    <!-- Cabeçalho -->
+    <div class="flex items-center gap-3 mb-6">
+        <a href="{% url 'frequencia:lista' %}"
+           class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-md transition-colors">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        </a>
+        <div>
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Caderneta Digital</h2>
+            <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
+                {% if turma and materia %}
+                {{ turma.nome }} · {{ materia.nome }}{% if periodo %} · {{ periodo.nome }}{% endif %}
+                {% else %}
+                Selecione a turma e a matéria
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm mb-5">
+        <div class="flex items-center gap-3 px-6 py-4 border-b border-slate-100 dark:border-slate-700">
+            <div class="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
+                <i data-lucide="sliders-horizontal" class="w-4 h-4 text-violet-500"></i>
+            </div>
+            <h3 class="text-sm font-semibold text-slate-800 dark:text-white">Filtros</h3>
+        </div>
+        <form method="get" class="px-6 py-4" id="form-filtros">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                        Turma <span class="text-red-400">*</span>
+                    </label>
+                    <select name="turma" required
+                            class="w-full px-2.5 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600
+                                   bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100
+                                   focus:outline-none focus:ring-2 focus:ring-[#0d6efd]/40 focus:border-[#0d6efd]">
+                        <option value="">— Selecione —</option>
+                        {% for t in turmas_qs %}
+                        <option value="{{ t.pk }}" {% if filtros.turma == t.pk|stringformat:"s" %}selected{% endif %}>{{ t.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                        Matéria <span class="text-red-400">*</span>
+                    </label>
+                    <select name="materia" required
+                            class="w-full px-2.5 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600
+                                   bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100
+                                   focus:outline-none focus:ring-2 focus:ring-[#0d6efd]/40 focus:border-[#0d6efd]">
+                        <option value="">— Selecione —</option>
+                        {% for m in materias_qs %}
+                        <option value="{{ m.pk }}" {% if filtros.materia == m.pk|stringformat:"s" %}selected{% endif %}>{{ m.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Ano Letivo</label>
+                    <select name="ano_letivo" id="sel-ano"
+                            class="w-full px-2.5 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600
+                                   bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100
+                                   focus:outline-none focus:ring-2 focus:ring-[#0d6efd]/40 focus:border-[#0d6efd]">
+                        <option value="">— Selecione —</option>
+                        {% for a in anos_qs %}
+                        <option value="{{ a.pk }}" {% if filtros.ano_letivo == a.pk|stringformat:"s" %}selected{% endif %}>{{ a.ano }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Período</label>
+                    <select name="periodo_letivo" id="sel-periodo"
+                            class="w-full px-2.5 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600
+                                   bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100
+                                   focus:outline-none focus:ring-2 focus:ring-[#0d6efd]/40 focus:border-[#0d6efd]">
+                        <option value="">— Todos —</option>
+                        {% for p in todos_periodos %}
+                        <option value="{{ p.pk }}"
+                                data-ano="{{ p.ano_letivo_id }}"
+                                {% if filtros.periodo_letivo == p.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ p.nome }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="flex justify-end mt-4">
+                <button type="submit"
+                        class="flex items-center gap-2 px-4 py-2 text-sm font-medium
+                               bg-[#0d6efd] hover:bg-[#0b5ed7] text-white rounded-xl transition-colors">
+                    <i data-lucide="table-2" class="w-4 h-4"></i>
+                    Abrir Caderneta
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% if filtrado %}
+
+    <!-- Navegação mensal -->
+    <div class="flex items-center gap-2 mb-4">
+        {% if pode_prev %}
+        <a href="?turma={{ filtros.turma }}&materia={{ filtros.materia }}&ano_letivo={{ filtros.ano_letivo }}&periodo_letivo={{ filtros.periodo_letivo }}&mes={{ prev_mes|date:'Y-m' }}"
+           class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700
+                  bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400
+                  hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+        </a>
+        {% else %}
+        <span class="p-1.5 rounded-lg border border-slate-100 dark:border-slate-800
+                     bg-slate-50 dark:bg-slate-900 text-slate-200 dark:text-slate-700 cursor-not-allowed">
+            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+        </span>
+        {% endif %}
+
+        <span class="text-sm font-semibold text-slate-700 dark:text-slate-200 min-w-[150px] text-center">
+            {{ mes_nome }}
+        </span>
+
+        {% if pode_next %}
+        <a href="?turma={{ filtros.turma }}&materia={{ filtros.materia }}&ano_letivo={{ filtros.ano_letivo }}&periodo_letivo={{ filtros.periodo_letivo }}&mes={{ next_mes|date:'Y-m' }}"
+           class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700
+                  bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400
+                  hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        </a>
+        {% else %}
+        <span class="p-1.5 rounded-lg border border-slate-100 dark:border-slate-800
+                     bg-slate-50 dark:bg-slate-900 text-slate-200 dark:text-slate-700 cursor-not-allowed">
+            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        </span>
+        {% endif %}
+
+        <a href="?turma={{ filtros.turma }}&materia={{ filtros.materia }}&ano_letivo={{ filtros.ano_letivo }}&periodo_letivo={{ filtros.periodo_letivo }}&mes={{ hoje|date:'Y-m' }}"
+           class="ml-1 px-3 py-1.5 text-xs font-medium rounded-lg
+                  bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300
+                  hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+            Mês atual
+        </a>
+    </div>
+
+    {% if linhas %}
+
+    <!-- Legenda -->
+    <div class="flex items-center gap-3 mb-3 flex-wrap">
+        <span class="text-xs text-slate-400 dark:text-slate-500">Legenda:</span>
+        <span class="inline-flex items-center gap-1 text-xs text-slate-600 dark:text-slate-300">
+            <span class="inline-flex items-center justify-center w-5 h-4 rounded text-[10px] font-bold
+                         bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">P</span>
+            Presente
+        </span>
+        <span class="inline-flex items-center gap-1 text-xs text-slate-600 dark:text-slate-300">
+            <span class="inline-flex items-center justify-center w-5 h-4 rounded text-[10px] font-bold
+                         bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">F</span>
+            Falta
+        </span>
+        <span class="inline-flex items-center gap-1 text-xs text-slate-600 dark:text-slate-300">
+            <span class="inline-flex items-center justify-center w-5 h-4 rounded text-[10px] font-bold
+                         bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400">J</span>
+            Justificado
+        </span>
+        <span class="inline-flex items-center gap-1 text-xs text-slate-600 dark:text-slate-300">
+            <span class="inline-flex items-center justify-center w-5 h-4 rounded text-[10px]
+                         text-slate-400 dark:text-slate-500 border border-dashed border-slate-300 dark:border-slate-600">—</span>
+            Não lançado
+        </span>
+        <span class="ml-auto text-xs text-slate-400 dark:text-slate-500">{{ linhas|length }} aluno{{ linhas|length|pluralize }}</span>
+    </div>
+
+    <!-- Grade -->
+    <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+        <table class="text-xs border-collapse" style="min-width: max-content">
+            <thead>
+                <tr class="bg-slate-50 dark:bg-slate-900/60">
+                    <th class="sticky left-0 z-20 bg-slate-50 dark:bg-slate-900 px-4 py-3 text-left font-semibold
+                               text-slate-600 dark:text-slate-400 border-r border-b border-slate-200 dark:border-slate-700
+                               min-w-[200px] whitespace-nowrap">
+                        Aluno
+                    </th>
+                    {% for col in col_stats %}
+                    <th class="border-b border-l border-slate-100 dark:border-slate-700/50 p-0 min-w-[48px] max-w-[48px]">
+                        {% if col.futuro %}
+                        <div class="flex flex-col items-center justify-center py-2 gap-0.5
+                                    text-slate-300 dark:text-slate-700 select-none">
+                            <span class="text-base font-bold leading-none">{{ col.data|date:"d" }}</span>
+                            <span class="text-[9px] font-medium uppercase tracking-wide leading-none mt-0.5">{{ col.dia_semana }}</span>
+                            <div class="w-4 h-0.5 rounded-full bg-slate-200 dark:bg-slate-700 mt-1"></div>
+                        </div>
+                        {% elif col.lancado %}
+                        <a href="{% url 'frequencia:lancar' col.registro_pk %}?back={{ request.get_full_path|urlencode }}"
+                           class="flex flex-col items-center justify-center py-2 gap-0.5 w-full
+                                  text-emerald-700 dark:text-emerald-400
+                                  hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+                           title="{{ col.data|date:'d/m/Y' }} — Lançado · clique para editar a turma toda">
+                            <span class="text-base font-bold leading-none {% if col.data == hoje %}text-[#0d6efd]{% endif %}">{{ col.data|date:"d" }}</span>
+                            <span class="text-[9px] font-medium uppercase tracking-wide leading-none mt-0.5">{{ col.dia_semana }}</span>
+                            <div class="w-4 h-0.5 rounded-full bg-emerald-400 mt-1"></div>
+                        </a>
+                        {% else %}
+                        <a href="{% url 'frequencia:iniciar' %}?turma={{ filtros.turma }}&materia={{ filtros.materia }}&data={{ col.data|date:'Y-m-d' }}&ano_letivo={{ filtros.ano_letivo }}&periodo_letivo={{ filtros.periodo_letivo }}&back={{ request.get_full_path|urlencode }}"
+                           class="flex flex-col items-center justify-center py-2 gap-0.5 w-full
+                                  text-slate-400 dark:text-slate-500
+                                  hover:text-[#0d6efd] hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                           title="{{ col.data|date:'d/m/Y' }} — Clique para lançar a turma toda">
+                            <span class="text-base font-bold leading-none {% if col.data == hoje %}text-[#0d6efd]{% endif %}">{{ col.data|date:"d" }}</span>
+                            <span class="text-[9px] font-medium uppercase tracking-wide leading-none mt-0.5">{{ col.dia_semana }}</span>
+                            <div class="w-4 h-0.5 rounded-full bg-slate-300 dark:bg-slate-600 mt-1"></div>
+                        </a>
+                        {% endif %}
+                    </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody id="caderneta-tbody">
+                {% for linha in linhas %}
+                <tr class="group hover:bg-slate-50/40 dark:hover:bg-slate-900/20">
+                    <td class="sticky left-0 z-10 bg-white dark:bg-slate-800
+                               group-hover:bg-slate-50 dark:group-hover:bg-slate-900/30
+                               px-4 py-0 border-r border-b border-slate-100 dark:border-slate-700
+                               min-w-[200px] h-10">
+                        <p class="font-medium text-slate-800 dark:text-slate-100 truncate max-w-[180px] text-xs leading-tight">{{ linha.aluno.nome_completo }}</p>
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500 leading-tight">{{ linha.aluno.matricula }}</p>
+                    </td>
+                    {% for cell in linha.cells %}
+                    <td class="border-b border-l border-slate-100 dark:border-slate-700/40
+                               min-w-[48px] max-w-[48px] h-10 p-0">
+                        {% if cell.futuro %}
+                        <div class="flex items-center justify-center w-full h-full text-[11px] font-medium
+                                    text-slate-200 dark:text-slate-700 select-none">—</div>
+                        {% elif cell.status == 'P' %}
+                        <button type="button"
+                                class="js-presenca-btn flex items-center justify-center w-full h-full text-[11px] font-bold
+                                       bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400
+                                       hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
+                                data-aluno-id="{{ linha.aluno.pk }}"
+                                data-aluno-nome="{{ linha.aluno.nome_completo }}"
+                                data-data="{{ cell.data|date:'Y-m-d' }}"
+                                data-data-label="{{ cell.data|date:'d/m/Y' }}"
+                                data-status="P"
+                                data-presenca-pk="{{ cell.presenca_pk|default:'' }}"
+                                title="{{ linha.aluno.nome_completo }} — {{ cell.data|date:'d/m/Y' }} · clique para editar">P</button>
+                        {% elif cell.status == 'F' %}
+                        <button type="button"
+                                class="js-presenca-btn flex items-center justify-center w-full h-full text-[11px] font-bold
+                                       bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400
+                                       hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
+                                data-aluno-id="{{ linha.aluno.pk }}"
+                                data-aluno-nome="{{ linha.aluno.nome_completo }}"
+                                data-data="{{ cell.data|date:'Y-m-d' }}"
+                                data-data-label="{{ cell.data|date:'d/m/Y' }}"
+                                data-status="F"
+                                data-presenca-pk="{{ cell.presenca_pk|default:'' }}"
+                                title="{{ linha.aluno.nome_completo }} — {{ cell.data|date:'d/m/Y' }} · clique para editar">F</button>
+                        {% elif cell.status == 'J' %}
+                        <button type="button"
+                                class="js-presenca-btn flex items-center justify-center w-full h-full text-[11px] font-bold
+                                       bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400
+                                       hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors"
+                                data-aluno-id="{{ linha.aluno.pk }}"
+                                data-aluno-nome="{{ linha.aluno.nome_completo }}"
+                                data-data="{{ cell.data|date:'Y-m-d' }}"
+                                data-data-label="{{ cell.data|date:'d/m/Y' }}"
+                                data-status="J"
+                                data-presenca-pk="{{ cell.presenca_pk|default:'' }}"
+                                title="{{ linha.aluno.nome_completo }} — {{ cell.data|date:'d/m/Y' }} · clique para editar">J</button>
+                        {% else %}
+                        <button type="button"
+                                class="js-presenca-btn flex items-center justify-center w-full h-full text-[12px] font-medium
+                                       text-slate-300 dark:text-slate-600
+                                       hover:bg-blue-50 dark:hover:bg-blue-900/20
+                                       hover:text-[#0d6efd] dark:hover:text-[#0d6efd]
+                                       transition-colors"
+                                data-aluno-id="{{ linha.aluno.pk }}"
+                                data-aluno-nome="{{ linha.aluno.nome_completo }}"
+                                data-data="{{ cell.data|date:'Y-m-d' }}"
+                                data-data-label="{{ cell.data|date:'d/m/Y' }}"
+                                data-status=""
+                                data-presenca-pk=""
+                                title="{{ linha.aluno.nome_completo }} — {{ cell.data|date:'d/m/Y' }} · lançar presença">—</button>
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% else %}
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
+        <div class="flex flex-col items-center justify-center py-16 text-center px-5">
+            <i data-lucide="users" class="w-8 h-8 text-slate-300 dark:text-slate-600 mb-3"></i>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Nenhum aluno matriculado nesta turma.</p>
+        </div>
+    </div>
+    {% endif %}
+
+    {% endif %}{# /filtrado #}
+
+</div>
+
+<!-- -----------------------------------------------------------------------
+     Modal — presença individual
+     ----------------------------------------------------------------------- -->
+<div id="modal-backdrop"
+     class="fixed inset-0 bg-black/40 dark:bg-black/60 z-40 hidden"
+     onclick="fecharModal()"></div>
+
+<div id="modal-presenca"
+     class="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none hidden">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-sm pointer-events-auto
+                border border-slate-200 dark:border-slate-700">
+
+        <!-- Header -->
+        <div class="flex items-start justify-between px-5 pt-5 pb-4 border-b border-slate-100 dark:border-slate-700">
+            <div>
+                <p class="text-sm font-semibold text-slate-800 dark:text-slate-100" id="modal-nome"></p>
+                <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5" id="modal-data-label"></p>
+            </div>
+            <button type="button" onclick="fecharModal()"
+                    class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-md transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div class="px-5 py-4 space-y-4">
+            <!-- Toggle Presente / Falta -->
+            <div>
+                <p class="text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Situação</p>
+                <div class="grid grid-cols-2 gap-2">
+                    <button type="button" id="btn-presente"
+                            onclick="selecionarSituacao('P')"
+                            class="situacao-btn flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border-2
+                                   text-sm font-medium transition-colors
+                                   border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400
+                                   hover:border-emerald-300 hover:text-emerald-600">
+                        <i data-lucide="check-circle" class="w-4 h-4"></i>
+                        Presente
+                    </button>
+                    <button type="button" id="btn-falta"
+                            onclick="selecionarSituacao('F')"
+                            class="situacao-btn flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border-2
+                                   text-sm font-medium transition-colors
+                                   border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400
+                                   hover:border-red-300 hover:text-red-500">
+                        <i data-lucide="x-circle" class="w-4 h-4"></i>
+                        Falta
+                    </button>
+                </div>
+            </div>
+
+            <!-- Justificado (só visível quando Falta selecionada) -->
+            <div id="campo-justificado" class="hidden">
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" id="modal-justificado"
+                           class="w-4 h-4 rounded border-slate-300 text-amber-500 focus:ring-amber-400/30">
+                    <span class="text-sm text-slate-700 dark:text-slate-300">Justificado</span>
+                </label>
+            </div>
+
+            <!-- Observação -->
+            <div>
+                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                    Observação <span class="text-slate-300">(opcional)</span>
+                </label>
+                <input type="text" id="modal-obs" placeholder="Ex: atestado médico"
+                       class="w-full px-3 py-2 text-sm bg-white dark:bg-slate-900 rounded-lg
+                              border border-slate-200 dark:border-slate-600
+                              text-slate-800 dark:text-slate-100 placeholder-slate-300 dark:placeholder-slate-600
+                              focus:outline-none focus:ring-2 focus:ring-[#0d6efd]/30 focus:border-[#0d6efd]">
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-5 pb-5 flex gap-2">
+            <button type="button" onclick="fecharModal()"
+                    class="flex-1 px-4 py-2.5 text-sm font-medium rounded-xl
+                           bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300
+                           hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+                Cancelar
+            </button>
+            <button type="button" id="btn-salvar-modal"
+                    onclick="salvarPresenca()"
+                    class="flex-1 px-4 py-2.5 text-sm font-medium rounded-xl
+                           bg-[#0d6efd] hover:bg-[#0b5ed7] text-white transition-colors
+                           disabled:opacity-50 disabled:cursor-not-allowed">
+                Salvar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toast-frequencia"
+     class="fixed top-5 right-5 z-[60] flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg
+            min-w-[260px] max-w-[360px] pointer-events-none opacity-0 translate-y-[-8px]
+            transition-all duration-300 ease-out"
+     style="transition: opacity 0.3s, transform 0.3s">
+    <i id="toast-icon" data-lucide="check-circle" class="w-4 h-4 shrink-0"></i>
+    <p id="toast-msg" class="text-sm font-medium"></p>
+</div>
+
+<script>
+(function () {
+    // -----------------------------------------------------------------------
+    // Filtro de períodos por ano letivo
+    // -----------------------------------------------------------------------
+    const selAno     = document.getElementById('sel-ano');
+    const selPeriodo = document.getElementById('sel-periodo');
+
+    function filtrarPeriodos() {
+        const anoId = selAno ? selAno.value : '';
+        if (!selPeriodo) return;
+        selPeriodo.querySelectorAll('option[data-ano]').forEach(opt => {
+            opt.hidden = anoId ? opt.dataset.ano !== anoId : false;
+        });
+        const sel = selPeriodo.querySelector('option[selected]');
+        if (sel && sel.hidden) selPeriodo.value = '';
+    }
+
+    if (selAno) {
+        selAno.addEventListener('change', filtrarPeriodos);
+        filtrarPeriodos();
+    }
+
+    // -----------------------------------------------------------------------
+    // Modal de presença individual — event delegation (um único listener)
+    // -----------------------------------------------------------------------
+    const _state = { alunoId: null, data: null, situacao: 'P' };
+
+    const FILTROS = {
+        turma:        '{{ filtros.turma }}',
+        materia:      '{{ filtros.materia }}',
+        ano_letivo:   '{{ filtros.ano_letivo }}',
+        periodo_letivo: '{{ filtros.periodo_letivo }}',
+    };
+
+    // Dispara modal apenas quando o clique é num botão .js-presenca-btn
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('.js-presenca-btn');
+        if (!btn) return;
+        e.stopPropagation();
+
+        _state.alunoId = btn.dataset.alunoId;
+        _state.data    = btn.dataset.data;
+
+        document.getElementById('modal-nome').textContent       = btn.dataset.alunoNome;
+        document.getElementById('modal-data-label').textContent = btn.dataset.dataLabel;
+        document.getElementById('modal-obs').value              = '';
+        document.getElementById('modal-justificado').checked    = false;
+
+        const st = btn.dataset.status;
+        selecionarSituacao(st === 'J' ? 'F' : (st || 'P'));
+        if (st === 'J') document.getElementById('modal-justificado').checked = true;
+
+        document.getElementById('modal-backdrop').classList.remove('hidden');
+        document.getElementById('modal-presenca').classList.remove('hidden');
+        setTimeout(() => document.getElementById('modal-obs').focus(), 50);
+    });
+
+    window.fecharModal = function () {
+        document.getElementById('modal-backdrop').classList.add('hidden');
+        document.getElementById('modal-presenca').classList.add('hidden');
+    };
+
+    window.selecionarSituacao = function (s) {
+        _state.situacao = s;
+        const btnP  = document.getElementById('btn-presente');
+        const btnF  = document.getElementById('btn-falta');
+        const campJ = document.getElementById('campo-justificado');
+
+        const resetClasses = [
+            'border-emerald-400','bg-emerald-50','text-emerald-700',
+            'dark:border-emerald-600','dark:bg-emerald-900/20','dark:text-emerald-400',
+            'border-red-400','bg-red-50','text-red-600',
+            'dark:border-red-600','dark:bg-red-900/20','dark:text-red-400',
+        ];
+        const baseClasses = ['border-slate-200','dark:border-slate-600','text-slate-500','dark:text-slate-400'];
+
+        [btnP, btnF].forEach(b => {
+            b.classList.remove(...resetClasses);
+            b.classList.add(...baseClasses);
+        });
+
+        if (s === 'P') {
+            btnP.classList.remove(...baseClasses);
+            btnP.classList.add('border-emerald-400','bg-emerald-50','text-emerald-700','dark:border-emerald-600','dark:bg-emerald-900/20','dark:text-emerald-400');
+            campJ.classList.add('hidden');
+        } else {
+            btnF.classList.remove(...baseClasses);
+            btnF.classList.add('border-red-400','bg-red-50','text-red-600','dark:border-red-600','dark:bg-red-900/20','dark:text-red-400');
+            campJ.classList.remove('hidden');
+        }
+    };
+
+    window.salvarPresenca = function () {
+        const btnSalvar  = document.getElementById('btn-salvar-modal');
+        btnSalvar.disabled = true;
+
+        const presente    = _state.situacao === 'P';
+        const justificado = !presente && document.getElementById('modal-justificado').checked;
+        const observacao  = document.getElementById('modal-obs').value.trim();
+
+        fetch('{% url "frequencia:salvar_presenca" %}', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
+            body: JSON.stringify({
+                turma_id:          FILTROS.turma,
+                materia_id:        FILTROS.materia,
+                ano_letivo_id:     FILTROS.ano_letivo,
+                periodo_letivo_id: FILTROS.periodo_letivo,
+                aluno_id:          _state.alunoId,
+                data:              _state.data,
+                presente,
+                justificado,
+                observacao,
+            }),
+        })
+        .then(r => r.json())
+        .then(resp => {
+            btnSalvar.disabled = false;
+            fecharModal();
+            if (resp.ok) {
+                showToast(resp.msg, 'success');
+                setTimeout(() => location.reload(), 1200);
+            } else {
+                showToast(resp.msg || 'Erro ao salvar.', 'error');
+            }
+        })
+        .catch(() => {
+            btnSalvar.disabled = false;
+            showToast('Erro de conexão. Tente novamente.', 'error');
+        });
+    };
+
+    // -----------------------------------------------------------------------
+    // Toast
+    // -----------------------------------------------------------------------
+    window.showToast = function (msg, type) {
+        const el  = document.getElementById('toast-frequencia');
+        const ico = document.getElementById('toast-icon');
+        const txt = document.getElementById('toast-msg');
+
+        txt.textContent = msg;
+        el.classList.remove('bg-emerald-600','bg-red-600');
+
+        if (type === 'success') {
+            el.classList.add('bg-emerald-600','text-white');
+            ico.setAttribute('data-lucide', 'check-circle');
+        } else {
+            el.classList.add('bg-red-600','text-white');
+            ico.setAttribute('data-lucide', 'alert-circle');
+        }
+        if (window.lucide) lucide.createIcons();
+
+        el.style.opacity   = '1';
+        el.style.transform = 'translateY(0)';
+        clearTimeout(el._t);
+        el._t = setTimeout(() => {
+            el.style.opacity   = '0';
+            el.style.transform = 'translateY(-8px)';
+        }, 4500);
+    };
+
+    function getCsrf() {
+        const m = document.cookie.match(/csrftoken=([^;]+)/);
+        return m ? decodeURIComponent(m[1]) : '';
+    }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') fecharModal(); });
+    if (window.lucide) lucide.createIcons();
+})();
+</script>
+
+{% endblock %}

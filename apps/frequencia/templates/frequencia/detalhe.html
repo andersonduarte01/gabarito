@@ -4,7 +4,11 @@
 {% block page_title %}Registro de Frequência{% endblock %}
 
 {% block sidebar_nav %}
+{% if papel.tipo == 'FUNCIONARIO' %}
+{% include "colaborador/_nav.html" with active="frequencia" %}
+{% else %}
 {% include "diretor/_nav.html" with active="frequencia" %}
+{% endif %}
 {% endblock %}
 
 {% block conteudo %}
@@ -50,30 +54,20 @@
     </div>
 
     <!-- Resumo -->
-    {% with total=presencas.count %}
-    {% with presentes_count=presencas|length %}
     <div class="grid grid-cols-3 gap-3 mb-6">
         <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center">
-            <p class="text-2xl font-bold text-emerald-600">{{ presencas|length }}</p>
+            <p class="text-2xl font-bold text-slate-700 dark:text-slate-200">{{ presencas|length }}</p>
             <p class="text-xs text-slate-400 mt-0.5">Total</p>
         </div>
         <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center">
-            <p class="text-2xl font-bold text-[#0d6efd]">
-                {% with cnt=0 %}
-                {% for p in presencas %}{% if p.presente %}{% with cnt=cnt|add:1 %}{% endwith %}{% endif %}{% endfor %}
-                {{ presencas|length }}
-                {% endwith %}
-            </p>
-            <p class="text-xs text-slate-400 mt-0.5">Presenças</p>
+            <p class="text-2xl font-bold text-emerald-600">{{ presentes_count }}</p>
+            <p class="text-xs text-slate-400 mt-0.5">Presentes</p>
         </div>
         <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center">
-            <p class="text-2xl font-bold text-red-500">
-                {% for p in presencas %}{% if not p.presente %}F{% endif %}{% endfor %}
-            </p>
+            <p class="text-2xl font-bold text-red-500">{{ faltas_count }}</p>
             <p class="text-xs text-slate-400 mt-0.5">Faltas</p>
         </div>
     </div>
-    {% endwith %}{% endwith %}
 
     {% if presencas %}
     <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">

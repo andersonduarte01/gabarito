@@ -41,6 +41,40 @@
             </div>
             {% endif %}
 
+            <!-- Tipo -->
+            <div>
+                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">
+                    Tipo <span class="text-red-400">*</span>
+                </label>
+                <div class="flex gap-3">
+                    <label class="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-colors
+                                  has-[:checked]:border-[#0d6efd] has-[:checked]:bg-blue-50 dark:has-[:checked]:bg-blue-900/20
+                                  border-slate-200 dark:border-slate-600 hover:border-slate-300">
+                        <input type="radio" name="tipo" value="LETIVO"
+                               {% if form.tipo.value == 'LETIVO' or not form.tipo.value %}checked{% endif %}
+                               class="w-4 h-4 text-[#0d6efd] border-slate-300 focus:ring-[#0d6efd]/30">
+                        <div>
+                            <p class="text-sm font-medium text-slate-800 dark:text-slate-100">Letivo</p>
+                            <p class="text-xs text-slate-400 dark:text-slate-500">Período de aulas com registro de frequência</p>
+                        </div>
+                    </label>
+                    <label class="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-colors
+                                  has-[:checked]:border-violet-400 has-[:checked]:bg-violet-50 dark:has-[:checked]:bg-violet-900/20
+                                  border-slate-200 dark:border-slate-600 hover:border-slate-300">
+                        <input type="radio" name="tipo" value="RECESSO"
+                               {% if form.tipo.value == 'RECESSO' %}checked{% endif %}
+                               class="w-4 h-4 text-violet-500 border-slate-300 focus:ring-violet-400/30">
+                        <div>
+                            <p class="text-sm font-medium text-slate-800 dark:text-slate-100">Recesso / Férias</p>
+                            <p class="text-xs text-slate-400 dark:text-slate-500">Período sem aulas — dias não geram pendências</p>
+                        </div>
+                    </label>
+                </div>
+                {% if form.tipo.errors %}
+                <p class="text-xs text-red-500 mt-1">{{ form.tipo.errors.0 }}</p>
+                {% endif %}
+            </div>
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
@@ -50,7 +84,7 @@
                     {% if form.numero.errors %}
                     <p class="text-xs text-red-500 mt-1">{{ form.numero.errors.0 }}</p>
                     {% endif %}
-                    <p class="text-xs text-slate-400 mt-1">Ex: 1 para o 1º bimestre.</p>
+                    <p class="text-xs text-slate-400 mt-1">Usado para ordenação. Use valores sequenciais.</p>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">

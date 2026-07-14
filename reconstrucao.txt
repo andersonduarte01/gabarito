@@ -1,1794 +1,383 @@
 ================================================================================
 PROJETO: EDUCARE
-PLANO DE RECONSTRUÇÃO E IMPLEMENTAÇÃO DE NOVAS FEATURES
+FASE 2 — REFINAMENTO E MELHORIAS
 ================================================================================
-STATUS: EM PLANEJAMENTO — cada módulo é validado individualmente antes de
-qualquer escrita de código ou decisão registrada.
+STATUS: EM ANDAMENTO — cada decisão é debatida e validada antes de ser
+registrada. Nenhuma implementação ocorre sem validação prévia.
 
 PROCESSO: análise → discussão → validação → registro → implementação
 
-================================================================================
-DECISÕES TÉCNICAS GLOBAIS
-================================================================================
-
-PRODUTO
-  Nome:             EduCare
-  Tipo:             SaaS B2B multi-escola (multi-tenant row-level)
-  Foco:             Gestão escolar — ensino fundamental/médio
-
-STACK
-  Linguagem:        Python 3.13
-  Framework:        Django 6.0 (última estável)
-  Frontend:         Server-side rendering (Django Templates) — sem framework JS pesado
-  CSS / Componentes: Tailwind CSS v4 (CDN) + Flowbite
-  Ícones:           Lucide Icons (via CDN)
-  DB Desenvolvimento: SQLite
-  DB Produção:      MySQL (adapter a definir futuramente)
-  Billing:          Mercado Pago
-  PDF:              WeasyPrint (renderiza templates HTML → PDF)
-  Excel:            openpyxl
-  Imagens:          Pillow
-  Variáveis de env: django-environ
-  Testes:           pytest-django
-  Linting/Format:   Ruff
-  Arquivos estáticos (prod): Whitenoise
-  Pacotes:          pip + requirements.txt
-  WhatsApp:         Envios manuais por enquanto (provider a integrar futuramente)
-
-ARQUITETURA DE TEMPLATES
-  Cada tipo de usuário possui seu próprio template pai.
-  Padrão visual baseado no layout atual de escola/diretor.
-  Renderização server-side (Django Templates) — sem framework JS pesado.
-  Templates pai por tipo:
-    base/base_plataforma.html   → Super Admin (EduCare)
-    base/base_diretor.html      → Diretor
-    base/base_funcionario.html  → Funcionário
-    base/base_professor.html    → Professor
-    base/base_aluno.html        → Aluno
-    base/base_responsavel.html  → Responsável
-
-MULTI-TENANCY
-  Estratégia:   Row-level (dados isolados por escola no mesmo banco/schema)
-  Identificação do tenant por sessão: request.session['papel_id']
-  Injeção no request: request.papel + request.vinculo + request.escola
+CONTEXTO: Todos os módulos planejados (M00–M21) + Portais do Aluno e
+Responsável estão implementados. Este documento registra as decisões de
+refinamento, correção de design e novas features acordadas a partir de
+2026-07-06.
 
 ================================================================================
-MÓDULOS — INFRAESTRUTURA E PLATAFORMA
+DECISÕES DE REFINAMENTO
 ================================================================================
 
-[ 00 ] CORE
------------
-  Status:      [ DECISÕES VALIDADAS — aguardando implementação ]
-  Descrição:   Fundação do sistema. Modelo de usuário, middleware de tenant,
-               sistema de permissões, templates pai, autenticação.
-  Depende de:  —
-  Bloqueia:    Todos os outros módulos
+
+[ R01 ] MATRICULATURMA — CRIAÇÃO AUTOMÁTICA
+--------------------------------------------
+  Status:      [ VALIDADO — aguardando implementação ]
+  Módulo:      Alunos (M15)
+
+  PROBLEMA ATUAL:
+  · aluno_service.criar() usa `if turma and ano_letivo` de forma silenciosa.
+  · Se o formulário não tiver turma/ano letivo, o aluno é criado sem
+    MatriculaTurma e o sistema não sinaliza isso em lugar nenhum.
+  · A escola não sabe que precisa enturmar esse aluno manualmente.
+
+  DECISÃO VALIDADA:
+  · MatriculaTurma deve ser criada SEMPRE ao vincular aluno a uma turma —
+    nunca de forma condicional silenciosa.
+  · Dois casos explícitos e distintos no service:
+      CASO 1 — Cadastro com turma informada:
+        → Aluno criado + MatriculaTurma criada na mesma transação atômica
+      CASO 2 — Cadastro sem turma:
+        → Aluno criado sem MatriculaTurma
+        → Aluno aparece no filtro "Sem turma" na listagem
+        → Badge visual na listagem indicando ausência de enturmação
+  · A ausência de MatriculaTurma deve ser VISÍVEL na UI — não silenciosa.
+
+  IMPACTO:
+  · aluno_service.criar() — separar os dois casos explicitamente
+  · ListarAlunosView — adicionar filtro "Sem turma" e badge de alerta
+  · Template lista.html — indicar visualmente alunos sem turma
+
+
+[ R02 ] ALUNO / RESPONSÁVEL — INTEGRAÇÃO E FLUXO
+--------------------------------------------------
+  Status:      [ IMPLEMENTADO — 2026-07-06 ]
+  Módulos:     Alunos (M15), Responsáveis (M10)
+
+  PROBLEMA ATUAL:
+  · Cadastro de aluno e responsável são três etapas manuais separadas e
+    sem conexão: criar aluno → criar responsável → vincular.
+  · PerfilResponsavel não tem FK para escola — isolamento multi-tenant
+    depende exclusivamente de VinculoResponsavelAluno.
+  · Responsável criado sem vínculo se torna invisível: ListarResponsaveisView
+    filtra por vinculos_aluno__aluno__escola=escola, causando 404 no detalhe.
+  · desativar() do responsável remove só o PapelVinculo, deixa
+    VinculoResponsavelAluno com ativo=True.
+  · desativar() do aluno não propaga para VinculoResponsavelAluno.
 
   DECISÕES VALIDADAS:
 
-  [MODELOS]
-  · Usuario — AbstractBaseUser + PermissionsMixin. Login por email. Campos
-    pessoais apenas (nome, foto, is_active). Flag is_platform_admin para
-    o Super Admin do EduCare (não pertence a nenhuma escola).
+  [D1] PerfilResponsavel recebe FK de escola — OPÇÃO A CONFIRMADA
+  · escola = ForeignKey('escola.UnidadeEscolar', on_delete=CASCADE)
+  · Isolamento multi-tenant direto — sem dependência de vínculo com aluno.
+  · ListarResponsaveisView → filtrar por escola=request.escola (simples).
+  · Responsável sem vínculo ativo continua visível na listagem da escola.
+  · Requer migration + atualizar responsavel_service.criar() e
+    criar_sem_acesso() para receber escola como parâmetro.
 
-  · VinculoEscola — liga Usuario a Escola. Um registro por par (usuario+escola).
-    unique_together = ('usuario', 'escola'). Campos: ativo, data_entrada.
-    Um usuário pode ter vínculos com múltiplas escolas (N registros).
+  [D2] Cadastro do Aluno — seção opcional de responsável
+  · Formulário de aluno ganha seção ao final para dados do responsável.
+  · Seção é opcional — escola pode cadastrar o aluno sem responsável.
+  · Se preenchida → aluno_service.criar() cria Aluno + PerfilResponsavel
+    + VinculoResponsavelAluno em uma única transação atômica.
+  · Se não preenchida → apenas Aluno é criado.
 
-  · PapelVinculo — os papéis do usuário dentro de um vínculo.
-    FK para VinculoEscola. unique_together = ('vinculo', 'tipo').
-    Campos: tipo (TipoVinculo), ativo.
-    Um vínculo pode ter múltiplos papéis (ex: DIRETOR + PROFESSOR).
+  [D3] Cadastro do Responsável — busca dinâmica de aluno
+  · Formulário de responsável ganha campo de busca dinâmica (autocomplete)
+    de alunos já cadastrados na escola.
+  · Busca por nome ou número de matrícula.
+  · Se aluno selecionado → cria PerfilResponsavel + VinculoResponsavelAluno
+    automaticamente na mesma transação.
+  · Se não selecionado → cria apenas PerfilResponsavel (agora visível pela
+    FK de escola — sem risco de fantasma).
 
-  · TipoVinculo (TextChoices): DIRETOR, FUNCIONARIO, PROFESSOR, ALUNO,
-    RESPONSAVEL.
+  [D4] Perfil do Aluno — ações de vinculação
+  · Link "Vincular responsável" → busca dinâmica de responsáveis já
+    cadastrados na escola (por nome ou CPF).
+  · Link "Cadastrar novo responsável" → abre formulário de responsável já
+    pré-vinculado ao aluno atual.
 
-  [MIDDLEWARE]
-  · Renomear EscolaMiddleware → TenantMiddleware.
-  · Sessão guarda papel_id (PapelVinculo.id), não escola_id.
-  · Injeta: request.papel, request.vinculo, request.escola.
-  · Fluxo pós-login:
-      0 vínculos ativos            → logout
-      1 escola · 1 papel           → dashboard direto
-      1 escola · N papéis          → tela seleção de papel
-      N escolas                    → tela seleção de escola
-        └─ escola com 1 papel      → dashboard direto
-        └─ escola com N papéis     → tela seleção de papel
+  [D5] Perfil do Responsável — ações de vinculação
+  · Link "Vincular aluno" → busca dinâmica de alunos já cadastrados na
+    escola (por nome ou matrícula).
+  · Link "Cadastrar novo aluno" → abre formulário de aluno já pré-vinculado
+    ao responsável atual.
 
-  [SERVICE LAYER]
-  · Nenhuma view toca modelos de usuario/vinculo diretamente.
-  · core/services/usuario_service.py — criar, editar, desativar, trocar email.
-  · core/services/vinculo_service.py — criar vínculo, adicionar papel,
-    remover papel, listar vínculos ativos, selecionar papel ativo.
-  · Todas as operações com @transaction.atomic.
+  [D6] Correção — desativar propaga para vínculos
+  · responsavel_service.desativar() deve marcar ativo=False em todos os
+    VinculoResponsavelAluno do responsável, além de remover o PapelVinculo.
+  · aluno_service.desativar() deve marcar ativo=False em todos os
+    VinculoResponsavelAluno do aluno.
 
-  [PERMISSÕES]
-  · PermissaoRequiredMixin verifica request.papel.tipo contra lista da view.
-  · BaseDashboardView garante autenticação + papel na sessão + tipo permitido.
-
-  [TEMPLATES PAI]
-  · Ver seção ARQUITETURA DE TEMPLATES nas decisões globais.
-  · Cada view herda do template pai do tipo do request.papel ativo.
-
-  [MODULARIZAÇÃO — definida antes de Planos/Assinatura]
-  · O sistema é modularizado: cada módulo pode ser ativado/desativado
-    por escola sem comprometer os demais.
-  · Três camadas de controle:
-      Plataforma  → define quais módulos existem (kill-switch global)
-      Plano       → define quais módulos estão incluídos no plano
-      Escola      → pode DESATIVAR módulos do plano (não ativar além dele)
-  · Modelos:
-      Modulo(codigo, nome, ativo_plataforma)
-      Plano(nome, preco_mensal, modulos M2M, limite_alunos, limite_turmas)
-      AssinaturaEscola(escola 1-1, plano, status, data_inicio, data_fim)
-        status choices: TRIAL, ATIVA, SUSPENSA, CANCELADA
-      ModuloEscola(assinatura, modulo, ativo)
-  · Códigos de módulo são constantes Python em core/modulos.py (CodigoModulo)
-    — nunca strings mágicas espalhadas no código.
-  · Módulos opcionais (podem ser desativados por escola):
-      financeiro_escolar, frequencia, avaliacoes, boletim,
-      comunicados, relatorios, responsaveis
-  · Módulos obrigatórios (sempre ativos — fazem parte do Core):
-      escola, diretor, funcionarios, professores, alunos, turmas, series
-  · Mixin ModuloRequiredMixin: toda view de módulo opcional declara
-    modulo_codigo e o mixin verifica ativação antes de despachar.
-  · Módulos são criados via data migration usando as constantes de CodigoModulo.
+  ORDEM DE IMPLEMENTAÇÃO:
+  1. Migration — adicionar escola FK em PerfilResponsavel
+  2. Services — atualizar criar(), criar_sem_acesso(), desativar() em ambos
+  3. Formulários — seção de responsável no form do aluno;
+                    busca dinâmica no form do responsável
+  4. Templates e perfis — links de vinculação e criação cruzada
 
 
-[ 01 ] PLANOS / ASSINATURA SAAS
---------------------------------
-  Status:      [ IMPLEMENTADO — 2026-06-29 ]
-  Descrição:   Gestão de assinaturas das escolas no EduCare. Planos definidos
-               por módulos ativos. Ativação manual pelo Super Admin.
-               Sem integração de gateway de pagamento neste módulo.
-               Inclui o sistema de módulos (Modulo, ModuloEscola).
-               Distinto do Financeiro Escolar.
-  Depende de:  Core
-  Bloqueia:    Onboarding, limites por plano em todos os módulos
+[ R03 ] DIRETOR — PAPEL DE GESTOR, NÃO OPERADOR
+------------------------------------------------
+  Status:      [ IMPLEMENTADO — 2026-07-13 ]
+  Módulos:     Diretor (M07), Colaborador (M08), Professor (M09)
 
-  DECISÕES VALIDADAS:
+  PROBLEMA ATUAL:
+  · O diretor tem acesso operacional a todos os 16 módulos do sistema.
+  · Ele cadastra aluno, lança frequência, cria avaliação, gera cobrança,
+    escreve comunicado — funções que numa escola real são da secretaria
+    e dos professores.
+  · O dashboard mostra apenas contadores de sistema (total de alunos,
+    turmas, professores, colaboradores) — informação de sistema, não de
+    gestão.
 
-  [FLUXO DE ATIVAÇÃO]
-  · Sem automação de pagamento neste módulo — pagamento é tratado fora
-    do sistema. Super Admin confirma e ativa manualmente.
-  · Upgrade/downgrade somente via suporte (não self-service).
+  VISÃO VALIDADA:
+  · Diretor = fiscalizador e gestor — não operador.
+  · Operação diária delegada ao Colaborador e ao Professor.
+  · Dashboard híbrido: contadores de sistema + alertas de gestão.
+    Os contadores permanecem (informação de referência rápida).
+    Os alertas de gestão são adicionados abaixo deles (futura implementação).
 
-  [MODELOS]
-  · Plano(nome, descricao, preco_mensal, modulos M2M, ativo)
-      ativo → desativa da venda sem excluir histórico
-      modulos → ManyToMany(Modulo) — plano é definido por módulos, não por limites
+  [D1] O QUE PERMANECE EXCLUSIVO DO DIRETOR
+  · Configurações da escola (logo, cores, parâmetros acadêmicos e financeiros)
+  · Ano letivo — criar, iniciar, encerrar
+  · Estrutura acadêmica — séries e turmas (decisão estratégica)
+  · Conselho de classe — aprovar situação final dos alunos (APROVADO_CONSELHO)
+  · Desativar/reativar usuários (professor, colaborador, diretor adjunto)
+  · Cancelar cobranças e definir PlanoFinanceiro
+  · Relatório de desempenho por professor (dado sensível — exclusivo)
+  · Auditoria — fiscalizar log de ações da escola
+  · Configurações financeiras (multa, juros, tolerância, gateway padrão)
 
-  · AssinaturaEscola(escola 1-1, plano FK null, status, campos de trial,
-      campos de assinatura ativa, campos de grace, ativado_por, atualizado_em)
-      plano → null durante trial
-      data_inicio_trial, limite_alunos_trial=30, duracao_trial_dias=10
-      data_inicio, data_vencimento, data_grace_fim (null fora do contexto)
-      ativado_por → FK(Usuario) — Super Admin que ativou
+  [D2] O QUE É DELEGADO AO COLABORADOR
+  · Cadastro de alunos e responsáveis
+  · Matrícula e enturmação de alunos
+  · Geração de cobranças e registro de pagamento manual
+  · Comunicados gerais e eventos de agenda
+  · Justificativa de faltas e cancelamento de aula
+  · Edição de dados cadastrais de alunos e responsáveis
 
-  · HistoricoAssinatura(assinatura, status_anterior, status_novo,
-      plano_anterior null, plano_novo null, alterado_por, alterado_em, observacao)
-      Registro imutável de toda mudança de status ou plano.
+  [D3] O QUE JÁ É DO PROFESSOR (e deve ser reforçado)
+  · Lançar frequência das suas turmas
+  · Criar, publicar e corrigir avaliações das suas turmas
+  · Lançar notas
+  · Comunicados para suas turmas
 
-  · SEM modelo de pagamento — Super Admin gerencia status diretamente.
+  [D4] DASHBOARD DO DIRETOR — HÍBRIDO (futura implementação)
+  · Bloco superior: contadores de sistema (atual — mantido)
+      Total de alunos, turmas, professores, colaboradores, ano letivo ativo
+  · Bloco inferior: alertas de gestão (a implementar)
+      — Alunos em risco: frequência abaixo do mínimo ou em recuperação/reprovação
+      — Inadimplência: cobranças vencidas (valor total + quantidade)
+      — Pendências acadêmicas: avaliações publicadas sem nota lançada
+      — Frequência descoberta: turmas sem registro nos últimos X dias
+      — Atividade recente: resumo do LogAuditoria (últimas ações na escola)
+      — Status da assinatura: banner quando GRACE ou aviso de vencimento próximo
 
-  [STATUS — com propósito comercial distinto]
-  · TRIAL          → nunca pagou, dentro dos limites (alunos E prazo)
-  · TRIAL_EXPIRADO → nunca pagou, saiu dos limites — lead de vendas
-  · ATIVA          → pagou, dentro do prazo
-  · GRACE          → prazo venceu, carência de 15 dias — risco de churn
-  · SUSPENSA       → grace venceu, bloqueio total — churn confirmado
-  · CANCELADA      → encerramento deliberado
-
-  [TRIAL]
-  · Limite: 30 alunos ativos OU 10 dias — o que vencer primeiro.
-  · Contagem: apenas alunos com ativo=True (inativos/transferidos não contam).
-  · Todos os módulos ativos durante o trial (escola experimenta o produto completo).
-  · Transição de TRIAL → TRIAL_EXPIRADO disparada em dois pontos:
-      AlunoService.criar() — verifica limite de alunos após cada criação
-      Management command diário — verifica limite de dias
-
-  [GRACE PERIOD]
-  · Duração: 15 dias após vencimento da assinatura ativa.
-  · Acesso: total (escola ainda funciona normalmente).
-  · Alertas: D+0, D+5, D+10, D+14, D+15.
-  · Ao vencer: status → SUSPENSA, bloqueio total.
-  · Transição disparada pelo management command diário.
-
-  [ACESSO POR STATUS — verificado no TenantMiddleware]
-  · TRIAL          → trial_valido()? acesso total : redireciona tela trial expirado
-  · ATIVA          → acesso total
-  · GRACE          → acesso total + banner de alerta persistente
-  · TRIAL_EXPIRADO → bloqueio total
-  · SUSPENSA       → bloqueio total
-  · CANCELADA      → bloqueio total
-
-  [TAREFAS AGENDADAS]
-  · Management command diário (não Celery — overengineering para o estágio atual).
-  · Arquitetura preparada para migrar para Celery futuramente sem reescrever lógica.
-  · Responsabilidades do command:
-      - Transicionar TRIAL → TRIAL_EXPIRADO (limite de dias atingido)
-      - Transicionar ATIVA → GRACE (data_vencimento atingida)
-      - Transicionar GRACE → SUSPENSA (data_grace_fim atingida)
-      - Disparar alertas de grace (D+0, D+5, D+10, D+14, D+15)
-
-  [SERVICE LAYER]
-  · planos/services/assinatura_service.py
-      trial_valido(assinatura) → bool
-      ativar(assinatura, plano, data_vencimento, usuario) → @transaction.atomic
-        cria/recria registros ModuloEscola conforme módulos do plano
-      iniciar_grace(assinatura, usuario) → @transaction.atomic
-      suspender(assinatura, usuario) → @transaction.atomic
-      cancelar(assinatura, usuario) → @transaction.atomic
-      Todos registram em HistoricoAssinatura.
-
-  [FORMULÁRIOS — Super Admin / base_plataforma.html]
-  · PlanoForm             → criar/editar plano (módulos via CheckboxSelectMultiple)
-  · AssinaturaAtivarForm  → plano + data_vencimento + observação
-  · AssinaturaGraceForm   → iniciar grace manualmente + observação
-  · AssinaturaSuspenderForm → suspender + observação
+  [D5] NAVEGAÇÃO DO DIRETOR — REORGANIZAÇÃO (futura implementação)
+  · Sidebar atual lista 16 itens sem hierarquia — tudo no mesmo nível.
+  · Proposta: agrupar por natureza com separadores visuais:
+      GESTÃO:      Dashboard, Auditoria, Relatórios
+      CONFIGURAÇÃO: Escola, Ano Letivo, Séries, Turmas, Configurações
+      EQUIPE:       Diretores, Professores, Colaboradores
+      ACADÊMICO:    Alunos, Responsáveis, Boletim
+      OPERACIONAL:  Avaliações¹, Frequência¹, Financeiro¹, Comunicados¹, Agenda¹
+  · ¹ Itens operacionais: Diretor mantém acesso (supervisão), mas não é
+      o operador principal — são de Colaborador/Professor no dia a dia.
 
 
-[ 02 ] ONBOARDING
------------------
-  Status:      [ IMPLEMENTADO — 2026-06-26 ]
-  Descrição:   Fluxo de entrada de nova escola. Super Admin cria a escola,
-               Diretor recebe convite e completa o cadastro.
-  Depende de:  Core, Planos/Assinatura
-  Bloqueia:    Escala da plataforma
+[ R04 ] COLABORADOR — PERMISSÕES POR FUNÇÃO
+--------------------------------------------
+  Status:      [ IMPLEMENTADO — 2026-07-06 ]
+  Módulos:     Colaborador (M08), todos os módulos com _LeituraMixin/_EscritaMixin
+
+  PROBLEMA ATUAL:
+  · Todos os colaboradores têm o mesmo acesso independentemente da função.
+  · FuncaoEscolar é apenas um campo decorativo no perfil — não influencia
+    nenhuma permissão.
+  · A sidebar do colaborador tem 13 itens — quase idêntica à do diretor.
+  · Secretário e Coordenador Pedagógico têm perfis completamente diferentes
+    na prática mas o sistema os trata de forma idêntica.
 
   DECISÕES VALIDADAS:
 
-  [FLUXO — HÍBRIDO (SUPER ADMIN CRIA, DIRETOR COMPLETA)]
-  · Passo 1 — Super Admin cria escola:
-      Preenche: nome da escola, CNPJ, email e telefone do Diretor
-      EscolaService.criar() → cria UnidadeEscolar + AssinaturaEscola(TRIAL)
-      Sistema gera ConviteOnboarding + link tokenizado
-      Super Admin escolhe canal de envio: email ou WhatsApp
+  [D1] NOVO MODELO — PermissaoFuncao
+  · Granularidade: nível de módulo — ter acesso ao módulo ou não ter.
+    Sem distinção de ação (visualizar vs editar) dentro do módulo.
+  · Modelo:
+      PermissaoFuncao(funcao FK FuncaoEscolar, modulo CharField)
+        unique_together: ('funcao', 'modulo')
+        Ter o registro = ter acesso ao módulo inteiro.
+        Não ter o registro = bloqueio total do módulo.
 
-  · Passo 2 — Diretor acessa o link do convite:
-      Define senha + completa perfil (PerfilDiretor criado)
-      Token marcado como usado=True — link invalidado
+  [D2] MÓDULOS CONFIGURÁVEIS POR FUNÇÃO
+  · Lista de módulos que o diretor pode marcar/desmarcar por função:
+      ALUNOS_RESPONSAVEIS  → Alunos e Responsáveis
+      TURMAS               → Turmas (leitura — estrutura acadêmica)
+      PROFESSORES          → Professores (leitura — contato/referência)
+      FREQUENCIA           → Frequência
+      BOLETIM              → Boletim
+      AVALIACOES           → Avaliações
+      FINANCEIRO           → Financeiro
+      COMUNICADOS_AGENDA   → Comunicados e Agenda
+      RELATORIOS           → Relatórios
+  · Exemplos de configuração por função:
+      Secretário:          alunos, turmas, financeiro, comunicados, agenda,
+                           frequência, boletim, relatórios
+      Coordenador:         alunos, turmas, professores, frequência, boletim,
+                           avaliações, comunicados, relatórios
+      Auxiliar Adm.:       alunos, turmas, comunicados, agenda
 
-  · Passo 3 — Primeiro acesso ao dashboard:
-      Checklist de configuração inicial exibido no dashboard:
-        [ ] Adicionar segmentos de ensino
-        [ ] Configurar séries
-        [ ] Criar ano letivo
-        [ ] Configurar parâmetros acadêmicos
-      Checklist é visual e não-obstrutivo — Diretor configura no próprio ritmo
+  [D3] COLABORADOR SEM FUNÇÃO — ACESSO ZERO
+  · Colaborador sem FuncaoEscolar atribuída acessa apenas:
+      — Dashboard (com banner de aviso: "Nenhuma função atribuída")
+      — Meu Perfil
+  · Tudo mais bloqueado até o diretor atribuir uma função.
 
-  [MODELO]
-  · ConviteOnboarding(escola FK, email, telefone null, token uuid,
-        canal_envio, usado bool, criado_em, expira_em)
-      canal_envio → CanalConvite: EMAIL, WHATSAPP
-      token → uuid4, gerado automaticamente
-      expira_em → criado_em + 72 horas
-      usado → True após primeiro acesso — link não funciona mais
-      Reenvio invalida o convite anterior (usado=True no anterior)
+  [D4] REGRAS QUE NÃO MUDAM
+  · Ações exclusivas do diretor permanecem exclusivas independentemente
+    da função do colaborador:
+      — Cancelar cobrança / criar PlanoFinanceiro
+      — Desativar/reativar usuários
+      — Encerrar ano letivo / gerenciar séries e turmas
+      — Conselho de classe
+      — Relatório de desempenho por professor
+      — Configurações da escola e parâmetros acadêmicos
+  · PermissaoFuncao define o teto de acesso do colaborador — nunca
+    ultrapassa o que o papel FUNCIONARIO pode fazer no sistema.
 
-  [CANAIS DE ENVIO DO CONVITE]
-  · Email   → envio automático pelo sistema
-  · WhatsApp → link gerado pelo sistema, entregue via provider de WhatsApp
-      Provider a definir: Z-API, Evolution API, Twilio ou similar
-      Arquitetura preparada para automação — sem bloquear o design atual
+  [D5] HELPER CENTRAL DE PERMISSÃO
+  · Uma função central usada por todos os módulos:
+      colaborador_tem_acesso(papel, modulo) → bool
+        Se papel.tipo == 'DIRETOR': retorna True sempre
+        Se papel.tipo == 'FUNCIONARIO':
+          funcao = papel.perfil_colaborador.funcao
+          Se funcao is None: retorna False
+          Retorna PermissaoFuncao.objects.filter(
+            funcao=funcao, modulo=modulo
+          ).exists()
+  · Substitui as verificações hardcoded em _LeituraMixin/_EscritaMixin
+    de todos os módulos.
 
-  [CHECKLIST DE CONFIGURAÇÃO INICIAL]
-  · Exibido no dashboard do Diretor até todos os itens serem concluídos.
-  · Itens verificados em tempo real (queries — sem modelo extra).
-  · Dispensável pelo Diretor a qualquer momento.
+  [D6] SIDEBAR DO COLABORADOR — DINÂMICA
+  · Renderiza apenas os módulos que a função do colaborador tem acesso.
+  · Itens sem permissão simplesmente não aparecem na nav.
+  · Sem mensagem de "acesso negado" na sidebar — só aparece o que é permitido.
 
-  [PERMISSÕES]
-  · Criar escola + gerar convite:     APENAS Super Admin
-  · Completar perfil e configurações: Diretor (via link do convite)
+  [D7] UI PARA O DIRETOR — CONFIGURAR PERMISSÕES DA FUNÇÃO
+  · Ao criar ou editar uma FuncaoEscolar, o diretor vê um bloco de
+    checkboxes com os módulos disponíveis.
+  · Marcar = concede acesso. Desmarcar = remove acesso.
+  · Alteração reflete imediatamente para todos os colaboradores com
+    aquela função (sem necessidade de re-login).
 
-  [SERVICE LAYER]
-  · onboarding/services/onboarding_service.py
-      criar_escola_e_convite(dados, canal_envio, criado_por) → @transaction.atomic
-        chama EscolaService.criar() + cria ConviteOnboarding + envia convite
-      reenviar_convite(escola, canal_envio) → invalida anterior + cria novo + envia
-      validar_token(token) → ConviteOnboarding ou raise erro
-      completar_onboarding(token, senha, perfil_dados) → @transaction.atomic
-        define senha do Usuario + cria PerfilDiretor + marca convite como usado
-
-
-[ 03 ] CONFIGURAÇÕES
---------------------
-  Status:      [ IMPLEMENTADO — 2026-06-26 ]
-  Descrição:   Parâmetros configuráveis por escola divididos por domínio.
-               Afetam diretamente Avaliações, Boletim, Frequência e Financeiro.
-  Depende de:  Core, Escola
-  Bloqueia:    Avaliações, Boletim, Financeiro
-
-  DECISÕES VALIDADAS:
-
-  [ESTRUTURA — CONFIGURAÇÕES POR DOMÍNIO]
-  · Configurações divididas em modelos separados por domínio — cada um evolui
-    independentemente sem inflar um modelo único.
-  · Todos os modelos são 1-1 com Escola e criados automaticamente por
-    EscolaService.criar() com valores padrão seguros.
-
-  [MODELOS]
-  · ConfiguracaoAcademica(escola 1-1, nota_maxima, nota_minima_aprovacao,
-        tipo_periodo_letivo, casas_decimais_nota,
-        exige_recuperacao, nota_minima_recuperacao)
-      tipo_periodo_letivo → TipoPeriodoLetivo: BIMESTRAL, TRIMESTRAL, SEMESTRAL
-      casas_decimais_nota → int: 0, 1 ou 2
-      exige_recuperacao → bool
-      Padrões: nota_maxima=10.0, nota_minima_aprovacao=5.0,
-               tipo_periodo_letivo=BIMESTRAL, casas_decimais_nota=1,
-               exige_recuperacao=True, nota_minima_recuperacao=3.0
-
-  · ConfiguracaoFrequencia(escola 1-1, percentual_minimo_frequencia)
-      percentual_minimo_frequencia → Decimal (ex: 75.0)
-      Padrão: 75.0 (exigência legal mínima brasileira)
-
-  · ConfiguracaoProfessor(escola 1-1, carga_horaria_maxima_semanal)
-      carga_horaria_maxima_semanal → int (em horas)
-      Usado como teto de alerta no módulo Professor — não bloqueia criação de slot
-      Padrão: 40
-
-  · ConfiguracaoFinanceira → definida no módulo Financeiro Escolar (módulo 19)
-
-  [PERMISSÕES — APENAS DIRETOR]
-  · Editar qualquer configuração da escola:   APENAS DIRETOR
-  · Visualizar:                               DIRETOR + COLABORADOR (leitura)
-
-  [SERVICE LAYER]
-  · configuracao/services/configuracao_service.py
-      criar_configuracoes_padrao(escola) → chamado por EscolaService.criar()
-        cria ConfiguracaoAcademica + ConfiguracaoFrequencia + ConfiguracaoProfessor
-        com todos os valores padrão
-      atualizar_academica(escola, dados)
-      atualizar_frequencia(escola, dados)
-      atualizar_professor(escola, dados)
-
-
-[ 04 ] NOTIFICAÇÕES
--------------------
-  Status:      [ IMPLEMENTADO — 2026-06-29 ]
-  Descrição:   Camada transversal de notificações in-app. Disparada por
-               eventos do sistema (nota lançada, boleto gerado, comunicado
-               publicado, etc.). Email via API futuramente.
-  Depende de:  Core
-  Bloqueia:    —
-
-  DECISÕES VALIDADAS:
-
-  [CANAIS]
-  · In-app apenas por ora — sininho no topo do layout, lista de notificações.
-  · Arquitetura preparada para adicionar envio via API (email/push) futuramente
-    sem reescrever a camada de criação.
-
-  [MODELO]
-  · Notificacao(destinatario FK Usuario, titulo, mensagem,
-        tipo, lida, criado_em)
-      tipo → TipoNotificacao: ACADEMICA, FINANCEIRA, COMUNICADO, SISTEMA
-      lida → bool, atualizado quando usuário abre a notificação
-      Notificações são por usuário — não por papel ou escola
-
-  [CRIAÇÃO — CHAMADA EXPLÍCITA NO SERVICE]
-  · Cada service chama notificacao_service.criar() ao final da operação relevante.
-  · Sem Django signals — chamadas explícitas são rastreáveis e auditáveis
-    em um sistema multi-tenant com lógica de negócio complexa.
-
-  [LIMPEZA]
-  · Notificações lidas há mais de 60 dias → removidas por management command periódico.
-  · Notificações não lidas: mantidas indefinidamente até o usuário ler.
-
-  [VISIBILIDADE]
-  · Cada usuário vê apenas suas próprias notificações.
-  · Sem notificações cross-escola — sempre no contexto da escola ativa na sessão.
-
-  [SERVICE LAYER]
-  · notificacao/services/notificacao_service.py
-      criar(destinatario, titulo, mensagem, tipo) → cria Notificacao
-      marcar_lida(notificacao)
-      marcar_todas_lidas(usuario)
-      listar_nao_lidas(usuario) → queryset para o sininho
-      limpar_antigas() → chamado pelo management command (lidas há +60 dias)
-
-
-[ 05 ] AUDITORIA
-----------------
-  Status:      [ IMPLEMENTADO — 2026-06-29 ]
-  Descrição:   Log imutável de ações críticas por usuário. Quem fez o quê,
-               quando e de qual escola. Requisito B2B com dados de menores.
-  Depende de:  Core
-  Bloqueia:    —
-
-  DECISÕES VALIDADAS:
-
-  [ESCOPO — APENAS AÇÕES CRÍTICAS]
-  · Registradas explicitamente no service — sem middleware automático.
-  · Ações que geram log: criação/edição/desativação de aluno, lançamento de
-    nota, mudança de matrícula, alterações financeiras, mudanças de senha,
-    login, logout, alterações de assinatura, criação de usuários.
-  · Ações rotineiras (leituras, filtros, navegação) não são registradas.
-
-  [MODELO]
-  · LogAuditoria(usuario FK Usuario null, escola FK Escola null,
-        papel_tipo, acao, modelo, objeto_id,
-        descricao, ip, criado_em)
-      usuario → null quando ação é de sistema (management command)
-      escola  → null para ações da plataforma (Super Admin)
-      papel_tipo → tipo do papel ativo no momento da ação
-      acao → AcaoAuditoria: CRIAR, EDITAR, DESATIVAR, REATIVAR, LOGIN, LOGOUT
-      modelo → nome do model afetado (ex: "Aluno", "MatriculaTurma")
-      objeto_id → PK do objeto afetado
-      descricao → texto livre descrevendo a mudança
-                  (ex: "Turma alterada de 6A para 6B")
-      ip → capturado do request
-
-  [IMUTABILIDADE E RETENÇÃO]
-  · LogAuditoria nunca é editado ou deletado — apenas criado.
-  · Sem soft delete — sem campo ativo.
-  · Retenção: 5 anos (dado de menor de idade — obrigação legal brasileira).
-
-  [VISIBILIDADE]
-  · Super Admin    → todos os logs da plataforma
-  · Diretor        → apenas logs da sua escola
-  · Demais papéis  → sem acesso
-
-  [SERVICE LAYER]
-  · auditoria/services/auditoria_service.py
-      registrar(request, acao, objeto, descricao) → cria LogAuditoria
-        captura usuario, escola e papel_tipo do request automaticamente
-        objeto_id e modelo extraídos do objeto passado
-      listar_escola(escola, filtros) → queryset paginado para o Diretor
-      listar_plataforma(filtros) → queryset paginado para o Super Admin
+  ORDEM DE IMPLEMENTAÇÃO:
+  1. Novo model PermissaoFuncao + ModuloColaborador (TextChoices) + migration
+  2. Helper colaborador_tem_acesso() em core ou em colaborador/services/
+  3. Atualizar _LeituraMixin/_EscritaMixin de todos os módulos afetados
+  4. Sidebar do colaborador dinâmica (template com verificação por módulo)
+  5. UI de checkboxes no form de FuncaoEscolar (criar/editar função)
+  6. Dashboard do colaborador com banner quando sem função atribuída
 
 
 ================================================================================
-MÓDULOS — ESTRUTURA ESCOLAR
+LOG DE DECISÕES DE REFINAMENTO
 ================================================================================
 
-[ 06 ] ESCOLA
--------------
-  Status:      [ IMPLEMENTADO — 2026-06-29 ]
-  Descrição:   Dados cadastrais, segmentos de ensino, múltiplos endereços e
-               identidade visual por escola. Ponto central do tenant.
-  Depende de:  Core, Planos/Assinatura
-  Bloqueia:    Todos os módulos escolares
-
-  DECISÕES VALIDADAS:
-
-  [MODELOS]
-  · UnidadeEscolar(nome, nome_curto, cnpj, slug, tipo, municipio, uf,
-      telefone, email, site, logo, cor_primaria, cor_secundaria, cor_acento,
-      criado_em, atualizado_em)
-      tipo → TipoInstituicao: PUBLICA, PRIVADA, FILANTROPICA
-      municipio/uf → campos de referência rápida (desnormalizados)
-        atualizados via service quando endereço principal muda
-      cor_* → HEX (default: cores do EduCare) — input type="color"
-      SEM campo ativo/status — estado sempre derivado de escola.assinatura.status
-
-  · SegmentoEscolar(escola FK, tipo CharField)
-      unique_together: ('escola', 'tipo')
-      tipos: INF, FI, FII, MED, TEC
-      impacta módulo Séries (filtra séries disponíveis por segmento)
-
-  · EnderecoEscolar(escola FK, nome, principal bool, cep, logradouro, numero,
-      complemento, bairro, municipio, uf)
-      Múltiplos endereços por escola (sede, campus, filiais)
-      UniqueConstraint(fields=['escola'], condition=Q(principal=True))
-        garante no banco: apenas um endereço principal por escola
-
-  [IDENTIDADE VISUAL]
-  · Cores injetadas como CSS custom properties no <head> de todos os
-    templates pai, sobrescrevendo tema padrão do EduCare:
-      --color-primary, --color-secondary, --color-accent
-  · Escola sem cores configuradas herda defaults do modelo (sem quebrar layout)
-  · DaisyUI v5 aceita HEX diretamente nas variáveis CSS
-
-  [SERVICE LAYER]
-  · escola/services/escola_service.py
-      criar(dados, usuario) → @transaction.atomic
-        cria UnidadeEscolar + AssinaturaEscola(status=TRIAL) automaticamente
-        escola nasce no sistema com trial ativo — sem passo manual do Super Admin
-      atualizar(escola, dados)
-      adicionar_endereco(escola, dados)
-      definir_endereco_principal(endereco) → @transaction.atomic
-        remove principal anterior, define novo, sincroniza municipio/uf na escola
-
-
-[ 07 ] DIRETOR
---------------
-  Status:      [ IMPLEMENTADO — 2026-06-26 ]
-  Descrição:   Perfil complementar do diretor. Múltiplos diretores por escola.
-               Template pai próprio (base_diretor.html).
-  Depende de:  Core, Escola
-
-  DECISÕES VALIDADAS:
-
-  [MODELOS]
-  · PerfilDiretor(papel 1-1 PapelVinculo, cpf, data_nascimento, telefone,
-      foto, cargo, numero_ato, data_ato, data_inicio, criado_em, atualizado_em)
-      papel → OneToOne(PapelVinculo) onde papel.tipo = DIRETOR obrigatoriamente
-      cargo → CargoDiretor: TITULAR, SUBSTITUTO, ADJUNTO
-      numero_ato/data_ato → portaria ou ato de nomeação (escolas públicas)
-      FK para PapelVinculo (não VinculoEscola) — dados são do papel, não do vínculo
-
-  [MÚLTIPLOS DIRETORES]
-  · Uma escola pode ter N diretores simultâneos (titular + substituto + adjunto)
-  · Cada diretor tem seu próprio PapelVinculo + PerfilDiretor com cargo distinto
-
-  [PERMISSÕES]
-  · PODE: gerenciar tudo na escola, criar/editar/desativar outros diretores,
-    configurar dados da escola (logo, cores, endereços), ver status da assinatura
-  · NÃO PODE: trocar de plano, ver outras escolas, reativar assinatura suspensa,
-    criar o primeiro diretor da escola (feito no Onboarding pelo Super Admin)
-
-  [DASHBOARD — base no layout atual, adaptações:]
-  · vinculo.tipo_usuario → request.papel.tipo
-  · KPIs: 5 cards → Ano Letivo, Turmas, Alunos, Professores, Funcionários
-    (substituí "Colaboradores" único por dois KPIs separados)
-  · Items "breve" → links reais condicionados a ModuloRequiredMixin
-  · Banner de alerta quando assinatura.status == GRACE
-  · Seção "Diretores" na coluna lateral (criar/listar diretores da escola)
-
-  [SERVICE LAYER]
-  · diretor/services/diretor_service.py
-      criar(escola, usuario_dados, perfil_dados, criado_por) → @transaction.atomic
-        cria/reutiliza Usuario por email + VinculoEscola + PapelVinculo(DIRETOR)
-        + PerfilDiretor
-      editar(perfil_diretor, dados)
-      desativar(papel_vinculo, desativado_por) → PapelVinculo.ativo = False
-
-
-[ 08 ] COLABORADOR
-------------------
-  Status:      [ IMPLEMENTADO — 2026-06-29 ]
-  Descrição:   Colaboradores administrativos da escola (secretaria, coordenação,
-               etc.). Distintos de Professores. Template pai próprio (base_colaborador.html).
-  Depende de:  Core, Escola
-
-  DECISÕES VALIDADAS:
-
-  [NOMENCLATURA]
-  · Termo definitivo na interface: "Colaborador" (não "Funcionário")
-
-  [MODELOS]
-  · Endereco(cep, logradouro, numero, complemento, bairro, municipio, uf)
-      Modelo compartilhado — vive em apps.core
-      Usado por PerfilColaborador, PerfilProfessor, Aluno, Responsavel
-      Cada perfil tem endereco → OneToOne(Endereco, null=True, on_delete=SET_NULL)
-
-  · FuncaoEscolar(escola FK, nome, ativo)
-      unique_together: ('escola', 'nome')
-      Por escola — cada escola cria seu próprio catálogo de funções
-      Absorve e substitui apps.funcao (modelo antigo Funcao será removido)
-      Vive dentro de apps.colaborador
-
-  · PerfilColaborador(papel 1-1 PapelVinculo, cpf, rg, data_nascimento,
-      telefone, foto, data_admissao, tipo_vinculo, pis, funcao FK, endereco 1-1)
-      papel.tipo = COLABORADOR obrigatoriamente
-      tipo_vinculo → TipoVinculoEmpregaticio: CLT, ESTATUTARIO, TEMPORARIO, AUTONOMO
-
-  [FLUXO — COLABORADOR QUE TAMBÉM É PROFESSOR]
-  · Dois passos separados, acionados do perfil do colaborador:
-      Passo 1: Diretor cadastra colaborador
-        → cria/reutiliza Usuario (por email) + VinculoEscola + PapelVinculo(COLABORADOR)
-          + PerfilColaborador
-      Passo 2 (opcional): Diretor clica "Adicionar papel de Professor"
-        → cria PapelVinculo(PROFESSOR) + PerfilProfessor no mesmo VinculoEscola
-        → usuário verá tela de seleção de papel no próximo login
-
-  [PERMISSÕES]
-  · Cadastrar: apenas DIRETOR
-  · Editar próprio perfil: o próprio COLABORADOR
-  · Editar perfil de outro: apenas DIRETOR
-  · Desativar: apenas DIRETOR
-  · Ver lista: DIRETOR + COLABORADOR (leitura)
-
-  [REMOÇÕES]
-  · apps.funcao removido integralmente — substituído por FuncaoEscolar em apps.colaborador
-
-  [SERVICE LAYER]
-  · colaborador/services/colaborador_service.py
-      criar(escola, usuario_dados, perfil_dados, criado_por) → @transaction.atomic
-      editar(perfil, dados) → atualiza perfil + endereco
-      desativar(papel_vinculo, desativado_por)
-  · colaborador/services/funcao_service.py
-      criar(escola, nome), editar(funcao, nome), desativar(funcao)
-
-
-[ 09 ] PROFESSOR
-----------------
-  Status:      [ IMPLEMENTADO — 2026-06-29 ]
-  Descrição:   Perfil do professor, formação acadêmica, vínculo com turmas
-               e matérias, calendário semanal, carga horária.
-               Template pai próprio (base_professor.html).
-  Depende de:  Core, Escola, Turmas, Matérias
-
-  DECISÕES VALIDADAS:
-
-  [MODELOS]
-  · PerfilProfessor(papel 1-1 PapelVinculo, cpf, rg, data_nascimento,
-      telefone, foto, endereco 1-1 Endereco, data_admissao, tipo_vinculo,
-      registro_profissional, criado_em, atualizado_em)
-      papel.tipo = PROFESSOR obrigatoriamente
-      Usa modelo Endereco compartilhado (definido em core)
-
-  · FormacaoAcademica(professor FK, nivel, curso, instituicao, ano_conclusao)
-      nivel → NivelFormacao: GRADUACAO, ESPECIALIZACAO, MESTRADO, DOUTORADO, OUTRO
-      Múltiplas formações por professor
-
-  · ProfessorTurma(professor FK, turma FK, ano_letivo FK, ativo)
-      Modo INF/FI — professor responsável pela turma inteira
-      unique_together: ('turma', 'ano_letivo') ← uma turma, um responsável por ano
-
-  · ProfessorMateriaTurma(professor FK, materia FK, turma FK, ano_letivo FK, ativo)
-      Modo FII/MED/TEC — professor leciona matéria específica em turma específica
-      unique_together: ('materia', 'turma', 'ano_letivo')
-
-  [GRADE HORÁRIA — modelos vivem em apps.turma]
-  · PeriodoAula(escola FK, numero, nome, hora_inicio, hora_fim, turno, ativo)
-      unique_together: ('escola', 'numero', 'turno')
-      Configurado por escola — base para todos os slots de aula
-
-  · HorarioAula(turma FK, periodo FK, dia_semana, materia FK null,
-      professor FK, ano_letivo FK, ativo)
-      dia_semana: SEG=1 … SAB=6
-      materia → null no modo ProfessorTurma (INF/FI)
-      unique_together:
-        ('turma', 'periodo', 'dia_semana', 'ano_letivo')    ← sem dupla aula na turma
-        ('professor', 'periodo', 'dia_semana', 'ano_letivo') ← sem professor em 2 lugares
-      Conflitos resolvidos no banco pelos unique_together (períodos fixos não se sobrepõem)
-
-  [DUAS VISÕES DO CALENDÁRIO SEMANAL]
-  · Calendário da turma (CRUD — diretor): grade dia × período, cada célula mostra
-      matéria + professor. Clique para criar/editar/remover slot.
-  · Calendário do professor (leitura — próprio professor): grade dia × período,
-      cada célula mostra matéria + turma.
-
-  [FILTROS DE ENCAIXE DE PERÍODOS — server-side puro]
-  · Ao criar slot, grade exibe três estados por célula:
-      VERDE  → professor livre E turma livre
-      AMARELO → um dos dois ocupado
-      VERMELHO → ambos ocupados (conflito garantido)
-  · Cálculo server-side: view consulta HorarioAula existentes e passa
-      conjuntos de slots ocupados ao template para coloração.
-
-  [CARGA HORÁRIA SEMANAL]
-  · Calculada em tempo real: soma dos (hora_fim − hora_inicio) dos HorarioAula
-      ativos do professor no ano letivo corrente.
-  · Teto configurável por escola (em Configurações).
-  · Acima do teto: banner de alerta. NÃO bloqueia criação do slot.
-
-  [VISIBILIDADE]
-  · Professor vê apenas: próprias turmas, próprias matérias, alunos das
-      suas turmas, próprio perfil e próprio calendário.
-  · Não vê outros professores nem dados administrativos.
-
-  [PERMISSÕES]
-  · Cadastrar/desativar: apenas DIRETOR
-  · Editar próprio perfil e formações: o próprio PROFESSOR
-  · Vincular a turma/matéria/grade: apenas DIRETOR
-
-  [SERVICE LAYER]
-  · professor/services/professor_service.py
-      criar(escola, usuario_dados, perfil_dados, criado_por) → @transaction.atomic
-      adicionar_formacao(perfil, dados) / remover_formacao(formacao)
-      vincular_turma(perfil, turma, ano_letivo)
-      vincular_materia_turma(perfil, materia, turma, ano_letivo)
-      calcular_carga_horaria(perfil, ano_letivo) → Decimal (horas)
-      desativar(papel_vinculo, desativado_por)
-  · Grade horária gerenciada por turma_service.py (módulo Turmas)
-
-
-[ 10 ] RESPONSÁVEIS
--------------------
-  Status:      [ IMPLEMENTADO — 2026-06-29 ]
-  Descrição:   Pais e responsáveis vinculados a alunos. Acesso a boletim,
-               comunicados, financeiro escolar do filho. Template pai próprio.
-  Depende de:  Core, Alunos
-  Bloqueia:    Financeiro Escolar, Comunicados
-
-  DECISÕES VALIDADAS:
-
-  [MODELOS]
-  · PerfilResponsavel(usuario 1-1 Usuario, cpf, rg, data_nascimento,
-        endereco 1-1 Endereco, criado_em, atualizado_em)
-      Exceção arquitetural: 1-1 com Usuario (não com PapelVinculo).
-      Motivo: dados pessoais pertencem à pessoa, não à escola — responsável
-        pode ter filhos em múltiplas escolas sem duplicar perfil.
-      Acesso por escola continua via VinculoEscola + PapelVinculo(RESPONSAVEL).
-      Usa modelo Endereco compartilhado (definido em core).
-      Apenas um email por responsável — usa Usuario.email.
-
-  · VinculoResponsavelAluno(responsavel FK PerfilResponsavel, aluno FK Aluno,
-        parentesco, responsavel_financeiro bool, responsavel_principal bool, ativo)
-      parentesco → Parentesco: PAI, MAE, AVO, TIO, TIA, RESPONSAVEL_LEGAL, OUTRO
-        (vive aqui — é a relação com o filho, não com a escola)
-      responsavel_financeiro → recebe cobranças do módulo Financeiro Escolar
-      responsavel_principal → contato prioritário para comunicados e notificações
-      UniqueConstraint(fields=['aluno'], condition=Q(responsavel_principal=True))
-        garante no banco: apenas um responsável principal por aluno
-
-  [MULTI-ESCOLA — RESPONSÁVEL COM FILHOS EM ESCOLAS DIFERENTES]
-  · Responsável pode ter filhos em N escolas diferentes.
-  · No login: TenantMiddleware detecta N VinculoEscola e exibe tela de seleção
-    de escola (já coberto pelo fluxo validado no Core).
-  · Verificador ao cadastrar em nova escola:
-      1. Busca Usuario por CPF ou email
-      2. Encontrado → cria apenas VinculoEscola + PapelVinculo(RESPONSAVEL)
-           sem novo PerfilResponsavel
-      3. Não encontrado → cria Usuario + PerfilResponsavel + VinculoEscola
-           + PapelVinculo(RESPONSAVEL)
-
-  [LOGIN OPCIONAL]
-  · Responsável pode ser cadastrado sem Usuario (contato puro — sem acesso ao sistema).
-  · Nesse caso: PerfilResponsavel.usuario = null.
-  · Acesso ao sistema ativado posteriormente quando necessário:
-      responsavel_service.ativar_acesso(perfil, email) → cria Usuario + VinculoEscola
-        + PapelVinculo(RESPONSAVEL) e vincula ao PerfilResponsavel existente.
-
-  [VISIBILIDADE]
-  · Responsável vê apenas: boletim dos seus filhos, comunicados da escola,
-    financeiro dos seus filhos. Nada além disso.
-  · Não vê outros alunos, professores, turmas completas ou dados administrativos.
-
-  [PERMISSÕES]
-  · Cadastrar responsável:                    DIRETOR + COLABORADOR
-  · Vincular responsável a aluno:             DIRETOR + COLABORADOR
-  · Editar próprio perfil:                    o próprio RESPONSAVEL
-  · Editar perfil de outro:                   DIRETOR + COLABORADOR
-  · Desativar:                                DIRETOR + COLABORADOR
-  · Visualizar lista:                         DIRETOR + COLABORADOR
-
-  [SERVICE LAYER]
-  · responsavel/services/responsavel_service.py
-      criar(escola, usuario_dados, perfil_dados, criado_por) → @transaction.atomic
-        verifica Usuario existente por CPF ou email antes de criar
-        se encontrado: reutiliza Usuario + PerfilResponsavel, cria só VinculoEscola
-        se não encontrado: cria Usuario + PerfilResponsavel + VinculoEscola
-        em ambos os casos: cria PapelVinculo(RESPONSAVEL)
-      criar_sem_acesso(escola, perfil_dados, criado_por) → @transaction.atomic
-        cria PerfilResponsavel sem Usuario (usuario=null)
-      ativar_acesso(perfil, email) → cria Usuario + VinculoEscola + PapelVinculo
-      vincular_aluno(perfil, aluno, dados) → cria VinculoResponsavelAluno
-      editar(perfil, dados)
-      desativar(papel_vinculo, desativado_por)
+DATA        REF     DECISÃO
+----------  ------  -----------------------------------------------------------
+2026-07-06  R01     MatriculaTurma criada sempre explicitamente — nunca silenciosa
+2026-07-06  R01     Filtro "Sem turma" na listagem de alunos — ausência visível na UI
+2026-07-06  R02     PerfilResponsavel recebe FK escola — Opção A confirmada
+2026-07-06  R02     Cadastro de aluno com seção opcional de responsável
+2026-07-06  R02     Cadastro de responsável com busca dinâmica de aluno
+2026-07-06  R02     Perfil do aluno com links de vinculação/criação de responsável
+2026-07-06  R02     Perfil do responsável com links de vinculação/criação de aluno
+2026-07-06  R02     desativar() propaga ativo=False para VinculoResponsavelAluno
+2026-07-06  R03     Diretor = gestor/fiscalizador — não operador diário
+2026-07-06  R03     Operação delegada: cadastros e financeiro → Colaborador; frequência/avaliações → Professor
+2026-07-06  R03     Dashboard híbrido: contadores de sistema (mantidos) + alertas de gestão (futura implementação)
+2026-07-06  R03     Alertas de gestão: alunos em risco, inadimplência, pendências, frequência descoberta, atividade recente
+2026-07-06  R03     Navegação do diretor: reorganizar sidebar em grupos por natureza (futura implementação)
+2026-07-06  R03     Diretor mantém acesso aos módulos operacionais para supervisão — não é o operador principal
+2026-07-06  R04     PermissaoFuncao: granularidade por módulo, sem distinção de ação
+2026-07-06  R04     Colaborador sem função = acesso zero (só dashboard com aviso + meu perfil)
+2026-07-06  R04     Helper central colaborador_tem_acesso() substitui mixins hardcoded em todos os módulos
+2026-07-06  R04     Sidebar do colaborador dinâmica — renderiza só módulos permitidos pela função
+2026-07-06  R04     UI de checkboxes no form de FuncaoEscolar para o diretor configurar permissões
+2026-07-06  R04     Ações exclusivas do diretor permanecem exclusivas independente da função
 
 
 ================================================================================
-MÓDULOS — ORGANIZAÇÃO ACADÊMICA
+PONTOS PENDENTES DE DEBATE
 ================================================================================
+[ Itens a debater nas próximas sessões — por ordem de prioridade ]
 
-[ 11 ] ANO LETIVO (ANO CORRENTE)
----------------------------------
-  Status:      [ IMPLEMENTADO — 2026-06-29 ]
-  Descrição:   Definição e controle do ano letivo ativo. Base temporal para
-               turmas, avaliações, frequência e boletim.
-  Depende de:  Core, Escola
-  Bloqueia:    Turmas, Avaliações, Frequência, Boletim
+[ P01 ] PROFESSOR
+  · Papel e escopo de acesso — o que o professor vê e faz no sistema
+  · Portal do professor — dashboard com o que é relevante para ele
+  · Avaliações — criar, lançar notas, corrigir discursivas
+  · Frequência — lançamento das suas turmas
+  · Boletim — acesso aos alunos das suas turmas/matérias
+  · Comunicados — escrever para suas turmas
+  · Grade horária — visualização do próprio calendário
+  · Visibilidade limitada — professor não vê dados de outros professores
+  · Formação acadêmica — edição do próprio perfil
 
-  DECISÕES VALIDADAS:
+[ P02 ] PORTAL DO ALUNO
+  · O que o aluno vê no dashboard (além do que já existe)
+  · Avaliação online — fluxo de submissão de respostas (adiado, mas precisa ser debatido)
+  · Boletim próprio — visualização de notas e frequência
+  · Comunicados — leitura de comunicados direcionados a ele
+  · Agenda — eventos da escola/turma
+  · Edição do próprio perfil
 
-  [MODELOS]
-  · AnoLetivo(escola FK, ano int, data_inicio, data_fim, status,
-      criado_por FK, criado_em, atualizado_em)
-      status → StatusAnoLetivo: EM_PLANEJAMENTO, EM_ANDAMENTO, ENCERRADO
-      unique_together: ('escola', 'ano') — sem dois "2025" na mesma escola
-      UniqueConstraint(fields=['escola'], condition=Q(status='EM_ANDAMENTO'))
-        garante no banco: no máximo um ano letivo ativo por escola
+[ P03 ] PORTAL DO RESPONSÁVEL
+  · O que o responsável vê no dashboard por filho
+  · Boletim dos filhos — acesso a notas e frequência
+  · Financeiro — visualização das cobranças dos filhos
+  · Comunicados e agenda — leitura
+  · Notificações — alertas de frequência e desempenho
+  · Edição do próprio perfil
 
-  · PeriodoLetivo(ano_letivo FK, numero int, nome, data_inicio, data_fim)
-      unique_together: ('ano_letivo', 'numero')
-      Datas dos períodos devem estar contidas nas datas do AnoLetivo
-      Períodos não podem ter datas sobrepostas entre si
-      Criação/edição/remoção bloqueada quando ano_letivo.status = ENCERRADO
+[ P04 ] FINANCEIRO — MERCADO PAGO REAL
+  · Gateway ainda é stub — 3 métodos sem implementação real
+  · Fluxo de pagamento online: boleto, Pix, cartão
+  · Webhook para atualização automática de status
+  · Fluxo do responsável pagando pelo portal
 
-  [TRANSIÇÕES DE STATUS]
-  · EM_PLANEJAMENTO → EM_ANDAMENTO: service valida ausência de outro
-      EM_ANDAMENTO na mesma escola antes de transicionar
-  · EM_ANDAMENTO → ENCERRADO: acionado manualmente pelo Diretor
-  · ENCERRADO é estado final — sem retorno
+[ P05 ] AVALIAÇÃO ONLINE (FLUXO DO ALUNO)
+  · Models já existem (RespostaAluno, OpcaoResposta) mas sem views/templates
+  · Aluno acessa avaliação publicada, responde questões
+  · Múltipla escolha: autocorreção na submissão
+  · Discursiva: professor corrige manualmente
+  · Integração com NotaAluno após correção completa
 
-  [PERMISSÕES — APENAS DIRETOR]
-  · Criar AnoLetivo:                          APENAS DIRETOR
-  · Iniciar (→ EM_ANDAMENTO):                 APENAS DIRETOR
-  · Encerrar (→ ENCERRADO):                   APENAS DIRETOR
-  · Criar / editar / remover PeriodoLetivo:   APENAS DIRETOR
-  · Visualizar AnoLetivo e PeriodoLetivo:     DIRETOR + COLABORADOR (leitura)
+[ P06 ] LIMITE DE ALUNOS NO TRIAL
+  · AlunoService.criar() não verifica o limite de 30 alunos
+  · Quando atingir: disparar TRIAL → TRIAL_EXPIRADO
+  · Feedback claro na UI ao tentar cadastrar além do limite
 
-  [SERVICE LAYER]
-  · ano_letivo/services/ano_letivo_service.py
-      criar(escola, dados, criado_por) → cria com status=EM_PLANEJAMENTO
-      iniciar(ano_letivo, usuario) → valida unicidade de EM_ANDAMENTO + transiciona
-      encerrar(ano_letivo, usuario) → EM_ANDAMENTO → ENCERRADO
-      criar_periodo(ano_letivo, dados) → valida datas dentro do ano + sem sobreposição
-      editar_periodo(periodo, dados)
-      remover_periodo(periodo) → bloqueado se ano_letivo.status = ENCERRADO
+[ P07 ] COMUNICADOS E AGENDA — REFINAMENTO
+  · Destinatários: lógica de quem realmente recebe cada comunicado
+  · Notificação ao publicar — quem é notificado e como
+  · Professor pode criar apenas para suas turmas — validação de escopo
+  · Leitura rastreada — quem leu e quem não leu (relevante para convocações)
 
+[ P08 ] FREQUÊNCIA — REFINAMENTO
+  · Modo de lançamento (DIARIO/SEMANAL/MENSAL) — UI atual suporta?
+  · Alertas de infrequência — notificação ao responsável está funcionando?
+  · Visibilidade do colaborador após R04 (via PermissaoFuncao)
 
-[ 12 ] SÉRIES
--------------
-  Status:      [ IMPLEMENTADO — 2026-06-29 ]
-  Descrição:   Níveis de ensino (1º ano, 2º ano, etc.). Configuração por
-               escola, vinculada ao segmento (fundamental, médio, etc.).
-  Depende de:  Core, Escola
-  Bloqueia:    Turmas, Matérias
+[ P09 ] BOLETIM — REFINAMENTO
+  · Aprovação por conselho de classe — fluxo completo
+  · PDF com identidade visual da escola — testado?
+  · Visibilidade por papel após redistribuição de R03/R04
 
-  DECISÕES VALIDADAS:
-
-  [MODELOS]
-  · Serie(escola FK, segmento FK SegmentoEscolar, nome, ordem int, ativo)
-      unique_together: ('escola', 'segmento', 'nome')
-      ordem → define sequência de exibição dentro do segmento
-      ativo → desativa sem deletar (preserva histórico de turmas antigas)
-
-  [SÉRIES PADRÃO POR SEGMENTO]
-  · Ao criar um SegmentoEscolar, o service cria automaticamente as séries
-    padrão do segmento via data migration de referência + chamada no service.
-  · Escola pode editar nomes, reordenar e desativar — nunca são obrigatórias.
-  · Séries padrão por segmento:
-      INF → Berçário, Maternal I, Maternal II, Pré I, Pré II
-      FI  → 1º Ano, 2º Ano, 3º Ano, 4º Ano, 5º Ano
-      FII → 6º Ano, 7º Ano, 8º Ano, 9º Ano
-      MED → 1ª Série, 2ª Série, 3ª Série
-      TEC → 1º Módulo, 2º Módulo, 3º Módulo
-
-  [PERMISSÕES — APENAS DIRETOR]
-  · Criar / editar / desativar Série:   APENAS DIRETOR
-  · Visualizar:                         DIRETOR + COLABORADOR (leitura)
-
-  [SERVICE LAYER]
-  · serie/services/serie_service.py
-      criar_series_padrao(escola, segmento) → chamado por EscolaService ao
-        adicionar SegmentoEscolar — popula séries padrão do segmento
-      criar(escola, segmento, dados) → série customizada
-      editar(serie, dados)
-      desativar(serie)
-
-
-[ 13 ] TURMAS
--------------
-  Status:      [ IMPLEMENTADO — 2026-06-29 ]
-  Descrição:   Agrupamento de alunos por série, turno e ano letivo. Vínculo
-               com professores e matérias.
-  Depende de:  Core, Escola, Séries, Ano Letivo
-  Bloqueia:    Alunos, Avaliações, Frequência
-
-  DECISÕES VALIDADAS:
-
-  [MODELOS]
-  · Turma(escola FK, ano_letivo FK, serie FK, nome, turno, capacidade, ativo)
-      turno → Turno: MATUTINO, VESPERTINO, NOTURNO, INTEGRAL
-      capacidade → int null=True (null = sem limite definido)
-      ativo → desativa sem deletar (preserva histórico)
-      unique_together: ('escola', 'ano_letivo', 'serie', 'nome', 'turno')
-
-  · ProfessorTurma(professor FK, turma FK, ano_letivo FK, ativo)
-      Modo INF/FI — professor responsável pela turma inteira
-      unique_together: ('turma', 'ano_letivo') ← uma turma, um responsável por ano
-      Vive em apps.turma (não em apps.professor)
-
-  · ProfessorMateriaTurma(professor FK, materia FK, turma FK, ano_letivo FK, ativo)
-      Modo FII/MED/TEC — professor leciona matéria específica em turma específica
-      unique_together: ('materia', 'turma', 'ano_letivo')
-      Vive em apps.turma (não em apps.professor)
-
-  · PeriodoAula(escola FK, numero, nome, hora_inicio, hora_fim, turno, ativo)
-      unique_together: ('escola', 'numero', 'turno')
-      Configurado por escola — base para todos os slots de aula
-      Vive em apps.turma
-
-  · HorarioAula(turma FK, periodo FK, dia_semana, materia FK null,
-      professor FK, ano_letivo FK, ativo)
-      dia_semana: SEG=1 … SAB=6
-      materia → null no modo ProfessorTurma (INF/FI)
-      unique_together:
-        ('turma', 'periodo', 'dia_semana', 'ano_letivo')     ← sem dupla aula na turma
-        ('professor', 'periodo', 'dia_semana', 'ano_letivo') ← sem professor em 2 lugares
-      Vive em apps.turma
-
-  [LIMITE POR PLANO]
-  · TurmaService.criar() consulta AssinaturaEscola antes de criar.
-  · Se turmas_ativas >= plano.limite_turmas → erro de negócio (não HTTP 403).
-  · Durante TRIAL: limite aplicado conforme plano trial definido na AssinaturaEscola.
-
-  [PERMISSÕES — APENAS DIRETOR]
-  · Criar / editar / desativar Turma:                APENAS DIRETOR
-  · Vincular professor ou matéria à turma:           APENAS DIRETOR
-  · Visualizar lista de turmas:                      DIRETOR + COLABORADOR (todas)
-                                                     PROFESSOR (apenas as suas)
-
-  [SERVICE LAYER]
-  · turma/services/turma_service.py
-      criar(escola, ano_letivo, serie, dados) → verifica limite do plano + cria Turma
-      editar(turma, dados)
-      desativar(turma)
-      vincular_professor_turma(turma, professor, ano_letivo) → ProfessorTurma
-      vincular_professor_materia(turma, professor, materia, ano_letivo) → ProfessorMateriaTurma
-      criar_periodo_aula(escola, dados) → PeriodoAula
-      criar_horario(turma, periodo, dia_semana, professor, materia, ano_letivo) → HorarioAula
-
-
-[ 14 ] MATÉRIAS
----------------
-  Status:      [ IMPLEMENTADO — 2026-06-29 ]
-  Descrição:   Disciplinas curriculares. Vínculo com série, turma e professor
-               responsável. Base para avaliações e boletim.
-  Depende de:  Core, Escola, Séries
-  Bloqueia:    Avaliações, Boletim, Professores
-
-  DECISÕES VALIDADAS:
-
-  [MODELOS]
-  · Materia(escola FK, nome, codigo null, ativo)
-      unique_together: ('escola', 'nome')
-      codigo → campo opcional, ex: "MAT", "PORT" — útil para boletim e relatórios
-      ativo → desativa sem deletar (preserva histórico de avaliações antigas)
-
-  · MateriaSerieConfig(serie FK, materia FK, ativo)
-      unique_together: ('serie', 'materia')
-      Turma herda automaticamente as matérias ativas da sua Série
-      Carga horária NÃO é declarada aqui — sempre derivada dos HorarioAula
-
-  [MATÉRIAS PADRÃO BNCC]
-  · Pool criado automaticamente ao criar a escola (EscolaService.criar()).
-  · Escola pode criar novas, editar nomes e desativar — pool não é obrigatório.
-  · Matérias padrão (base BNCC — comuns a todos os segmentos):
-      Língua Portuguesa, Matemática, Ciências, História, Geografia,
-      Arte, Educação Física, Língua Inglesa, Biologia, Física, Química,
-      Filosofia, Sociologia, Educação Religiosa
-
-  [HERANÇA DE MATÉRIAS PELA TURMA]
-  · Ao criar uma Turma, as matérias ativas da MateriaSerieConfig da sua
-    Série ficam disponíveis para vínculo com professor (ProfessorMateriaTurma).
-  · Diretor não precisa recadastrar matérias por turma — apenas associa professor.
-
-  [CARGA HORÁRIA]
-  · Derivada dos HorarioAula existentes para a matéria na turma/ano letivo.
-  · Sem campo manual — cálculo em tempo real, sem risco de inconsistência.
-
-  [PERMISSÕES — APENAS DIRETOR]
-  · Criar / editar / desativar Matéria:         APENAS DIRETOR
-  · Vincular / desvincular Matéria a Série:     APENAS DIRETOR
-  · Visualizar matérias:                        DIRETOR + COLABORADOR (todas)
-                                                PROFESSOR (apenas as suas)
-
-  [SERVICE LAYER]
-  · materia/services/materia_service.py
-      criar_materias_padrao(escola) → chamado por EscolaService.criar()
-      criar(escola, dados) → matéria customizada
-      editar(materia, dados)
-      desativar(materia)
-      vincular_serie(materia, serie) → cria MateriaSerieConfig
-      desvincular_serie(config) → desativa MateriaSerieConfig
+[ P10 ] NAVEGAÇÃO GERAL — REORGANIZAÇÃO
+  · Sidebar do diretor: agrupar por natureza (Gestão / Configuração / Equipe / etc.)
+  · Sidebar do colaborador: dinâmica por PermissaoFuncao (R04)
+  · Sidebar do professor: revisar após debate P01
+  · Consistência visual entre as sidebars dos diferentes papéis
 
 
 ================================================================================
-MÓDULOS — VIDA ESCOLAR
-================================================================================
-
-[ 15 ] ALUNOS
--------------
-  Status:      [ IMPLEMENTADO — 2026-06-29 ]
-  Descrição:   Cadastro completo do aluno, matrícula, vínculo com turma,
-               responsáveis. Template pai próprio.
-  Depende de:  Core, Escola, Turmas, Responsáveis
-  Bloqueia:    Avaliações, Frequência, Boletim, Financeiro Escolar
-
-  DECISÕES VALIDADAS:
-
-  [MODELOS]
-  · Aluno(escola FK, usuario 1-1 Usuario null, matricula, nome_completo,
-        data_nascimento, cpf null, rg null, foto null,
-        endereco 1-1 Endereco null, ativo, criado_em, atualizado_em)
-      usuario → null por padrão (login ativado quando necessário)
-      matricula → gerada automaticamente pelo service (sequencial por escola)
-      ativo → False quando transferido, evadido ou concluinte
-      unique_together: ('escola', 'matricula')
-      Dados pessoais pertencem ao aluno — sem duplicação por turma ou ano
-
-  · MatriculaTurma(aluno FK, turma FK, ano_letivo FK,
-        data_matricula, situacao, ativo)
-      situacao → SituacaoMatricula:
-        MATRICULADO   → ativo na turma
-        TRANSFERIDO   → saiu para outra escola
-        EVADIDO       → abandono escolar
-        CONCLUINTE    → concluiu o ano/curso
-      ativo → True apenas quando MATRICULADO (conta para limite do plano/trial)
-      UniqueConstraint(fields=['aluno', 'ano_letivo'], condition=Q(ativo=True))
-        garante no banco: apenas uma matrícula ativa por aluno por ano letivo
-
-  [TROCA DE TURMA — DENTRO DA MESMA ESCOLA]
-  · Troca de turma no mesmo ano letivo = UPDATE em MatriculaTurma.turma.
-  · NÃO cria novo registro — preserva histórico limpo para relatórios.
-  · Novo MatriculaTurma só é criado em novo ano letivo ou entrada em nova escola.
-
-  [SAÍDA DA ESCOLA]
-  · Transferência para outra escola → situacao=TRANSFERIDO, ativo=False
-  · Evasão                          → situacao=EVADIDO, ativo=False
-  · Conclusão                       → situacao=CONCLUINTE, ativo=False
-  · Em todos os casos: Aluno.ativo = False
-
-  [LIMITE POR PLANO / TRIAL]
-  · AlunoService.criar() e .matricular() verificam AssinaturaEscola antes de executar.
-  · Contagem: alunos com ativo=True (transferidos/evadidos/concluintes não contam).
-  · Trial: ao atingir 30 alunos ativos → AlunoService dispara TRIAL → TRIAL_EXPIRADO.
-  · Plano ativo: respeita plano.limite_alunos.
-
-  [LOGIN OPCIONAL]
-  · Aluno pode existir sem Usuario — padrão para ensino fundamental (alunos menores).
-  · Acesso ativado posteriormente via service quando necessário.
-
-  [PERMISSÕES]
-  · Cadastrar aluno:                          DIRETOR + COLABORADOR
-  · Matricular em turma:                      DIRETOR + COLABORADOR
-  · Trocar de turma:                          DIRETOR + COLABORADOR
-  · Transferir / evadir / concluir:           DIRETOR + COLABORADOR
-  · Editar dados do aluno:                    DIRETOR + COLABORADOR
-  · Ver próprio boletim e frequência:         o próprio ALUNO (quando tiver login)
-
-  [SERVICE LAYER]
-  · aluno/services/aluno_service.py
-      gerar_matricula(escola) → número sequencial único por escola
-      criar(escola, dados, criado_por) → @transaction.atomic
-        verifica limite do plano antes de criar
-        gera matrícula automaticamente
-      matricular(aluno, turma, ano_letivo) → cria MatriculaTurma(MATRICULADO)
-        verifica limite do plano/trial após cada matrícula
-      trocar_turma(matricula, nova_turma) → UPDATE MatriculaTurma.turma
-      transferir(matricula, criado_por) → situacao=TRANSFERIDO, ativo=False
-      evadir(matricula, criado_por) → situacao=EVADIDO, ativo=False
-      concluir(matricula, criado_por) → situacao=CONCLUINTE, ativo=False
-      ativar_acesso(aluno, email) → cria Usuario + VinculoEscola + PapelVinculo(ALUNO)
-
-
-[ 16 ] AVALIAÇÕES
------------------
-  Status:      [ IMPLEMENTADO — 2026-06-29 ]
-  Descrição:   Criação de avaliações com duas modalidades: online (gabarito
-               automático para múltipla escolha, discursiva corrigida pelo
-               professor) ou presencial (PDF gerado pelo sistema, notas
-               lançadas manualmente). Feature central do produto.
-  Depende de:  Core, Turmas, Matérias, Professores, Alunos, Ano Letivo,
-               Configurações, Períodos Letivos
-  Bloqueia:    Boletim
-
-  DECISÕES VALIDADAS:
-
-  [MODELOS]
-  · Avaliacao(escola FK, turma FK, materia FK, professor FK,
-        ano_letivo FK, periodo_letivo FK, titulo, tipo, modalidade,
-        data_aplicacao, nota_maxima, peso, publicada, criado_em)
-      tipo → TipoAvaliacao: PROVA, TRABALHO, SEMINARIO, ATIVIDADE, RECUPERACAO
-      modalidade → ModalidadeAvaliacao: ONLINE, PRESENCIAL
-      peso → Decimal — para cálculo de média ponderada (se aplicável)
-      publicada → bool — professor controla quando alunos/responsáveis podem ver
-
-  · Questao(avaliacao FK, numero int, enunciado, tipo, pontuacao Decimal)
-      tipo → TipoQuestao: MULTIPLA_ESCOLHA, DISCURSIVA
-      unique_together: ('avaliacao', 'numero')
-      ONLINE: obrigatória para aplicação digital
-      PRESENCIAL: opcional — usada apenas se professor quiser gerar PDF pelo sistema
-
-  · OpcaoResposta(questao FK, letra, texto, correta bool)
-      Apenas para questões MULTIPLA_ESCOLHA
-      unique_together: ('questao', 'letra')
-      correta → apenas uma opção True por questão (validado no service)
-
-  · RespostaAluno(questao FK, aluno FK, opcao_escolhida FK null,
-        resposta_texto null, nota_questao Decimal null, corrigida bool)
-      unique_together: ('questao', 'aluno')
-      opcao_escolhida → preenchida em MULTIPLA_ESCOLHA
-      resposta_texto → preenchida em DISCURSIVA
-      corrigida → True automaticamente em MC ao submeter
-                  True manualmente pelo professor em DISCURSIVA
-
-  · NotaAluno(avaliacao FK, aluno FK, nota Decimal null,
-        ausente bool, observacao null, lancado_em)
-      unique_together: ('avaliacao', 'aluno')
-      nota → null quando ausente ou não lançada
-      ausente → registra falta na avaliação (distinto de nota zero)
-      ONLINE: calculada automaticamente quando todas as RespostaAluno
-              da avaliação estiverem corrigidas (sum de nota_questao)
-      PRESENCIAL: lançada manualmente pelo professor
-
-  [FLUXO — MODALIDADE ONLINE]
-  · Professor cria Avaliacao(ONLINE) + Questoes + OpcaoResposta
-  · Professor publica (publicada=True) — aluno passa a ver no dashboard
-  · Aluno faz login, responde as questões → RespostaAluno criadas
-  · Múltipla escolha: corrigida automaticamente na submissão
-  · Discursiva: professor acessa respostas e atribui nota_questao manualmente
-  · Quando todas as questões corrigidas → NotaAluno.nota calculada e salva
-
-  [FLUXO — MODALIDADE PRESENCIAL]
-  · Professor cria Avaliacao(PRESENCIAL)
-  · Questoes opcionais → se criadas, sistema gera PDF para impressão
-  · Professor aplica fisicamente, recolhe provas
-  · Professor lança NotaAluno.nota manualmente para cada aluno da turma
-    (lançamento em massa: lista da turma com campo de nota por linha)
-
-  [CÁLCULO DE MÉDIA]
-  · Tipo configurável por escola em ConfiguracaoAcademica.tipo_calculo_media
-      tipo_calculo_media → TipoCalculoMedia: SIMPLES, PONDERADA
-  · SIMPLES: soma das notas / quantidade de avaliações do período
-  · PONDERADA: soma(nota × peso) / soma(pesos) do período
-
-  [RECUPERAÇÃO]
-  · Avaliacao(tipo=RECUPERACAO) substitui a menor nota do período — não soma
-  · Regra aplicada pelo BoletimService ao consolidar notas do período
-  · Configurada em ConfiguracaoAcademica (exige_recuperacao, nota_minima_recuperacao)
-
-  [PERMISSÕES]
-  · Criar avaliação:          PROFESSOR (suas turmas/matérias) + DIRETOR
-  · Lançar/corrigir notas:   PROFESSOR (suas turmas/matérias) + DIRETOR
-  · Gerar PDF:                PROFESSOR + DIRETOR
-  · Ver avaliações e notas:  DIRETOR + COLABORADOR (leitura, sempre)
-                              ALUNO + RESPONSÁVEL (apenas quando publicada=True)
-
-  [SERVICE LAYER]
-  · avaliacao/services/avaliacao_service.py
-      criar(dados, questoes, criado_por) → @transaction.atomic
-      publicar(avaliacao) / despublicar(avaliacao)
-      gerar_pdf(avaliacao) → PDF com questões formatadas
-      submeter_respostas(avaliacao, aluno, respostas) → @transaction.atomic
-        cria RespostaAluno + autocorrige MC + verifica se todas corrigidas
-      corrigir_discursiva(resposta, nota_questao, professor) → @transaction.atomic
-        salva nota + verifica se todas corrigidas → calcula NotaAluno se completo
-      lancar_nota_manual(avaliacao, aluno, nota, ausente) → NotaAluno (PRESENCIAL)
-      lancar_notas_em_massa(avaliacao, lista_notas) → @transaction.atomic
-
-
-[ 17 ] BOLETIM
---------------
-  Status:      [ IMPLEMENTADO — 2026-06-29 ]
-  Descrição:   Consolidação de notas e frequência por aluno/matéria/período.
-               Resultado final anual com conselho de classe. PDF sob demanda
-               com identidade visual da escola.
-  Depende de:  Avaliações, Frequência, Configurações (regras de aprovação)
-  Bloqueia:    —
-
-  DECISÕES VALIDADAS:
-
-  [MODELOS]
-  · ResultadoPeriodo(aluno FK, materia FK, periodo_letivo FK, ano_letivo FK,
-        media_periodo Decimal, frequencia_percentual Decimal, situacao_periodo)
-      situacao_periodo → SituacaoPeriodo:
-        EM_CURSO      → período ainda não encerrado
-        APROVADO      → média e frequência atingidas
-        RECUPERACAO   → média abaixo do mínimo, acima da nota de recuperação
-        REPROVADO     → abaixo da nota de recuperação ou frequência insuficiente
-      Calculado e salvo — não recalculado a cada visualização
-      Fonte de verdade: NotaAluno do período + registros de Frequência
-
-  · ResultadoAnual(aluno FK, materia FK, ano_letivo FK,
-        media_anual Decimal, frequencia_anual Decimal, situacao_final)
-      situacao_final → SituacaoFinal:
-        APROVADO           → aprovação automática pelos critérios acadêmicos
-        REPROVADO          → reprovação pelos critérios acadêmicos
-        APROVADO_CONSELHO  → aprovação por decisão do conselho de classe
-                             lançada manualmente pelo Diretor
-      Calculado somente ao encerrar o ano letivo (ação do Diretor)
-
-  [RECÁLCULO]
-  · ResultadoPeriodo: recalculado automaticamente sempre que NotaAluno é
-    criada ou editada dentro do período (chamada em avaliacao_service).
-  · ResultadoAnual: calculado uma única vez ao encerrar o ano letivo.
-    Após encerrado, alterações só via APROVADO_CONSELHO lançado pelo Diretor.
-
-  [GERAÇÃO DE PDF]
-  · PDF gerado sob demanda — não armazenado no banco.
-  · Layout padrão do EduCare com identidade visual da escola (logo, cores).
-  · Conteúdo: notas por matéria e período, frequência, situação final.
-  · Acessível por: Diretor, Colaborador, Aluno (próprio), Responsável (filhos).
-
-  [VISIBILIDADE]
-  · Boletim completo (todas as matérias, todos os períodos):
-      DIRETOR + COLABORADOR (todos os alunos)
-      PROFESSOR (apenas alunos das suas turmas/matérias)
-  · Próprio boletim: ALUNO (quando tiver login)
-  · Boletim dos filhos: RESPONSÁVEL
-
-  [SERVICE LAYER]
-  · boletim/services/boletim_service.py
-      calcular_periodo(aluno, materia, periodo_letivo) → @transaction.atomic
-        consulta NotaAluno + Frequência do período
-        aplica regra de recuperação (ConfiguracaoAcademica)
-        salva/atualiza ResultadoPeriodo
-      calcular_ano(aluno, materia, ano_letivo) → @transaction.atomic
-        consolida ResultadoPeriodo do ano + frequência anual
-        salva ResultadoAnual
-      aprovar_conselho(resultado_anual, diretor) → @transaction.atomic
-        situacao_final = APROVADO_CONSELHO + registra em LogAuditoria
-      gerar_pdf(aluno, ano_letivo) → PDF com layout da escola
-
-
-[ 18 ] FREQUÊNCIA
------------------
-  Status:      [ IMPLEMENTADO — 2026-06-29 ]
-  Descrição:   Registro de presença/ausência por aula. Lançamento diário,
-               semanal ou mensal conforme configuração da escola. Dois níveis
-               de alerta de infrequência. Alimenta o Boletim.
-  Depende de:  Core, Turmas, Alunos, Professores, Matérias, Configurações
-  Bloqueia:    Boletim (percentual de frequência), Relatórios
-
-  DECISÕES VALIDADAS:
-
-  [GRANULARIDADE]
-  · Registro por aula — não por dia.
-  · Mais preciso para cálculo legal (75% das aulas ministradas).
-  · Professor de Matemática com 2 aulas/semana registra 2 presenças separadas.
-
-  [MODELOS]
-  · RegistroFrequencia(turma FK, materia FK null, professor FK,
-        data, periodo_aula FK null, ano_letivo FK, criado_em)
-      materia → null no modo ProfessorTurma (INF/FI)
-      periodo_aula → null se escola não usar grade horária cadastrada
-
-  · PresencaAluno(registro FK, aluno FK, presente bool,
-        justificado bool, observacao null)
-      unique_together: ('registro', 'aluno')
-      justificado → falta com justificativa (conta como falta, visível no boletim)
-
-  [MODO DE LANÇAMENTO — CONFIGURADO PELA DIREÇÃO]
-  · O modelo de dados não muda — RegistroFrequencia sempre é por aula/dia.
-  · O que muda é a interface de lançamento, definida em
-    ConfiguracaoFrequencia.modo_lancamento:
-      DIARIO   → professor registra dia a dia (padrão)
-      SEMANAL  → professor abre grade semanal e preenche os 5 dias de uma vez
-      MENSAL   → professor preenche o mês inteiro retroativamente de uma vez
-  · Dados armazenados de forma idêntica em todos os modos —
-    relatórios e cálculos são consistentes independente do modo escolhido.
-
-  [ALERTAS DE INFREQUÊNCIA — DOIS NÍVEIS]
-  · Campos em ConfiguracaoFrequencia:
-      percentual_alerta_prevencao  → Decimal (padrão: 80.0)
-      percentual_minimo_frequencia → Decimal (padrão: 75.0)
-  · Ao atingir percentual_alerta_prevencao:
-      notificação amarela para Diretor + Responsável (aviso preventivo)
-  · Ao cair abaixo de percentual_minimo_frequencia:
-      notificação vermelha urgente para Diretor + Responsável (risco de reprovação)
-  · Verificação disparada a cada PresencaAluno salva.
-
-  [FALTA COLETIVA]
-  · Aula que não ocorreu → Diretor ou Colaborador cancela o RegistroFrequencia.
-  · Remoção do registro elimina todas as PresencaAluno vinculadas.
-  · Não gera registros de presença para aulas que não aconteceram.
-
-  [PERMISSÕES]
-  · Registrar frequência:    PROFESSOR (suas turmas/matérias) + DIRETOR
-  · Justificar falta:        PROFESSOR (suas turmas) + DIRETOR + COLABORADOR
-  · Cancelar aula:           DIRETOR + COLABORADOR
-  · Ver frequência:          DIRETOR + COLABORADOR (todos os alunos)
-                             PROFESSOR (alunos das suas turmas)
-                             ALUNO (própria frequência, quando tiver login)
-                             RESPONSÁVEL (frequência dos filhos)
-
-  [SERVICE LAYER]
-  · frequencia/services/frequencia_service.py
-      criar_registro(turma, materia, professor, data, periodo_aula, ano_letivo)
-      lancar_presencas(registro, lista_presencas) → @transaction.atomic
-        salva PresencaAluno + dispara verificação de alertas
-      justificar_falta(presenca, observacao, usuario)
-      cancelar_aula(registro, usuario) → remove RegistroFrequencia + PresencaAluno
-      calcular_percentual(aluno, materia, periodo_letivo) → Decimal
-      verificar_alertas(aluno, materia, periodo_letivo) → dispara notificações
-        se necessário (dois níveis: prevenção e mínimo)
-
-
-================================================================================
-MÓDULOS — GESTÃO E COMUNICAÇÃO
-================================================================================
-
-[ 19 ] FINANCEIRO ESCOLAR
---------------------------
-  Status:      [ IMPLEMENTADO — 2026-06-29 ]
-  Descrição:   Cobranças da escola para alunos/responsáveis. Mensalidades,
-               taxas, boletos, controle de inadimplência. Integração Mercado
-               Pago (extensível para outros gateways). Pagamentos físicos
-               registrados como MANUAL. DISTINTO do módulo Planos/Assinatura SaaS.
-  Depende de:  Core, Escola, Alunos, Responsáveis, Configurações
-  Bloqueia:    —
-
-  DECISÕES VALIDADAS:
-
-  [MODELOS]
-  · PlanoFinanceiro(escola FK, nome, descricao, valor Decimal,
-        periodicidade, ativo)
-      periodicidade → Periodicidade: MENSAL, ANUAL, AVULSO
-
-  · CobrancaAluno(aluno FK, responsavel_financeiro FK PerfilResponsavel,
-        plano_financeiro FK null, descricao, valor Decimal,
-        vencimento, status, gateway, gateway_id null,
-        criado_em, pago_em null)
-      status  → StatusCobranca: PENDENTE, PAGO, VENCIDO, CANCELADO
-      gateway → CharField extensível: MERCADO_PAGO, MANUAL
-                novos gateways adicionados como nova choice + implementação
-      gateway_id → ID da transação no gateway (null quando MANUAL)
-
-  · ConfiguracaoFinanceira(escola 1-1, multa_percentual,
-        juros_percentual_mes, dias_tolerancia, gateway_padrao)
-      Vive em apps.configuracao (completa o módulo 03)
-      dias_tolerancia → dias após vencimento antes de marcar VENCIDO
-      gateway_padrao → gateway usado por padrão ao gerar cobranças
-
-  [ARQUITETURA DE GATEWAYS — EXTENSÍVEL]
-  · Camada de serviço abstrata: GatewayService (interface base)
-  · Implementação concreta por provider: MercadoPagoService
-  · Adicionar novo gateway = implementar GatewayService + adicionar choice
-    sem alterar lógica de negócio do FinanceiroService
-  · Ton e outros meios físicos → registrados como MANUAL pelo Colaborador/Diretor
-  · Mercado Pago: boleto + Pix + cartão de crédito
-  · Webhook do Mercado Pago → atualiza CobrancaAluno.status automaticamente
-
-  [GERAÇÃO DE COBRANÇAS]
-  · Em massa por turma → gera uma CobrancaAluno por aluno ativo da turma
-  · Em massa por escola → gera para todos os alunos ativos
-  · Por aluno individual → para casos de mensalidades vencidas múltiplas
-    ou cobranças avulsas (taxa de material, evento, etc.)
-  · Sempre vinculada ao responsavel_financeiro do VinculoResponsavelAluno
-
-  [INADIMPLÊNCIA]
-  · Management command diário verifica CobrancaAluno com vencimento
-    ultrapassado + dias_tolerancia e transiciona PENDENTE → VENCIDO
-  · Ao marcar VENCIDO: notificação para Responsável + Diretor
-
-  [PERMISSÕES]
-  · Criar / editar PlanoFinanceiro:     APENAS DIRETOR
-  · Gerar cobranças (massa ou avulso):  DIRETOR + COLABORADOR
-  · Registrar pagamento manual:         DIRETOR + COLABORADOR
-  · Cancelar cobrança:                  APENAS DIRETOR
-  · Ver financeiro completo:            DIRETOR + COLABORADOR
-  · Ver próprias cobranças:             RESPONSÁVEL (filhos) + ALUNO (login)
-
-  [SERVICE LAYER]
-  · financeiro/services/financeiro_service.py
-      gerar_cobrancas_turma(turma, plano, vencimento, criado_por) → @transaction.atomic
-      gerar_cobrancas_escola(escola, plano, vencimento, criado_por) → @transaction.atomic
-      gerar_cobranca_aluno(aluno, dados, criado_por) → CobrancaAluno
-      registrar_pagamento_manual(cobranca, usuario) → @transaction.atomic
-      cancelar(cobranca, usuario) → @transaction.atomic
-      processar_webhook(gateway, payload) → atualiza status via gateway_id
-      verificar_vencimentos() → chamado pelo management command diário
-
-  · financeiro/services/gateways/base.py → GatewayService (interface abstrata)
-  · financeiro/services/gateways/mercado_pago.py → MercadoPagoService
-
-
-[ 20 ] COMUNICADOS / AGENDA
-----------------------------
-  Status:      [ DECISÕES VALIDADAS — aguardando implementação ]
-  Descrição:   Dois módulos distintos: Comunicados (canal oficial com tipos
-               expansíveis, inclusive por Professor) e Agenda/Eventos.
-               Leitura rastreada para fins de auditoria.
-  Depende de:  Core, Escola, Alunos, Responsáveis, Turmas
-  Bloqueia:    —
-
-  DECISÕES VALIDADAS:
-
-  [ESTRUTURA — DOIS MODELOS SEPARADOS]
-  · Comunicado e Evento são modelos distintos — cada um evolui com seus
-    próprios tipos sem interferir no outro.
-
-  [MODELO — COMUNICADO]
-  · Comunicado(escola FK, autor FK Usuario, titulo, corpo, tipo,
-        destinatarios, turmas M2M null, publicada, criado_em, atualizado_em)
-      tipo → TipoComunicado: GERAL, CONVOCACAO, AVISO, ADVERTENCIA, ELOGIO, OUTRO
-              expansível futuramente sem impactar Evento
-      destinatarios → DestinatarioComunicado: TODOS, TURMAS, RESPONSAVEIS, ALUNOS
-      turmas → ManyToMany(Turma) — preenchido quando destinatarios = TURMAS
-      publicada → bool — visível apenas quando True
-
-  · LeituraComunicado(comunicado FK, usuario FK, lido_em)
-      unique_together: ('comunicado', 'usuario')
-      Registrada automaticamente ao abrir o comunicado
-      Diretor vê quem leu e quem não leu (relevante para CONVOCACAO/ADVERTENCIA)
-
-  [MODELO — EVENTO / AGENDA]
-  · Evento(escola FK, autor FK Usuario, titulo, descricao, tipo,
-        data_inicio, hora_inicio, data_fim null, hora_fim null,
-        local null, destinatarios, turmas M2M null,
-        publicada, criado_em, atualizado_em)
-      tipo → TipoEvento: REUNIAO, PROVA, EXCURSAO, FESTIVIDADE, OUTRO
-      destinatarios → mesmo padrão do Comunicado
-
-  · LeituraEvento(evento FK, usuario FK, lido_em)
-      unique_together: ('evento', 'usuario')
-
-  [PERMISSÕES — COMUNICADO]
-  · Criar / publicar:   DIRETOR + COLABORADOR + PROFESSOR
-      Professor → apenas para suas turmas/alunos/responsáveis
-      Diretor + Colaborador → podem enviar para toda a escola
-  · Editar / excluir:   autor da publicação + DIRETOR
-  · Ver:                conforme destinatarios configurado
-
-  [PERMISSÕES — EVENTO]
-  · Criar / publicar:   DIRETOR + COLABORADOR
-  · Editar / excluir:   autor do evento + DIRETOR
-  · Ver:                conforme destinatarios configurado
-
-  [NOTIFICAÇÃO AO PUBLICAR]
-  · Ao publicar (publicada=True) → notificacao_service.criar() para todos
-    os destinatários (tipo: COMUNICADO).
-  · Comunicados de Professor ficam registrados em LogAuditoria —
-    rastreabilidade para disputas entre responsáveis e escola.
-
-  [SERVICE LAYER]
-  · comunicado/services/comunicado_service.py
-      criar(escola, autor, dados) → valida escopo do autor (Professor → só suas turmas)
-      publicar(comunicado) → salva + dispara notificações
-      registrar_leitura(comunicado, usuario) → LeituraComunicado
-      listar_nao_lidos(usuario) → queryset
-
-  · agenda/services/evento_service.py
-      criar(escola, autor, dados)
-      publicar(evento) → salva + dispara notificações
-      registrar_leitura(evento, usuario) → LeituraEvento
-
-
-[ 21 ] RELATÓRIOS
------------------
-  Status:      [ DECISÕES VALIDADAS — aguardando implementação ]
-  Descrição:   Relatórios pedagógicos, de gestão e administrativos. Geração
-               sob demanda com filtros ou agendada via management command.
-               Exportação PDF/Excel com visualização on-screen.
-  Depende de:  Avaliações, Boletim, Frequência, Financeiro Escolar
-  Bloqueia:    —
-
-  DECISÕES VALIDADAS:
-
-  [CATÁLOGO DE RELATÓRIOS]
-
-  Pedagógico:
-  · Desempenho por turma/matéria/período
-      médias, % aprovados, % em recuperação, % reprovados
-  · Frequência consolidada por turma ou por aluno
-  · Alunos em risco (baixa nota + baixa frequência combinados)
-  · Boletim em lote — PDF de todos os alunos de uma turma de uma vez
-
-  Gestão (APENAS DIRETOR):
-  · Desempenho por professor
-      média das turmas por matéria e por professor
-      sinaliza quando ≥50% dos alunos estão abaixo da nota mínima em uma turma
-      sinaliza padrão repetido em múltiplas turmas do mesmo professor
-        (indicador de qualidade de ensino — dado sensível, exclusivo do Diretor)
-      NÃO visível para o Professor
-
-  Administrativo:
-  · Inadimplência — cobranças vencidas por aluno/turma/período
-  · Extrato financeiro por período
-
-  [GERAÇÃO — SOB DEMANDA + AGENDADA]
-
-  Sob demanda:
-  · Diretor/Colaborador aplica filtros e gera na hora
-  · Resultado renderizado on-screen antes de exportar (sem download obrigatório)
-  · Exportação em PDF ou Excel (.xlsx)
-
-  Agendada:
-  · RelatorioAgendado(escola FK, tipo, periodicidade, parametros JSON, ativo)
-      periodicidade → PeriodicidadeRelatorio: MENSAL, POR_PERIODO, ANUAL
-      parametros → JSON com filtros (turma, materia, etc.)
-  · RelatorioGerado(agendado FK null, escola FK, tipo, parametros JSON,
-        arquivo FileField, gerado_em)
-      arquivo → salvo em media/relatorios/escola_id/
-      ao gerar: notificacao_service.criar() para o Diretor
-  · Management command executa relatórios agendados no momento configurado
-    (mesmo padrão de Planos e Financeiro — sem Celery por ora)
-
-  [FORMATOS DE EXPORTAÇÃO]
-  · PDF     → WeasyPrint ou ReportLab — com identidade visual da escola
-  · Excel   → openpyxl (.xlsx) — para análise e cruzamento externo
-  · On-screen → renderizado em template antes de qualquer exportação
-
-  [IMPLEMENTAÇÃO]
-  · Sem modelo próprio para os dados — queries sobre dados existentes
-  · Cada relatório: view com filtros + service que agrega + template renderizado
-  · RelatorioAgendado e RelatorioGerado são os únicos modelos do módulo
-
-  [PERMISSÕES]
-  · Relatórios pedagógicos e administrativos:   DIRETOR + COLABORADOR
-  · Relatório de desempenho por professor:      APENAS DIRETOR
-  · Boletim em lote:                            DIRETOR + COLABORADOR
-  · Configurar relatórios agendados:            APENAS DIRETOR
-  · Professor vê relatório de desempenho apenas das suas turmas/matérias
-
-  [SERVICE LAYER]
-  · relatorio/services/relatorio_service.py
-      gerar_desempenho_turma(turma, periodo, formato) → PDF | xlsx | context
-      gerar_frequencia(turma_ou_aluno, periodo, formato)
-      gerar_alunos_em_risco(escola, periodo, formato)
-      gerar_desempenho_professor(escola, periodo, formato) → DIRETOR only
-      gerar_inadimplencia(escola, periodo, formato)
-      gerar_extrato_financeiro(escola, periodo, formato)
-      gerar_boletim_lote(turma, ano_letivo, formato)
-      executar_agendados(escola) → chamado pelo management command
-
-
-================================================================================
-LOG DE DECISÕES
-================================================================================
-[ As decisões serão registradas aqui conforme validadas em cada módulo ]
-
-DATA        MÓDULO          DECISÃO
-----------  --------------  ---------------------------------------------------
-2026-06-23  CORE            Modelo Usuario: puro, sem papel, com is_platform_admin
-2026-06-23  CORE            VinculoEscola: unique por (usuario+escola), suporta multi-escola
-2026-06-23  CORE            PapelVinculo: separado do vínculo, permite múltiplos papéis por escola
-2026-06-23  CORE            Sessão guarda papel_id (não escola_id)
-2026-06-23  CORE            Tela de seleção de papel quando usuário tem N papéis na mesma escola
-2026-06-23  CORE            Service layer centralizado — views não tocam modelos diretamente
-2026-06-23  GLOBAL          Templates pai separados por tipo de usuário (6 templates base)
-2026-06-23  GLOBAL          Sistema modularizado: módulos ativáveis/desativáveis por escola
-2026-06-23  GLOBAL          Três camadas: Plataforma → Plano → Escola
-2026-06-23  GLOBAL          Códigos de módulo são constantes Python (CodigoModulo) — não strings mágicas
-2026-06-23  GLOBAL          ModuloRequiredMixin obrigatório em toda view de módulo opcional
-2026-06-23  GLOBAL          Planos/Assinatura discutido antes de Escola (Escola depende de AssinaturaEscola)
-2026-06-23  PLANOS          Plano definido por módulos ativos (não por limites de alunos)
-2026-06-23  PLANOS          Super Admin cria/edita planos via formulário com CheckboxSelectMultiple
-2026-06-23  PLANOS          Ativação manual pelo Super Admin — sem gateway de pagamento neste módulo
-2026-06-23  PLANOS          Trial: 30 alunos ativos OU 10 dias, todos os módulos ativos
-2026-06-23  PLANOS          Contagem do trial: apenas alunos com ativo=True
-2026-06-23  PLANOS          6 status com propósito comercial distinto (TRIAL_EXPIRADO ≠ SUSPENSA)
-2026-06-23  PLANOS          Grace period: 15 dias, alertas em D+0/5/10/14/15, bloqueio total ao vencer
-2026-06-23  PLANOS          Tarefas agendadas: management command diário (não Celery por ora)
-2026-06-23  PLANOS          HistoricoAssinatura: audit log imutável de toda mudança de status/plano
-2026-06-23  ESCOLA          UnidadeEscolar: sem campo status (sempre derivado da assinatura)
-2026-06-23  ESCOLA          SegmentoEscolar: tabela separada, impacta séries disponíveis
-2026-06-23  ESCOLA          EnderecoEscolar: múltiplos, UniqueConstraint para principal único
-2026-06-23  ESCOLA          Identidade visual por escola: cor_primaria/secundaria/acento em HEX
-2026-06-23  ESCOLA          Cores injetadas via CSS custom properties nos templates pai
-2026-06-23  ESCOLA          EscolaService.criar() cria AssinaturaEscola(TRIAL) automaticamente
-2026-06-23  DIRETOR         PerfilDiretor: FK para PapelVinculo (não VinculoEscola)
-2026-06-23  DIRETOR         Escola suporta múltiplos diretores (TITULAR/SUBSTITUTO/ADJUNTO)
-2026-06-23  DIRETOR         Diretor pode criar outros diretores (não exclusivo do Super Admin)
-2026-06-23  DIRETOR         Dashboard: 5 KPIs — Ano Letivo, Turmas, Alunos, Professores, Funcionários
-2026-06-23  COLABORADOR     Nomenclatura definitiva: "Colaborador" (não Funcionário)
-2026-06-23  COLABORADOR     Endereco: modelo compartilhado em core, usado por todos os perfis
-2026-06-23  COLABORADOR     FuncaoEscolar: por escola, absorve e remove apps.funcao
-2026-06-23  COLABORADOR     Papel adicional de Professor adicionado em dois passos do perfil
-2026-06-23  COLABORADOR     Apenas DIRETOR pode cadastrar/desativar colaboradores
-2026-06-23  PROFESSOR       PerfilProfessor: FK para PapelVinculo, usa Endereco compartilhado
-2026-06-23  PROFESSOR       FormacaoAcademica: modelo separado, múltiplas por professor
-2026-06-23  PROFESSOR       Sistema dual: ProfessorTurma (INF/FI) + ProfessorMateriaTurma (FII/MED/TEC)
-2026-06-23  PROFESSOR       Grade horária vive em apps.turma: PeriodoAula + HorarioAula
-2026-06-23  PROFESSOR       Conflitos de horário resolvidos por unique_together no banco
-2026-06-23  PROFESSOR       Filtros de encaixe: células coloridas (livre/parcial/ocupado) server-side
-2026-06-23  PROFESSOR       Carga horária: alerta configurável por escola, não bloqueia
-2026-06-23  PROFESSOR       Professor vê apenas dados próprios — sem visibilidade de outros professores
-2026-06-25  ANO LETIVO      3 status: EM_PLANEJAMENTO, EM_ANDAMENTO, ENCERRADO
-2026-06-25  ANO LETIVO      UniqueConstraint banco: no máximo um EM_ANDAMENTO por escola
-2026-06-25  ANO LETIVO      unique_together ('escola', 'ano') — sem anos duplicados por escola
-2026-06-25  ANO LETIVO      PeriodoLetivo: datas dentro do ano, sem sobreposição, bloqueado se ENCERRADO
-2026-06-25  ANO LETIVO      APENAS DIRETOR pode criar, iniciar, encerrar e gerenciar períodos
-2026-06-25  ANO LETIVO      Calendário escolar (feriados/recesso) adiado para módulo Frequência
-2026-06-25  ANO LETIVO      Transição de ano: manual pelo Diretor, sem wizard por agora
-2026-06-25  SÉRIES          Serie(escola, segmento, nome, ordem, ativo) — unique por escola+segmento+nome
-2026-06-25  SÉRIES          Séries padrão pré-cadastradas por segmento ao criar SegmentoEscolar
-2026-06-25  SÉRIES          Escola pode editar, reordenar e desativar séries padrão
-2026-06-25  SÉRIES          APENAS DIRETOR pode criar, editar e desativar séries
-2026-06-25  TURMAS          Turma(escola, ano_letivo, serie, nome, turno, capacidade, ativo)
-2026-06-25  TURMAS          capacidade opcional (null = sem limite)
-2026-06-25  TURMAS          ProfessorTurma e ProfessorMateriaTurma vivem em apps.turma
-2026-06-25  TURMAS          PeriodoAula e HorarioAula vivem em apps.turma
-2026-06-25  TURMAS          TurmaService.criar() verifica limite do plano antes de criar
-2026-06-25  TURMAS          APENAS DIRETOR cria, edita, desativa e faz vínculos de turma
-2026-06-25  MATÉRIAS        Materia(escola, nome, codigo null, ativo) — unique por escola+nome
-2026-06-25  MATÉRIAS        MateriaSerieConfig: matéria vinculada à Série, turma herda da série
-2026-06-25  MATÉRIAS        Carga horária derivada dos HorarioAula — sem campo manual
-2026-06-25  MATÉRIAS        Pool BNCC pré-cadastrado ao criar a escola (EscolaService.criar())
-2026-06-25  MATÉRIAS        APENAS DIRETOR gerencia matérias e vínculos com séries
-2026-06-25  RESPONSÁVEIS    PerfilResponsavel: 1-1 com Usuario (não PapelVinculo) — dados são da pessoa
-2026-06-25  RESPONSÁVEIS    Responsável pode ter filhos em múltiplas escolas — verificador por CPF/email
-2026-06-25  RESPONSÁVEIS    parentesco vive em VinculoResponsavelAluno (não no perfil)
-2026-06-25  RESPONSÁVEIS    Login opcional — responsável pode existir sem Usuario
-2026-06-25  RESPONSÁVEIS    DIRETOR + COLABORADOR cadastram e vinculam responsáveis a alunos
-2026-06-25  RESPONSÁVEIS    UniqueConstraint banco: apenas um responsavel_principal por aluno
-2026-06-25  ALUNOS          Aluno(escola, usuario null, matricula, dados pessoais, ativo)
-2026-06-25  ALUNOS          Matrícula gerada automaticamente pelo service (sequencial por escola)
-2026-06-25  ALUNOS          MatriculaTurma: 4 situações (MATRICULADO, TRANSFERIDO, EVADIDO, CONCLUINTE)
-2026-06-25  ALUNOS          Troca de turma = UPDATE no registro — sem novo MatriculaTurma
-2026-06-25  ALUNOS          Novo MatriculaTurma apenas em novo ano letivo ou entrada em nova escola
-2026-06-25  ALUNOS          Login opcional — mesmo padrão do Responsável
-2026-06-25  ALUNOS          DIRETOR + COLABORADOR cadastram, matriculam, transferem e editam alunos
-2026-06-25  ALUNOS          AlunoService verifica limite do plano/trial a cada criação e matrícula
-2026-06-25  CONFIG          Configurações divididas por domínio: Academica, Frequencia, Professor
-2026-06-25  CONFIG          Cada modelo é 1-1 com Escola, criado automaticamente em EscolaService.criar()
-2026-06-25  CONFIG          ConfiguracaoFinanceira definida no módulo Financeiro Escolar (módulo 19)
-2026-06-25  CONFIG          APENAS DIRETOR edita configurações da escola
-2026-06-25  NOTIFICAÇÕES    In-app por ora — arquitetura pronta para API (email/push) futuramente
-2026-06-25  NOTIFICAÇÕES    Notificacao(destinatario, titulo, mensagem, tipo, lida, criado_em)
-2026-06-25  NOTIFICAÇÕES    Criação via chamada explícita no service — sem Django signals
-2026-06-25  NOTIFICAÇÕES    Limpeza: lidas há +60 dias removidas por management command
-2026-06-25  AUDITORIA       Apenas ações críticas — registradas explicitamente no service
-2026-06-25  AUDITORIA       LogAuditoria: imutável, sem delete, retenção de 5 anos (obrigação legal)
-2026-06-25  AUDITORIA       Super Admin vê tudo — Diretor vê apenas sua escola
-2026-06-25  AUDITORIA       auditoria_service.registrar(request, acao, objeto, descricao)
-2026-06-25  ONBOARDING      Fluxo híbrido: Super Admin cria escola, Diretor completa via convite
-2026-06-25  ONBOARDING      ConviteOnboarding: token uuid, 72h, invalidado após uso
-2026-06-25  ONBOARDING      Canais de envio: email (automático) + WhatsApp (provider a definir)
-2026-06-25  ONBOARDING      Configuração inicial: checklist visual no dashboard — não wizard
-2026-06-25  ONBOARDING      APENAS Super Admin cria escola e gera convite
-2026-06-25  AVALIAÇÕES      Duas modalidades: ONLINE (gabarito automático MC + discursiva manual) e PRESENCIAL (PDF + notas manuais)
-2026-06-25  AVALIAÇÕES      Questao + OpcaoResposta + RespostaAluno para ONLINE; Questao opcional em PRESENCIAL para gerar PDF
-2026-06-25  AVALIAÇÕES      NotaAluno: automática ao concluir correção (ONLINE) ou lançada manualmente (PRESENCIAL)
-2026-06-25  AVALIAÇÕES      Média configurável por escola: SIMPLES ou PONDERADA (ConfiguracaoAcademica)
-2026-06-25  AVALIAÇÕES      Recuperação substitui menor nota do período — não soma
-2026-06-25  AVALIAÇÕES      Professor cria/corrige apenas suas turmas — Diretor tem acesso total
-2026-06-25  BOLETIM         ResultadoPeriodo: calculado e salvo a cada nota lançada no período
-2026-06-25  BOLETIM         ResultadoAnual: calculado ao encerrar ano letivo — APROVADO_CONSELHO lançado pelo Diretor
-2026-06-25  BOLETIM         PDF gerado sob demanda com identidade visual da escola — não armazenado
-2026-06-25  BOLETIM         Professor vê boletim apenas dos alunos das suas turmas/matérias
-2026-06-25  FREQUÊNCIA      Registro por aula — granularidade legal (não por dia)
-2026-06-25  FREQUÊNCIA      Modo de lançamento configurável pela escola: DIARIO, SEMANAL, MENSAL
-2026-06-25  FREQUÊNCIA      Modelo de dados idêntico em todos os modos — só a UI de lançamento muda
-2026-06-25  FREQUÊNCIA      Dois níveis de alerta: prevenção (80%) e mínimo (75%) — configuráveis
-2026-06-25  FREQUÊNCIA      Professor pode justificar falta (suas turmas) — além de Diretor e Colaborador
-2026-06-25  FREQUÊNCIA      Falta coletiva: Diretor/Colaborador cancela RegistroFrequencia (não marca presença)
-2026-06-25  FINANCEIRO      Ton removido — pagamentos físicos registrados como MANUAL
-2026-06-25  FINANCEIRO      Arquitetura de gateway extensível: GatewayService abstrato + implementações concretas
-2026-06-25  FINANCEIRO      Geração em massa por turma, escola ou por aluno individual (mensalidades vencidas)
-2026-06-25  FINANCEIRO      ConfiguracaoFinanceira completa o módulo 03 (multa, juros, tolerância, gateway padrão)
-2026-06-25  FINANCEIRO      APENAS DIRETOR cancela cobrança e cria/edita PlanoFinanceiro
-2026-06-25  COMUNICADOS     Dois modelos separados: Comunicado (tipos expansíveis) e Evento
-2026-06-25  COMUNICADOS     Professor pode criar comunicados — apenas para suas turmas/alunos/responsáveis
-2026-06-25  COMUNICADOS     LeituraComunicado + LeituraEvento rastreiam quem leu (auditoria)
-2026-06-25  COMUNICADOS     Comunicados de Professor registrados em LogAuditoria para rastreabilidade
-2026-06-25  RELATÓRIOS      Geração sob demanda (filtros) + agendada (management command)
-2026-06-25  RELATÓRIOS      Relatório de desempenho por professor: APENAS DIRETOR — dado sensível
-2026-06-25  RELATÓRIOS      Sinaliza professor com ≥50% alunos abaixo do mínimo em uma ou mais turmas
-2026-06-25  RELATÓRIOS      RelatorioAgendado + RelatorioGerado (arquivo salvo + notificação ao Diretor)
-2026-06-25  RELATÓRIOS      Exportação: PDF (WeasyPrint/ReportLab) + Excel (openpyxl) + on-screen
-
-
-2026-06-25  GLOBAL          Python 3.13 + Django 6.0 (versões reais em uso — plano atualizado de 3.12/5.2 LTS)
-2026-06-25  CORE            IMPLEMENTADO — models (Usuario/VinculoEscola/PapelVinculo/Endereco)
-2026-06-25  CORE            IMPLEMENTADO — TenantMiddleware com sessão por papel_id
-2026-06-25  CORE            IMPLEMENTADO — services (usuario_service, vinculo_service)
-2026-06-25  CORE            IMPLEMENTADO — views de seleção de escola e papel
-2026-06-25  CORE            IMPLEMENTADO — CodigoModulo constantes em core/modulos.py
-2026-06-25  CORE            IMPLEMENTADO — 6 templates pai (diretor, colaborador, professor, aluno, responsavel, plataforma)
-2026-06-25  CORE            IMPLEMENTADO — migrations limpas (banco recriado do zero)
-
-
-2026-06-26  ESCOLA          MODELO RECONSTRUÍDO — UnidadeEscolar com novo schema (nome, tipo PUBLICA/PRIVADA/FILANTROPICA, sem ativo, cores)
-2026-06-26  ESCOLA          SegmentoEscolar (INF/FI/FII/MED/TEC) e EnderecoEscolar (FK, principal bool) implementados
-2026-06-26  ESCOLA          EscolaService.criar() implementado — cria escola + chama assinatura_service.iniciar_trial()
-2026-06-26  DIRETOR         MODELO RECONSTRUÍDO — PerfilDiretor com FK para PapelVinculo (não Diretor/escola diretamente)
-2026-06-26  DIRETOR         CargoDiretor: TITULAR, SUBSTITUTO, ADJUNTO
-2026-06-26  DIRETOR         diretor_service.py implementado (criar, editar, desativar)
-2026-06-26  ONBOARDING      IMPLEMENTADO — ConviteOnboarding (token uuid, 72h, canal EMAIL/WHATSAPP)
-2026-06-26  ONBOARDING      onboarding_service: criar_escola_e_convite, reenviar_convite, validar_token, completar_onboarding
-2026-06-26  ONBOARDING      Views: ListarEscolasView, CriarEscolaView, ReenviarConviteView, CompletarOnboardingView, LinkInvalidoView
-2026-06-26  ONBOARDING      Templates: lista_escolas, form_criar_escola, completar_cadastro, link_invalido
-2026-06-26  ONBOARDING      Email via django filebased backend (dev); link construído via BASE_URL setting
-2026-06-26  GLOBAL          Todas migrations recriadas do zero (db.sqlite3 recriado limpo)
-2026-06-26  CONFIGURAÇÃO    IMPLEMENTADO — models: ConfiguracaoAcademica, ConfiguracaoFrequencia, ConfiguracaoProfessor
-2026-06-26  CONFIGURAÇÃO    configuracao_service: criar_configuracoes_padrao, atualizar_academica, atualizar_frequencia, atualizar_professor
-2026-06-26  CONFIGURAÇÃO    Views: ConfiguracaoAcademicaView, ConfiguracaoFrequenciaView, ConfiguracaoProfessorView (DiretorRequiredMixin)
-2026-06-26  CONFIGURAÇÃO    Templates: academica.html, frequencia.html, professor.html — sidebar compartilhada entre os 3
-2026-06-26  CONFIGURAÇÃO    EscolaService.criar() chama criar_configuracoes_padrao() via lazy import (evita circular)
-2026-06-26  CONFIGURAÇÃO    admin.py com Unfold: ConfiguracaoAcademicaAdmin, ConfiguracaoFrequenciaAdmin, ConfiguracaoProfessorAdmin
-2026-06-26  DIRETOR         IMPLEMENTADO — views: DashboardView, MeuPerfilView, EditarPerfilView, ListarDiretoresView, CriarDiretorView, DesativarDiretorView
-2026-06-26  DIRETOR         Forms: EditarPerfilDiretorForm (ModelForm) + CriarDiretorForm (Form)
-2026-06-26  DIRETOR         Templates: dashboard, meu_perfil, editar_perfil, listar_diretores, form_diretor, _nav (partial compartilhado)
-2026-06-26  DIRETOR         DashboardRedirectView atualizado: DIRETOR → diretor:dashboard
-2026-06-26  DIRETOR         KPIs do dashboard: 5 cards (Ano Letivo, Turmas, Alunos, Professores, Colaboradores) — expandidos conforme módulos são adicionados
-2026-06-26  DIRETOR         Banner GRACE no dashboard quando assinatura.status == GRACE
-
-2026-06-29  NOTIFICAÇÕES    IMPLEMENTADO — Notificacao(destinatario, titulo, mensagem, tipo, lida, criado_em)
-2026-06-29  NOTIFICAÇÕES    TipoNotificacao: ACADEMICA, FINANCEIRA, COMUNICADO, SISTEMA
-2026-06-29  NOTIFICAÇÕES    notificacao_service: criar, marcar_lida, marcar_todas_lidas, listar_nao_lidas, listar_todas, limpar_antigas
-2026-06-29  NOTIFICAÇÕES    Views: ListarNotificacoesView, MarcarLidaView, MarcarTodasLidasView — /notificacoes/
-2026-06-29  NOTIFICAÇÕES    context_processor: notificacoes_counter injeta notificacoes_nao_lidas em todos os templates
-2026-06-29  NOTIFICAÇÕES    Sininho com badge de contagem adicionado ao topbar de base_diretor.html
-2026-06-29  NOTIFICAÇÕES    Management command: limpar_notificacoes (remove lidas há +60 dias)
-2026-06-29  AUDITORIA       IMPLEMENTADO — LogAuditoria(usuario null, escola null, papel_tipo, acao, modelo, objeto_id, descricao, ip, criado_em)
-2026-06-29  AUDITORIA       AcaoAuditoria: CRIAR, EDITAR, DESATIVAR, REATIVAR, LOGIN, LOGOUT
-2026-06-29  AUDITORIA       auditoria_service: registrar(request, acao, objeto, descricao), listar_escola, listar_plataforma
-2026-06-29  AUDITORIA       LogAuditoria: imutável no admin (has_add/change/delete_permission=False)
-2026-06-29  AUDITORIA       View: LogAuditoriaView — /auditoria/ — filtra por acao e modelo, paginado 25/pág
-2026-06-29  AUDITORIA       Link "Auditoria" adicionado ao sidebar nav do Diretor (_nav.html)
-2026-06-29  AUDITORIA       Super Admin vê todos os logs via Unfold admin (seção Monitoramento)
-2026-06-29  ANO LETIVO      IMPLEMENTADO — AnoLetivo(escola, ano, data_inicio, data_fim, status, criado_por)
-2026-06-29  ANO LETIVO      StatusAnoLetivo: EM_PLANEJAMENTO → EM_ANDAMENTO → ENCERRADO (final)
-2026-06-29  ANO LETIVO      unique_together: ('escola', 'ano') — unicidade garantida no banco
-2026-06-29  ANO LETIVO      Unicidade de EM_ANDAMENTO por escola: enforced via select_for_update() no service
-2026-06-29  ANO LETIVO      PeriodoLetivo(ano_letivo, numero, nome, data_inicio, data_fim)
-2026-06-29  ANO LETIVO      Service: criar, iniciar, encerrar, criar_periodo, editar_periodo, remover_periodo, _verificar_sobreposicao
-2026-06-29  ANO LETIVO      Views: lista, criar, detalhe, iniciar, encerrar, CRUD de períodos — /ano-letivo/
-2026-06-29  ANO LETIVO      Permissões: DIRETOR (escrita), FUNCIONARIO (leitura) — leitura = _LeituraRequiredMixin
-2026-06-29  ANO LETIVO      Link "Ano Letivo" adicionado ao sidebar nav do Diretor
-2026-06-29  ANO LETIVO      Admin Unfold: AnoLetivoAdmin com PeriodoLetivoInline readonly
-
-2026-06-29  SÉRIES          IMPLEMENTADO — Serie(escola, segmento, nome, ordem, ativo)
-2026-06-29  SÉRIES          serie_service: criar_series_padrao, criar, editar, desativar, reativar
-2026-06-29  SÉRIES          Views: ListarSeriesView, CriarSerieView, EditarSerieView, DesativarSerieView, ReativarSerieView
-2026-06-29  SÉRIES          Templates: lista.html, form_serie.html — /series/
-2026-06-29  SÉRIES          criar_series_padrao() chamado por EscolaService.adicionar_segmento()
-
-2026-06-29  MATÉRIAS        IMPLEMENTADO — Materia(escola, nome, codigo null, ativo) + MateriaSerieConfig(serie, materia, ativo)
-2026-06-29  MATÉRIAS        materia_service: criar_materias_padrao, criar, editar, desativar, reativar, vincular_serie, desvincular_serie
-2026-06-29  MATÉRIAS        Views: ListarMateriasView, CriarMateriaView, DetalheMateriaView, EditarMateriaView, DesativarMateriaView, ReativarMateriaView, VincularSerieView, DesvincularSerieView
-2026-06-29  MATÉRIAS        Templates: lista.html, form_materia.html, detalhe.html — /materias/
-2026-06-29  MATÉRIAS        criar_materias_padrao() chamado por EscolaService.criar() (14 matérias BNCC)
-
-2026-06-29  TURMAS          IMPLEMENTADO — Turma(escola, ano_letivo, serie, nome, turno, capacidade, ativo)
-2026-06-29  TURMAS          Turno: MATUTINO, VESPERTINO, NOTURNO, INTEGRAL
-2026-06-29  TURMAS          turma_service: criar, editar, desativar, reativar
-2026-06-29  TURMAS          Views: ListarTurmasView, CriarTurmaView, DetalheTurmaView, EditarTurmaView, DesativarTurmaView, ReativarTurmaView
-2026-06-29  TURMAS          Templates: lista.html (agrupado por ano letivo), form_turma.html, detalhe.html — /turmas/
-2026-06-29  TURMAS          Leitura: DIRETOR + FUNCIONARIO | Escrita: DIRETOR apenas
-2026-06-29  TURMAS          ProfessorTurma, ProfessorMateriaTurma, PeriodoAula, HorarioAula: adiados para módulo Professor [09]
-2026-06-29  TURMAS          Link "Séries" e "Turmas" adicionados ao sidebar nav do Diretor (_nav.html)
-
-2026-06-29  COLABORADOR     IMPLEMENTADO — FuncaoEscolar(escola, nome, ativo) + PerfilColaborador(papel 1-1, funcao, endereco, cpf, rg, data_nascimento, telefone, foto, data_admissao, tipo_vinculo, pis)
-2026-06-29  COLABORADOR     TipoVinculoEmpregaticio: CLT, ESTATUTARIO, TEMPORARIO, AUTONOMO
-2026-06-29  COLABORADOR     colaborador_service: criar, editar, desativar, reativar, salvar_endereco
-2026-06-29  COLABORADOR     funcao_service: criar, editar, desativar, reativar
-2026-06-29  COLABORADOR     Views: ListarColaboradoresView, CriarColaboradorView, DetalheColaboradorView, EditarColaboradorView, DesativarColaboradorView, ReativarColaboradorView
-2026-06-29  COLABORADOR     Views Funções: ListarFuncoesView, CriarFuncaoView, EditarFuncaoView, DesativarFuncaoView, ReativarFuncaoView
-2026-06-29  COLABORADOR     Templates: lista.html, form_colaborador.html, detalhe.html, lista_funcoes.html, form_funcao.html — /colaboradores/
-2026-06-29  COLABORADOR     Leitura: DIRETOR + FUNCIONARIO | Escrita/Gestão: DIRETOR apenas
-2026-06-29  COLABORADOR     apps.funcao antigo substituído integralmente por FuncaoEscolar em apps.colaborador
-2026-06-29  COLABORADOR     Link "Colaboradores" adicionado ao sidebar nav do Diretor (_nav.html)
-2026-06-29  COLABORADOR     KPI total_colaboradores atualizado no DashboardView do Diretor
-
-2026-06-29  PROFESSOR       IMPLEMENTADO — PerfilProfessor(papel 1-1, endereco, cpf, rg, data_nascimento, telefone, foto, data_admissao, tipo_vinculo, registro_profissional)
-2026-06-29  PROFESSOR       NivelFormacao: GRADUACAO, ESPECIALIZACAO, MESTRADO, DOUTORADO, OUTRO
-2026-06-29  PROFESSOR       TipoVinculoProfessor: CLT, ESTATUTARIO, TEMPORARIO, AUTONOMO (choice local, independente de colaborador)
-2026-06-29  PROFESSOR       FormacaoAcademica(professor FK, nivel, curso, instituicao, ano_conclusao) — múltiplas por professor
-2026-06-29  PROFESSOR       professor_service: criar, editar, desativar, reativar, salvar_endereco, adicionar_formacao, remover_formacao
-2026-06-29  PROFESSOR       professor_service: vincular_turma → ProfessorTurma; vincular_materia_turma → ProfessorMateriaTurma (lazy import de apps.turma)
-2026-06-29  PROFESSOR       Views: ListarProfessoresView, CriarProfessorView, DetalheProfessorView, EditarProfessorView, DesativarProfessorView, ReativarProfessorView
-2026-06-29  PROFESSOR       Views: AdicionarFormacaoView, RemoverFormacaoView
-2026-06-29  PROFESSOR       Templates: lista.html, form_professor.html, detalhe.html — /professores/
-2026-06-29  PROFESSOR       Leitura: DIRETOR + FUNCIONARIO | Escrita/Gestão: DIRETOR apenas
-2026-06-29  PROFESSOR       Link "Professores" adicionado ao sidebar nav do Diretor (_nav.html)
-2026-06-29  PROFESSOR       ProfessorTurma, ProfessorMateriaTurma, PeriodoAula, DiaSemana, HorarioAula adicionados ao apps.turma (migration 0002)
-
-2026-06-29  ALUNOS          IMPLEMENTADO — Aluno(escola FK, usuario 1-1 null, endereco 1-1 null, matricula, nome_completo, data_nascimento, cpf, rg, foto, ativo)
-2026-06-29  ALUNOS          MatriculaTurma(aluno FK, turma FK, ano_letivo FK, data_matricula, situacao, ativo) + UniqueConstraint(aluno,ano_letivo, ativo=True)
-2026-06-29  ALUNOS          SituacaoMatricula: MATRICULADO, TRANSFERIDO, EVADIDO, CONCLUINTE
-2026-06-29  ALUNOS          matricula gerada automaticamente: f'{ano}{seq:04d}' por escola
-2026-06-29  ALUNOS          aluno_service: criar, editar, desativar, reativar, matricular, trocar_turma, transferir, evadir, concluir
-2026-06-29  ALUNOS          Views: ListarAlunosView, CriarAlunoView, DetalheAlunoView, EditarAlunoView, DesativarAlunoView, ReativarAlunoView
-2026-06-29  ALUNOS          Views: MatricularView, TrocarTurmaView, TransferirView, EvadiemView, ConcluirView
-2026-06-29  ALUNOS          Templates: lista.html, form_aluno.html, detalhe.html — /alunos/
-2026-06-29  ALUNOS          Leitura: DIRETOR + FUNCIONARIO | Escrita/Gestão: DIRETOR apenas
-2026-06-29  ALUNOS          Link "Alunos" adicionado ao sidebar nav do Diretor (_nav.html)
-2026-06-29  ALUNOS          KPI total_alunos atualizado no DashboardView (conta MatriculaTurma ativas)
-
-2026-06-29  COMUNICADOS     IMPLEMENTADO — Comunicado(escola, autor, titulo, corpo, tipo, destinatarios, turmas M2M, publicada)
-2026-06-29  COMUNICADOS     TipoComunicado: GERAL, CONVOCACAO, AVISO, ADVERTENCIA, ELOGIO, OUTRO
-2026-06-29  COMUNICADOS     DestinatarioComunicado: TODOS, TURMAS, RESPONSAVEIS, ALUNOS
-2026-06-29  COMUNICADOS     LeituraComunicado(comunicado FK, usuario FK, lido_em) — unique_together
-2026-06-29  COMUNICADOS     comunicado_service: criar, publicar (notifica destinatários), registrar_leitura, listar_nao_lidos
-2026-06-29  COMUNICADOS     Views: ListarComunicadosView, CriarComunicadoView, DetalheComunicadoView, EditarComunicadoView, PublicarComunicadoView, DespublicarComunicadoView, ExcluirComunicadoView
-2026-06-29  COMUNICADOS     Professor pode criar comunicados apenas para suas turmas (filtro no form + validação de escopo)
-2026-06-29  COMUNICADOS     Templates: lista.html, form_comunicado.html, detalhe.html (grid 2/3+1/3 com leituras) — /comunicados/
-2026-06-29  COMUNICADOS     Link "Comunicados" adicionado ao sidebar nav do Diretor (_nav.html)
-
-2026-06-29  AGENDA          IMPLEMENTADO — Evento(escola, autor, titulo, descricao, tipo, data_inicio, hora_inicio, data_fim, hora_fim, local, destinatarios, turmas M2M, publicada)
-2026-06-29  AGENDA          TipoEvento: REUNIAO, PROVA, EXCURSAO, FESTIVIDADE, OUTRO
-2026-06-29  AGENDA          LeituraEvento(evento FK, usuario FK, lido_em) — unique_together
-2026-06-29  AGENDA          evento_service: criar, publicar (notifica destinatários), registrar_leitura
-2026-06-29  AGENDA          Views: ListarEventosView, CriarEventoView, DetalheEventoView, EditarEventoView, PublicarEventoView, DespublicarEventoView, ExcluirEventoView
-2026-06-29  AGENDA          Apenas DIRETOR + COLABORADOR criam/editam/excluem eventos — PROFESSOR tem acesso de leitura
-2026-06-29  AGENDA          Templates: lista.html (data destacada em card), form_evento.html (datas/horários), detalhe.html — /agenda/
-2026-06-29  AGENDA          Link "Agenda" adicionado ao sidebar nav do Diretor (_nav.html)
-2026-06-29  AGENDA          Migration 0001_initial aplicada (Evento + LeituraEvento)
-2026-06-29  COMUNICADOS     Migration 0001_initial aplicada (Comunicado + LeituraComunicado)
-
-2026-06-29  RELATÓRIOS      IMPLEMENTADO — TipoRelatorio (8 tipos) + PeriodicidadeRelatorio + RelatorioAgendado + RelatorioGerado
-2026-06-29  RELATÓRIOS      relatorio_service: gerar_desempenho_turma, gerar_frequencia_turma, gerar_frequencia_aluno, gerar_alunos_em_risco
-2026-06-29  RELATÓRIOS      relatorio_service: gerar_boletim_lote (PDF via WeasyPrint), gerar_desempenho_professor (DIRETOR only)
-2026-06-29  RELATÓRIOS      relatorio_service: gerar_inadimplencia, gerar_extrato_financeiro, executar_agendados
-2026-06-29  RELATÓRIOS      _exportar_xlsx (openpyxl) e _exportar_pdf (WeasyPrint) helpers internos — formato: html/pdf/xlsx
-2026-06-29  RELATÓRIOS      Views: IndexRelatoriosView (catálogo), DesempenhoTurmaView, FrequenciaTurmaView, AlunosEmRiscoView
-2026-06-29  RELATÓRIOS      Views: BoletimLoteView, DesempenhoProfessorView (_DiretorMixin), InadimplenciaView, ExtratoFinanceiroView
-2026-06-29  RELATÓRIOS      Templates: index.html (catálogo 3 seções), 7 templates de resultado on-screen, pdf/boletim_lote.html (WeasyPrint)
-2026-06-29  RELATÓRIOS      Management command: executar_relatorios_agendados — para todas as escolas ativas
-2026-06-29  RELATÓRIOS      Admin Unfold: RelatorioAgendadoAdmin + RelatorioGeradoAdmin (readonly)
-2026-06-29  RELATÓRIOS      Link "Relatórios" adicionado ao sidebar nav do Diretor (_nav.html)
-2026-06-29  RELATÓRIOS      URL: /relatorios/ (namespace=relatorio), migration 0001_initial aplicada
-2026-06-29  RELATÓRIOS      DesempenhoProfessor: sinaliza turma com ≥50% alunos abaixo do mínimo (alerta vermelho)
-
-================================================================================
-FIM DO ARQUIVO — última atualização: 2026-06-29
+FIM DO ARQUIVO — última atualização: 2026-07-06
 ================================================================================

@@ -15,4 +15,5 @@ urlpatterns = [
     path('<int:pk>/reativar/',                           views.ReativarProfessorView.as_view(),  name='reativar'),
     path('<int:pk>/formacao/adicionar/',                 views.AdicionarFormacaoView.as_view(),  name='formacao_adicionar'),
     path('<int:pk>/formacao/<int:formacao_pk>/remover/', views.RemoverFormacaoView.as_view(),    name='formacao_remover'),
+    path('<int:pk>/vinculos/',                           views.GerenciarVinculosView.as_view(),  name='vinculos'),
 ]

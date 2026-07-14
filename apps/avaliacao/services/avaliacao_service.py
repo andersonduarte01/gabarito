@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.db import transaction
 
 from apps.avaliacao.models import (
-    Avaliacao, NotaAluno, OpcaoResposta, Questao, RespostaAluno,
+    Avaliacao, NotaAluno, OpcaoResposta, Questao, RespostaAluno, TipoQuestao,
 )
 
 
@@ -19,17 +19,27 @@ def editar(avaliacao: Avaliacao, dados: dict) -> Avaliacao:
 
 
 def publicar(avaliacao: Avaliacao) -> None:
-    avaliacao.publicada = True
-    avaliacao.save(update_fields=['publicada'])
+    from apps.avaliacao.models import StatusAvaliacao
+    avaliacao.status = StatusAvaliacao.PUBLICADA
+    avaliacao.save(update_fields=['status'])
 
 
 def despublicar(avaliacao: Avaliacao) -> None:
-    avaliacao.publicada = False
-    avaliacao.save(update_fields=['publicada'])
+    from apps.avaliacao.models import StatusAvaliacao
+    avaliacao.status = StatusAvaliacao.RASCUNHO
+    avaliacao.save(update_fields=['status'])
+
+
+def encerrar(avaliacao: Avaliacao) -> None:
+    from apps.avaliacao.models import StatusAvaliacao
+    avaliacao.status = StatusAvaliacao.ENCERRADA
+    avaliacao.save(update_fields=['status'])
 
 
 @transaction.atomic
 def adicionar_questao(avaliacao: Avaliacao, dados: dict) -> Questao:
+    # ClearableFileInput retorna False quando o campo está vazio sem upload
+    dados = {k: (None if v is False else v) for k, v in dados.items()}
     return Questao.objects.create(avaliacao=avaliacao, **dados)
 
 
@@ -39,13 +49,26 @@ def remover_questao(questao: Questao) -> None:
 
 @transaction.atomic
 def adicionar_opcao(questao: Questao, dados: dict) -> OpcaoResposta:
-    if dados.get('correta'):
+    # Apenas tipos de resposta única impõem "uma correta por vez"
+    _tipos_unica = (
+        TipoQuestao.MULTIPLA_ESCOLHA,
+        TipoQuestao.VERDADEIRO_FALSO,
+    )
+    if dados.get('correta') and questao.tipo in _tipos_unica:
         questao.opcoes.filter(correta=True).update(correta=False)
     return OpcaoResposta.objects.create(questao=questao, **dados)
 
 
+def remover_opcao(opcao: OpcaoResposta) -> None:
+    opcao.delete()
+
+
 @transaction.atomic
 def lancar_nota_manual(avaliacao: Avaliacao, aluno, nota, ausente: bool = False, observacao: str = '') -> NotaAluno:
+    # Garante que a nota não exceda o máximo definido
+    if nota is not None:
+        nota = max(Decimal('0'), min(nota, avaliacao.nota_maxima))
+
     nota_obj, _ = NotaAluno.objects.update_or_create(
         avaliacao=avaliacao, aluno=aluno,
         defaults={'nota': nota, 'ausente': ausente, 'observacao': observacao},

@@ -64,6 +64,7 @@ def criar_periodo(ano_letivo, dados):
         ano_letivo  = ano_letivo,
         numero      = dados['numero'],
         nome        = dados['nome'],
+        tipo        = dados.get('tipo', 'LETIVO'),
         data_inicio = data_inicio,
         data_fim    = data_fim,
     )
@@ -84,6 +85,7 @@ def editar_periodo(periodo, dados):
     _verificar_sobreposicao(ano_letivo, data_inicio, data_fim, excluir_pk=periodo.pk)
     periodo.numero      = dados['numero']
     periodo.nome        = dados['nome']
+    periodo.tipo        = dados.get('tipo', 'LETIVO')
     periodo.data_inicio = data_inicio
     periodo.data_fim    = data_fim
     periodo.save()

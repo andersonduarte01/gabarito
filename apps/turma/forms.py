@@ -8,6 +8,28 @@ INPUT  = 'w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-sl
 SELECT = INPUT
 
 
+class PeriodoAulaForm(forms.Form):
+    numero = forms.IntegerField(
+        label='Nº',
+        min_value=1,
+        max_value=20,
+        widget=forms.NumberInput(attrs={'class': INPUT, 'placeholder': '1'}),
+    )
+    nome = forms.CharField(
+        label='Nome',
+        max_length=50,
+        widget=forms.TextInput(attrs={'class': INPUT, 'placeholder': '1° Período'}),
+    )
+    hora_inicio = forms.TimeField(
+        label='Início',
+        widget=forms.TimeInput(attrs={'class': INPUT, 'type': 'time'}),
+    )
+    hora_fim = forms.TimeField(
+        label='Fim',
+        widget=forms.TimeInput(attrs={'class': INPUT, 'type': 'time'}),
+    )
+
+
 class TurmaForm(forms.Form):
     ano_letivo = forms.ModelChoiceField(
         queryset=AnoLetivo.objects.none(),

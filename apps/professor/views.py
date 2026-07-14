@@ -174,7 +174,12 @@ class DetalheProfessorView(_LeituraMixin, View):
         perfil = get_object_or_404(
             PerfilProfessor.objects.select_related(
                 'papel__vinculo__usuario', 'endereco'
-            ).prefetch_related('formacoes', 'professor_materia_turmas__materia', 'professor_materia_turmas__turma'),
+            ).prefetch_related(
+                'formacoes',
+                'professor_materia_turmas__materia',
+                'professor_materia_turmas__turma__ano_letivo',
+                'professor_materia_turmas__turma__serie',
+            ),
             pk=pk, papel__vinculo__escola=request.escola,
         )
         formacao_form = FormacaoAcademicaForm()
@@ -281,4 +286,116 @@ class RemoverFormacaoView(_DiretorMixin, View):
         formacao = get_object_or_404(FormacaoAcademica, pk=formacao_pk, professor=perfil)
         professor_service.remover_formacao(formacao)
         messages.success(request, 'Formação removida.')
+        return redirect('professor:detalhe', pk=perfil.pk)
+
+
+class GerenciarVinculosView(_DiretorMixin, View):
+    template_name = 'professor/vinculos.html'
+
+    def _get_perfil(self, request, pk):
+        return get_object_or_404(
+            PerfilProfessor, pk=pk, papel__vinculo__escola=request.escola,
+        )
+
+    def get(self, request, pk):
+        from apps.turma.models import Turma, ProfessorMateriaTurma
+        from apps.materia.models import Materia
+        from apps.ano_letivo.models import AnoLetivo
+
+        perfil = self._get_perfil(request, pk)
+        anos = AnoLetivo.objects.filter(escola=request.escola).order_by('-ano')
+
+        ano_id = request.GET.get('ano')
+        if ano_id:
+            ano = get_object_or_404(AnoLetivo, pk=ano_id, escola=request.escola)
+        else:
+            ano = anos.filter(status='EM_ANDAMENTO').first() or anos.first()
+
+        if not ano:
+            return render(request, self.template_name, self._ctx(
+                request, perfil=perfil, anos=anos, ano=None, grade=[], materias=[],
+            ))
+
+        turmas = (
+            Turma.objects
+            .filter(escola=request.escola, ano_letivo=ano, ativo=True)
+            .select_related('serie')
+            .order_by('serie__ordem', 'nome')
+        )
+        materias = list(
+            Materia.objects.filter(escola=request.escola, ativo=True).order_by('nome')
+        )
+
+        all_vmts = (
+            ProfessorMateriaTurma.objects
+            .filter(turma__in=turmas, ano_letivo=ano)
+            .select_related('professor__papel__vinculo__usuario')
+        )
+        mine = set()
+        taken = {}
+        for vmt in all_vmts:
+            key = (vmt.turma_id, vmt.materia_id)
+            if vmt.professor_id == perfil.pk:
+                mine.add(key)
+            else:
+                taken[key] = vmt.professor.papel.vinculo.usuario.nome
+
+        grade = []
+        for turma in turmas:
+            cells = []
+            for materia in materias:
+                key = (turma.pk, materia.pk)
+                if key in mine:
+                    cells.append({'materia': materia, 'state': 'mine', 'by': None})
+                elif key in taken:
+                    cells.append({'materia': materia, 'state': 'taken', 'by': taken[key]})
+                else:
+                    cells.append({'materia': materia, 'state': 'free', 'by': None})
+            grade.append({'turma': turma, 'cells': cells})
+
+        return render(request, self.template_name, self._ctx(
+            request, perfil=perfil, anos=anos, ano=ano, materias=materias, grade=grade,
+        ))
+
+    def post(self, request, pk):
+        from apps.turma.models import Turma, ProfessorMateriaTurma
+        from apps.ano_letivo.models import AnoLetivo
+
+        perfil = self._get_perfil(request, pk)
+        ano = get_object_or_404(AnoLetivo, pk=request.POST.get('ano_id'), escola=request.escola)
+
+        turmas = Turma.objects.filter(escola=request.escola, ano_letivo=ano, ativo=True)
+        valid_turma_ids = set(turmas.values_list('pk', flat=True))
+
+        checked = set()
+        for v in request.POST.getlist('vmt'):
+            try:
+                t_id, m_id = v.split('_')
+                t_id, m_id = int(t_id), int(m_id)
+                if t_id in valid_turma_ids:
+                    checked.add((t_id, m_id))
+            except (ValueError, AttributeError):
+                pass
+
+        current_qs = ProfessorMateriaTurma.objects.filter(
+            professor=perfil, turma__in=turmas, ano_letivo=ano,
+        )
+        current_mine = {(v.turma_id, v.materia_id): v for v in current_qs}
+
+        for turma_id, materia_id in checked - set(current_mine):
+            already_taken = ProfessorMateriaTurma.objects.filter(
+                turma_id=turma_id, materia_id=materia_id, ano_letivo=ano,
+            ).exclude(professor=perfil).exists()
+            if not already_taken:
+                ProfessorMateriaTurma.objects.create(
+                    professor=perfil,
+                    materia_id=materia_id,
+                    turma_id=turma_id,
+                    ano_letivo=ano,
+                )
+
+        for key in set(current_mine) - checked:
+            current_mine[key].delete()
+
+        messages.success(request, 'Vínculos atualizados com sucesso.')
         return redirect('professor:detalhe', pk=perfil.pk)

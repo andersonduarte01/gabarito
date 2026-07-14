@@ -37,6 +37,7 @@ class RegistroFrequencia(models.Model):
         verbose_name        = 'Registro de Frequência'
         verbose_name_plural = 'Registros de Frequência'
         ordering            = ['-data', '-criado_em']
+        unique_together     = [('turma', 'materia', 'data', 'ano_letivo')]
 
     def __str__(self):
         materia = self.materia.nome if self.materia else '—'

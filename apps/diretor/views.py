@@ -1,5 +1,8 @@
+from datetime import date, timedelta
+
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
+from django.db.models import Count, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
@@ -34,16 +37,16 @@ class DashboardView(DiretorRequiredMixin, View):
 
     def get(self, request):
         escola = request.escola
+        hoje = date.today()
+        sete_dias_atras = hoje - timedelta(days=7)
 
-        # KPIs — expandidos conforme módulos são implementados
         from apps.colaborador.models import PerfilColaborador
         from apps.professor.models import PerfilProfessor
         from apps.turma.models import Turma
         from apps.aluno.models import MatriculaTurma
-        total_alunos      = MatriculaTurma.objects.filter(turma__escola=escola, ativo=True).count()
-        total_turmas      = (
-            Turma.objects.filter(escola=escola, ativo=True).count()
-        )
+
+        total_alunos = MatriculaTurma.objects.filter(turma__escola=escola, ativo=True).count()
+        total_turmas = Turma.objects.filter(escola=escola, ativo=True).count()
         total_professores = (
             PerfilProfessor.objects
             .filter(papel__vinculo__escola=escola, papel__ativo=True)
@@ -76,6 +79,61 @@ class DashboardView(DiretorRequiredMixin, View):
 
         grace_dias = getattr(request, 'grace_dias_restantes', None)
 
+        # ── Alertas de gestão ─────────────────────────────────────────────
+        from apps.boletim.models import ResultadoPeriodo, SituacaoPeriodo
+        from apps.financeiro.models import CobrancaAluno, StatusCobranca
+        from apps.avaliacao.models import Avaliacao, StatusAvaliacao
+        from apps.auditoria.models import LogAuditoria
+
+        if ano_letivo:
+            alunos_em_risco = (
+                ResultadoPeriodo.objects
+                .filter(
+                    ano_letivo=ano_letivo,
+                    aluno__escola=escola,
+                    situacao_periodo__in=[
+                        SituacaoPeriodo.RECUPERACAO,
+                        SituacaoPeriodo.REPROVADO,
+                    ],
+                )
+                .values('aluno_id')
+                .distinct()
+                .count()
+            )
+        else:
+            alunos_em_risco = 0
+
+        _inad = (
+            CobrancaAluno.objects
+            .filter(aluno__escola=escola, status=StatusCobranca.VENCIDO)
+            .aggregate(total=Sum('valor'), quantidade=Count('id'))
+        )
+        inadimplencia_qtd   = _inad['quantidade'] or 0
+        inadimplencia_total = _inad['total'] or 0
+
+        avaliacoes_sem_nota = (
+            Avaliacao.objects
+            .filter(escola=escola, status=StatusAvaliacao.PUBLICADA)
+            .annotate(qt_notas=Count('notas'))
+            .filter(qt_notas=0)
+            .count()
+        )
+
+        turmas_sem_frequencia = (
+            Turma.objects
+            .filter(escola=escola, ativo=True)
+            .exclude(registros_frequencia__data__gte=sete_dias_atras)
+            .distinct()
+            .count()
+        )
+
+        logs_recentes = (
+            LogAuditoria.objects
+            .filter(escola=escola)
+            .select_related('usuario')
+            .order_by('-criado_em')[:6]
+        )
+
         return render(request, self.template_name, self._ctx(
             request,
             total_alunos=total_alunos,
@@ -86,6 +144,12 @@ class DashboardView(DiretorRequiredMixin, View):
             diretores=diretores,
             assinatura=assinatura,
             grace_dias=grace_dias,
+            alunos_em_risco=alunos_em_risco,
+            inadimplencia_qtd=inadimplencia_qtd,
+            inadimplencia_total=inadimplencia_total,
+            avaliacoes_sem_nota=avaliacoes_sem_nota,
+            turmas_sem_frequencia=turmas_sem_frequencia,
+            logs_recentes=logs_recentes,
         ))
 
 

@@ -26,9 +26,8 @@ def _gerar_matricula(escola) -> str:
 
 @transaction.atomic
 def criar(escola, dados: dict) -> Aluno:
-    turma            = dados.pop('turma', None)
-    ano_letivo       = dados.pop('ano_letivo', None)
-    responsavel_dados = dados.pop('responsavel_dados', None)
+    turma      = dados.pop('turma', None)
+    ano_letivo = dados.pop('ano_letivo', None)
 
     matricula = _gerar_matricula(escola)
     aluno = Aluno.objects.create(escola=escola, matricula=matricula, **dados)
@@ -39,23 +38,6 @@ def criar(escola, dados: dict) -> Aluno:
             turma=turma,
             ano_letivo=ano_letivo,
             situacao=SituacaoMatricula.MATRICULADO,
-        )
-
-    if responsavel_dados and responsavel_dados.get('nome'):
-        from apps.responsavel.models import PerfilResponsavel, VinculoResponsavelAluno
-        perfil = PerfilResponsavel.objects.create(
-            escola=escola,
-            nome=responsavel_dados['nome'],
-            telefone=responsavel_dados.get('telefone', ''),
-            cpf=responsavel_dados.get('cpf', ''),
-        )
-        VinculoResponsavelAluno.objects.create(
-            responsavel=perfil,
-            aluno=aluno,
-            parentesco=responsavel_dados['parentesco'],
-            responsavel_principal=responsavel_dados.get('responsavel_principal', False),
-            responsavel_financeiro=responsavel_dados.get('responsavel_financeiro', False),
-            ativo=True,
         )
 
     return aluno

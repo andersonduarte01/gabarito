@@ -6,6 +6,7 @@ app_name = 'aluno'
 urlpatterns = [
     path('portal/dashboard/', views.DashboardAlunoView.as_view(), name='portal_dashboard'),
     path('portal/perfil/',    views.PerfilAlunoView.as_view(),    name='portal_perfil'),
+    path('buscar/',                               views.BuscarAlunoView.as_view(),    name='buscar'),
     path('',                                     views.ListarAlunosView.as_view(),   name='lista'),
     path('criar/',                               views.CriarAlunoView.as_view(),     name='criar'),
     path('<int:pk>/',                            views.DetalheAlunoView.as_view(),   name='detalhe'),

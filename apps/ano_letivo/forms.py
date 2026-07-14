@@ -4,9 +4,11 @@ _INPUT = (
     'w-full px-3 py-2 text-sm bg-white dark:bg-slate-800 '
     'border border-slate-200 dark:border-slate-700 rounded-lg '
     'text-slate-900 dark:text-slate-100 focus:outline-none '
-    'focus:ring-2 focus:ring-[#0d6efd]/30 focus:border-[#0d6efd]'
+    'focus:ring-2 focus:ring-[#0d6efd]/30 focus:border-[#0d6efd] '
+    'dark:[color-scheme:dark]'
 )
 
+_DATE = _INPUT
 _DATE_FORMATS = ['%Y-%m-%d', '%d/%m/%Y']
 
 
@@ -20,12 +22,12 @@ class AnoLetivoForm(forms.Form):
     data_inicio = forms.DateField(
         label='Data de Início',
         input_formats=_DATE_FORMATS,
-        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}, format='%Y-%m-%d'),
+        widget=forms.DateInput(attrs={'class': _DATE, 'type': 'date'}, format='%Y-%m-%d'),
     )
     data_fim = forms.DateField(
         label='Data de Fim',
         input_formats=_DATE_FORMATS,
-        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}, format='%Y-%m-%d'),
+        widget=forms.DateInput(attrs={'class': _DATE, 'type': 'date'}, format='%Y-%m-%d'),
     )
 
     def clean(self):
@@ -41,7 +43,7 @@ class PeriodoLetivoForm(forms.Form):
     numero = forms.IntegerField(
         label='Número do Período',
         min_value=1,
-        max_value=10,
+        max_value=20,
         widget=forms.NumberInput(attrs={'class': _INPUT, 'placeholder': '1'}),
     )
     nome = forms.CharField(
@@ -49,15 +51,21 @@ class PeriodoLetivoForm(forms.Form):
         max_length=50,
         widget=forms.TextInput(attrs={'class': _INPUT, 'placeholder': 'Ex: 1º Bimestre'}),
     )
+    tipo = forms.ChoiceField(
+        label='Tipo',
+        choices=[('LETIVO', 'Letivo'), ('RECESSO', 'Recesso / Férias')],
+        initial='LETIVO',
+        widget=forms.Select(attrs={'class': _INPUT}),
+    )
     data_inicio = forms.DateField(
         label='Data de Início',
         input_formats=_DATE_FORMATS,
-        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}, format='%Y-%m-%d'),
+        widget=forms.DateInput(attrs={'class': _DATE, 'type': 'date'}, format='%Y-%m-%d'),
     )
     data_fim = forms.DateField(
         label='Data de Fim',
         input_formats=_DATE_FORMATS,
-        widget=forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}, format='%Y-%m-%d'),
+        widget=forms.DateInput(attrs={'class': _DATE, 'type': 'date'}, format='%Y-%m-%d'),
     )
 
     def clean(self):

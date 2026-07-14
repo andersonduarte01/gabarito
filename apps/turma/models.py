@@ -2,9 +2,9 @@ from django.db import models
 
 
 class Turno(models.TextChoices):
-    MATUTINO   = 'MATUTINO',   'Matutino'
-    VESPERTINO = 'VESPERTINO', 'Vespertino'
-    NOTURNO    = 'NOTURNO',    'Noturno'
+    MATUTINO   = 'MATUTINO',   'Manhã'
+    VESPERTINO = 'VESPERTINO', 'Tarde'
+    NOTURNO    = 'NOTURNO',    'Noite'
     INTEGRAL   = 'INTEGRAL',   'Integral'
 
 

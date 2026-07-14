@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
@@ -38,6 +39,28 @@ class _EscritaMixin:
         return {'usuario': request.user, 'escola': request.escola, 'papel': request.papel, **extra}
 
 
+class BuscarResponsavelView(_LeituraMixin, View):
+    def get(self, request):
+        from django.db.models import Q
+        q = request.GET.get('q', '').strip()
+        if len(q) < 2:
+            return JsonResponse({'results': []})
+        escola = request.escola
+        responsaveis = (
+            PerfilResponsavel.objects
+            .filter(Q(escola=escola) | Q(vinculos_aluno__aluno__escola=escola))
+            .filter(Q(nome__icontains=q) | Q(usuario__email__icontains=q))
+            .distinct()
+            .select_related('usuario')
+            .order_by('nome')[:10]
+        )
+        results = [
+            {'id': r.pk, 'text': r.nome, 'email': r.email or ''}
+            for r in responsaveis
+        ]
+        return JsonResponse({'results': results})
+
+
 class ListarResponsaveisView(_LeituraMixin, View):
     template_name = 'responsavel/lista.html'
 
@@ -70,11 +93,11 @@ class CriarResponsavelView(_EscritaMixin, View):
         if form.is_valid():
             cd = form.cleaned_data
             try:
-                _campos_vinculo = {'aluno', 'parentesco', 'responsavel_principal', 'responsavel_financeiro'}
+                _campos_vinculo = {'aluno', 'parentesco'}
                 if tipo == 'acesso':
                     perfil_dados = {
                         k: v for k, v in cd.items()
-                        if k not in ('nome', 'email', 'senha', 'confirmar_senha') | _campos_vinculo
+                        if k not in {'nome', 'email', 'senha', 'confirmar_senha'} | _campos_vinculo
                     }
                     perfil = responsavel_service.criar(
                         escola=request.escola,
@@ -90,11 +113,7 @@ class CriarResponsavelView(_EscritaMixin, View):
                     responsavel_service.vincular_aluno(
                         perfil=perfil,
                         aluno=cd['aluno'],
-                        dados={
-                            'parentesco':             cd['parentesco'],
-                            'responsavel_principal':  cd.get('responsavel_principal', False),
-                            'responsavel_financeiro': cd.get('responsavel_financeiro', False),
-                        },
+                        dados={'parentesco': cd['parentesco']},
                     )
                 messages.success(request, f'Responsável {cd["nome"]} cadastrado com sucesso.')
                 return redirect('responsavel:detalhe', pk=perfil.pk)
@@ -109,13 +128,21 @@ class DetalheResponsavelView(_LeituraMixin, View):
     def get(self, request, pk):
         from django.db.models import Q
         responsavel = get_object_or_404(
-            PerfilResponsavel.objects.prefetch_related('vinculos_aluno__aluno'),
-            Q(escola=request.escola) | Q(vinculos_aluno__aluno__escola=request.escola),
+            PerfilResponsavel.objects
+            .filter(Q(escola=request.escola) | Q(vinculos_aluno__aluno__escola=request.escola))
+            .distinct(),
             pk=pk,
+        )
+        vinculos_ativos = (
+            VinculoResponsavelAluno.objects
+            .filter(responsavel=responsavel, ativo=True)
+            .select_related('aluno')
+            .order_by('aluno__nome_completo')
         )
         vinculo_form = VincularAlunoForm(escola=request.escola)
         return render(request, self.template_name, self._ctx(
             request, responsavel=responsavel, vinculo_form=vinculo_form,
+            vinculos_ativos=vinculos_ativos,
         ))
 
 
@@ -125,8 +152,9 @@ class EditarResponsavelView(_EscritaMixin, View):
     def _get(self, request, pk):
         from django.db.models import Q
         return get_object_or_404(
-            PerfilResponsavel,
-            Q(escola=request.escola) | Q(vinculos_aluno__aluno__escola=request.escola),
+            PerfilResponsavel.objects
+            .filter(Q(escola=request.escola) | Q(vinculos_aluno__aluno__escola=request.escola))
+            .distinct(),
             pk=pk,
         )
 
@@ -153,8 +181,9 @@ class VincularAlunoView(_EscritaMixin, View):
     def post(self, request, pk):
         from django.db.models import Q
         responsavel = get_object_or_404(
-            PerfilResponsavel,
-            Q(escola=request.escola) | Q(vinculos_aluno__aluno__escola=request.escola),
+            PerfilResponsavel.objects
+            .filter(Q(escola=request.escola) | Q(vinculos_aluno__aluno__escola=request.escola))
+            .distinct(),
             pk=pk,
         )
         form = VincularAlunoForm(request.POST, escola=request.escola)
@@ -164,11 +193,7 @@ class VincularAlunoView(_EscritaMixin, View):
                 responsavel_service.vincular_aluno(
                     perfil=responsavel,
                     aluno=cd['aluno'],
-                    dados={
-                        'parentesco':             cd['parentesco'],
-                        'responsavel_principal':  cd['responsavel_principal'],
-                        'responsavel_financeiro': cd['responsavel_financeiro'],
-                    },
+                    dados={'parentesco': cd['parentesco']},
                 )
                 messages.success(request, f'Aluno {cd["aluno"].nome_completo} vinculado.')
             except Exception as exc:
@@ -182,13 +207,18 @@ class DesvincularAlunoView(_EscritaMixin, View):
     def post(self, request, pk, vinculo_pk):
         from django.db.models import Q
         responsavel = get_object_or_404(
-            PerfilResponsavel,
-            Q(escola=request.escola) | Q(vinculos_aluno__aluno__escola=request.escola),
+            PerfilResponsavel.objects
+            .filter(Q(escola=request.escola) | Q(vinculos_aluno__aluno__escola=request.escola))
+            .distinct(),
             pk=pk,
         )
         vinculo = get_object_or_404(VinculoResponsavelAluno, pk=vinculo_pk, responsavel=responsavel)
         responsavel_service.desvincular_aluno(vinculo)
         messages.success(request, 'Vínculo removido.')
+        next_url = request.POST.get('next', '').strip()
+        from django.utils.http import url_has_allowed_host_and_scheme
+        if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+            return redirect(next_url)
         return redirect('responsavel:detalhe', pk=responsavel.pk)
 
 

@@ -6,7 +6,8 @@ _INPUT = (
     'w-full px-3 py-2 text-sm bg-white dark:bg-slate-800 '
     'border border-slate-200 dark:border-slate-700 rounded-lg '
     'text-slate-900 dark:text-slate-100 focus:outline-none '
-    'focus:ring-2 focus:ring-[#0d6efd]/30 focus:border-[#0d6efd]'
+    'focus:ring-2 focus:ring-[#0d6efd]/30 focus:border-[#0d6efd] '
+    'dark:[color-scheme:dark]'
 )
 _SELECT = _INPUT
 _FILE = (
@@ -69,15 +70,24 @@ class CriarAlunoForm(forms.Form):
         choices=[('', '— Selecione —')],
         widget=forms.Select(attrs={'class': _SELECT}),
     )
-    resp_principal  = forms.BooleanField(
-        label='Responsável principal', required=False,
-        widget=forms.CheckboxInput(attrs={'class': 'w-4 h-4 rounded border-slate-300 text-[#0d6efd]'}),
+    resp_acesso         = forms.ChoiceField(
+        choices=[('sem_acesso', 'Sem acesso'), ('acesso', 'Com acesso')],
+        required=False,
+        initial='sem_acesso',
+        widget=forms.HiddenInput(),
     )
-    resp_financeiro = forms.BooleanField(
-        label='Responsável financeiro', required=False,
-        widget=forms.CheckboxInput(attrs={'class': 'w-4 h-4 rounded border-slate-300 text-[#0d6efd]'}),
+    resp_email          = forms.EmailField(
+        label='E-mail', required=False,
+        widget=forms.EmailInput(attrs={'class': _INPUT, 'placeholder': 'email@exemplo.com'}),
     )
-
+    resp_senha          = forms.CharField(
+        label='Senha', required=False,
+        widget=forms.PasswordInput(attrs={'class': _INPUT, 'placeholder': 'Senha de acesso'}),
+    )
+    resp_confirmar_senha = forms.CharField(
+        label='Confirmar senha', required=False,
+        widget=forms.PasswordInput(attrs={'class': _INPUT, 'placeholder': 'Repita a senha'}),
+    )
     def __init__(self, *args, escola=None, **kwargs):
         super().__init__(*args, **kwargs)
         from apps.turma.models import Turma
@@ -101,6 +111,15 @@ class CriarAlunoForm(forms.Form):
             self.add_error('turma', 'Selecione a turma para o ano letivo informado.')
         if cleaned.get('resp_nome') and not cleaned.get('resp_parentesco'):
             self.add_error('resp_parentesco', 'Informe o parentesco do responsável.')
+        if cleaned.get('resp_nome') and cleaned.get('resp_acesso') == 'acesso':
+            if not cleaned.get('resp_email'):
+                self.add_error('resp_email', 'Informe o e-mail do responsável.')
+            s1 = cleaned.get('resp_senha')
+            s2 = cleaned.get('resp_confirmar_senha')
+            if not s1:
+                self.add_error('resp_senha', 'Informe a senha.')
+            elif s1 and s2 and s1 != s2:
+                self.add_error('resp_confirmar_senha', 'As senhas não conferem.')
         return cleaned
 
 
@@ -171,15 +190,6 @@ class VincularResponsavelForm(forms.Form):
         label='Parentesco', choices=[],
         widget=forms.Select(attrs={'class': _SELECT}),
     )
-    responsavel_principal = forms.BooleanField(
-        label='Responsável principal', required=False,
-        widget=forms.CheckboxInput(attrs={'class': 'w-4 h-4 rounded border-slate-300 text-[#0d6efd]'}),
-    )
-    responsavel_financeiro = forms.BooleanField(
-        label='Responsável financeiro', required=False,
-        widget=forms.CheckboxInput(attrs={'class': 'w-4 h-4 rounded border-slate-300 text-[#0d6efd]'}),
-    )
-
     def __init__(self, *args, escola=None, **kwargs):
         super().__init__(*args, **kwargs)
         from django.db.models import Q

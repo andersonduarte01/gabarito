@@ -1,0 +1,189 @@
+{% extends base_template %}
+
+{% block extra_head %}
+<style>
+.dark input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+</style>
+{% endblock %}
+
+{% block titulo %}Períodos de Aula — {{ escola.nome }}{% endblock %}
+{% block page_title %}Períodos{% endblock %}
+
+{% block sidebar_nav %}
+{% include "diretor/_nav.html" with active="turmas" %}
+{% endblock %}
+
+{% block conteudo %}
+<div>
+
+    <!-- Cabeçalho -->
+    <div class="flex items-start justify-between mb-6 gap-4">
+        <div>
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Períodos de Aula</h2>
+            <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
+                Configure os horários de cada período por turno. Os períodos aqui definidos compõem a grade horária das turmas.
+            </p>
+        </div>
+        <a href="{% url 'turma:lista' %}"
+           class="inline-flex items-center gap-1.5 text-sm text-slate-500
+                  hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors shrink-0">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            Turmas
+        </a>
+    </div>
+
+    <!-- Abas por turno -->
+    <div class="flex items-center gap-1.5 mb-6 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl w-fit">
+        {% for val, label in turnos %}
+        <a href="?turno={{ val }}"
+           class="px-4 py-2 rounded-xl text-sm font-medium transition-colors
+                  {% if val == turno_ativo %}
+                  bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm
+                  {% else %}
+                  text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200
+                  {% endif %}">
+            {{ label }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-5">
+
+        <!-- Lista de períodos do turno ativo -->
+        <div class="lg:col-span-3">
+
+            {% if periodos %}
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80">
+                            <th class="text-left px-5 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide w-12">#</th>
+                            <th class="text-left px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Nome</th>
+                            <th class="text-left px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Início</th>
+                            <th class="text-left px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Fim</th>
+                            <th class="px-5 py-3 w-20"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+                        {% for p in periodos %}
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors
+                                   {% if edit_obj and edit_obj.pk == p.pk %}ring-1 ring-inset ring-[#0d6efd]/30 bg-blue-50/50 dark:bg-blue-900/10{% endif %}">
+                            <td class="px-5 py-3 font-mono text-xs text-slate-400 dark:text-slate-500">{{ p.numero }}°</td>
+                            <td class="px-4 py-3 font-medium text-slate-700 dark:text-slate-200">{{ p.nome }}</td>
+                            <td class="px-4 py-3 font-mono text-sm text-slate-600 dark:text-slate-300">{{ p.hora_inicio|time:"H:i" }}</td>
+                            <td class="px-4 py-3 font-mono text-sm text-slate-600 dark:text-slate-300">{{ p.hora_fim|time:"H:i" }}</td>
+                            <td class="px-5 py-3">
+                                <div class="flex items-center justify-end gap-0.5">
+                                    <a href="{% url 'turma:periodo_editar' p.pk %}?turno={{ turno_ativo }}"
+                                       class="p-1.5 rounded-lg text-slate-400 hover:text-[#0d6efd]
+                                              hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                       title="Editar">
+                                        <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                                    </a>
+                                    <form method="post" action="{% url 'turma:periodo_excluir' p.pk %}"
+                                          onsubmit="return confirm('Remover « {{ p.nome }} »?')">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="turno" value="{{ turno_ativo }}">
+                                        <button type="submit"
+                                                class="p-1.5 rounded-lg text-slate-400 hover:text-red-500
+                                                       hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                                title="Excluir">
+                                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% else %}
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
+                <div class="flex flex-col items-center justify-center py-14 text-center px-5">
+                    <div class="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center mb-4">
+                        <i data-lucide="clock" class="w-7 h-7 text-slate-300 dark:text-slate-500"></i>
+                    </div>
+                    <p class="text-sm font-medium text-slate-600 dark:text-slate-300">
+                        Nenhum período cadastrado para o turno <strong>{{ turno_label }}</strong>
+                    </p>
+                    <p class="text-xs text-slate-400 mt-1">Use o formulário ao lado para cadastrar os horários.</p>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+
+        <!-- Formulário lateral (fixo na tela) -->
+        <div class="lg:col-span-2">
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-5 sticky top-5">
+
+                {% if edit_obj %}
+                <!-- Edição -->
+                <div class="flex items-center justify-between mb-5">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200">Editar Período</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Turno: <strong>{{ edit_obj.get_turno_display }}</strong></p>
+                    </div>
+                    <a href="?turno={{ turno_ativo }}"
+                       class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100
+                              dark:hover:bg-slate-700 transition-colors" title="Cancelar edição">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </a>
+                </div>
+                <form method="post" action="{% url 'turma:periodo_editar' edit_obj.pk %}" class="space-y-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="turno" value="{{ turno_ativo }}">
+                    {% for field in edit_form %}
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                            {{ field.label }}{% if field.field.required %} <span class="text-red-400">*</span>{% endif %}
+                        </label>
+                        {{ field }}
+                        {% if field.errors %}<p class="text-xs text-red-500 mt-1">{{ field.errors.0 }}</p>{% endif %}
+                    </div>
+                    {% endfor %}
+                    <button type="submit"
+                            class="w-full px-4 py-2.5 rounded-xl bg-[#0d6efd] hover:bg-[#0b5ed7]
+                                   text-white text-sm font-medium transition-colors">
+                        Salvar Alterações
+                    </button>
+                </form>
+
+                {% else %}
+                <!-- Criação -->
+                <div class="mb-5">
+                    <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200">Novo Período</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">
+                        Será adicionado ao turno
+                        <span class="font-semibold text-slate-600 dark:text-slate-300">{{ turno_label }}</span>
+                    </p>
+                </div>
+                <form method="post" action="{% url 'turma:periodos' %}" class="space-y-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="turno" value="{{ turno_ativo }}">
+                    {% for field in form %}
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                            {{ field.label }}{% if field.field.required %} <span class="text-red-400">*</span>{% endif %}
+                        </label>
+                        {{ field }}
+                        {% if field.errors %}<p class="text-xs text-red-500 mt-1">{{ field.errors.0 }}</p>{% endif %}
+                    </div>
+                    {% endfor %}
+                    <button type="submit"
+                            class="w-full px-4 py-2.5 rounded-xl bg-[#0d6efd] hover:bg-[#0b5ed7]
+                                   text-white text-sm font-medium transition-colors">
+                        Criar Período
+                    </button>
+                </form>
+                {% endif %}
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

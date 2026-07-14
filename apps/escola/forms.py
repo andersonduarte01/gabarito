@@ -13,6 +13,15 @@ _COLOR = (
     'h-9 w-16 p-0.5 rounded-lg cursor-pointer '
     'border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'
 )
+_FILE = (
+    'w-full text-sm text-slate-700 dark:text-slate-300 cursor-pointer '
+    'file:mr-3 file:py-1.5 file:px-4 file:rounded-lg file:border-0 '
+    'file:text-xs file:font-medium file:cursor-pointer '
+    'file:bg-slate-100 dark:file:bg-slate-700 '
+    'file:text-slate-700 dark:file:text-slate-200 '
+    'hover:file:bg-slate-200 dark:hover:file:bg-slate-600 '
+    'transition-colors'
+)
 
 ESTADOS_BR = [
     ('', 'Selecione'),
@@ -44,6 +53,7 @@ class EscolaForm(forms.ModelForm):
             'telefone':       forms.TextInput(attrs={'class': _INPUT, 'placeholder': '(00) 0000-0000'}),
             'email':          forms.EmailInput(attrs={'class': _INPUT}),
             'site':           forms.URLInput(attrs={'class': _INPUT, 'placeholder': 'https://'}),
+            'logo':           forms.FileInput(attrs={'class': _FILE}),
             'cor_primaria':   forms.TextInput(attrs={'type': 'color', 'class': _COLOR}),
             'cor_secundaria': forms.TextInput(attrs={'type': 'color', 'class': _COLOR}),
             'cor_acento':     forms.TextInput(attrs={'type': 'color', 'class': _COLOR}),

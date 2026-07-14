@@ -23,12 +23,22 @@
             </p>
         </div>
         {% if papel.tipo == 'DIRETOR' %}
-        <a href="{% url 'turma:criar' %}"
-           class="flex items-center gap-2 px-4 py-2 rounded-xl shrink-0
-                  bg-[#0d6efd] hover:bg-[#0b5ed7] text-white text-sm font-medium transition-colors">
-            <i data-lucide="plus" class="w-4 h-4"></i>
-            <span>Nova Turma</span>
-        </a>
+        <div class="flex items-center gap-2 shrink-0">
+            <a href="{% url 'turma:periodos' %}"
+               class="flex items-center gap-2 px-4 py-2 rounded-xl
+                      border border-slate-200 dark:border-slate-700
+                      text-slate-600 dark:text-slate-300 text-sm font-medium
+                      hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                <i data-lucide="clock" class="w-4 h-4"></i>
+                <span>Períodos de Aula</span>
+            </a>
+            <a href="{% url 'turma:criar' %}"
+               class="flex items-center gap-2 px-4 py-2 rounded-xl
+                      bg-[#0d6efd] hover:bg-[#0b5ed7] text-white text-sm font-medium transition-colors">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>Nova Turma</span>
+            </a>
+        </div>
         {% endif %}
     </div>
 

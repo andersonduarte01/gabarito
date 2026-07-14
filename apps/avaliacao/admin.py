@@ -1,7 +1,7 @@
 from django.contrib import admin
 from unfold.admin import ModelAdmin, TabularInline
 
-from .models import Avaliacao, NotaAluno, OpcaoResposta, Questao, RespostaAluno
+from .models import Avaliacao, NotaAluno, OpcaoResposta, Questao
 
 
 class OpcaoRespostaInline(TabularInline):
@@ -18,8 +18,8 @@ class QuestaoInline(TabularInline):
 
 @admin.register(Avaliacao)
 class AvaliacaoAdmin(ModelAdmin):
-    list_display  = ('titulo', 'turma', 'materia', 'tipo', 'modalidade', 'data_aplicacao', 'publicada')
-    list_filter   = ('tipo', 'modalidade', 'publicada', 'escola')
+    list_display  = ('titulo', 'turma', 'materia', 'tipo', 'modalidade', 'data_aplicacao', 'status')
+    list_filter   = ('tipo', 'modalidade', 'status', 'escola')
     search_fields = ('titulo',)
     inlines       = [QuestaoInline]
 

@@ -1,0 +1,27 @@
+{% if widget.is_initial %}
+<div class="flex flex-col gap-2 mb-2">
+    <span class="text-xs text-slate-500 dark:text-slate-400">
+        {{ widget.initial_text }}:
+        <a href="{{ widget.value.url }}"
+           target="_blank"
+           class="text-[#0d6efd] hover:underline font-medium ml-1">
+            {{ widget.value }}
+        </a>
+    </span>
+    {% if not widget.required %}
+    <label class="inline-flex items-center gap-2 cursor-pointer select-none w-fit">
+        <input type="checkbox"
+               name="{{ widget.checkbox_name }}"
+               id="{{ widget.checkbox_id }}"
+               {% if widget.attrs.disabled %} disabled{% endif %}
+               {% if widget.attrs.checked %} checked{% endif %}
+               class="w-4 h-4 rounded border-slate-300 dark:border-slate-600
+                      bg-white dark:bg-slate-700 text-[#0d6efd]
+                      focus:ring-2 focus:ring-[#0d6efd]/30 cursor-pointer">
+        <span class="text-xs text-slate-600 dark:text-slate-400 font-medium">{{ widget.clear_checkbox_label }}</span>
+    </label>
+    {% endif %}
+    <span class="text-xs text-slate-500 dark:text-slate-400">{{ widget.input_text }}:</span>
+</div>
+{% endif %}
+<input type="{{ widget.type }}" name="{{ widget.name }}"{% include "django/forms/widgets/attrs.html" %}>

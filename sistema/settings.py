@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.forms',
     # Apps ativos
     'apps.core',
     'apps.accounts',
@@ -97,6 +98,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'sistema.wsgi.application'
+
+FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
 
 # Database

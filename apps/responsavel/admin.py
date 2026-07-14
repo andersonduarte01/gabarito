@@ -7,7 +7,7 @@ from .models import PerfilResponsavel, VinculoResponsavelAluno
 class VinculoAlunoInline(TabularInline):
     model  = VinculoResponsavelAluno
     extra  = 0
-    fields = ('aluno', 'parentesco', 'responsavel_principal', 'responsavel_financeiro', 'ativo')
+    fields = ('aluno', 'parentesco', 'ativo')
 
 
 @admin.register(PerfilResponsavel)
@@ -25,6 +25,6 @@ class PerfilResponsavelAdmin(ModelAdmin):
 
 @admin.register(VinculoResponsavelAluno)
 class VinculoResponsavelAlunoAdmin(ModelAdmin):
-    list_display  = ('responsavel', 'aluno', 'parentesco', 'responsavel_principal', 'ativo')
-    list_filter   = ('parentesco', 'responsavel_principal', 'ativo')
+    list_display  = ('responsavel', 'aluno', 'parentesco', 'ativo')
+    list_filter   = ('parentesco', 'ativo')
     search_fields = ('responsavel__nome', 'aluno__nome_completo')

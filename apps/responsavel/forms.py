@@ -6,7 +6,8 @@ _INPUT = (
     'w-full px-3 py-2 text-sm bg-white dark:bg-slate-800 '
     'border border-slate-200 dark:border-slate-700 rounded-lg '
     'text-slate-900 dark:text-slate-100 focus:outline-none '
-    'focus:ring-2 focus:ring-[#0d6efd]/30 focus:border-[#0d6efd]'
+    'focus:ring-2 focus:ring-[#0d6efd]/30 focus:border-[#0d6efd] '
+    'dark:[color-scheme:dark]'
 )
 _SELECT = _INPUT
 _FILE = (
@@ -20,9 +21,6 @@ _FILE = (
     'file:hover:bg-slate-200 dark:file:hover:bg-slate-600 '
     'file:transition-colors'
 )
-_CHECK = 'w-4 h-4 rounded border-slate-300 text-[#0d6efd]'
-
-
 class CriarResponsavelForm(forms.Form):
     """Responsável com acesso ao sistema."""
     foto            = forms.ImageField(
@@ -69,14 +67,6 @@ class CriarResponsavelForm(forms.Form):
     parentesco             = forms.ChoiceField(
         label='Parentesco', choices=[('', '— Selecione —')] + list(Parentesco.choices), required=False,
         widget=forms.Select(attrs={'class': _SELECT}),
-    )
-    responsavel_principal  = forms.BooleanField(
-        label='Responsável principal', required=False,
-        widget=forms.CheckboxInput(attrs={'class': _CHECK}),
-    )
-    responsavel_financeiro = forms.BooleanField(
-        label='Responsável financeiro', required=False,
-        widget=forms.CheckboxInput(attrs={'class': _CHECK}),
     )
 
     def __init__(self, *args, escola=None, **kwargs):
@@ -135,14 +125,6 @@ class CriarSemAcessoForm(forms.Form):
         label='Parentesco', choices=[('', '— Selecione —')] + list(Parentesco.choices), required=False,
         widget=forms.Select(attrs={'class': _SELECT}),
     )
-    responsavel_principal  = forms.BooleanField(
-        label='Responsável principal', required=False,
-        widget=forms.CheckboxInput(attrs={'class': _CHECK}),
-    )
-    responsavel_financeiro = forms.BooleanField(
-        label='Responsável financeiro', required=False,
-        widget=forms.CheckboxInput(attrs={'class': _CHECK}),
-    )
 
     def __init__(self, *args, escola=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -183,14 +165,6 @@ class VincularAlunoForm(forms.Form):
     parentesco             = forms.ChoiceField(
         label='Parentesco', choices=Parentesco.choices,
         widget=forms.Select(attrs={'class': _SELECT}),
-    )
-    responsavel_principal  = forms.BooleanField(
-        label='Responsável principal', required=False,
-        widget=forms.CheckboxInput(attrs={'class': _CHECK}),
-    )
-    responsavel_financeiro = forms.BooleanField(
-        label='Responsável financeiro', required=False,
-        widget=forms.CheckboxInput(attrs={'class': _CHECK}),
     )
 
     def __init__(self, *args, escola=None, **kwargs):

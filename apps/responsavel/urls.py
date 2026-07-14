@@ -6,6 +6,7 @@ app_name = 'responsavel'
 urlpatterns = [
     path('portal/dashboard/', views.DashboardResponsavelView.as_view(), name='portal_dashboard'),
     path('portal/perfil/',    views.PerfilResponsavelView.as_view(),     name='portal_perfil'),
+    path('buscar/',                               views.BuscarResponsavelView.as_view(),   name='buscar'),
     path('',                                      views.ListarResponsaveisView.as_view(),  name='lista'),
     path('criar/',                                views.CriarResponsavelView.as_view(),    name='criar'),
     path('<int:pk>/',                             views.DetalheResponsavelView.as_view(),  name='detalhe'),

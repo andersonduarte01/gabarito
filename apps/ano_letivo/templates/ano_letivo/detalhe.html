@@ -74,16 +74,14 @@
                     </button>
                 </form>
                 {% elif ano.status == 'EM_ANDAMENTO' %}
-                <form method="post" action="{% url 'ano_letivo:encerrar' ano.pk %}"
-                      onsubmit="return confirm('Confirma o encerramento do ano letivo {{ ano.ano }}? Esta ação não pode ser desfeita.')">
-                    {% csrf_token %}
-                    <button type="submit"
-                            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl
-                                   bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition-colors">
-                        <i data-lucide="flag" class="w-4 h-4"></i>
-                        Encerrar Ano Letivo
-                    </button>
-                </form>
+                <button type="button"
+                        data-modal-target="modal-encerrar"
+                        data-modal-toggle="modal-encerrar"
+                        class="inline-flex items-center gap-2 px-4 py-2 rounded-xl
+                               bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition-colors">
+                    <i data-lucide="flag" class="w-4 h-4"></i>
+                    Encerrar Ano Letivo
+                </button>
                 {% endif %}
             </div>
             {% endif %}
@@ -114,6 +112,7 @@
                     <tr class="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60">
                         <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide w-12">Nº</th>
                         <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Nome</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Tipo</th>
                         <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Início</th>
                         <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Fim</th>
                         <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Duração</th>
@@ -134,6 +133,21 @@
                         <td class="px-4 py-3 font-medium text-slate-800 dark:text-slate-100">
                             {{ p.nome }}
                         </td>
+                        <td class="px-4 py-3">
+                            {% if p.is_recesso %}
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold
+                                         bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400">
+                                <i data-lucide="moon" class="w-3 h-3"></i>
+                                Recesso
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold
+                                         bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
+                                <i data-lucide="book-open" class="w-3 h-3"></i>
+                                Letivo
+                            </span>
+                            {% endif %}
+                        </td>
                         <td class="px-4 py-3 text-slate-500 dark:text-slate-400 whitespace-nowrap">
                             {{ p.data_inicio|date:"d/m/Y" }}
                         </td>
@@ -152,16 +166,13 @@
                                    title="Editar">
                                     <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                                 </a>
-                                <form method="post" action="{% url 'ano_letivo:remover_periodo' ano.pk p.pk %}"
-                                      onsubmit="return confirm('Remover o período {{ p.nome }}?')">
-                                    {% csrf_token %}
-                                    <button type="submit"
-                                            class="p-1.5 rounded-lg text-slate-400 hover:text-red-500
-                                                   hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                                            title="Remover">
-                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                                    </button>
-                                </form>
+                                <button type="button"
+                                        onclick="prepararModalRemover('{{ p.nome|escapejs }}', '{% url 'ano_letivo:remover_periodo' ano.pk p.pk %}')"
+                                        class="p-1.5 rounded-lg text-red-400 dark:text-slate-400 hover:text-red-600
+                                               dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                        title="Remover">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                </button>
                             </div>
                         </td>
                         {% endif %}
@@ -187,4 +198,128 @@
     </div>
 
 </div>
+
+<!-- Modal: Encerrar Ano Letivo -->
+{% if ano.status == 'EM_ANDAMENTO' %}
+<div id="modal-encerrar"
+     tabindex="-1"
+     aria-hidden="true"
+     class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-[100]
+            justify-center items-center w-full md:inset-0 h-full max-h-full">
+    <div class="relative w-full max-w-sm p-4">
+        <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl">
+
+            <button type="button"
+                    data-modal-hide="modal-encerrar"
+                    class="absolute top-3 right-3 p-1.5 rounded-lg text-slate-400
+                           hover:text-slate-600 hover:bg-slate-100
+                           dark:hover:bg-slate-700 dark:hover:text-slate-300 transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+
+            <div class="px-6 pt-8 pb-6 text-center">
+                <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30
+                            flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="flag" class="w-6 h-6 text-red-500"></i>
+                </div>
+                <h3 class="text-base font-semibold text-slate-900 dark:text-white">
+                    Encerrar Ano Letivo?
+                </h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    O ano letivo <strong>{{ ano.ano }}</strong> será encerrado. Esta ação não pode ser desfeita.
+                </p>
+            </div>
+
+            <div class="flex border-t border-slate-100 dark:border-slate-700">
+                <button type="button"
+                        data-modal-hide="modal-encerrar"
+                        class="flex-1 px-4 py-3 text-sm font-medium
+                               text-slate-700 dark:text-slate-300
+                               hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                    Cancelar
+                </button>
+                <div class="w-px bg-slate-100 dark:bg-slate-700"></div>
+                <form method="post" action="{% url 'ano_letivo:encerrar' ano.pk %}" class="flex-1">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="w-full px-4 py-3 text-sm font-semibold
+                                   text-red-600 dark:text-red-400
+                                   hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                        Encerrar
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Modal: Remover Período -->
+<div id="modal-remover-periodo"
+     tabindex="-1"
+     aria-hidden="true"
+     class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-[100]
+            justify-center items-center w-full md:inset-0 h-full max-h-full">
+    <div class="relative w-full max-w-sm p-4">
+        <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl">
+
+            <button type="button"
+                    data-modal-hide="modal-remover-periodo"
+                    class="absolute top-3 right-3 p-1.5 rounded-lg text-slate-400
+                           hover:text-slate-600 hover:bg-slate-100
+                           dark:hover:bg-slate-700 dark:hover:text-slate-300 transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+
+            <div class="px-6 pt-8 pb-6 text-center">
+                <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30
+                            flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="trash-2" class="w-6 h-6 text-red-500"></i>
+                </div>
+                <h3 class="text-base font-semibold text-slate-900 dark:text-white">
+                    Remover Período?
+                </h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    O período <strong id="modal-periodo-nome"></strong> será removido permanentemente.
+                </p>
+            </div>
+
+            <div class="flex border-t border-slate-100 dark:border-slate-700">
+                <button type="button"
+                        data-modal-hide="modal-remover-periodo"
+                        class="flex-1 px-4 py-3 text-sm font-medium
+                               text-slate-700 dark:text-slate-300
+                               hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                    Cancelar
+                </button>
+                <div class="w-px bg-slate-100 dark:bg-slate-700"></div>
+                <form id="form-remover-periodo" method="post" action="" class="flex-1">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="w-full px-4 py-3 text-sm font-semibold
+                                   text-red-600 dark:text-red-400
+                                   hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                        Remover
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<button id="btn-abrir-remover"
+        type="button"
+        data-modal-target="modal-remover-periodo"
+        data-modal-toggle="modal-remover-periodo"
+        class="hidden"></button>
+
+<script>
+function prepararModalRemover(nome, url) {
+    document.getElementById('modal-periodo-nome').textContent = nome;
+    document.getElementById('form-remover-periodo').action = url;
+    document.getElementById('btn-abrir-remover').click();
+}
+</script>
 {% endblock %}

@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 def _responsavel_financeiro(aluno):
     vinculo = (
         aluno.responsaveis
-        .filter(responsavel_financeiro=True, ativo=True)
+        .filter(ativo=True)
         .select_related('responsavel')
         .first()
     )

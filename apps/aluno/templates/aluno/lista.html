@@ -1,4 +1,4 @@
-﻿{% extends base_template %}
+{% extends base_template %}
 
 {% block titulo %}Alunos — {{ escola.nome }}{% endblock %}
 {% block page_title %}Alunos{% endblock %}
@@ -17,7 +17,9 @@
     <div class="flex items-start justify-between mb-6 gap-4">
         <div>
             <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Alunos</h2>
-            <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">Corpo discente da escola</p>
+            <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
+                {{ total }} aluno{{ total|pluralize }} encontrado{{ total|pluralize }}
+            </p>
         </div>
         <a href="{% url 'aluno:criar' %}"
            class="flex items-center gap-2 px-4 py-2 rounded-xl shrink-0
@@ -28,12 +30,13 @@
     </div>
 
     <!-- Filtros -->
-    <form method="get" class="flex flex-wrap gap-3 mb-5">
-        <input type="text" name="q" value="{{ filtros.q }}" placeholder="Buscar por nome ou matrícula…"
+    <form id="filtros-form" method="get" class="flex flex-wrap gap-3 mb-5">
+        <input id="q-input" type="text" name="q" value="{{ filtros.q }}" placeholder="Buscar por nome ou matrícula…"
+               autocomplete="off"
                class="flex-1 min-w-52 px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600
                       bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100
                       focus:outline-none focus:ring-2 focus:ring-[#0d6efd]/40 focus:border-[#0d6efd]">
-        <select name="turma"
+        <select name="turma" onchange="document.getElementById('filtros-form').submit()"
                 class="px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600
                        bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100
                        focus:outline-none focus:ring-2 focus:ring-[#0d6efd]/40 focus:border-[#0d6efd]">
@@ -42,7 +45,7 @@
             <option value="{{ t.pk }}" {% if filtros.turma == t.pk|stringformat:"s" %}selected{% endif %}>{{ t.nome }}</option>
             {% endfor %}
         </select>
-        <select name="ativo"
+        <select name="ativo" onchange="document.getElementById('filtros-form').submit()"
                 class="px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600
                        bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100
                        focus:outline-none focus:ring-2 focus:ring-[#0d6efd]/40 focus:border-[#0d6efd]">
@@ -50,11 +53,6 @@
             <option value="1" {% if filtros.ativo == '1' %}selected{% endif %}>Ativos</option>
             <option value="0" {% if filtros.ativo == '0' %}selected{% endif %}>Inativos</option>
         </select>
-        <button type="submit"
-                class="px-4 py-2 text-sm font-medium bg-slate-100 dark:bg-slate-700
-                       text-slate-700 dark:text-slate-200 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
-            Filtrar
-        </button>
         {% if filtros.q or filtros.ativo or filtros.turma %}
         <a href="{% url 'aluno:lista' %}"
            class="px-4 py-2 text-sm text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
@@ -63,10 +61,10 @@
         {% endif %}
     </form>
 
-    {% if alunos %}
+    {% if page_obj %}
     <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
         <div class="divide-y divide-slate-100 dark:divide-slate-700">
-            {% for aluno in alunos %}
+            {% for aluno in page_obj %}
             <div class="flex items-center justify-between px-5 py-3.5 {% if not aluno.ativo %}opacity-50{% endif %}">
                 <div class="flex items-center gap-3 min-w-0">
                     {% if aluno.foto %}
@@ -135,6 +133,45 @@
         </div>
     </div>
 
+    <!-- Paginação -->
+    {% if page_obj.has_other_pages %}
+    <div class="flex items-center justify-between mt-5">
+        <p class="text-xs text-slate-400">
+            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+        </p>
+        <div class="flex items-center gap-1">
+            {% if page_obj.has_previous %}
+            <a href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_obj.previous_page_number }}"
+               class="px-3 py-1.5 text-xs rounded-lg bg-white dark:bg-slate-800 border border-slate-200
+                      dark:border-slate-700 text-slate-600 dark:text-slate-300
+                      hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                ← Anterior
+            </a>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <span class="px-3 py-1.5 text-xs rounded-lg bg-[#0d6efd] text-white font-medium">{{ num }}</span>
+            {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+            <a href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ num }}"
+               class="px-3 py-1.5 text-xs rounded-lg bg-white dark:bg-slate-800 border border-slate-200
+                      dark:border-slate-700 text-slate-600 dark:text-slate-300
+                      hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                {{ num }}
+            </a>
+            {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+            <a href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_obj.next_page_number }}"
+               class="px-3 py-1.5 text-xs rounded-lg bg-white dark:bg-slate-800 border border-slate-200
+                      dark:border-slate-700 text-slate-600 dark:text-slate-300
+                      hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                Próxima →
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
     {% else %}
     <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
         <div class="flex flex-col items-center justify-center py-16 px-5 text-center">
@@ -160,4 +197,25 @@
     {% endif %}
 
 </div>
+
+<script>
+(function () {
+    const input = document.getElementById('q-input');
+    const form  = document.getElementById('filtros-form');
+    if (!input || !form) return;
+
+    // Restore focus and cursor position after page reload
+    if (input.value) {
+        const len = input.value.length;
+        input.focus();
+        input.setSelectionRange(len, len);
+    }
+
+    let timer;
+    input.addEventListener('input', function () {
+        clearTimeout(timer);
+        timer = setTimeout(function () { form.submit(); }, 400);
+    });
+})();
+</script>
 {% endblock %}

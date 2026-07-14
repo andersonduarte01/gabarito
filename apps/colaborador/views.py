@@ -4,7 +4,15 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
 from apps.core.services.usuario_service import editar as editar_usuario, trocar_email
-from .forms import AlterarSenhaColaboradorForm, CriarColaboradorForm, EditarColaboradorForm, EnderecoPerfilForm, FuncaoEscolarForm
+from .forms import (
+    AlterarSenhaColaboradorForm,
+    CriarColaboradorForm,
+    EditarColaboradorForm,
+    EditarMeuPerfilColaboradorForm,
+    EnderecoPerfilForm,
+    FuncaoEscolarForm,
+    TrocarMinhaSenhaForm,
+)
 from .models import FuncaoEscolar, PerfilColaborador
 from .services import colaborador_service, funcao_service
 
@@ -368,3 +376,89 @@ class MeuPerfilColaboradorView(_FuncionarioMixin, View):
         return render(request, self.template_name, self._ctx(
             request, active_nav='perfil', perfil=perfil,
         ))
+
+
+class EditarMeuPerfilView(_FuncionarioMixin, View):
+    template_name = 'colaborador/editar_meu_perfil.html'
+
+    def _get_perfil(self, request):
+        try:
+            return request.papel.perfil_colaborador
+        except PerfilColaborador.DoesNotExist:
+            return None
+
+    def get(self, request):
+        perfil = self._get_perfil(request)
+        if perfil is None:
+            messages.error(request, 'Perfil não encontrado. Solicite ao diretor que complete seu cadastro.')
+            return redirect('colaborador:meu_perfil')
+        form = EditarMeuPerfilColaboradorForm(instance=perfil, usuario=request.user)
+        return render(request, self.template_name, self._ctx(request, form=form, perfil=perfil))
+
+    def post(self, request):
+        perfil = self._get_perfil(request)
+        if perfil is None:
+            return redirect('colaborador:meu_perfil')
+        form = EditarMeuPerfilColaboradorForm(
+            request.POST, request.FILES, instance=perfil, usuario=request.user,
+        )
+        if form.is_valid():
+            novo_nome  = form.cleaned_data.pop('nome')
+            novo_email = form.cleaned_data.pop('email')
+            editar_usuario(request.user, {'nome': novo_nome})
+            if novo_email != request.user.email:
+                trocar_email(request.user, novo_email)
+            colaborador_service.editar(perfil, form.cleaned_data)
+            messages.success(request, 'Perfil atualizado com sucesso.')
+            return redirect('colaborador:meu_perfil')
+        return render(request, self.template_name, self._ctx(request, form=form, perfil=perfil))
+
+
+class EditarMeuEnderecoView(_FuncionarioMixin, View):
+    template_name = 'colaborador/editar_meu_endereco.html'
+
+    def _get_perfil(self, request):
+        try:
+            return request.papel.perfil_colaborador
+        except PerfilColaborador.DoesNotExist:
+            return None
+
+    def get(self, request):
+        perfil = self._get_perfil(request)
+        if perfil is None:
+            return redirect('colaborador:meu_perfil')
+        form = EnderecoPerfilForm(instance=perfil.endereco)
+        return render(request, self.template_name, self._ctx(request, form=form, perfil=perfil))
+
+    def post(self, request):
+        perfil = self._get_perfil(request)
+        if perfil is None:
+            return redirect('colaborador:meu_perfil')
+        form = EnderecoPerfilForm(request.POST, instance=perfil.endereco)
+        if form.is_valid():
+            colaborador_service.salvar_endereco(perfil, form.cleaned_data)
+            messages.success(request, 'Endereço atualizado.')
+            return redirect('colaborador:meu_perfil')
+        return render(request, self.template_name, self._ctx(request, form=form, perfil=perfil))
+
+
+class TrocarMinhaSenhaView(_FuncionarioMixin, View):
+    template_name = 'colaborador/trocar_minha_senha.html'
+
+    def get(self, request):
+        form = TrocarMinhaSenhaForm()
+        return render(request, self.template_name, self._ctx(request, form=form))
+
+    def post(self, request):
+        form = TrocarMinhaSenhaForm(request.POST)
+        if form.is_valid():
+            if not request.user.check_password(form.cleaned_data['senha_atual']):
+                form.add_error('senha_atual', 'Senha atual incorreta.')
+                return render(request, self.template_name, self._ctx(request, form=form))
+            request.user.set_password(form.cleaned_data['nova_senha'])
+            request.user.save(update_fields=['password'])
+            from django.contrib.auth import update_session_auth_hash
+            update_session_auth_hash(request, request.user)
+            messages.success(request, 'Senha alterada com sucesso.')
+            return redirect('colaborador:meu_perfil')
+        return render(request, self.template_name, self._ctx(request, form=form))

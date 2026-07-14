@@ -1,8 +1,14 @@
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
+from django.core.paginator import Paginator
 from django.db.models import Q
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
+
+from apps.responsavel.services import responsavel_service
+
+from apps.responsavel.models import VinculoResponsavelAluno
 
 from .forms import AtivarAcessoForm, CriarAlunoForm, EditarAlunoForm, MatriculaTurmaForm, TrocarTurmaForm, VincularResponsavelForm
 from .models import Aluno, MatriculaTurma
@@ -66,9 +72,20 @@ class ListarAlunosView(_LeituraMixin, View):
         from apps.turma.models import Turma
         turmas = Turma.objects.filter(escola=escola, ativo=True).order_by('nome')
 
+        paginator = Paginator(qs, 15)
+        page_obj = paginator.get_page(request.GET.get('page'))
+
+        params = request.GET.copy()
+        params.pop('page', None)
+        query_string = params.urlencode()
+
         return render(request, self.template_name, self._ctx(
-            request, alunos=qs, turmas=turmas,
+            request,
+            page_obj=page_obj,
+            total=paginator.count,
+            turmas=turmas,
             filtros={'q': busca, 'ativo': ativo, 'turma': turma},
+            query_string=query_string,
         ))
 
 
@@ -80,34 +97,51 @@ class CriarAlunoView(_EscritaMixin, View):
         return render(request, self.template_name, self._ctx(request, form=form, editando=False))
 
     def post(self, request):
+        from django.db import transaction
         form = CriarAlunoForm(request.POST, request.FILES, escola=request.escola)
         if form.is_valid():
             cd = form.cleaned_data
             try:
-                responsavel_dados = None
-                if cd.get('resp_nome'):
-                    responsavel_dados = {
-                        'nome':                  cd['resp_nome'],
-                        'telefone':              cd.get('resp_telefone', ''),
-                        'cpf':                   cd.get('resp_cpf', ''),
-                        'parentesco':            cd['resp_parentesco'],
-                        'responsavel_principal': cd.get('resp_principal', False),
-                        'responsavel_financeiro': cd.get('resp_financeiro', False),
-                    }
-                aluno = aluno_service.criar(request.escola, {
-                    'nome_completo':   cd['nome_completo'],
-                    'data_nascimento': cd.get('data_nascimento'),
-                    'cpf':             cd.get('cpf', ''),
-                    'rg':              cd.get('rg', ''),
-                    'foto':            cd.get('foto'),
-                    'turma':           cd.get('turma'),
-                    'ano_letivo':      cd.get('ano_letivo'),
-                    'responsavel_dados': responsavel_dados,
-                })
+                with transaction.atomic():
+                    aluno = aluno_service.criar(request.escola, {
+                        'nome_completo':   cd['nome_completo'],
+                        'data_nascimento': cd.get('data_nascimento'),
+                        'cpf':             cd.get('cpf', ''),
+                        'rg':              cd.get('rg', ''),
+                        'foto':            cd.get('foto'),
+                        'turma':           cd.get('turma'),
+                        'ano_letivo':      cd.get('ano_letivo'),
+                    })
+                    if cd.get('resp_nome'):
+                        perfil_dados = {
+                            'nome':     cd['resp_nome'],
+                            'telefone': cd.get('resp_telefone', ''),
+                            'cpf':      cd.get('resp_cpf', ''),
+                        }
+                        if cd['resp_acesso'] == 'acesso':
+                            perfil = responsavel_service.criar(
+                                escola=request.escola,
+                                usuario_dados={
+                                    'nome':  cd['resp_nome'],
+                                    'email': cd['resp_email'],
+                                    'senha': cd['resp_senha'],
+                                },
+                                perfil_dados=perfil_dados,
+                            )
+                        else:
+                            perfil = responsavel_service.criar_sem_acesso(
+                                escola=request.escola,
+                                perfil_dados=perfil_dados,
+                            )
+                        responsavel_service.vincular_aluno(
+                            perfil=perfil,
+                            aluno=aluno,
+                            dados={'parentesco': cd['resp_parentesco']},
+                        )
                 messages.success(request, f'Aluno {cd["nome_completo"]} cadastrado com sucesso.')
                 return redirect('aluno:detalhe', pk=aluno.pk)
-            except Exception as exc:
-                messages.error(request, f'Erro ao cadastrar: {exc}')
+            except ValueError as exc:
+                messages.error(request, str(exc))
         return render(request, self.template_name, self._ctx(request, form=form, editando=False))
 
 
@@ -125,9 +159,16 @@ class DetalheAlunoView(_LeituraMixin, View):
         troca_form         = TrocarTurmaForm(escola=request.escola)
         acesso_form        = AtivarAcessoForm()
         vincular_resp_form = VincularResponsavelForm(escola=request.escola)
+        vinculos_ativos = (
+            VinculoResponsavelAluno.objects
+            .filter(aluno=aluno, ativo=True)
+            .select_related('responsavel__usuario')
+            .order_by('responsavel__nome')
+        )
         return render(request, self.template_name, self._ctx(
             request, aluno=aluno, mat_form=mat_form, troca_form=troca_form,
             acesso_form=acesso_form, vincular_resp_form=vincular_resp_form,
+            vinculos_ativos=vinculos_ativos,
         ))
 
 
@@ -245,6 +286,24 @@ class AtivarAcessoView(_EscritaMixin, View):
         return redirect('aluno:detalhe', pk=aluno.pk)
 
 
+class BuscarAlunoView(_LeituraMixin, View):
+    def get(self, request):
+        q = request.GET.get('q', '').strip()
+        if len(q) < 2:
+            return JsonResponse({'results': []})
+        alunos = (
+            Aluno.objects
+            .filter(escola=request.escola, ativo=True)
+            .filter(Q(nome_completo__icontains=q) | Q(matricula__icontains=q))
+            .order_by('nome_completo')[:10]
+        )
+        results = [
+            {'id': a.pk, 'text': a.nome_completo, 'matricula': a.matricula}
+            for a in alunos
+        ]
+        return JsonResponse({'results': results})
+
+
 class VincularResponsavelAlunoView(_EscritaMixin, View):
     def post(self, request, pk):
         aluno = get_object_or_404(Aluno, pk=pk, escola=request.escola)
@@ -256,11 +315,7 @@ class VincularResponsavelAlunoView(_EscritaMixin, View):
                 responsavel_service.vincular_aluno(
                     perfil=cd['responsavel'],
                     aluno=aluno,
-                    dados={
-                        'parentesco':             cd['parentesco'],
-                        'responsavel_principal':  cd['responsavel_principal'],
-                        'responsavel_financeiro': cd['responsavel_financeiro'],
-                    },
+                    dados={'parentesco': cd['parentesco']},
                 )
                 messages.success(request, f'{cd["responsavel"].nome} vinculado(a) com sucesso.')
             except Exception as exc:

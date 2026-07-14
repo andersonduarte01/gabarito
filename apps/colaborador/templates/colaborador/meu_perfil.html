@@ -71,6 +71,7 @@
             </div>
         </div>
     </div>
+
 </div>
 
 <!-- Nome + função (mobile) -->
@@ -103,6 +104,53 @@
                     <p class="text-xs text-slate-400 uppercase tracking-wide">Status</p>
                     <p class="font-semibold text-slate-700 dark:text-slate-200">Ativo</p>
                 </div>
+            </div>
+        </div>
+
+        <!-- Ações -->
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700
+                    rounded-2xl shadow-sm p-5">
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Ações</p>
+            <div class="space-y-1">
+
+                <a href="{% url 'colaborador:editar_meu_perfil' %}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group
+                          text-slate-600 dark:text-slate-300
+                          hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-400">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors
+                                bg-blue-100 dark:bg-blue-900/30
+                                group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50">
+                        <i data-lucide="pencil" class="w-4 h-4 text-blue-500"></i>
+                    </div>
+                    <span class="text-sm font-medium">Editar Perfil</span>
+                </a>
+
+                <a href="{% url 'colaborador:editar_meu_endereco' %}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group
+                          text-slate-600 dark:text-slate-300
+                          hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-700 dark:hover:text-emerald-400">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors
+                                bg-emerald-100 dark:bg-emerald-900/30
+                                group-hover:bg-emerald-200 dark:group-hover:bg-emerald-900/50">
+                        <i data-lucide="map-pin" class="w-4 h-4 text-emerald-500"></i>
+                    </div>
+                    <span class="text-sm font-medium">
+                        {% if perfil.endereco %}Editar Endereço{% else %}Adicionar Endereço{% endif %}
+                    </span>
+                </a>
+
+                <a href="{% url 'colaborador:trocar_minha_senha' %}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all group
+                          text-slate-600 dark:text-slate-300
+                          hover:bg-amber-50 dark:hover:bg-amber-900/20 hover:text-amber-700 dark:hover:text-amber-400">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors
+                                bg-amber-100 dark:bg-amber-900/30
+                                group-hover:bg-amber-200 dark:group-hover:bg-amber-900/50">
+                        <i data-lucide="lock-keyhole" class="w-4 h-4 text-amber-500"></i>
+                    </div>
+                    <span class="text-sm font-medium">Alterar Senha</span>
+                </a>
+
             </div>
         </div>
 
@@ -249,11 +297,18 @@
 
         <!-- Endereço -->
         <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
-            <div class="flex items-center gap-2 p-5 md:p-6">
-                <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                    <i data-lucide="map-pin" class="w-4 h-4 text-indigo-500"></i>
+            <div class="flex items-center justify-between p-5 md:p-6">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+                        <i data-lucide="map-pin" class="w-4 h-4 text-indigo-500"></i>
+                    </div>
+                    <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">Endereço</h2>
                 </div>
-                <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">Endereço</h2>
+                <a href="{% url 'colaborador:editar_meu_endereco' %}"
+                   class="inline-flex items-center gap-1.5 text-xs font-medium text-[#0d6efd] hover:text-[#0b5ed7] transition-colors">
+                    <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    {% if perfil.endereco %}Editar{% else %}Adicionar{% endif %}
+                </a>
             </div>
 
             {% if perfil.endereco %}

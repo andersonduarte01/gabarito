@@ -351,7 +351,7 @@
 {% if messages %}
 <div id="toast-queue" class="hidden" aria-hidden="true">
     {% for message in messages %}
-    <span data-tag="{{ message.tags }}" data-text="{{ message|escapejs }}"></span>
+    <span data-tag="{{ message.tags }}" data-text="{{ message }}"></span>
     {% endfor %}
 </div>
 {% endif %}
@@ -421,6 +421,12 @@ function _dismissToast(el) {
     setTimeout(function () { el.parentElement && el.parentElement.removeChild(el); }, 280);
 }
 
+function _escHtml(str) {
+    var d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+}
+
 function _showToast(tag, text) {
     var cfg       = _TOAST_CFG[tag] || _TOAST_CFG.info;
     var container = document.getElementById('toast-container');
@@ -428,7 +434,7 @@ function _showToast(tag, text) {
     el.className  = 'toast-enter pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg min-w-[260px] max-w-xs ' + cfg.cls;
     el.innerHTML  =
         '<i data-lucide="' + cfg.icon + '" class="w-4 h-4 shrink-0"></i>' +
-        '<span class="flex-1 text-sm font-medium leading-snug">' + text + '</span>' +
+        '<span class="flex-1 text-sm font-medium leading-snug">' + _escHtml(text) + '</span>' +
         '<button class="ml-1 opacity-50 hover:opacity-100 transition-opacity shrink-0" aria-label="Fechar">' +
         '<i data-lucide="x" class="w-3.5 h-3.5"></i></button>';
     el.querySelector('button').addEventListener('click', function () { _dismissToast(el); });

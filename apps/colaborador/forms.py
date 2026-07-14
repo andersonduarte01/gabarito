@@ -20,7 +20,8 @@ _INPUT = (
     'w-full px-3 py-2 text-sm bg-white dark:bg-slate-800 '
     'border border-slate-200 dark:border-slate-700 rounded-lg '
     'text-slate-900 dark:text-slate-100 focus:outline-none '
-    'focus:ring-2 focus:ring-[#0d6efd]/30 focus:border-[#0d6efd]'
+    'focus:ring-2 focus:ring-[#0d6efd]/30 focus:border-[#0d6efd] '
+    'dark:[color-scheme:dark]'
 )
 _SELECT = _INPUT
 _FILE = (
@@ -187,3 +188,56 @@ class FuncaoEscolarForm(forms.Form):
         max_length=100, label='Nome da Função',
         widget=forms.TextInput(attrs={'class': _INPUT, 'placeholder': 'Ex: Secretária, Coordenador Pedagógico'}),
     )
+
+
+class EditarMeuPerfilColaboradorForm(forms.ModelForm):
+    """Formulário para o próprio colaborador editar seus dados pessoais."""
+    nome  = forms.CharField(
+        max_length=150, label='Nome completo',
+        widget=forms.TextInput(attrs={'class': _INPUT}),
+    )
+    email = forms.EmailField(
+        label='E-mail',
+        widget=forms.EmailInput(attrs={'class': _INPUT}),
+    )
+
+    class Meta:
+        model  = PerfilColaborador
+        fields = ['foto', 'telefone', 'data_nascimento', 'cpf', 'rg']
+        widgets = {
+            'foto':            forms.FileInput(attrs={'class': _FILE}),
+            'telefone':        forms.TextInput(attrs={'class': _INPUT, 'placeholder': '(00) 00000-0000'}),
+            'data_nascimento': forms.DateInput(attrs={'class': _INPUT, 'type': 'date'}, format='%Y-%m-%d'),
+            'cpf':             forms.TextInput(attrs={'class': _INPUT, 'placeholder': '000.000.000-00'}),
+            'rg':              forms.TextInput(attrs={'class': _INPUT}),
+        }
+
+    def __init__(self, *args, usuario=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if usuario is not None:
+            self.fields['nome'].initial  = usuario.nome
+            self.fields['email'].initial = usuario.email
+
+
+class TrocarMinhaSenhaForm(forms.Form):
+    """Formulário para o colaborador trocar a própria senha."""
+    senha_atual     = forms.CharField(
+        label='Senha atual',
+        widget=forms.PasswordInput(attrs={'class': _INPUT, 'placeholder': 'Sua senha atual'}),
+    )
+    nova_senha      = forms.CharField(
+        label='Nova senha', min_length=8,
+        widget=forms.PasswordInput(attrs={'class': _INPUT, 'placeholder': 'Mínimo 8 caracteres'}),
+    )
+    confirmar_senha = forms.CharField(
+        label='Confirmar nova senha',
+        widget=forms.PasswordInput(attrs={'class': _INPUT, 'placeholder': 'Repita a nova senha'}),
+    )
+
+    def clean(self):
+        cleaned = super().clean()
+        nova      = cleaned.get('nova_senha')
+        confirmar = cleaned.get('confirmar_senha')
+        if nova and confirmar and nova != confirmar:
+            self.add_error('confirmar_senha', 'As senhas não conferem.')
+        return cleaned

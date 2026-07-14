@@ -16,9 +16,22 @@ class ModalidadeAvaliacao(models.TextChoices):
     ONLINE     = 'ONLINE',     'Online'
 
 
+class StatusAvaliacao(models.TextChoices):
+    RASCUNHO  = 'RASCUNHO',  'Rascunho'
+    PUBLICADA = 'PUBLICADA', 'Publicada'
+    ENCERRADA = 'ENCERRADA', 'Encerrada'
+
+
 class TipoQuestao(models.TextChoices):
-    MULTIPLA_ESCOLHA = 'MULTIPLA_ESCOLHA', 'Múltipla Escolha'
-    DISCURSIVA       = 'DISCURSIVA',       'Discursiva'
+    MULTIPLA_ESCOLHA    = 'MULTIPLA_ESCOLHA',    'Múltipla Escolha'
+    MULTIPLAS_RESPOSTAS = 'MULTIPLAS_RESPOSTAS', 'Múltiplas Respostas'
+    VERDADEIRO_FALSO    = 'VERDADEIRO_FALSO',    'Verdadeiro ou Falso'
+    RESPOSTA_CURTA      = 'RESPOSTA_CURTA',      'Resposta Curta'
+    DISCURSIVA          = 'DISCURSIVA',          'Discursiva'
+    NUMERICA            = 'NUMERICA',            'Numérica'
+    LACUNAS             = 'LACUNAS',             'Completar Lacunas'
+    ASSOCIACAO          = 'ASSOCIACAO',          'Associação entre Colunas'
+    ORDENACAO           = 'ORDENACAO',           'Ordenação de Itens'
 
 
 class Avaliacao(models.Model):
@@ -46,15 +59,32 @@ class Avaliacao(models.Model):
         'ano_letivo.PeriodoLetivo', on_delete=models.SET_NULL,
         null=True, blank=True, related_name='avaliacoes', verbose_name='Período Letivo',
     )
-    titulo         = models.CharField('Título', max_length=200)
-    tipo           = models.CharField('Tipo', max_length=20, choices=TipoAvaliacao.choices)
-    modalidade     = models.CharField('Modalidade', max_length=20, choices=ModalidadeAvaliacao.choices,
-                                      default=ModalidadeAvaliacao.PRESENCIAL)
-    data_aplicacao = models.DateField('Data de Aplicação', null=True, blank=True)
-    nota_maxima    = models.DecimalField('Nota Máxima', max_digits=5, decimal_places=2, default=Decimal('10.00'))
-    peso           = models.DecimalField('Peso', max_digits=5, decimal_places=2, default=Decimal('1.00'))
-    publicada      = models.BooleanField('Publicada', default=False)
-    criado_em      = models.DateTimeField('Criado em', auto_now_add=True)
+    titulo                       = models.CharField('Título', max_length=200)
+    descricao                    = models.TextField('Descrição', blank=True)
+    tipo                         = models.CharField('Tipo', max_length=20, choices=TipoAvaliacao.choices)
+    modalidade                   = models.CharField(
+        'Modalidade', max_length=20, choices=ModalidadeAvaliacao.choices,
+        default=ModalidadeAvaliacao.PRESENCIAL,
+    )
+    status                       = models.CharField(
+        'Status', max_length=10, choices=StatusAvaliacao.choices,
+        default=StatusAvaliacao.RASCUNHO,
+    )
+    data_aplicacao               = models.DateField('Data de Aplicação', null=True, blank=True)
+    nota_maxima                  = models.DecimalField(
+        'Nota Máxima', max_digits=5, decimal_places=2, default=Decimal('10.00'),
+    )
+    peso                         = models.DecimalField(
+        'Peso', max_digits=5, decimal_places=2, default=Decimal('1.00'),
+    )
+    tempo_limite                 = models.PositiveIntegerField(
+        'Tempo Limite (min)', null=True, blank=True,
+    )
+    embaralhar_questoes          = models.BooleanField('Embaralhar Questões', default=False)
+    embaralhar_alternativas      = models.BooleanField('Embaralhar Alternativas', default=False)
+    exibir_nota_ao_finalizar     = models.BooleanField('Exibir Nota ao Finalizar', default=False)
+    exibir_gabarito_ao_finalizar = models.BooleanField('Exibir Gabarito ao Finalizar', default=False)
+    criado_em                    = models.DateTimeField('Criado em', auto_now_add=True)
 
     class Meta:
         verbose_name        = 'Avaliação'
@@ -66,14 +96,32 @@ class Avaliacao(models.Model):
 
 
 class Questao(models.Model):
-    avaliacao  = models.ForeignKey(
+    avaliacao               = models.ForeignKey(
         Avaliacao, on_delete=models.CASCADE,
         related_name='questoes', verbose_name='Avaliação',
     )
-    numero     = models.PositiveSmallIntegerField('Número')
-    enunciado  = models.TextField('Enunciado')
-    tipo       = models.CharField('Tipo', max_length=20, choices=TipoQuestao.choices)
-    pontuacao  = models.DecimalField('Pontuação', max_digits=5, decimal_places=2)
+    numero                  = models.PositiveSmallIntegerField('Número')
+    titulo                  = models.CharField('Título', max_length=200, blank=True)
+    enunciado               = models.TextField('Enunciado')
+    descricao               = models.TextField('Descrição', blank=True)
+    tipo                    = models.CharField('Tipo', max_length=20, choices=TipoQuestao.choices)
+    pontuacao               = models.DecimalField('Pontuação', max_digits=5, decimal_places=2)
+    obrigatoria             = models.BooleanField('Obrigatória', default=True)
+    embaralhar_alternativas = models.BooleanField('Embaralhar Alternativas', default=False)
+    feedback                = models.TextField('Feedback', blank=True)
+    imagem                  = models.ImageField(
+        'Imagem', upload_to='avaliacoes/questoes/imagens/', null=True, blank=True,
+    )
+    arquivo_pdf             = models.FileField(
+        'PDF de Apoio', upload_to='avaliacoes/questoes/pdfs/', null=True, blank=True,
+    )
+    # Gabarito para tipos que não usam OpcaoResposta.correta:
+    # RESPOSTA_CURTA  → {"texto": "Brasília", "case_sensitive": false}
+    # NUMERICA        → {"valor": 9.8, "tolerancia": 0.1}
+    # LACUNAS         → {"lacunas": ["sol", "lua"]}
+    # ASSOCIACAO      → {"colunas": [...], "opcoes": [...], "pares": [["a1","b1"], ...]}
+    # ORDENACAO       → ordem correta definida por OpcaoResposta.ordem
+    gabarito_json           = models.JSONField('Gabarito', null=True, blank=True)
 
     class Meta:
         verbose_name        = 'Questão'
@@ -92,6 +140,11 @@ class OpcaoResposta(models.Model):
     )
     letra    = models.CharField('Letra', max_length=1)
     texto    = models.CharField('Texto', max_length=500)
+    imagem   = models.ImageField(
+        'Imagem', upload_to='avaliacoes/opcoes/imagens/', null=True, blank=True,
+    )
+    # Posição correta na sequência (usado para tipo ORDENACAO)
+    ordem    = models.PositiveSmallIntegerField('Ordem Correta', null=True, blank=True)
     correta  = models.BooleanField('Correta', default=False)
 
     class Meta:
@@ -105,22 +158,32 @@ class OpcaoResposta(models.Model):
 
 
 class RespostaAluno(models.Model):
-    questao          = models.ForeignKey(
+    questao         = models.ForeignKey(
         Questao, on_delete=models.CASCADE,
         related_name='respostas', verbose_name='Questão',
     )
-    aluno            = models.ForeignKey(
+    aluno           = models.ForeignKey(
         'aluno.Aluno', on_delete=models.CASCADE,
         related_name='respostas_avaliacao', verbose_name='Aluno',
     )
-    opcao_escolhida  = models.ForeignKey(
+    # MULTIPLA_ESCOLHA / VERDADEIRO_FALSO → FK direto (integridade referencial preservada)
+    opcao_escolhida = models.ForeignKey(
         OpcaoResposta, on_delete=models.SET_NULL,
         null=True, blank=True, related_name='respostas', verbose_name='Opção Escolhida',
     )
-    resposta_texto   = models.TextField('Resposta Textual', blank=True)
-    nota_questao     = models.DecimalField('Nota da Questão', max_digits=5, decimal_places=2,
-                                           null=True, blank=True)
-    corrigida        = models.BooleanField('Corrigida', default=False)
+    # RESPOSTA_CURTA / DISCURSIVA → texto plano
+    resposta_texto  = models.TextField('Resposta Textual', blank=True)
+    # Tipos estruturados:
+    # MULTIPLAS_RESPOSTAS → {"opcoes": [id1, id2]}
+    # NUMERICA            → {"valor": 9.8}
+    # LACUNAS             → {"lacunas": ["sol", "lua"]}
+    # ASSOCIACAO          → {"pares": [["a1", "b1"], ...]}
+    # ORDENACAO           → {"ordem": [id2, id1, id3]}
+    resposta_json   = models.JSONField('Resposta Estruturada', null=True, blank=True)
+    nota_questao    = models.DecimalField(
+        'Nota da Questão', max_digits=5, decimal_places=2, null=True, blank=True,
+    )
+    corrigida       = models.BooleanField('Corrigida', default=False)
 
     class Meta:
         verbose_name        = 'Resposta do Aluno'

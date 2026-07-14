@@ -152,6 +152,7 @@ class EditarPeriodoView(_DiretorRequiredMixin, View):
         form = PeriodoLetivoForm(initial={
             'numero':      periodo.numero,
             'nome':        periodo.nome,
+            'tipo':        periodo.tipo,
             'data_inicio': periodo.data_inicio,
             'data_fim':    periodo.data_fim,
         })

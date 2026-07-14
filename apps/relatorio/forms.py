@@ -1,6 +1,6 @@
 from django import forms
 
-_INPUT = 'w-full px-3 py-2 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#0d6efd]/30 focus:border-[#0d6efd]'
+_INPUT = 'w-full px-3 py-2 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#0d6efd]/30 focus:border-[#0d6efd] dark:[color-scheme:dark]'
 
 
 class FiltroTurmaPeriodoForm(forms.Form):

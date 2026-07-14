@@ -65,11 +65,12 @@ def desativar(papel, desativado_por=None) -> None:
 def vincular_aluno(perfil: PerfilResponsavel, aluno, dados: dict) -> VinculoResponsavelAluno:
     vinculo, criado = VinculoResponsavelAluno.objects.get_or_create(
         responsavel=perfil, aluno=aluno,
-        defaults=dados,
+        defaults={**dados, 'ativo': True},
     )
     if not criado:
         for campo, valor in dados.items():
             setattr(vinculo, campo, valor)
+        vinculo.ativo = True
         vinculo.save()
     return vinculo
 
