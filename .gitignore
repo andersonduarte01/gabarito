@@ -4,3 +4,15 @@ migrations/
 db.sqlite3
 templates/temp.html
 *__pycache__*
+
+# Variáveis de ambiente — nunca commitar
+.env
+
+# Overrides de produção — nunca commitar
+sistema/settings_local.py
+
+# Saída do collectstatic — gerado em produção
+staticfiles/
+
+# Logs gerados em runtime
+logs/
