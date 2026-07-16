@@ -73,10 +73,13 @@
                     <p class="text-xs font-medium text-white truncate">{{ usuario.nome }}</p>
                     <p class="text-xs text-slate-400 truncate">{{ usuario.email }}</p>
                 </div>
-                <a href="{% url 'accounts:logout' %}" title="Sair"
-                   class="text-slate-400 hover:text-red-400 transition-colors flex-shrink-0">
-                    <i data-lucide="log-out" class="w-4 h-4"></i>
-                </a>
+                <form method="post" action="{% url 'accounts:logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" title="Sair"
+                            class="text-slate-400 hover:text-red-400 transition-colors flex-shrink-0 bg-transparent border-none p-0 cursor-pointer">
+                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                    </button>
+                </form>
             </div>
         </div>
     </aside>

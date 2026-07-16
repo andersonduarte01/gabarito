@@ -108,7 +108,7 @@ class DashboardRedirectView(View):
             return redirect('accounts:login')
 
         if request.user.is_platform_admin:
-            return redirect('core:inicio')  # módulo plataforma (futuro)
+            return redirect('/admin/')
 
         papel = getattr(request, 'papel', None)
         if papel is None:

@@ -1,24 +1,20 @@
 from pathlib import Path
+from datetime import timedelta
 import os
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-from django.conf.global_settings import STATIC_ROOT, MEDIA_URL, AUTH_USER_MODEL, LOGIN_REDIRECT_URL, LOGIN_URL
+import environ
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+env = environ.Env(
+    DEBUG=(bool, False),
+    SECRET_KEY=(str, 'chave-dev-insegura'),
+    ALLOWED_HOSTS=(list, ['educareprime.com.br', 'www.educareprime.com.br']),
+)
+environ.Env.read_env(BASE_DIR / '.env')
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure--piij5(*ab&p8#vua9g4()hm7k2=*r)xw&_lycn42eodwoo2#9'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = ['*']
-
-
-# Application definition
+SECRET_KEY = env('SECRET_KEY')
+DEBUG = env('DEBUG')
+ALLOWED_HOSTS = env('ALLOWED_HOSTS')
 
 INSTALLED_APPS = [
     'unfold',
@@ -67,6 +63,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -74,7 +71,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'apps.core.middleware.TenantMiddleware',
-    # 'hijack.middleware.HijackUserMiddleware',
 ]
 
 ROOT_URLCONF = 'sistema.urls'
@@ -101,21 +97,6 @@ WSGI_APPLICATION = 'sistema.wsgi.application'
 
 FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
-
-# Database
-# https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'system',
-#         'USER': 'root',
-#         'PASSWORD': 'sosa1808',
-#         'HOST': 'localhost',
-#         'PORT': '3306',
-#     }
-# }
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -123,362 +104,59 @@ DATABASES = {
     }
 }
 
-
-# Password validation
-# https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-
-# Internationalization
-# https://docs.djangoproject.com/en/4.0/topics/i18n/
-
 LANGUAGE_CODE = 'pt-br'
-
 TIME_ZONE = 'America/Sao_Paulo'
-
 USE_I18N = True
-
 USE_TZ = True
-
 DATE_INPUT_FORMATS = ['%d/%m/%Y']
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.0/howto/static-files/
-STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-MEDIA_URL = 'media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-CKEDITOR_UPLOAD_PATH = "media/Noticias"
-# Default primary key field type
-# https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [BASE_DIR / 'static']
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'core.Usuario'
 
-LOGIN_URL           = '/accounts/login/'
-LOGIN_REDIRECT_URL  = '/dashboard/'
+LOGIN_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
 
-#CKEDITOR
-CKEDITOR_CONFIGS = {
-    'default': {
-        'skin': 'moono',
-        # 'skin': 'office2013',
-        'toolbar_Basic': [
-            ['Source', '-', 'Bold', 'Italic']
-        ],
-        'toolbar_YourCustomToolbarConfig': [
-            {'name': 'document', 'items': ['Source', '-', 'Save', 'NewPage', 'Preview', 'Print', '-', 'Templates']},
-            {'name': 'clipboard', 'items': ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo']},
-            {'name': 'editing', 'items': ['Find', 'Replace', '-', 'SelectAll']},
-            {'name': 'forms',
-             'items': ['Form', 'Checkbox', 'Radio', 'TextField', 'Textarea', 'Select', 'Button', 'ImageButton',
-                       'HiddenField']},
-            '/',
-            {'name': 'basicstyles',
-             'items': ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat']},
-            {'name': 'paragraph',
-             'items': ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-',
-                       'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'BidiLtr', 'BidiRtl',
-                       'Language']},
-            {'name': 'links', 'items': ['Link', 'Unlink', 'Anchor']},
-            {'name': 'insert',
-             'items': ['Image', 'Flash', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak', 'Iframe']},
-            '/',
-            {'name': 'styles', 'items': ['Styles', 'Format', 'Font', 'FontSize']},
-            {'name': 'colors', 'items': ['TextColor', 'BGColor']},
-            {'name': 'tools', 'items': ['Maximize', 'ShowBlocks']},
-            {'name': 'about', 'items': ['About']},
-            '/',  # put this to force next toolbar on new line
-            {'name': 'yourcustomtools', 'items': [
-                # put the name of your editor.ui.addButton here
-                'Preview',
-                'Maximize',
+# ── Segurança (Cloudflare Tunnel termina TLS) ────────────────────────────────
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = False  # Cloudflare já termina TLS — redirecionar aqui causa loop
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
 
-            ]},
-        ],
-        'toolbar': 'YourCustomToolbarConfig',  # put selected toolbar config here
-        # 'toolbarGroups': [{ 'name': 'document', 'groups': [ 'mode', 'document', 'doctools' ] }],
-        # 'height': 291,
-        # 'width': '100%',
-        # 'filebrowserWindowHeight': 725,
-        # 'filebrowserWindowWidth': 940,
-        # 'toolbarCanCollapse': True,
-        # 'mathJaxLib': '//cdn.mathjax.org/mathjax/2.2-latest/MathJax.js?config=TeX-AMS_HTML',
-        'tabSpaces': 4,
-        'extraPlugins': ','.join([
-            'uploadimage', # the upload image feature
-            # your extra plugins here
-            'div',
-            'autolink',
-            'autoembed',
-            'embedsemantic',
-            'autogrow',
-            # 'devtools',
-            'widget',
-            'lineutils',
-            'clipboard',
-            'dialog',
-            'dialogui',
-            'elementspath'
-        ]),
-    }
-}
-
-
-# RESET DE SENHA
-EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
-EMAIL_FILE_PATH = str(BASE_DIR.joinpath('sent_emails'))
-
-from datetime import timedelta
-from django.urls import reverse_lazy
-
-# ---------------------------------------------------------------------------
-# Django Unfold — Admin Theme
-# ---------------------------------------------------------------------------
-
-UNFOLD = {
-    "SITE_TITLE":  "EduCare Admin",
-    "SITE_HEADER": "EduCare",
-    "SITE_URL":    "/",
-    "SITE_SYMBOL": "school",
-    "SHOW_HISTORY":      True,
-    "SHOW_VIEW_ON_SITE": True,
-
-    # Bootstrap 5 blue (#0d6efd = rgb 13 110 253) como cor primária
-    "COLORS": {
-        "primary": {
-            "50":  "239 246 255",
-            "100": "219 234 254",
-            "200": "191 219 254",
-            "300": "147 197 253",
-            "400": "96 165 250",
-            "500": "59 130 246",
-            "600": "13 110 253",
-            "700": "11 94 215",
-            "800": "30 64 175",
-            "900": "30 58 138",
-            "950": "23 37 84",
-        },
-    },
-
-    "SIDEBAR": {
-        "show_search":           True,
-        "show_all_applications": False,
-        "navigation": [
-            {
-                "title": "Plataforma SaaS",
-                "collapsible": False,
-                "items": [
-                    {
-                        "title": "Planos",
-                        "icon":  "deployed_code",
-                        "link":  reverse_lazy("admin:planos_plano_changelist"),
-                    },
-                    {
-                        "title": "Assinaturas",
-                        "icon":  "task_alt",
-                        "link":  reverse_lazy("admin:planos_assinaturaescola_changelist"),
-                    },
-                    {
-                        "title": "Módulos",
-                        "icon":  "extension",
-                        "link":  reverse_lazy("admin:planos_modulo_changelist"),
-                    },
-                ],
-            },
-            {
-                "title": "Controle de Acesso",
-                "collapsible": False,
-                "items": [
-                    {
-                        "title": "Usuários",
-                        "icon":  "group",
-                        "link":  reverse_lazy("admin:core_usuario_changelist"),
-                    },
-                    {
-                        "title": "Vínculos",
-                        "icon":  "swap_horiz",
-                        "link":  reverse_lazy("admin:core_vinculoescola_changelist"),
-                    },
-                    {
-                        "title": "Papéis",
-                        "icon":  "verified_user",
-                        "link":  reverse_lazy("admin:core_papelvinculo_changelist"),
-                    },
-                ],
-            },
-            {
-                "title": "Escolas",
-                "collapsible": False,
-                "items": [
-                    {
-                        "title": "Unidades Escolares",
-                        "icon":  "apartment",
-                        "link":  reverse_lazy("admin:escola_unidadeescolar_changelist"),
-                    },
-                    {
-                        "title": "Convites",
-                        "icon":  "mail",
-                        "link":  reverse_lazy("admin:onboarding_conviteonboarding_changelist"),
-                    },
-                ],
-            },
-            {
-                "title": "Equipe Escolar",
-                "collapsible": False,
-                "items": [
-                    {
-                        "title": "Professores",
-                        "icon":  "school",
-                        "link":  reverse_lazy("admin:professor_perfilprofessor_changelist"),
-                    },
-                    {
-                        "title": "Colaboradores",
-                        "icon":  "groups",
-                        "link":  reverse_lazy("admin:colaborador_perfilcolaborador_changelist"),
-                    },
-                    {
-                        "title": "Funções",
-                        "icon":  "badge",
-                        "link":  reverse_lazy("admin:colaborador_funcaoescolar_changelist"),
-                    },
-                ],
-            },
-            {
-                "title": "Acadêmico",
-                "collapsible": False,
-                "items": [
-                    {
-                        "title": "Anos Letivos",
-                        "icon":  "calendar_month",
-                        "link":  reverse_lazy("admin:ano_letivo_anoletivo_changelist"),
-                    },
-                    {
-                        "title": "Séries",
-                        "icon":  "layers",
-                        "link":  reverse_lazy("admin:serie_serie_changelist"),
-                    },
-                    {
-                        "title": "Matérias",
-                        "icon":  "book_2",
-                        "link":  reverse_lazy("admin:materia_materia_changelist"),
-                    },
-                    {
-                        "title": "Alunos",
-                        "icon":  "group",
-                        "link":  reverse_lazy("admin:aluno_aluno_changelist"),
-                    },
-                    {
-                        "title": "Matrículas",
-                        "icon":  "assignment",
-                        "link":  reverse_lazy("admin:aluno_matriculaturma_changelist"),
-                    },
-                    {
-                        "title": "Responsáveis",
-                        "icon":  "family_restroom",
-                        "link":  reverse_lazy("admin:responsavel_perfilresponsavel_changelist"),
-                    },
-                    {
-                        "title": "Avaliações",
-                        "icon":  "quiz",
-                        "link":  reverse_lazy("admin:avaliacao_avaliacao_changelist"),
-                    },
-                    {
-                        "title": "Notas",
-                        "icon":  "grade",
-                        "link":  reverse_lazy("admin:avaliacao_notaaluno_changelist"),
-                    },
-                    {
-                        "title": "Resultados Períodos",
-                        "icon":  "bar_chart",
-                        "link":  reverse_lazy("admin:boletim_resultadoperiodo_changelist"),
-                    },
-                    {
-                        "title": "Resultados Anuais",
-                        "icon":  "emoji_events",
-                        "link":  reverse_lazy("admin:boletim_resultadoanual_changelist"),
-                    },
-                    {
-                        "title": "Frequência (Registros)",
-                        "icon":  "calendar_check",
-                        "link":  reverse_lazy("admin:frequencia_registrofrequencia_changelist"),
-                    },
-                    {
-                        "title": "Frequência (Presenças)",
-                        "icon":  "how_to_reg",
-                        "link":  reverse_lazy("admin:frequencia_presencaaluno_changelist"),
-                    },
-                ],
-            },
-            {
-                "title": "Financeiro",
-                "collapsible": False,
-                "items": [
-                    {
-                        "title": "Planos",
-                        "icon":  "layers",
-                        "link":  reverse_lazy("admin:financeiro_planofinanceiro_changelist"),
-                    },
-                    {
-                        "title": "Cobranças",
-                        "icon":  "receipt_long",
-                        "link":  reverse_lazy("admin:financeiro_cobrancaaluno_changelist"),
-                    },
-                    {
-                        "title": "Config. Financeira",
-                        "icon":  "settings",
-                        "link":  reverse_lazy("admin:configuracao_configuracaofinanceira_changelist"),
-                    },
-                ],
-            },
-            {
-                "title": "Monitoramento",
-                "collapsible": False,
-                "items": [
-                    {
-                        "title": "Notificações",
-                        "icon":  "notifications",
-                        "link":  reverse_lazy("admin:notificacao_notificacao_changelist"),
-                    },
-                    {
-                        "title": "Auditoria",
-                        "icon":  "policy",
-                        "link":  reverse_lazy("admin:auditoria_logauditoria_changelist"),
-                    },
-                ],
-            },
-            {
-                "title": "Autenticação",
-                "collapsible": True,
-                "items": [
-                    {
-                        "title": "Grupos",
-                        "icon":  "layers",
-                        "link":  reverse_lazy("admin:auth_group_changelist"),
-                    },
-                ],
-            },
-        ],
-    },
-}
+CSRF_TRUSTED_ORIGINS = [
+    'https://educareprime.com.br',
+    'https://www.educareprime.com.br',
+]
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=3650),  # 10 anos, por exemplo
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=3650),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=3650),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': False,
@@ -494,6 +172,117 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
 }
-TAILWIND_APP_NAME = 'theme'
-if os.name == 'nt':
-    NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
+
+# ── E-mail ───────────────────────────────────────────────────────────────────
+EMAIL_BACKEND = env('EMAIL_BACKEND', default='django.core.mail.backends.filebased.EmailBackend')
+EMAIL_FILE_PATH = str(BASE_DIR / 'sent_emails')
+
+# ── Django Unfold ─────────────────────────────────────────────────────────────
+from django.urls import reverse_lazy
+
+UNFOLD = {
+    "SITE_TITLE":  "EduCare Admin",
+    "SITE_HEADER": "EduCare",
+    "SITE_URL":    "/",
+    "SITE_SYMBOL": "school",
+    "SHOW_HISTORY":      True,
+    "SHOW_VIEW_ON_SITE": True,
+    "COLORS": {
+        "primary": {
+            "50":  "239 246 255",
+            "100": "219 234 254",
+            "200": "191 219 254",
+            "300": "147 197 253",
+            "400": "96 165 250",
+            "500": "59 130 246",
+            "600": "13 110 253",
+            "700": "11 94 215",
+            "800": "30 64 175",
+            "900": "30 58 138",
+            "950": "23 37 84",
+        },
+    },
+    "SIDEBAR": {
+        "show_search":           True,
+        "show_all_applications": False,
+        "navigation": [
+            {
+                "title": "Plataforma SaaS",
+                "collapsible": False,
+                "items": [
+                    {"title": "Planos",      "icon": "deployed_code", "link": reverse_lazy("admin:planos_plano_changelist")},
+                    {"title": "Assinaturas", "icon": "task_alt",      "link": reverse_lazy("admin:planos_assinaturaescola_changelist")},
+                    {"title": "Módulos",     "icon": "extension",     "link": reverse_lazy("admin:planos_modulo_changelist")},
+                ],
+            },
+            {
+                "title": "Controle de Acesso",
+                "collapsible": False,
+                "items": [
+                    {"title": "Usuários", "icon": "group",         "link": reverse_lazy("admin:core_usuario_changelist")},
+                    {"title": "Vínculos", "icon": "swap_horiz",    "link": reverse_lazy("admin:core_vinculoescola_changelist")},
+                    {"title": "Papéis",   "icon": "verified_user", "link": reverse_lazy("admin:core_papelvinculo_changelist")},
+                ],
+            },
+            {
+                "title": "Escolas",
+                "collapsible": False,
+                "items": [
+                    {"title": "Unidades Escolares", "icon": "apartment", "link": reverse_lazy("admin:escola_unidadeescolar_changelist")},
+                    {"title": "Convites",            "icon": "mail",      "link": reverse_lazy("admin:onboarding_conviteonboarding_changelist")},
+                ],
+            },
+            {
+                "title": "Equipe Escolar",
+                "collapsible": False,
+                "items": [
+                    {"title": "Professores",   "icon": "school",  "link": reverse_lazy("admin:professor_perfilprofessor_changelist")},
+                    {"title": "Colaboradores", "icon": "groups",  "link": reverse_lazy("admin:colaborador_perfilcolaborador_changelist")},
+                    {"title": "Funções",       "icon": "badge",   "link": reverse_lazy("admin:colaborador_funcaoescolar_changelist")},
+                ],
+            },
+            {
+                "title": "Acadêmico",
+                "collapsible": False,
+                "items": [
+                    {"title": "Anos Letivos",           "icon": "calendar_month",  "link": reverse_lazy("admin:ano_letivo_anoletivo_changelist")},
+                    {"title": "Séries",                 "icon": "layers",          "link": reverse_lazy("admin:serie_serie_changelist")},
+                    {"title": "Matérias",               "icon": "book_2",          "link": reverse_lazy("admin:materia_materia_changelist")},
+                    {"title": "Alunos",                 "icon": "group",           "link": reverse_lazy("admin:aluno_aluno_changelist")},
+                    {"title": "Matrículas",             "icon": "assignment",      "link": reverse_lazy("admin:aluno_matriculaturma_changelist")},
+                    {"title": "Responsáveis",           "icon": "family_restroom", "link": reverse_lazy("admin:responsavel_perfilresponsavel_changelist")},
+                    {"title": "Avaliações",             "icon": "quiz",            "link": reverse_lazy("admin:avaliacao_avaliacao_changelist")},
+                    {"title": "Notas",                  "icon": "grade",           "link": reverse_lazy("admin:avaliacao_notaaluno_changelist")},
+                    {"title": "Resultados Períodos",    "icon": "bar_chart",       "link": reverse_lazy("admin:boletim_resultadoperiodo_changelist")},
+                    {"title": "Resultados Anuais",      "icon": "emoji_events",    "link": reverse_lazy("admin:boletim_resultadoanual_changelist")},
+                    {"title": "Frequência (Registros)", "icon": "calendar_check",  "link": reverse_lazy("admin:frequencia_registrofrequencia_changelist")},
+                    {"title": "Frequência (Presenças)", "icon": "how_to_reg",      "link": reverse_lazy("admin:frequencia_presencaaluno_changelist")},
+                ],
+            },
+            {
+                "title": "Financeiro",
+                "collapsible": False,
+                "items": [
+                    {"title": "Planos",            "icon": "layers",       "link": reverse_lazy("admin:financeiro_planofinanceiro_changelist")},
+                    {"title": "Cobranças",         "icon": "receipt_long", "link": reverse_lazy("admin:financeiro_cobrancaaluno_changelist")},
+                    {"title": "Config. Financeira", "icon": "settings",    "link": reverse_lazy("admin:configuracao_configuracaofinanceira_changelist")},
+                ],
+            },
+            {
+                "title": "Monitoramento",
+                "collapsible": False,
+                "items": [
+                    {"title": "Notificações", "icon": "notifications", "link": reverse_lazy("admin:notificacao_notificacao_changelist")},
+                    {"title": "Auditoria",    "icon": "policy",        "link": reverse_lazy("admin:auditoria_logauditoria_changelist")},
+                ],
+            },
+            {
+                "title": "Autenticação",
+                "collapsible": True,
+                "items": [
+                    {"title": "Grupos", "icon": "layers", "link": reverse_lazy("admin:auth_group_changelist")},
+                ],
+            },
+        ],
+    },
+}
